@@ -13,11 +13,6 @@ android/
 original/
 assets/original/
 
-# Optional full SFX mirror
-assets/converted/sfx/*.wav
-assets/converted/sfx/*.WAV
-assets/converted/sfx/*.aif
-
 # Python
 __pycache__/
 *.pyc
