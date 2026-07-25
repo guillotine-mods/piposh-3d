@@ -1,0 +1,30 @@
+# Godot 4
+.godot/
+*.translation
+export_presets.cfg
+
+# Local Android / APK output (reinstall template via Editor if needed)
+build/
+android/
+*.apk
+*.aab
+
+# Large original dump (keep local; re-extract from zip if needed)
+original/
+assets/original/
+
+# Optional full SFX mirror
+assets/converted/sfx/*.wav
+assets/converted/sfx/*.WAV
+assets/converted/sfx/*.aif
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Editor / OS
+.cursor/
+*.swp
+Thumbs.db
+.DS_Store

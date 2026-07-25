@@ -1,0 +1,5594 @@
+{
+  "source": "InShrine.WMB",
+  "magic": "WMB5",
+  "info": {
+    "type": "info"
+  },
+  "bounds": {
+    "min": [
+      -4918.0,
+      -184.0,
+      -2291.999755859375
+    ],
+    "max": [
+      3033.32470703125,
+      2487.0,
+      1933.0
+    ],
+    "center": [
+      -942.337646484375,
+      1151.5,
+      -179.4998779296875
+    ],
+    "size": [
+      7951.32470703125,
+      2671.0,
+      4224.999755859375
+    ]
+  },
+  "spawn": [
+    308.0,
+    114.5,
+    -207.0
+  ],
+  "objects": [
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piposh_mdl_001",
+      "file": "Piposh.MDL",
+      "action": "player_walk2",
+      "origin": [
+        308.0,
+        113.0,
+        -213.0
+      ],
+      "angle_deg": [
+        0.0,
+        -268.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Columb1_mdl_002",
+      "file": "Columb3.MDL",
+      "action": "",
+      "origin": [
+        -284.0,
+        -184.0,
+        -0.0
+      ],
+      "angle_deg": [
+        15.0,
+        -25.0,
+        10.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "light",
+      "origin": [
+        212.0,
+        1708.0,
+        -448.0
+      ],
+      "color": [
+        0.5019607925415039,
+        0.5019607925415039,
+        0.5019607925415039
+      ],
+      "range": 5000.0
+    },
+    {
+      "type": "light",
+      "origin": [
+        77.0,
+        1183.0,
+        -1078.0
+      ],
+      "color": [
+        0.7764705657958985,
+        0.5019607925415039,
+        0.5019607925415039
+      ],
+      "range": 300.0
+    },
+    {
+      "type": "light",
+      "origin": [
+        1175.0,
+        1335.0,
+        -27.0
+      ],
+      "color": [
+        0.5019607925415039,
+        0.5019607925415039,
+        0.7843137359619141
+      ],
+      "range": 5000.0
+    },
+    {
+      "type": "light",
+      "origin": [
+        1158.0,
+        2487.0,
+        -824.0
+      ],
+      "color": [
+        1.0,
+        1.0,
+        0.5019607925415039
+      ],
+      "range": 500.0
+    },
+    {
+      "type": "light",
+      "origin": [
+        -56.0,
+        1141.0,
+        -2046.0
+      ],
+      "color": [
+        0.5019607925415039,
+        0.5019607925415039,
+        0.5019607925415039
+      ],
+      "range": 5000.0
+    },
+    {
+      "type": "light",
+      "origin": [
+        1170.0,
+        1183.0,
+        -385.0
+      ],
+      "color": [
+        0.5019607925415039,
+        0.5019607925415039,
+        0.7843137359619141
+      ],
+      "range": 300.0
+    },
+    {
+      "type": "light",
+      "origin": [
+        -291.0,
+        639.0,
+        -860.0
+      ],
+      "color": [
+        0.5019607925415039,
+        0.5019607925415039,
+        0.5019607925415039
+      ],
+      "range": 300.0
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Dragon_mdl_016",
+      "file": "Dragon.MDL",
+      "action": "Shooter",
+      "origin": [
+        -3884.0,
+        1142.0,
+        127.0
+      ],
+      "angle_deg": [
+        0.0,
+        -90.0,
+        0.0
+      ],
+      "scale": [
+        0.75,
+        0.75,
+        0.75
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Camera_mdl_015",
+      "file": "Dragon.MDL",
+      "action": "Shooter",
+      "origin": [
+        -3482.0,
+        1094.0,
+        -167.0
+      ],
+      "angle_deg": [
+        0.0,
+        -270.0,
+        0.0
+      ],
+      "scale": [
+        0.75,
+        0.75,
+        0.75
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Switch_mdl_018",
+      "file": "Switch.MDL",
+      "action": "Switch2",
+      "origin": [
+        1171.0,
+        2395.0,
+        -577.0
+      ],
+      "angle_deg": [
+        0.0,
+        -90.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "light",
+      "origin": [
+        1157.0,
+        2034.0,
+        -824.0
+      ],
+      "color": [
+        0.5019607925415039,
+        0.5019607925415039,
+        0.5019607925415039
+      ],
+      "range": 5000.0
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Fan_mdl_019",
+      "file": "Fan.MDL",
+      "action": "fan",
+      "origin": [
+        1172.0,
+        1995.0001220703125,
+        -553.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        0.18000000715255737,
+        0.18000000715255737,
+        0.18000000715255737
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Switch_mdl_027",
+      "file": "Switch.MDL",
+      "action": "Switch1",
+      "origin": [
+        7.0,
+        1144.0,
+        -60.0
+      ],
+      "angle_deg": [
+        0.0,
+        -90.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Switch_mdl_029",
+      "file": "Switch.MDL",
+      "action": "Switch2",
+      "origin": [
+        6.0,
+        1144.0,
+        8.0
+      ],
+      "angle_deg": [
+        0.0,
+        -90.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Dragon_mdl_016",
+      "file": "Dragon.MDL",
+      "action": "Shooter",
+      "origin": [
+        -3060.0,
+        1036.0,
+        127.0
+      ],
+      "angle_deg": [
+        0.0,
+        -90.0,
+        0.0
+      ],
+      "scale": [
+        0.75,
+        0.75,
+        0.75
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Camera_mdl_015",
+      "file": "Dragon.MDL",
+      "action": "Shooter",
+      "origin": [
+        -2610.0,
+        1077.0,
+        -167.0
+      ],
+      "angle_deg": [
+        0.0,
+        -270.0,
+        0.0
+      ],
+      "scale": [
+        0.75,
+        0.75,
+        0.75
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "light",
+      "origin": [
+        -1668.0,
+        1341.0,
+        -11.0
+      ],
+      "color": [
+        0.5019607925415039,
+        0.5019607925415039,
+        0.5019607925415039
+      ],
+      "range": 1000.0
+    },
+    {
+      "type": "light",
+      "origin": [
+        -3060.0,
+        1341.0,
+        -11.0
+      ],
+      "color": [
+        0.5019607925415039,
+        0.5019607925415039,
+        0.5019607925415039
+      ],
+      "range": 1000.0
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Collis_mdl_013",
+      "file": "Collis.MDL",
+      "action": "Collis",
+      "origin": [
+        -1309.0,
+        728.0,
+        -21.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Axe_mdl_007",
+      "file": "Axe.MDL",
+      "action": "AxeHammer",
+      "origin": [
+        -1309.0,
+        1062.0,
+        -24.0
+      ],
+      "angle_deg": [
+        0.0,
+        -90.0,
+        0.0
+      ],
+      "scale": [
+        0.75,
+        0.75,
+        0.75
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        5.831554006032442e-39,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Dragon_mdl_016",
+      "file": "Dragon.MDL",
+      "action": "Shooter",
+      "origin": [
+        -2210.0,
+        996.0,
+        127.0
+      ],
+      "angle_deg": [
+        0.0,
+        -90.0,
+        0.0
+      ],
+      "scale": [
+        0.75,
+        0.75,
+        0.75
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Camera_mdl_015",
+      "file": "Dragon.MDL",
+      "action": "Shooter",
+      "origin": [
+        -1668.0,
+        1022.0,
+        -167.0
+      ],
+      "angle_deg": [
+        0.0,
+        -270.0,
+        0.0
+      ],
+      "scale": [
+        0.75,
+        0.75,
+        0.75
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Dragon_mdl_016",
+      "file": "Dragon.MDL",
+      "action": "Shooter",
+      "origin": [
+        -1227.0,
+        1076.0,
+        127.0
+      ],
+      "angle_deg": [
+        0.0,
+        -90.0,
+        0.0
+      ],
+      "scale": [
+        0.75,
+        0.75,
+        0.75
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Camera_mdl_015",
+      "file": "Dragon.MDL",
+      "action": "Shooter",
+      "origin": [
+        -821.0,
+        1117.0,
+        -167.0
+      ],
+      "angle_deg": [
+        0.0,
+        -270.0,
+        0.0
+      ],
+      "scale": [
+        0.75,
+        0.75,
+        0.75
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_032",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -441.0,
+        1079.0,
+        -192.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_033",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -428.0,
+        1079.0,
+        -411.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_034",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -249.0,
+        1079.0,
+        -323.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_035",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -87.0,
+        1079.0,
+        -452.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_036",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -57.0,
+        1079.0,
+        -176.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_037",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        157.0,
+        1079.0,
+        -333.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_038",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        451.0,
+        1079.0,
+        -430.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_039",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        456.0,
+        1079.0,
+        -148.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_040",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        253.0,
+        1079.0,
+        67.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_041",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        488.0,
+        1079.0,
+        216.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_042",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        368.0,
+        1079.0,
+        430.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_043",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        185.0,
+        1079.0,
+        347.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_044",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -2.0,
+        1079.0,
+        180.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_045",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -214.0,
+        1079.0,
+        101.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_046",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -90.0,
+        1079.0,
+        408.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_047",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -400.0,
+        1079.0,
+        436.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_048",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -501.0,
+        1079.0,
+        221.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_049",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -808.0,
+        1079.0,
+        89.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_050",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -961.0,
+        1079.0,
+        -110.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_051",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -1292.0,
+        1079.0,
+        104.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_052",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -1046.0,
+        1079.0,
+        -199.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_053",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -1546.0,
+        1079.0,
+        -123.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_054",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -1775.0,
+        1079.0,
+        47.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_055",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -2278.0,
+        1079.0,
+        -171.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_056",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -2279.0,
+        1079.0,
+        -171.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_057",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -2016.0,
+        1079.0,
+        160.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_058",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -2353.0,
+        1079.0,
+        132.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_059",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -2660.0,
+        1079.0,
+        51.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_060",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -3281.0,
+        1079.0,
+        156.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_061",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -3690.0,
+        1079.0,
+        95.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_062",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -4018.0,
+        1079.0,
+        176.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_063",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -3919.0,
+        1079.0,
+        -169.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_064",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -3527.0,
+        1079.0,
+        -97.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_065",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -3174.0,
+        1079.0,
+        -206.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_066",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -2756.0,
+        1079.0,
+        -91.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_067",
+      "file": "Spark.MDL",
+      "action": "Gayser",
+      "origin": [
+        -2506.0,
+        1079.0,
+        -179.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Elevator_mdl_003",
+      "file": "Elevator.wmb",
+      "action": "elevator",
+      "origin": [
+        -240.0,
+        457.0,
+        172.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        6.178806975879846e-39,
+        0.0,
+        0.0,
+        0.0,
+        5.934868939210182e-39,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -2512.0595703125,
+        902.872802734375,
+        -15.0
+      ],
+      "angle_deg": [
+        356.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -2369.62109375,
+        901.3932495117188,
+        -15.0
+      ],
+      "angle_deg": [
+        358.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -2298.88671875,
+        902.3971557617188,
+        -15.0
+      ],
+      "angle_deg": [
+        358.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -2229.52587890625,
+        902.3016357421875,
+        -15.0
+      ],
+      "angle_deg": [
+        358.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -2028.388427734375,
+        907.4244995117188,
+        -15.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -1961.855224609375,
+        910.637939453125,
+        -15.0
+      ],
+      "angle_deg": [
+        2.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -1893.1552734375,
+        915.6694946289062,
+        -15.0
+      ],
+      "angle_deg": [
+        359.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -1827.531005859375,
+        919.96630859375,
+        -15.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -1761.172119140625,
+        921.1874389648438,
+        -15.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -1695.72216796875,
+        923.4918212890625,
+        -15.0
+      ],
+      "angle_deg": [
+        5.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -2987.916259765625,
+        928.096435546875,
+        -15.0
+      ],
+      "angle_deg": [
+        354.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -2788.84814453125,
+        924.5742797851562,
+        -15.0
+      ],
+      "angle_deg": [
+        356.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -2721.725341796875,
+        918.852294921875,
+        -15.0
+      ],
+      "angle_deg": [
+        353.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -2651.39306640625,
+        910.3026733398438,
+        -15.0
+      ],
+      "angle_deg": [
+        356.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -3447.176025390625,
+        987.392333984375,
+        -15.0
+      ],
+      "angle_deg": [
+        347.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -3381.4287109375,
+        976.7025756835938,
+        -15.0
+      ],
+      "angle_deg": [
+        350.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -3185.937744140625,
+        946.297119140625,
+        -15.0
+      ],
+      "angle_deg": [
+        350.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -3975.5888671875,
+        1050.85009765625,
+        -15.0
+      ],
+      "angle_deg": [
+        352.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -3909.130126953125,
+        1044.586181640625,
+        -15.0
+      ],
+      "angle_deg": [
+        354.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -3842.913330078125,
+        1037.35205078125,
+        -15.0
+      ],
+      "angle_deg": [
+        351.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -3774.272216796875,
+        1031.574462890625,
+        -15.0
+      ],
+      "angle_deg": [
+        355.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -3708.78369140625,
+        1025.552490234375,
+        -15.0
+      ],
+      "angle_deg": [
+        349.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -3643.05078125,
+        1016.3778076171875,
+        -15.0
+      ],
+      "angle_deg": [
+        352.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -1631.0001220703125,
+        929.0,
+        -15.0
+      ],
+      "angle_deg": [
+        5.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -1565.0,
+        939.0,
+        -15.0
+      ],
+      "angle_deg": [
+        5.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -1366.0,
+        969.0,
+        -15.0
+      ],
+      "angle_deg": [
+        5.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -1300.0,
+        976.0,
+        -15.0
+      ],
+      "angle_deg": [
+        5.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -1235.0,
+        984.0,
+        -15.0
+      ],
+      "angle_deg": [
+        5.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Elevator_mdl_017",
+      "file": "Elevator.wmb",
+      "action": "elevator",
+      "origin": [
+        1263.0,
+        1100.0,
+        -935.0000610351562
+      ],
+      "angle_deg": [
+        0.0,
+        -43.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        6.316560220116833e-39,
+        0.0,
+        0.0,
+        5.934868939210182e-39,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Elevator_mdl_017",
+      "file": "Elevator.wmb",
+      "action": "elevator",
+      "origin": [
+        1263.0,
+        1591.0,
+        -730.9999389648438
+      ],
+      "angle_deg": [
+        0.0,
+        -270.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        6.294139444687636e-39,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        5.934868939210182e-39,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Elevator_mdl_017",
+      "file": "Elevator.wmb",
+      "action": "elevator",
+      "origin": [
+        1062.0,
+        1676.0,
+        -894.0000610351562
+      ],
+      "angle_deg": [
+        0.0,
+        -136.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        6.334496840460191e-39,
+        0.0,
+        0.0,
+        5.934868939210182e-39,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Elevator_mdl_017",
+      "file": "Elevator.wmb",
+      "action": "elevator",
+      "origin": [
+        1169.0,
+        2294.0,
+        -1041.0
+      ],
+      "angle_deg": [
+        0.0,
+        -90.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        6.330012685374351e-39,
+        0.0,
+        0.0,
+        5.934868939210182e-39,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge2_mdl_026",
+      "file": "Bridge2.wmb",
+      "action": "Bridg",
+      "origin": [
+        -295.9999084472656,
+        1077.0,
+        -28.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "TheDoor_mdl_028",
+      "file": "TheDoor.wmb",
+      "action": "BigDoor",
+      "origin": [
+        -585.0,
+        1064.0,
+        -15.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Mummy_mdl_120",
+      "file": "Mummy.MDL",
+      "action": "",
+      "origin": [
+        1069.0,
+        2327.0,
+        -626.0
+      ],
+      "angle_deg": [
+        0.0,
+        -195.0,
+        0.0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Mummy_mdl_120",
+      "file": "Mummy.MDL",
+      "action": "null",
+      "origin": [
+        1335.0,
+        2329.0,
+        -653.0
+      ],
+      "angle_deg": [
+        0.0,
+        -48.0,
+        0.0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Columb1_mdl_137",
+      "file": "Columb1.MDL",
+      "action": "",
+      "origin": [
+        1248.0001220703125,
+        2339.0,
+        -721.9998779296875
+      ],
+      "angle_deg": [
+        270.0,
+        -0.0,
+        318.0
+      ],
+      "scale": [
+        0.4000000059604645,
+        0.4000000059604645,
+        0.4000000059604645
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Miner_mdl_149",
+      "file": "Miner.MDL",
+      "action": "Miner",
+      "origin": [
+        -4637.0,
+        1102.0,
+        -16.0
+      ],
+      "angle_deg": [
+        0.0,
+        -180.0,
+        0.0
+      ],
+      "scale": [
+        0.4000000059604645,
+        0.4000000059604645,
+        0.4000000059604645
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Tunn_mdl_157",
+      "file": "Tunn.wmb",
+      "action": "",
+      "origin": [
+        -4918.0,
+        1091.0,
+        -13.0
+      ],
+      "angle_deg": [
+        0.0,
+        -270.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Tunn_mdl_157",
+      "file": "Tunn.wmb",
+      "action": "",
+      "origin": [
+        -6392.0,
+        1091.0,
+        147.0
+      ],
+      "angle_deg": [
+        0.0,
+        -281.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Tunn_mdl_157",
+      "file": "Tunn.wmb",
+      "action": "",
+      "origin": [
+        -7730.0,
+        1091.0,
+        615.0
+      ],
+      "angle_deg": [
+        0.0,
+        -297.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Tunn_mdl_157",
+      "file": "Tunn.wmb",
+      "action": "",
+      "origin": [
+        -8935.0,
+        1091.0,
+        1414.0
+      ],
+      "angle_deg": [
+        0.0,
+        -310.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -1170.0,
+        993.0,
+        -15.0
+      ],
+      "angle_deg": [
+        5.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -1104.0,
+        1003.0,
+        -15.0
+      ],
+      "angle_deg": [
+        5.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -1038.0,
+        1012.0,
+        -15.0
+      ],
+      "angle_deg": [
+        5.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -970.0,
+        1023.0,
+        -15.0
+      ],
+      "angle_deg": [
+        5.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -905.0,
+        1033.0,
+        -15.0
+      ],
+      "angle_deg": [
+        5.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -839.0,
+        1040.0,
+        -15.0
+      ],
+      "angle_deg": [
+        5.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bridge_mdl_009",
+      "file": "Bridge.wmb",
+      "action": "Bridge",
+      "origin": [
+        -774.0,
+        1048.0,
+        -15.0
+      ],
+      "angle_deg": [
+        5.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Dummy_mdl_200",
+      "file": "Dummy.MDL",
+      "action": "Light",
+      "origin": [
+        650.0,
+        1220.0,
+        1854.0
+      ],
+      "angle_deg": [
+        0.0,
+        -72.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Torch_mdl_185",
+      "file": "Torch.MDL",
+      "action": "",
+      "origin": [
+        630.67333984375,
+        1212.0,
+        1892.05517578125
+      ],
+      "angle_deg": [
+        0.0,
+        -155.0,
+        0.0
+      ],
+      "scale": [
+        0.30000001192092896,
+        0.30000001192092896,
+        0.30000001192092896
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Dummy_mdl_200",
+      "file": "Dummy.MDL",
+      "action": "Light",
+      "origin": [
+        204.0,
+        1216.0,
+        1496.0
+      ],
+      "angle_deg": [
+        0.0,
+        -223.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Torch_mdl_185",
+      "file": "Torch.MDL",
+      "action": "",
+      "origin": [
+        238.7808837890625,
+        1212.0,
+        1469.90478515625
+      ],
+      "angle_deg": [
+        0.0,
+        -306.0,
+        0.0
+      ],
+      "scale": [
+        0.30000001192092896,
+        0.30000001192092896,
+        0.30000001192092896
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Dummy_mdl_200",
+      "file": "Dummy.MDL",
+      "action": "Light",
+      "origin": [
+        53.0,
+        1214.0,
+        842.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Torch_mdl_185",
+      "file": "Torch.MDL",
+      "action": "",
+      "origin": [
+        12.0001220703125,
+        1212.0,
+        822.0001220703125
+      ],
+      "angle_deg": [
+        0.0,
+        -83.0,
+        0.0
+      ],
+      "scale": [
+        0.30000001192092896,
+        0.30000001192092896,
+        0.30000001192092896
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "light",
+      "origin": [
+        2486.866455078125,
+        2195.99853515625,
+        1113.0595703125
+      ],
+      "color": [
+        0.5019607925415039,
+        0.5019607925415039,
+        1.0
+      ],
+      "range": 500.0
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Slab_mdl_023",
+      "file": "Slab3.wmb",
+      "action": "elevator",
+      "origin": [
+        2495.052734375,
+        2022.999755859375,
+        1110.72509765625
+      ],
+      "angle_deg": [
+        0.0,
+        -331.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        6.2923457826533e-39,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Shaft_mdl_217",
+      "file": "Shaft.wmb",
+      "action": "",
+      "origin": [
+        2495.0,
+        1044.0,
+        1111.0001220703125
+      ],
+      "angle_deg": [
+        0.0,
+        -285.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Joe_mdl_220",
+      "file": "Joe.MDL",
+      "action": "",
+      "origin": [
+        -385.9999084472656,
+        488.0,
+        -2291.999755859375
+      ],
+      "angle_deg": [
+        0.0,
+        -303.0,
+        0.0
+      ],
+      "scale": [
+        0.4000000059604645,
+        0.4000000059604645,
+        0.4000000059604645
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Spark_mdl_222",
+      "file": "Spark.MDL",
+      "action": "Checkpoint",
+      "origin": [
+        -656.0,
+        1139.0,
+        -13.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        13.547114372253418,
+        13.547114372253418,
+        13.547114372253418
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Collis_mdl_012",
+      "file": "Collis.MDL",
+      "action": "Collis",
+      "origin": [
+        -2327.0,
+        728.0,
+        -21.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Hammer_mdl_008",
+      "file": "Mace.MDL",
+      "action": "AxeHammer",
+      "origin": [
+        -2329.0,
+        927.0,
+        -25.999847412109375
+      ],
+      "angle_deg": [
+        0.0,
+        -90.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        1.7586497514255317e-38,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Knob_mdl_229",
+      "file": "Knob.MDL",
+      "action": "Knob2",
+      "origin": [
+        -219.0,
+        537.0,
+        516.0
+      ],
+      "angle_deg": [
+        0.0,
+        -180.0,
+        0.0
+      ],
+      "scale": [
+        0.4239940047264099,
+        0.4239940047264099,
+        0.4239940047264099
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Knob_mdl_229",
+      "file": "Knob.MDL",
+      "action": "Knob1",
+      "origin": [
+        -249.0,
+        537.0,
+        516.0
+      ],
+      "angle_deg": [
+        0.0,
+        -180.0,
+        0.0
+      ],
+      "scale": [
+        0.42399999499320984,
+        0.42399999499320984,
+        0.42399999499320984
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Device_mdl_226",
+      "file": "Device.MDL",
+      "action": "Device",
+      "origin": [
+        -233.0,
+        510.0,
+        517.0
+      ],
+      "angle_deg": [
+        0.0,
+        -180.0,
+        0.0
+      ],
+      "scale": [
+        0.35489699244499207,
+        0.35489699244499207,
+        0.35489699244499207
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "AFG_mdl_231",
+      "file": "AFG.MDL",
+      "action": "AFG_Card",
+      "origin": [
+        2057.0,
+        1068.0,
+        811.0
+      ],
+      "angle_deg": [
+        0.0,
+        -269.0,
+        0.0
+      ],
+      "scale": [
+        0.2715489864349365,
+        0.2715489864349365,
+        0.2715489864349365
+      ],
+      "skills": [
+        0.0,
+        5.946348376229931e-39,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "AFG_mdl_240",
+      "file": "AFG.MDL",
+      "action": "AFG_Card",
+      "origin": [
+        -371.0,
+        801.0,
+        -2048.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        0.3071419894695282,
+        0.3071419894695282,
+        0.3071419894695282
+      ],
+      "skills": [
+        0.0,
+        5.95782781324968e-39,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Collis_mdl_014",
+      "file": "Collis.MDL",
+      "action": "Collis",
+      "origin": [
+        -3297.0,
+        728.0,
+        -21.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Hammer_mdl_011",
+      "file": "Hammer.MDL",
+      "action": "AxeHammer",
+      "origin": [
+        -3299.0,
+        1077.0,
+        -21.0
+      ],
+      "angle_deg": [
+        0.0,
+        -90.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        5.831554006032442e-39,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_242",
+      "file": "Piece.MDL",
+      "action": "ClickMe",
+      "origin": [
+        -4641.0,
+        1161.0,
+        -7.0
+      ],
+      "angle_deg": [
+        304.0,
+        -64.0,
+        0.0
+      ],
+      "scale": [
+        0.23845000565052032,
+        0.23845000565052032,
+        0.23845000565052032
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "PipRide_mdl_247",
+      "file": "PipHang.MDL",
+      "action": "Miner",
+      "origin": [
+        -4646.0,
+        1114.0,
+        -17.0
+      ],
+      "angle_deg": [
+        0.0,
+        -265.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Cam_mdl_249",
+      "file": "Cam.MDL",
+      "action": "MinCam",
+      "origin": [
+        -4849.0,
+        1216.0,
+        -29.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_242",
+      "file": "Piece.MDL",
+      "action": "Miner",
+      "origin": [
+        -4681.0,
+        1168.0,
+        -17.0
+      ],
+      "angle_deg": [
+        304.0,
+        -64.0,
+        0.0
+      ],
+      "scale": [
+        0.23845000565052032,
+        0.23845000565052032,
+        0.23845000565052032
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_242",
+      "file": "Piece.MDL",
+      "action": "Miner",
+      "origin": [
+        -4642.0,
+        1222.0,
+        1.0
+      ],
+      "angle_deg": [
+        304.0,
+        -64.0,
+        0.0
+      ],
+      "scale": [
+        0.3481599986553192,
+        0.3481599986553192,
+        0.3481599986553192
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "light",
+      "origin": [
+        -4252.0,
+        1378.0,
+        -19.0
+      ],
+      "color": [
+        0.5019607925415039,
+        0.5019607925415039,
+        0.5019607925415039
+      ],
+      "range": 300.0
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Columb1_mdl_255",
+      "file": "Columb2.MDL",
+      "action": "",
+      "origin": [
+        -4182.0,
+        1089.0,
+        -99.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        0.4041160047054291,
+        0.4041160047054291,
+        0.4041160047054291
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Columb1_mdl_255",
+      "file": "Columb4.MDL",
+      "action": "",
+      "origin": [
+        -4182.0,
+        1089.0,
+        57.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        0.4041160047054291,
+        0.4041160047054291,
+        0.4041160047054291
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Switch_mdl_024",
+      "file": "Button.MDL",
+      "action": "doorswitch",
+      "origin": [
+        2422.0,
+        2088.0,
+        1136.0
+      ],
+      "angle_deg": [
+        88.0,
+        -347.0,
+        218.0
+      ],
+      "scale": [
+        0.04469100013375282,
+        0.04469100013375282,
+        0.04469100013375282
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "LavaPass_mdl_259",
+      "file": "LavaPass.wmb",
+      "action": "",
+      "origin": [
+        1176.0,
+        1084.0,
+        -20.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Figure2_mdl_021",
+      "file": "pray.mdl",
+      "action": "",
+      "origin": [
+        2737.0,
+        1062.0269775390625,
+        1358.0
+      ],
+      "angle_deg": [
+        0.0,
+        -286.0,
+        0.0
+      ],
+      "scale": [
+        1.1519579887390137,
+        1.1519579887390137,
+        1.1519579887390137
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Figure2_mdl_021",
+      "file": "pray.mdl",
+      "action": "",
+      "origin": [
+        2309.0,
+        1062.0269775390625,
+        777.0
+      ],
+      "angle_deg": [
+        0.0,
+        -331.0,
+        0.0
+      ],
+      "scale": [
+        1.1668319702148438,
+        1.1668319702148438,
+        1.1668319702148438
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "light",
+      "origin": [
+        2486.866455078125,
+        1976.0,
+        1113.0595703125
+      ],
+      "color": [
+        0.0,
+        0.5019607925415039,
+        0.0
+      ],
+      "range": 500.0
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Mummy_mdl_111",
+      "file": "Mummy.MDL",
+      "action": "Mummy",
+      "origin": [
+        1923.880126953125,
+        1063.8939208984375,
+        914.2333984375
+      ],
+      "angle_deg": [
+        5.0,
+        -41.0,
+        347.0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Mummy_mdl_111",
+      "file": "Mummy.MDL",
+      "action": "Mummy",
+      "origin": [
+        2060.0,
+        1063.8939208984375,
+        794.0
+      ],
+      "angle_deg": [
+        14.0,
+        -39.0,
+        358.0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Mummy_mdl_111",
+      "file": "Mummy.MDL",
+      "action": "Mummy",
+      "origin": [
+        2207.0,
+        1063.8939208984375,
+        674.0
+      ],
+      "angle_deg": [
+        3.0,
+        -37.0,
+        7.0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Mummy_mdl_111",
+      "file": "Mummy.MDL",
+      "action": "Mummy",
+      "origin": [
+        2375.0,
+        1063.8939208984375,
+        552.0
+      ],
+      "angle_deg": [
+        357.0,
+        -37.0,
+        359.0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Mummy_mdl_111",
+      "file": "Mummy.MDL",
+      "action": "Mummy",
+      "origin": [
+        3033.32470703125,
+        1063.9134521484375,
+        1378.9786376953125
+      ],
+      "angle_deg": [
+        5.0,
+        -223.0,
+        347.0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Mummy_mdl_111",
+      "file": "Mummy.MDL",
+      "action": "Mummy",
+      "origin": [
+        2901.475341796875,
+        1063.9013671875,
+        1503.8804931640625
+      ],
+      "angle_deg": [
+        14.0,
+        -221.0,
+        358.0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Mummy_mdl_111",
+      "file": "Mummy.MDL",
+      "action": "Mummy",
+      "origin": [
+        2758.74462890625,
+        1063.8885498046875,
+        1628.9281005859375
+      ],
+      "angle_deg": [
+        3.0,
+        -219.0,
+        7.0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Mummy_mdl_111",
+      "file": "Mummy.MDL",
+      "action": "Mummy",
+      "origin": [
+        2595.09619140625,
+        1063.874267578125,
+        1756.7059326171875
+      ],
+      "angle_deg": [
+        357.0,
+        -219.0,
+        359.0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Torch_mdl_185",
+      "file": "Torch.MDL",
+      "action": "",
+      "origin": [
+        2265.97509765625,
+        1138.646728515625,
+        606.0
+      ],
+      "angle_deg": [
+        347.0,
+        -44.0,
+        12.0
+      ],
+      "scale": [
+        0.30000001192092896,
+        0.30000001192092896,
+        0.30000001192092896
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Dummy_mdl_200",
+      "file": "Dummy.MDL",
+      "action": "Light",
+      "origin": [
+        2295.582275390625,
+        1139.540771484375,
+        641.6949462890625
+      ],
+      "angle_deg": [
+        11.0,
+        -128.0,
+        14.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Torch_mdl_185",
+      "file": "Torch.MDL",
+      "action": "",
+      "origin": [
+        1987.97509765625,
+        1138.646728515625,
+        818.0
+      ],
+      "angle_deg": [
+        347.0,
+        -44.0,
+        12.0
+      ],
+      "scale": [
+        0.30000001192092896,
+        0.30000001192092896,
+        0.30000001192092896
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Dummy_mdl_200",
+      "file": "Dummy.MDL",
+      "action": "Light",
+      "origin": [
+        2017.582275390625,
+        1139.540771484375,
+        853.6949462890625
+      ],
+      "angle_deg": [
+        11.0,
+        -128.0,
+        14.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Torch_mdl_185",
+      "file": "Torch.MDL",
+      "action": "",
+      "origin": [
+        2706.03857421875,
+        1138.646728515625,
+        1685.88916015625
+      ],
+      "angle_deg": [
+        347.0,
+        -227.0,
+        12.0
+      ],
+      "scale": [
+        0.30000001192092896,
+        0.30000001192092896,
+        0.30000001192092896
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Dummy_mdl_200",
+      "file": "Dummy.MDL",
+      "action": "Light",
+      "origin": [
+        2674.604248046875,
+        1139.540771484375,
+        1651.7923583984375
+      ],
+      "angle_deg": [
+        11.0,
+        -311.0,
+        14.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Torch_mdl_185",
+      "file": "Torch.MDL",
+      "action": "",
+      "origin": [
+        2972.564208984375,
+        1138.646728515625,
+        1459.632568359375
+      ],
+      "angle_deg": [
+        347.0,
+        -227.0,
+        12.0
+      ],
+      "scale": [
+        0.30000001192092896,
+        0.30000001192092896,
+        0.30000001192092896
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Dummy_mdl_200",
+      "file": "Dummy.MDL",
+      "action": "Light",
+      "origin": [
+        2941.1298828125,
+        1139.540771484375,
+        1425.5357666015625
+      ],
+      "angle_deg": [
+        11.0,
+        -311.0,
+        14.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Torch_mdl_185",
+      "file": "Torch.MDL",
+      "action": "",
+      "origin": [
+        1220.629150390625,
+        1212.0,
+        1905.015380859375
+      ],
+      "angle_deg": [
+        0.0,
+        -10.0,
+        0.0
+      ],
+      "scale": [
+        0.30000001192092896,
+        0.30000001192092896,
+        0.30000001192092896
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Dummy_mdl_200",
+      "file": "Dummy.MDL",
+      "action": "Light",
+      "origin": [
+        1223.0,
+        1219.0,
+        1933.0
+      ],
+      "angle_deg": [
+        0.0,
+        -287.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Torch_mdl_185",
+      "file": "Torch.MDL",
+      "action": "",
+      "origin": [
+        1720.943359375,
+        1211.9986572265625,
+        1755.1402587890625
+      ],
+      "angle_deg": [
+        0.0,
+        -222.0,
+        0.0
+      ],
+      "scale": [
+        0.30000001192092896,
+        0.30000001192092896,
+        0.30000001192092896
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Dummy_mdl_200",
+      "file": "Dummy.MDL",
+      "action": "Light",
+      "origin": [
+        1704.1029052734375,
+        1219.0001220703125,
+        1732.6650390625
+      ],
+      "angle_deg": [
+        0.0,
+        -139.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Switch_mdl_024",
+      "file": "Switch.MDL",
+      "action": "Switch1",
+      "origin": [
+        2422.210205078125,
+        2051.0,
+        1134.7083740234375
+      ],
+      "angle_deg": [
+        0.0,
+        -24.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "floor_mdl_285",
+      "file": "floor.wmb",
+      "action": "",
+      "origin": [
+        2488.0,
+        1051.0,
+        1130.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "TheLava_mdl_030",
+      "file": "TheLava.wmb",
+      "action": "lava",
+      "origin": [
+        -216.99990844726562,
+        -106.0,
+        -131.99984741210938
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Columb1_mdl_287",
+      "file": "Columb1.MDL",
+      "action": "",
+      "origin": [
+        2084.0,
+        1062.0,
+        1278.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        0.8183730244636536,
+        0.8183730244636536,
+        0.8183730244636536
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Columb1_mdl_287",
+      "file": "Columb1.MDL",
+      "action": "",
+      "origin": [
+        2253.0,
+        1062.0,
+        1492.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        0.8183730244636536,
+        0.8183730244636536,
+        0.8183730244636536
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Dummy_mdl_200",
+      "file": "Dummy.MDL",
+      "action": "Light",
+      "origin": [
+        2014.0,
+        1223.0,
+        1539.0
+      ],
+      "angle_deg": [
+        0.0,
+        -320.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Torch_mdl_185",
+      "file": "Torch.MDL",
+      "action": "",
+      "origin": [
+        2054.234619140625,
+        1212.00048828125,
+        1588.030517578125
+      ],
+      "angle_deg": [
+        0.0,
+        -212.0,
+        0.0
+      ],
+      "scale": [
+        0.30000001192092896,
+        0.30000001192092896,
+        0.30000001192092896
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Dummy_mdl_200",
+      "file": "Dummy.MDL",
+      "action": "Light",
+      "origin": [
+        1960.0,
+        1222.0,
+        1473.0
+      ],
+      "angle_deg": [
+        0.0,
+        -129.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Torch_mdl_185",
+      "file": "Torch.MDL",
+      "action": "",
+      "origin": [
+        1932.1181640625,
+        1212.0006103515625,
+        1437.3050537109375
+      ],
+      "angle_deg": [
+        0.0,
+        -43.0,
+        0.0
+      ],
+      "scale": [
+        0.30000001192092896,
+        0.30000001192092896,
+        0.30000001192092896
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Dummy_mdl_200",
+      "file": "Dummy.MDL",
+      "action": "Light",
+      "origin": [
+        2176.0,
+        1223.0,
+        1402.0
+      ],
+      "angle_deg": [
+        0.0,
+        -320.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Torch_mdl_185",
+      "file": "Torch.MDL",
+      "action": "",
+      "origin": [
+        2208.0,
+        1212.00048828125,
+        1446.0
+      ],
+      "angle_deg": [
+        0.0,
+        -212.0,
+        0.0
+      ],
+      "scale": [
+        0.30000001192092896,
+        0.30000001192092896,
+        0.30000001192092896
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Dummy_mdl_200",
+      "file": "Dummy.MDL",
+      "action": "Light",
+      "origin": [
+        2122.0,
+        1222.0,
+        1336.0
+      ],
+      "angle_deg": [
+        0.0,
+        -129.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Torch_mdl_185",
+      "file": "Torch.MDL",
+      "action": "",
+      "origin": [
+        2101.0,
+        1212.0006103515625,
+        1311.0
+      ],
+      "angle_deg": [
+        0.0,
+        -43.0,
+        0.0
+      ],
+      "scale": [
+        0.30000001192092896,
+        0.30000001192092896,
+        0.30000001192092896
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Switch_mdl_024",
+      "file": "Button.MDL",
+      "action": "doorswitch",
+      "origin": [
+        2359.36083984375,
+        1110.0,
+        1161.4287109375
+      ],
+      "angle_deg": [
+        271.0,
+        -24.0,
+        0.0
+      ],
+      "scale": [
+        0.04469100013375282,
+        0.04469100013375282,
+        0.04469100013375282
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Switch_mdl_024",
+      "file": "Button.MDL",
+      "action": "doorswitch",
+      "origin": [
+        2359.36083984375,
+        1122.0,
+        1161.4287109375
+      ],
+      "angle_deg": [
+        88.0,
+        -347.0,
+        216.0
+      ],
+      "scale": [
+        0.04469100013375282,
+        0.04469100013375282,
+        0.04469100013375282
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Switch_mdl_024",
+      "file": "Button.MDL",
+      "action": "doorswitch",
+      "origin": [
+        2422.0,
+        2075.0,
+        1136.0
+      ],
+      "angle_deg": [
+        271.0,
+        -23.0,
+        359.0
+      ],
+      "scale": [
+        0.04469100013375282,
+        0.04469100013375282,
+        0.04469100013375282
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ]
+}

@@ -1,0 +1,683 @@
+{
+  "boot": "Start",
+  "flow_note": "Original game chained EXEs via Run.txt + loader; Godot maps names to scenes.",
+  "levels": {
+    "AfterMin": {
+      "script": "AfterMin.wdl",
+      "load_level": [],
+      "run": [
+        "Intro7"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "AfterRac": {
+      "script": "AfterRac.wdl",
+      "load_level": [],
+      "run": [
+        "Shooter"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "AsyAct1": {
+      "script": "AsyAct1.wdl",
+      "load_level": [
+        "AsyAct1.WMB"
+      ],
+      "run": [
+        "Intro13"
+      ],
+      "includes": [
+        "IO.wdl",
+        "Movie1.wdl",
+        "Movie2.wdl",
+        "Movie3.wdl",
+        "SuprShik.wdl"
+      ]
+    },
+    "AsyAct2": {
+      "script": "AsyAct2.wdl",
+      "load_level": [
+        "AsyAct2.WMB"
+      ],
+      "run": [
+        "Intro14"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "AsyAct3": {
+      "script": "AsyAct3.wdl",
+      "load_level": [
+        "AsyAct3.WMB"
+      ],
+      "run": [
+        "Intro8"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Cardgame": {
+      "script": "Cardgame.wdl",
+      "load_level": [
+        "Cardgame.WMB"
+      ],
+      "run": [
+        "Final"
+      ],
+      "includes": [
+        "IO.wdl",
+        "Cards.wdl"
+      ]
+    },
+    "Credits": {
+      "script": "Credits.wdl",
+      "load_level": [],
+      "run": [
+        "Menu"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Desert": {
+      "script": "Desert.wdl",
+      "load_level": [
+        "Desert.WMB"
+      ],
+      "run": [],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Dutyfree": {
+      "script": "Dutyfree.wdl",
+      "load_level": [
+        "Dutyfree.WMB"
+      ],
+      "run": [
+        "Intro11"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Ending": {
+      "script": "Ending.wdl",
+      "load_level": [],
+      "run": [
+        "Outro"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Fight": {
+      "script": "Fight.wdl",
+      "load_level": [
+        "Fight.WMB"
+      ],
+      "run": [
+        "VilEnd"
+      ],
+      "includes": [
+        "IO.wdl",
+        "PWF.wdl"
+      ]
+    },
+    "Final": {
+      "script": "Final.wdl",
+      "load_level": [],
+      "run": [
+        "Ending"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Golf": {
+      "script": "Golf.wdl",
+      "load_level": [],
+      "run": [
+        "Intro10"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "HitUFO": {
+      "script": "HitUFO.wdl",
+      "load_level": [],
+      "run": [
+        "MOI",
+        "MOI"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Inn": {
+      "script": "Inn.wdl",
+      "load_level": [
+        "Inn.WMB"
+      ],
+      "run": [
+        "Town",
+        "Town",
+        "Ziggy"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "InShrine": {
+      "script": "InShrine.wdl",
+      "load_level": [
+        "InShrine.WMB"
+      ],
+      "run": [
+        "Mine"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Intro10": {
+      "script": "Intro10.wdl",
+      "load_level": [],
+      "run": [
+        "Intro6"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Intro11": {
+      "script": "Intro11.wdl",
+      "load_level": [],
+      "run": [
+        "Intro15"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Intro12": {
+      "script": "Intro12.wdl",
+      "load_level": [
+        "Intro12.WMB"
+      ],
+      "run": [
+        "AfterRac"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Intro13": {
+      "script": "Intro13.wdl",
+      "load_level": [],
+      "run": [
+        "AsyAct2"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Intro14": {
+      "script": "Intro14.wdl",
+      "load_level": [],
+      "run": [
+        "AsyAct3"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Intro15": {
+      "script": "Intro15.wdl",
+      "load_level": [],
+      "run": [
+        "Mount"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Intro16": {
+      "script": "Intro16.wdl",
+      "load_level": [],
+      "run": [
+        "Olympic"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Intro2": {
+      "script": "Intro2.wdl",
+      "load_level": [
+        "Intro2.WMB"
+      ],
+      "run": [
+        "VilInt"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Intro3": {
+      "script": "Intro3.wdl",
+      "load_level": [
+        "Intro3.WMB"
+      ],
+      "run": [
+        "AsyAct1",
+        "AsyAct1",
+        "AsyAct1"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Intro4": {
+      "script": "Intro4.wdl",
+      "load_level": [
+        "Intro4.WMB"
+      ],
+      "run": [
+        "Dutyfree"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Intro5": {
+      "script": "Intro5.wdl",
+      "load_level": [
+        "Intro5.WMB"
+      ],
+      "run": [],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Intro6": {
+      "script": "Intro6.wdl",
+      "load_level": [
+        "Intro6.WMB"
+      ],
+      "run": [],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Intro7": {
+      "script": "Intro7.wdl",
+      "load_level": [
+        "Intro7.WMB"
+      ],
+      "run": [
+        "Intro5"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Intro8": {
+      "script": "Intro8.wdl",
+      "load_level": [
+        "Intro8.WMB"
+      ],
+      "run": [],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "IO": {
+      "script": "IO.wdl",
+      "load_level": [],
+      "run": [
+        "Map",
+        "Intro3",
+        "AsyAct1",
+        "AsyAct2",
+        "AsyAct3",
+        "Mansion",
+        "Cardgame",
+        "Final",
+        "Town",
+        "Intro16",
+        "Olympic",
+        "Race",
+        "Shooter",
+        "Golf",
+        "Intro4",
+        "Dutyfree",
+        "Mount",
+        "Temple",
+        "InShrine",
+        "Mine",
+        "Intro2",
+        "VS",
+        "VS",
+        "Inn"
+      ],
+      "includes": [
+        "movement.wdl",
+        "messages.wdl",
+        "particle.wdl",
+        "doors.wdl",
+        "actors.wdl",
+        "weapons.wdl",
+        "war.wdl",
+        "lflare.wdl",
+        "DIalog.wdl",
+        "Voice.wdl",
+        "Afgan.wdl",
+        "Weather.wdl",
+        "Help.wdl"
+      ]
+    },
+    "Mansion": {
+      "script": "Mansion.wdl",
+      "load_level": [
+        "Mansion.WMB"
+      ],
+      "run": [
+        "Cardgame"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Map": {
+      "script": "Map.wdl",
+      "load_level": [
+        "Map.WMB"
+      ],
+      "run": [
+        "Town",
+        "Desert"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Menu": {
+      "script": "Menu.wdl",
+      "load_level": [
+        "Menu.WMB"
+      ],
+      "run": [
+        "Studio",
+        "Credits"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Mine": {
+      "script": "Mine.wdl",
+      "load_level": [
+        "Mine.WMB"
+      ],
+      "run": [],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "MOI": {
+      "script": "MOI.wdl",
+      "load_level": [
+        "MOI.WMB"
+      ],
+      "run": [
+        "Town",
+        "HitUFO"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Mount": {
+      "script": "Mount.wdl",
+      "load_level": [
+        "Mount.WMB"
+      ],
+      "run": [
+        "Temple"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Olympic": {
+      "script": "Olympic.wdl",
+      "load_level": [
+        "Olympic.WMB"
+      ],
+      "run": [
+        "Race"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Outro": {
+      "script": "Outro.wdl",
+      "load_level": [],
+      "run": [],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Plane": {
+      "script": "Plane.wdl",
+      "load_level": [
+        "Plane.WMB"
+      ],
+      "run": [
+        "Plane2"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Plane2": {
+      "script": "Plane2.wdl",
+      "load_level": [
+        "Plane2.WMB"
+      ],
+      "run": [
+        "Range"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Plane3": {
+      "script": "Plane3.wdl",
+      "load_level": [
+        "Plane3.WMB"
+      ],
+      "run": [
+        "Smash"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Race": {
+      "script": "Race.wdl",
+      "load_level": [
+        "Race.WMB"
+      ],
+      "run": [
+        "Intro12"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Range": {
+      "script": "Range.wdl",
+      "load_level": [],
+      "run": [
+        "Plane3",
+        "Plane3"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Shiks": {
+      "script": "Shiks.wdl",
+      "load_level": [
+        "Shiks.WMB"
+      ],
+      "run": [
+        "Plane"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Shooter": {
+      "script": "Shooter.wdl",
+      "load_level": [
+        "Shooter.WMB"
+      ],
+      "run": [
+        "Golf",
+        "Golf"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Smash": {
+      "script": "Smash.wdl",
+      "load_level": [
+        "Smash.WMB"
+      ],
+      "run": [],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Start": {
+      "script": "Start.wdl",
+      "load_level": [
+        "Start.WMB"
+      ],
+      "run": [
+        "Menu",
+        "Menu",
+        "Menu"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Studio": {
+      "script": "Studio.wdl",
+      "load_level": [
+        "Studio.WMB"
+      ],
+      "run": [
+        "Shiks"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Taxi": {
+      "script": "Taxi.wdl",
+      "load_level": [
+        "Taxi.WMB"
+      ],
+      "run": [
+        "Town"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Temple": {
+      "script": "Temple.wdl",
+      "load_level": [
+        "Temple.WMB"
+      ],
+      "run": [
+        "InShrine"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Town": {
+      "script": "Town.wdl",
+      "load_level": [
+        "Town.WMB"
+      ],
+      "run": [
+        "Taxi",
+        "Inn",
+        "MOI",
+        "Travel"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Travel": {
+      "script": "Travel.wdl",
+      "load_level": [
+        "Travel.WMB"
+      ],
+      "run": [
+        "Town"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "VilEnd": {
+      "script": "VilEnd.wdl",
+      "load_level": [],
+      "run": [],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "VilInt": {
+      "script": "VilInt.wdl",
+      "load_level": [],
+      "run": [
+        "Fight"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    },
+    "Ziggy": {
+      "script": "Ziggy.wdl",
+      "load_level": [
+        "Ziggy.WMB"
+      ],
+      "run": [
+        "Inn",
+        "Inn"
+      ],
+      "includes": [
+        "IO.wdl"
+      ]
+    }
+  }
+}

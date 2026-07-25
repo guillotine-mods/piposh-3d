@@ -1,0 +1,470 @@
+extends CanvasLayer
+class_name GameHud
+## Acknex-style 2D panels (640×480 design space), cursor, dialog, Town BIO.
+
+signal dialog_choice(choice: int)
+signal skip_line_pressed
+
+const DESIGN := Vector2(640, 480)
+const GFX := "res://assets/converted/gfx/"
+
+var mouse_look := true  # mouse_mode==0 in WDL
+var show_debug := false
+
+var _scale := 1.0
+var _root: Control
+var _cursor: TextureRect
+var _p_som: TextureRect
+var _p_ovr: TextureRect
+var _p_shkufit: TextureRect
+var _bio: TextureRect
+var _zoom_label: Label
+var _dialog_root: Control
+var _dialog_bg: TextureRect
+var _opt_btns: Array[BaseButton] = []
+var _opt_labels: Array[Label] = []
+var _debug_title: Label
+var _debug_hint: Label
+var _skip_btn: Button
+
+var _ovr_base_x := 223.0
+# Start.wdl uses y=460 for a 23px strip (clips past 480). Keep the full
+# glyph row on-screen and a bit higher so text reads centered in the band.
+var _som_base_y := 450.0
+var _ovr_x := 223.0
+var _crawl_active := false
+var _blink_t := 0.0
+var _slide_t := 0.0
+var _subtitle_kind := ""  # start | studio | ""
+
+
+func _ready() -> void:
+	layer = 20
+	_root = Control.new()
+	_root.name = "DesignRoot"
+	_root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_root)
+
+	_p_som = _tex("pSom", "")
+	_p_ovr = _tex("pOvr", "")
+	_p_shkufit = _tex("pShkufit", "SHKUFIT.png")
+	_p_shkufit.visible = false
+	_bio = _tex("BIO", "BIO.png")
+	_bio.visible = false
+	_bio.position = Vector2.ZERO
+
+	_zoom_label = Label.new()
+	_zoom_label.name = "Zoom"
+	_zoom_label.position = Vector2(60, 455)
+	_zoom_label.add_theme_font_size_override("font_size", 14)
+	_zoom_label.add_theme_color_override("font_color", Color(0.95, 0.9, 0.2))
+	_zoom_label.visible = false
+	_root.add_child(_zoom_label)
+
+	_build_dialog()
+	_build_skip_button()
+	_cursor = _tex("Cursor", "cursor1.png")
+	_cursor.z_index = 100
+	_cursor.visible = false
+	_cursor.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	_debug_title = Label.new()
+	_debug_title.position = Vector2(8, 8)
+	_debug_title.add_theme_font_size_override("font_size", 16)
+	_debug_title.visible = false
+	_root.add_child(_debug_title)
+	_debug_hint = Label.new()
+	_debug_hint.position = Vector2(8, 28)
+	_debug_hint.add_theme_font_size_override("font_size", 12)
+	_debug_hint.visible = false
+	_root.add_child(_debug_hint)
+
+	get_viewport().size_changed.connect(_layout)
+	_layout()
+
+
+func _process(delta: float) -> void:
+	_update_cursor()
+	if _crawl_active:
+		_update_crawl(delta)
+
+
+func set_debug_text(title: String, hint: String) -> void:
+	_debug_title.text = title
+	_debug_hint.text = hint
+	_debug_title.visible = show_debug
+	_debug_hint.visible = show_debug
+
+
+func set_status(msg: String) -> void:
+	_debug_hint.text = msg
+	_debug_hint.visible = show_debug
+
+
+func setup_start_subtitles() -> void:
+	_subtitle_kind = "start"
+	_set_tex(_p_som, "Somewher.png")
+	_set_tex(_p_ovr, "Someover.png")
+	_p_som.visible = true
+	_p_ovr.visible = true
+	_p_shkufit.visible = false
+	_ovr_x = _ovr_base_x
+	_slide_t = 0.0
+	_blink_t = 0.0
+	_crawl_active = true
+	_layout_subtitles()
+
+
+func setup_studio_subtitles() -> void:
+	_subtitle_kind = "studio"
+	_set_tex(_p_som, "Ami.png")
+	_set_tex(_p_ovr, "Someover.png")
+	_p_som.visible = true
+	_p_ovr.visible = true
+	_p_shkufit.visible = false
+	_ovr_x = _ovr_base_x
+	_slide_t = 0.0
+	_blink_t = 0.0
+	_crawl_active = true
+	_layout_subtitles()
+
+
+func clear_subtitles() -> void:
+	_crawl_active = false
+	_subtitle_kind = ""
+	_p_som.visible = false
+	_p_ovr.visible = false
+	_p_shkufit.visible = false
+
+
+func set_shkufit(on: bool) -> void:
+	_p_shkufit.visible = on
+	if on:
+		_p_shkufit.position = Vector2(0, 0)
+		_fit(_p_shkufit)
+
+
+func setup_town_bio() -> void:
+	_bio.visible = true
+	_zoom_label.visible = true
+	_fit(_bio)
+	_bio.position = Vector2.ZERO
+
+
+func set_zoom_digit(zoom: int) -> void:
+	_zoom_label.text = "%02d" % clampi(zoom, 1, 14)
+
+
+func set_mouse_look(enabled: bool) -> void:
+	mouse_look = enabled
+	if enabled:
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		_cursor.visible = false
+	else:
+		Input.mouse_mode = Input.MOUSE_MODE_HIDDEN  # we draw cursor1
+		_cursor.visible = true
+
+
+func toggle_mouse_look() -> void:
+	set_mouse_look(not mouse_look)
+
+
+func is_dialog_open() -> bool:
+	return _dialog_root != null and _dialog_root.visible
+
+
+func show_dialog(index: int) -> void:
+	_dialog_root.visible = true
+	_dialog_root.z_index = 50
+	_dialog_root.move_to_front()
+	var lines := _dialog_lines(index)
+	for i in 3:
+		_opt_labels[i].text = lines[i] if i < lines.size() else ""
+		_opt_btns[i].disabled = false
+		_opt_btns[i].visible = true
+		_opt_btns[i].mouse_filter = Control.MOUSE_FILTER_STOP
+		_opt_btns[i].focus_mode = Control.FOCUS_ALL
+	# Dialog needs a real OS cursor for TextureButton hit-testing.
+	mouse_look = false
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	_cursor.visible = false
+
+
+func hide_dialog() -> void:
+	if _dialog_root:
+		_dialog_root.visible = false
+
+
+func set_skip_visible(on: bool) -> void:
+	if _skip_btn:
+		_skip_btn.visible = on
+
+
+func _build_skip_button() -> void:
+	_skip_btn = Button.new()
+	_skip_btn.name = "SkipLine"
+	_skip_btn.text = "Skip ▶"
+	_skip_btn.focus_mode = Control.FOCUS_NONE
+	_skip_btn.mouse_filter = Control.MOUSE_FILTER_STOP
+	_skip_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_skip_btn.z_index = 80
+	_skip_btn.custom_minimum_size = Vector2(96, 40)
+	_skip_btn.add_theme_font_size_override("font_size", 16)
+	_skip_btn.add_theme_color_override("font_color", Color(1, 1, 0.9))
+	_skip_btn.add_theme_color_override("font_hover_color", Color(1, 1, 1))
+	_skip_btn.add_theme_stylebox_override("normal", _skip_style(Color(0.05, 0.05, 0.08, 0.72)))
+	_skip_btn.add_theme_stylebox_override("hover", _skip_style(Color(0.12, 0.14, 0.2, 0.85)))
+	_skip_btn.add_theme_stylebox_override("pressed", _skip_style(Color(0.2, 0.18, 0.1, 0.9)))
+	_skip_btn.pressed.connect(func() -> void: skip_line_pressed.emit())
+	_skip_btn.visible = true
+	_root.add_child(_skip_btn)
+
+
+func _skip_style(c: Color) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = c
+	sb.corner_radius_top_left = 6
+	sb.corner_radius_top_right = 6
+	sb.corner_radius_bottom_left = 6
+	sb.corner_radius_bottom_right = 6
+	sb.content_margin_left = 12
+	sb.content_margin_right = 12
+	sb.content_margin_top = 8
+	sb.content_margin_bottom = 8
+	return sb
+
+
+func _build_dialog() -> void:
+	_dialog_root = Control.new()
+	_dialog_root.name = "Dialog"
+	_dialog_root.visible = false
+	# Only the Opt buttons capture clicks — full-screen STOP blocked Studio
+	# ShikNote / AFG_Card (and any world pick) while the dialog was open.
+	_dialog_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_dialog_root.z_index = 50
+	_root.add_child(_dialog_root)
+
+	_dialog_bg = TextureRect.new()
+	_dialog_bg.texture = _load_tex("Steel.png")
+	_dialog_bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_dialog_bg.stretch_mode = TextureRect.STRETCH_KEEP
+	_dialog_bg.position = Vector2(0, 333)
+	_dialog_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_dialog_root.add_child(_dialog_bg)
+
+	_opt_btns.clear()
+	_opt_labels.clear()
+	# DIalog.wdl: steel @ y=333; buttons @ (0,-15)/(0,40)/(0,97).
+	# Labels are vertically centered in each Opt bar (Godot font metrics sit
+	# lower than Acknex TEXT at the same pos_y).
+	var btn_ys := [318.0, 373.0, 430.0]
+	var opt_tex := _load_tex("Opt1.png")
+	var opt_hover := _load_tex("Opt2.png")
+	var btn_h := 56.0
+	if opt_tex:
+		btn_h = float(opt_tex.get_height())
+	for i in 3:
+		var btn := TextureButton.new()
+		btn.position = Vector2(0, btn_ys[i])
+		btn.size = Vector2(640, btn_h)
+		btn.stretch_mode = TextureButton.STRETCH_SCALE
+		btn.ignore_texture_size = true
+		if opt_tex:
+			btn.texture_normal = opt_tex
+		if opt_hover:
+			btn.texture_hover = opt_hover
+			btn.texture_pressed = opt_hover
+		btn.mouse_filter = Control.MOUSE_FILTER_STOP
+		btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		btn.pressed.connect(_emit_choice.bind(i + 1))
+		_dialog_root.add_child(btn)
+		_opt_btns.append(btn)
+
+		var lab := Label.new()
+		# Center in Opt bar, then nudge up — Godot Label descent sits low vs A5 TEXT.
+		lab.position = Vector2(50, btn_ys[i] - 6.0)
+		lab.size = Vector2(560, btn_h)
+		lab.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		lab.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		lab.text_direction = Control.TEXT_DIRECTION_RTL
+		lab.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		lab.add_theme_font_size_override("font_size", 15)
+		lab.add_theme_color_override("font_color", Color(1.0, 1.0, 0.85))
+		lab.add_theme_constant_override("line_spacing", 0)
+		lab.add_theme_constant_override("outline_size", 0)
+		_dialog_root.add_child(lab)
+		_opt_labels.append(lab)
+
+
+func _emit_choice(idx: int) -> void:
+	if not is_dialog_open():
+		return
+	hide_dialog()
+	dialog_choice.emit(idx)
+
+
+func _dialog_lines(index: int) -> Array[String]:
+	# Hebrew from DIalog.wdl comments (DialogIndex)
+	match index:
+		0:
+			return [
+				"אז למתי אתה רושם לי את הצ'ק עמי?",
+				"עמי, רציתי לדבר איתך בעניין הסכום...",
+				"פוי....מישהו מוכן להוציא אותי מהשטומבה הזו?",
+			]
+		1:
+			return [
+				"שלום באתי בקשר למודעה",
+				"שלום אולי אתה רוצה לתרום לאגודת : \"איך אני מוציא את חזי מהשטומבה הזו?\"",
+				"תסלח לי על הפוני, בדרך כלל לא תראה אותי ככה..",
+			]
+		2:
+			return [
+				"אוייש תהרוג אותי! זו עטיפת פקפקים! לקח לי שנה להיגמל מזה",
+				"שאני אאסוף לך בזה קצוות של שמיר ממערת הנטיפים?",
+				"אוי, בוא תראה טריק שלמדתי בחוג קורדינציה לאפרסק בבית הספר ב.צבי..",
+			]
+		_:
+			return ["…", "…", "…"]
+
+
+func _update_crawl(delta: float) -> void:
+	var stop_x := -310.0 if _subtitle_kind == "studio" else -200.0
+	if _ovr_x > stop_x:
+		_ovr_x -= 8.0 * delta * 16.0  # ~time units → seconds
+		_layout_subtitles()
+		return
+	_slide_t += delta
+	_blink_t += delta
+	var dy := _slide_t * 16.0  # slow downward crawl
+	_p_som.position.y = (_som_base_y + dy) * _scale
+	_p_ovr.position.y = (_som_base_y + dy) * _scale
+	if _blink_t > 5.0 / 16.0:
+		_blink_t = 0.0
+		_p_ovr.visible = not _p_ovr.visible
+
+
+func _layout_subtitles() -> void:
+	_p_som.position = Vector2(0, _som_base_y * _scale)
+	_p_ovr.position = Vector2(_ovr_x * _scale, _som_base_y * _scale)
+	_fit(_p_som)
+	_fit(_p_ovr)
+
+
+func _layout() -> void:
+	var vp := get_viewport().get_visible_rect().size
+	_scale = minf(vp.x / DESIGN.x, vp.y / DESIGN.y)
+	_root.scale = Vector2(_scale, _scale)
+	_root.position = Vector2(
+		(vp.x - DESIGN.x * _scale) * 0.5,
+		(vp.y - DESIGN.y * _scale) * 0.5
+	)
+	_root.size = DESIGN
+	_fit(_bio)
+	_fit(_p_shkufit)
+	_fit(_dialog_bg)
+	_layout_subtitles()
+	if _dialog_bg.texture:
+		_dialog_bg.size = _dialog_bg.texture.get_size()
+	_dialog_root.position = Vector2(0, 0)
+	_dialog_root.size = DESIGN
+	var btn_ys := [318.0, 373.0, 430.0]
+	var btn_h := 56.0
+	if _opt_btns.size() > 0 and _opt_btns[0].texture_normal:
+		btn_h = float(_opt_btns[0].texture_normal.get_height())
+	for i in _opt_btns.size():
+		_opt_btns[i].position = Vector2(0, btn_ys[i])
+		_opt_btns[i].size = Vector2(640, btn_h)
+		_opt_labels[i].position = Vector2(50, btn_ys[i] - 6.0)
+		_opt_labels[i].size = Vector2(560, btn_h)
+	if _skip_btn:
+		_skip_btn.position = Vector2(DESIGN.x - 108, 8)
+		_skip_btn.size = Vector2(96, 40)
+
+
+func _update_cursor() -> void:
+	if not _cursor.visible:
+		return
+	# Cursor in design space
+	var vp := get_viewport()
+	var mp := vp.get_mouse_position()
+	var local := (mp - _root.position) / _scale
+	_cursor.position = local
+	_fit(_cursor)
+
+
+func _tex(node_name: String, file_name: String) -> TextureRect:
+	var tr := TextureRect.new()
+	tr.name = node_name
+	tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	tr.stretch_mode = TextureRect.STRETCH_KEEP
+	tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tr.visible = false
+	if file_name != "":
+		_set_tex(tr, file_name)
+	_root.add_child(tr)
+	return tr
+
+
+func _set_tex(tr: TextureRect, file_name: String) -> void:
+	tr.texture = _load_tex(file_name)
+	_fit(tr)
+
+
+func _fit(tr: TextureRect) -> void:
+	if tr.texture:
+		tr.size = tr.texture.get_size()
+
+
+func _load_tex(file_name: String) -> Texture2D:
+	var path := _resolve_gfx(file_name)
+	if path == "":
+		push_warning("GFX missing: %s" % file_name)
+		return null
+	var tex := load(path) as Texture2D
+	if tex == null:
+		return null
+	# A5 overlay: pure black is transparent. Re-key at load so older PNGs
+	# without an alpha channel still composite correctly.
+	return _ensure_overlay_alpha(tex)
+
+
+func _resolve_gfx(file_name: String) -> String:
+	var path := GFX + file_name
+	if ResourceLoader.exists(path):
+		return path
+	var dir := DirAccess.open(GFX)
+	if dir == null:
+		return ""
+	var want := file_name.to_lower()
+	dir.list_dir_begin()
+	var fn := dir.get_next()
+	while fn != "":
+		if fn.to_lower() == want:
+			return GFX + fn
+		fn = dir.get_next()
+	return ""
+
+
+func _ensure_overlay_alpha(tex: Texture2D) -> Texture2D:
+	# Prefer pre-keyed PNGs from convert_gfx.py. Only rewrite if the texture
+	# is fully opaque (legacy convert without A5 overlay color-key).
+	var img := tex.get_image()
+	if img == null:
+		return tex
+	if img.detect_alpha():
+		return tex
+	img.convert(Image.FORMAT_RGBA8)
+	var w := img.get_width()
+	var h := img.get_height()
+	var data := img.get_data()
+	var changed := false
+	for i in range(0, data.size(), 4):
+		if data[i] == 0 and data[i + 1] == 0 and data[i + 2] == 0:
+			data[i + 3] = 0
+			changed = true
+	if not changed:
+		return tex
+	var out := Image.create_from_data(w, h, false, Image.FORMAT_RGBA8, data)
+	return ImageTexture.create_from_image(out)

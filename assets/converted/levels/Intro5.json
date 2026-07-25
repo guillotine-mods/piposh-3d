@@ -1,0 +1,2958 @@
+{
+  "source": "Intro5.WMB",
+  "magic": "WMB5",
+  "info": {
+    "type": "info"
+  },
+  "bounds": {
+    "min": [
+      -784.0,
+      -599.0,
+      -4402.0
+    ],
+    "max": [
+      3006.0,
+      290.0,
+      1636.0
+    ],
+    "center": [
+      1111.0,
+      -154.5,
+      -1383.0
+    ],
+    "size": [
+      3790.0,
+      889.0,
+      6038.0
+    ]
+  },
+  "spawn": [
+    74.0,
+    2.5,
+    -861.0
+  ],
+  "objects": [
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piposh_mdl_001",
+      "file": "Piposh.MDL",
+      "action": "Running",
+      "origin": [
+        74.0,
+        -248.0,
+        -867.0
+      ],
+      "angle_deg": [
+        0.0,
+        -187.0,
+        0.0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Mount2_mdl_002",
+      "file": "Mount2.HMP",
+      "action": "Smoke",
+      "origin": [
+        65.0,
+        -255.0,
+        -1194.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Cam_mdl_003",
+      "file": "Cam.MDL",
+      "action": "Cam",
+      "origin": [
+        267.0,
+        290.0,
+        1636.0
+      ],
+      "angle_deg": [
+        333.0,
+        -104.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        5.877471754111438e-39,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Kettle_mdl_004",
+      "file": "Kettle.MDL",
+      "action": "",
+      "origin": [
+        -59.0,
+        -249.0,
+        869.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        0.10000000149011612,
+        0.10000000149011612,
+        0.10000000149011612
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Palmtree_mdl_005",
+      "file": "Palmtree.MDL",
+      "action": "",
+      "origin": [
+        -77.0,
+        -249.0,
+        1097.0
+      ],
+      "angle_deg": [
+        0.0,
+        -284.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Palmtree_mdl_006",
+      "file": "Palmtree.MDL",
+      "action": "",
+      "origin": [
+        -331.0,
+        -250.0,
+        868.0
+      ],
+      "angle_deg": [
+        0.0,
+        -316.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Palmtree_mdl_007",
+      "file": "Palmtree.MDL",
+      "action": "",
+      "origin": [
+        109.0,
+        -251.0,
+        624.0
+      ],
+      "angle_deg": [
+        0.0,
+        -11.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "light",
+      "origin": [
+        72.0,
+        -145.0,
+        -1181.0
+      ],
+      "color": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "range": 500.0
+    },
+    {
+      "type": "light",
+      "origin": [
+        81.0,
+        135.0,
+        206.0
+      ],
+      "color": [
+        0.5019607925415039,
+        0.5019607925415039,
+        0.5019607925415039
+      ],
+      "range": 5000.0
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Palmtree_mdl_011",
+      "file": "Palmtree.MDL",
+      "action": "",
+      "origin": [
+        -353.0,
+        -251.0,
+        -401.0
+      ],
+      "angle_deg": [
+        0.0,
+        -312.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Palmtree_mdl_013",
+      "file": "Palmtree.MDL",
+      "action": "",
+      "origin": [
+        313.0,
+        -251.0,
+        -459.0
+      ],
+      "angle_deg": [
+        0.0,
+        -51.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Palmtree_mdl_014",
+      "file": "Palmtree.MDL",
+      "action": "",
+      "origin": [
+        22.0,
+        -251.0,
+        -126.0
+      ],
+      "angle_deg": [
+        0.0,
+        -318.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Palmtree_mdl_015",
+      "file": "Palmtree.MDL",
+      "action": "",
+      "origin": [
+        -535.0,
+        -251.0,
+        -50.0
+      ],
+      "angle_deg": [
+        0.0,
+        -318.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Palmtree_mdl_016",
+      "file": "Palmtree.MDL",
+      "action": "",
+      "origin": [
+        495.0,
+        -251.0,
+        209.0
+      ],
+      "angle_deg": [
+        0.0,
+        -234.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Palmtree_mdl_017",
+      "file": "Palmtree.MDL",
+      "action": "",
+      "origin": [
+        -701.0,
+        -251.0,
+        528.0
+      ],
+      "angle_deg": [
+        0.0,
+        -318.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Palmtree_mdl_018",
+      "file": "Palmtree.MDL",
+      "action": "",
+      "origin": [
+        -168.0,
+        -251.0,
+        484.0
+      ],
+      "angle_deg": [
+        0.0,
+        -114.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Palmtree_mdl_019",
+      "file": "Rocks.MDL",
+      "action": "",
+      "origin": [
+        195.0,
+        -251.0,
+        351.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        2.25,
+        2.25,
+        2.25
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Rocks_mdl_020",
+      "file": "Rocks.MDL",
+      "action": "",
+      "origin": [
+        -455.0,
+        -251.0,
+        -585.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        2.25,
+        2.25,
+        2.25
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Rocks_mdl_021",
+      "file": "Rocks.MDL",
+      "action": "",
+      "origin": [
+        -190.0,
+        -251.0,
+        178.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        2.25,
+        2.25,
+        2.25
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        298.0,
+        -271.0,
+        -781.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        -58.0,
+        -271.0,
+        -759.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        -385.0,
+        -271.0,
+        -729.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        -237.0,
+        -271.0,
+        -546.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        -527.0,
+        -271.0,
+        -368.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        -329.0,
+        -271.0,
+        -245.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        -13.0,
+        -271.0,
+        -378.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        240.0,
+        -271.0,
+        -474.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        508.0,
+        -271.0,
+        -503.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        396.0,
+        -271.0,
+        -52.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        83.0,
+        -271.0,
+        -108.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        -89.0,
+        -271.0,
+        28.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        -709.0,
+        -271.0,
+        24.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        -467.0,
+        -271.0,
+        196.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        -604.0,
+        -271.0,
+        431.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        -323.0,
+        -271.0,
+        481.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        -28.0,
+        -271.0,
+        368.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        225.0,
+        -271.0,
+        238.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        362.0,
+        -271.0,
+        562.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        244.0,
+        -271.0,
+        785.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        279.0,
+        -271.0,
+        1052.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        453.0,
+        -271.0,
+        1134.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        177.0,
+        -271.0,
+        1349.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        -244.0,
+        -271.0,
+        1423.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        -356.0,
+        -271.0,
+        1213.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        -651.0,
+        -271.0,
+        1381.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        -784.0,
+        -271.0,
+        1017.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        -523.0,
+        -271.0,
+        783.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Piece_mdl_009",
+      "file": "Piece.wmb",
+      "action": "Burst",
+      "origin": [
+        -736.0,
+        -271.0,
+        695.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Lava2_mdl_010",
+      "file": "Lava2.wmb",
+      "action": "Lava",
+      "origin": [
+        -95.0,
+        -272.0,
+        411.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Cam_mdl_003",
+      "file": "Cam.MDL",
+      "action": "Cam2",
+      "origin": [
+        1922.0,
+        -368.0,
+        892.0
+      ],
+      "angle_deg": [
+        333.0,
+        -56.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        5.831554006032442e-39,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "light",
+      "origin": [
+        2025.0,
+        -23.0,
+        610.0
+      ],
+      "color": [
+        0.5019607925415039,
+        0.5019607925415039,
+        0.5019607925415039
+      ],
+      "range": 5000.0
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bad1_mdl_052",
+      "file": "Bad1.MDL",
+      "action": "BadX",
+      "origin": [
+        2008.0,
+        -506.0,
+        684.0
+      ],
+      "angle_deg": [
+        0.0,
+        -270.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bad1_mdl_052",
+      "file": "Bad2.MDL",
+      "action": "Bad1",
+      "origin": [
+        2062.0,
+        -506.0,
+        680.0
+      ],
+      "angle_deg": [
+        0.0,
+        -270.0,
+        0.0
+      ],
+      "scale": [
+        0.9183869957923889,
+        0.9183869957923889,
+        0.9183869957923889
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Bad1_mdl_052",
+      "file": "Piposh.MDL",
+      "action": "Pip",
+      "origin": [
+        2037.0,
+        -506.0,
+        734.0
+      ],
+      "angle_deg": [
+        0.0,
+        -90.0,
+        0.0
+      ],
+      "scale": [
+        0.6853299736976624,
+        0.6853299736976624,
+        0.6853299736976624
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Deadtree_mdl_064",
+      "file": "Deadtree.MDL",
+      "action": "",
+      "origin": [
+        2129.0,
+        -506.0,
+        683.0
+      ],
+      "angle_deg": [
+        0.0,
+        -45.0,
+        0.0
+      ],
+      "scale": [
+        1.4455490112304688,
+        1.4455490112304688,
+        1.4455490112304688
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Cam_mdl_003",
+      "file": "Cam.MDL",
+      "action": "Cam2",
+      "origin": [
+        1947.0,
+        -375.0,
+        823.0
+      ],
+      "angle_deg": [
+        345.0,
+        -42.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        5.877471754111438e-39,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "BadLava2_mdl_081",
+      "file": "BadLava2.MDL",
+      "action": "BadLava1",
+      "origin": [
+        2117.0,
+        -411.0,
+        706.0
+      ],
+      "angle_deg": [
+        0.0,
+        -220.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "BadLava2_mdl_081",
+      "file": "BadLava1.MDL",
+      "action": "BadLava2",
+      "origin": [
+        2072.0,
+        -463.0,
+        644.0
+      ],
+      "angle_deg": [
+        0.0,
+        -246.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Deadtree_mdl_064",
+      "file": "Deadtree.MDL",
+      "action": "",
+      "origin": [
+        2474.0,
+        -506.0,
+        200.0
+      ],
+      "angle_deg": [
+        0.0,
+        -98.0,
+        0.0
+      ],
+      "scale": [
+        1.4455490112304688,
+        1.4455490112304688,
+        1.4455490112304688
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Deadtree_mdl_064",
+      "file": "Deadtree.MDL",
+      "action": "",
+      "origin": [
+        2539.0,
+        -507.0,
+        -266.0
+      ],
+      "angle_deg": [
+        0.0,
+        -77.0,
+        0.0
+      ],
+      "scale": [
+        1.4455490112304688,
+        1.4455490112304688,
+        1.4455490112304688
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Deadtree_mdl_064",
+      "file": "Deadtree.MDL",
+      "action": "",
+      "origin": [
+        2560.0,
+        -506.0,
+        593.0
+      ],
+      "angle_deg": [
+        0.0,
+        -267.0,
+        0.0
+      ],
+      "scale": [
+        1.4455490112304688,
+        1.4455490112304688,
+        1.4455490112304688
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Twig_mdl_096",
+      "file": "Twig.MDL",
+      "action": "Twig",
+      "origin": [
+        2086.0,
+        -392.0,
+        658.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        0.36991000175476074,
+        0.36991000175476074,
+        0.36991000175476074
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Dummy_mdl_099",
+      "file": "Dummy.MDL",
+      "action": "Creator",
+      "origin": [
+        2079.0,
+        -524.0,
+        -1969.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Dummy_mdl_099",
+      "file": "Dummy.MDL",
+      "action": "Creator",
+      "origin": [
+        2044.0,
+        -524.0,
+        -1969.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Dummy_mdl_099",
+      "file": "Dummy.MDL",
+      "action": "Creator",
+      "origin": [
+        2173.0,
+        -524.0,
+        -1969.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Dummy_mdl_099",
+      "file": "Dummy.MDL",
+      "action": "Creator",
+      "origin": [
+        2213.0,
+        -524.0,
+        -1969.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Dummy_mdl_099",
+      "file": "Dummy.MDL",
+      "action": "Creator",
+      "origin": [
+        2256.0,
+        -524.0,
+        -1969.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Dummy_mdl_099",
+      "file": "Dummy.MDL",
+      "action": "Creator",
+      "origin": [
+        2302.0,
+        -524.0,
+        -1969.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Dummy_mdl_099",
+      "file": "Dummy.MDL",
+      "action": "Creator",
+      "origin": [
+        2423.0,
+        -524.0,
+        -1969.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Dummy_mdl_099",
+      "file": "Dummy.MDL",
+      "action": "Creator",
+      "origin": [
+        2613.0,
+        -524.0,
+        -1969.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Rocks_mdl_020",
+      "file": "Rocks.MDL",
+      "action": "",
+      "origin": [
+        2679.0,
+        -557.0,
+        -518.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        2.25,
+        2.25,
+        2.25
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Rocks_mdl_020",
+      "file": "Rocks.MDL",
+      "action": "",
+      "origin": [
+        2679.0,
+        -557.0,
+        -406.0
+      ],
+      "angle_deg": [
+        0.0,
+        -57.0,
+        0.0
+      ],
+      "scale": [
+        2.25,
+        2.25,
+        2.25
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Rocks_mdl_020",
+      "file": "Rocks.MDL",
+      "action": "",
+      "origin": [
+        2689.0,
+        -557.0,
+        -276.0
+      ],
+      "angle_deg": [
+        0.0,
+        -36.0,
+        0.0
+      ],
+      "scale": [
+        2.25,
+        2.25,
+        2.25
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Rocks_mdl_020",
+      "file": "Rocks.MDL",
+      "action": "",
+      "origin": [
+        2689.0,
+        -599.0,
+        385.0
+      ],
+      "angle_deg": [
+        0.0,
+        -36.0,
+        0.0
+      ],
+      "scale": [
+        2.25,
+        2.25,
+        2.25
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Rocks_mdl_020",
+      "file": "Rocks.MDL",
+      "action": "",
+      "origin": [
+        2682.0,
+        -536.0,
+        280.0
+      ],
+      "angle_deg": [
+        0.0,
+        -339.0,
+        0.0
+      ],
+      "scale": [
+        2.25,
+        2.25,
+        2.25
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Rocks_mdl_020",
+      "file": "Rocks.MDL",
+      "action": "",
+      "origin": [
+        2661.0,
+        -536.0,
+        150.0
+      ],
+      "angle_deg": [
+        0.0,
+        -62.0,
+        0.0
+      ],
+      "scale": [
+        2.25,
+        2.25,
+        2.25
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Rocks_mdl_020",
+      "file": "Rocks.MDL",
+      "action": "",
+      "origin": [
+        2682.0,
+        -557.0,
+        6.0
+      ],
+      "angle_deg": [
+        0.0,
+        -62.0,
+        0.0
+      ],
+      "scale": [
+        2.25,
+        2.25,
+        2.25
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Rocks_mdl_020",
+      "file": "Rocks.MDL",
+      "action": "",
+      "origin": [
+        2671.0,
+        -557.0,
+        -128.0
+      ],
+      "angle_deg": [
+        0.0,
+        -13.0,
+        0.0
+      ],
+      "scale": [
+        2.25,
+        2.25,
+        2.25
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Rocks_mdl_020",
+      "file": "Rocks.MDL",
+      "action": "",
+      "origin": [
+        2656.0,
+        -571.0,
+        494.0
+      ],
+      "angle_deg": [
+        0.0,
+        -305.0,
+        0.0
+      ],
+      "scale": [
+        2.25,
+        2.25,
+        2.25
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Rocks_mdl_020",
+      "file": "Rocks.MDL",
+      "action": "",
+      "origin": [
+        2660.0,
+        -571.0,
+        656.0
+      ],
+      "angle_deg": [
+        0.0,
+        -259.0,
+        0.0
+      ],
+      "scale": [
+        2.25,
+        2.25,
+        2.25
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Rocks_mdl_020",
+      "file": "Rocks.MDL",
+      "action": "",
+      "origin": [
+        2667.0,
+        -522.0,
+        783.0
+      ],
+      "angle_deg": [
+        0.0,
+        -259.0,
+        0.0
+      ],
+      "scale": [
+        2.25,
+        2.25,
+        2.25
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Rocks_mdl_020",
+      "file": "Rocks.MDL",
+      "action": "",
+      "origin": [
+        2690.0,
+        -557.0,
+        -652.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        2.25,
+        2.25,
+        2.25
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Mount2_mdl_002",
+      "file": "Mount2.HMP",
+      "action": "Smoke",
+      "origin": [
+        2934.0,
+        -551.0,
+        -181.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Rocks_mdl_020",
+      "file": "Rocks.MDL",
+      "action": "",
+      "origin": [
+        3002.0,
+        -557.0,
+        596.0
+      ],
+      "angle_deg": [
+        0.0,
+        -62.0,
+        0.0
+      ],
+      "scale": [
+        11.966259956359863,
+        11.966259956359863,
+        11.966259956359863
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Rocks_mdl_020",
+      "file": "Rocks.MDL",
+      "action": "",
+      "origin": [
+        3006.0,
+        -557.0,
+        -754.0
+      ],
+      "angle_deg": [
+        0.0,
+        -62.0,
+        0.0
+      ],
+      "scale": [
+        11.966259956359863,
+        11.966259956359863,
+        11.966259956359863
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Rocks_mdl_020",
+      "file": "Rockz.MDL",
+      "action": "",
+      "origin": [
+        2662.0,
+        -557.0,
+        -1682.0
+      ],
+      "angle_deg": [
+        0.0,
+        -62.0,
+        0.0
+      ],
+      "scale": [
+        8.243827819824219,
+        8.243827819824219,
+        8.243827819824219
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Rocks_mdl_020",
+      "file": "Rockz.MDL",
+      "action": "",
+      "origin": [
+        2669.0,
+        -557.0,
+        -1134.0
+      ],
+      "angle_deg": [
+        0.0,
+        -62.0,
+        0.0
+      ],
+      "scale": [
+        1.3783750534057617,
+        1.3783750534057617,
+        1.3783750534057617
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Rocks_mdl_020",
+      "file": "Rockz.MDL",
+      "action": "",
+      "origin": [
+        2655.0,
+        -518.0,
+        -1246.0
+      ],
+      "angle_deg": [
+        0.0,
+        -62.0,
+        0.0
+      ],
+      "scale": [
+        1.3783750534057617,
+        1.3783750534057617,
+        1.3783750534057617
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Rocks_mdl_020",
+      "file": "Rockz.MDL",
+      "action": "",
+      "origin": [
+        2666.0,
+        -518.0,
+        -1696.0
+      ],
+      "angle_deg": [
+        0.0,
+        -14.0,
+        0.0
+      ],
+      "scale": [
+        1.3783750534057617,
+        1.3783750534057617,
+        1.3783750534057617
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Rocks_mdl_020",
+      "file": "Rockz.MDL",
+      "action": "",
+      "origin": [
+        2670.0,
+        -518.0,
+        -1854.0
+      ],
+      "angle_deg": [
+        0.0,
+        -324.0,
+        0.0
+      ],
+      "scale": [
+        1.3783750534057617,
+        1.3783750534057617,
+        1.3783750534057617
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Rocks_mdl_020",
+      "file": "Rockz.MDL",
+      "action": "",
+      "origin": [
+        2737.0,
+        -518.0,
+        -2005.0
+      ],
+      "angle_deg": [
+        0.0,
+        -324.0,
+        0.0
+      ],
+      "scale": [
+        1.3783750534057617,
+        1.3783750534057617,
+        1.3783750534057617
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Lava2_mdl_010",
+      "file": "Lava2.wmb",
+      "action": "Lava2",
+      "origin": [
+        1917.0,
+        -516.0,
+        -1848.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "entity",
+      "old": true,
+      "name": "Lava2_mdl_010",
+      "file": "Lava2.wmb",
+      "action": "Lava2",
+      "origin": [
+        1917.0,
+        -516.0,
+        -4402.0
+      ],
+      "angle_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "skills": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ]
+}
