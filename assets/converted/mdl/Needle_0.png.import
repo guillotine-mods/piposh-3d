@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dq56vo3ctv7c7"
 path.s3tc="res://.godot/imported/Needle_0.png-32a43f3e5c4728a8ffa2f17c7dab95d5.s3tc.ctex"
+path.etc2="res://.godot/imported/Needle_0.png-32a43f3e5c4728a8ffa2f17c7dab95d5.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Needle_0.png"
-dest_files=["res://.godot/imported/Needle_0.png-32a43f3e5c4728a8ffa2f17c7dab95d5.s3tc.ctex"]
+dest_files=["res://.godot/imported/Needle_0.png-32a43f3e5c4728a8ffa2f17c7dab95d5.s3tc.ctex", "res://.godot/imported/Needle_0.png-32a43f3e5c4728a8ffa2f17c7dab95d5.etc2.ctex"]
 
 [params]
 

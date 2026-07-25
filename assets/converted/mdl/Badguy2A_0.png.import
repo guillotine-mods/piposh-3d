@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://cfk7vtwwkkvu7"
 path.s3tc="res://.godot/imported/Badguy2A_0.png-4c2f3f2ad944f7fdc52d8245758cdd48.s3tc.ctex"
+path.etc2="res://.godot/imported/Badguy2A_0.png-4c2f3f2ad944f7fdc52d8245758cdd48.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Badguy2A_0.png"
-dest_files=["res://.godot/imported/Badguy2A_0.png-4c2f3f2ad944f7fdc52d8245758cdd48.s3tc.ctex"]
+dest_files=["res://.godot/imported/Badguy2A_0.png-4c2f3f2ad944f7fdc52d8245758cdd48.s3tc.ctex", "res://.godot/imported/Badguy2A_0.png-4c2f3f2ad944f7fdc52d8245758cdd48.etc2.ctex"]
 
 [params]
 

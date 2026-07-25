@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://ccop0o4od64kw"
 path.s3tc="res://.godot/imported/Snowman_0.png-c8252f57d23b456663dd173b320b2fba.s3tc.ctex"
+path.etc2="res://.godot/imported/Snowman_0.png-c8252f57d23b456663dd173b320b2fba.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Snowman_0.png"
-dest_files=["res://.godot/imported/Snowman_0.png-c8252f57d23b456663dd173b320b2fba.s3tc.ctex"]
+dest_files=["res://.godot/imported/Snowman_0.png-c8252f57d23b456663dd173b320b2fba.s3tc.ctex", "res://.godot/imported/Snowman_0.png-c8252f57d23b456663dd173b320b2fba.etc2.ctex"]
 
 [params]
 

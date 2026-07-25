@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bt5g2jvi24edk"
 path.s3tc="res://.godot/imported/Shiks_platemetal.png-0e3ddf7b461b1082211ce4d28c936ff6.s3tc.ctex"
+path.etc2="res://.godot/imported/Shiks_platemetal.png-0e3ddf7b461b1082211ce4d28c936ff6.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/wmb/Shiks_platemetal.png"
-dest_files=["res://.godot/imported/Shiks_platemetal.png-0e3ddf7b461b1082211ce4d28c936ff6.s3tc.ctex"]
+dest_files=["res://.godot/imported/Shiks_platemetal.png-0e3ddf7b461b1082211ce4d28c936ff6.s3tc.ctex", "res://.godot/imported/Shiks_platemetal.png-0e3ddf7b461b1082211ce4d28c936ff6.etc2.ctex"]
 
 [params]
 

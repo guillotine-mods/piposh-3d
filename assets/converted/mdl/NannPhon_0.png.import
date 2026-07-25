@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://b3ijf1086chwp"
 path.s3tc="res://.godot/imported/NannPhon_0.png-120494aafb82dba3b094e36bca4f1c72.s3tc.ctex"
+path.etc2="res://.godot/imported/NannPhon_0.png-120494aafb82dba3b094e36bca4f1c72.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/NannPhon_0.png"
-dest_files=["res://.godot/imported/NannPhon_0.png-120494aafb82dba3b094e36bca4f1c72.s3tc.ctex"]
+dest_files=["res://.godot/imported/NannPhon_0.png-120494aafb82dba3b094e36bca4f1c72.s3tc.ctex", "res://.godot/imported/NannPhon_0.png-120494aafb82dba3b094e36bca4f1c72.etc2.ctex"]
 
 [params]
 

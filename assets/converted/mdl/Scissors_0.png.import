@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://brrjax0oxhkx2"
 path.s3tc="res://.godot/imported/Scissors_0.png-95dd05f5e0a0520010c3c9c6789a57bd.s3tc.ctex"
+path.etc2="res://.godot/imported/Scissors_0.png-95dd05f5e0a0520010c3c9c6789a57bd.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Scissors_0.png"
-dest_files=["res://.godot/imported/Scissors_0.png-95dd05f5e0a0520010c3c9c6789a57bd.s3tc.ctex"]
+dest_files=["res://.godot/imported/Scissors_0.png-95dd05f5e0a0520010c3c9c6789a57bd.s3tc.ctex", "res://.godot/imported/Scissors_0.png-95dd05f5e0a0520010c3c9c6789a57bd.etc2.ctex"]
 
 [params]
 

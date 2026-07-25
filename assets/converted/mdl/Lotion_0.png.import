@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bwb7mksbal1y0"
 path.s3tc="res://.godot/imported/Lotion_0.png-a3e8be42010a78897165273a23e4f9b9.s3tc.ctex"
+path.etc2="res://.godot/imported/Lotion_0.png-a3e8be42010a78897165273a23e4f9b9.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Lotion_0.png"
-dest_files=["res://.godot/imported/Lotion_0.png-a3e8be42010a78897165273a23e4f9b9.s3tc.ctex"]
+dest_files=["res://.godot/imported/Lotion_0.png-a3e8be42010a78897165273a23e4f9b9.s3tc.ctex", "res://.godot/imported/Lotion_0.png-a3e8be42010a78897165273a23e4f9b9.etc2.ctex"]
 
 [params]
 

@@ -80,6 +80,25 @@ var _shiks_walking := false
 var _shiks_fly := false
 var _walk_away := false
 
+## Plane.wdl state
+var _plane_active := false
+var _plane_piposh: Node3D
+var _plane_krupnik: Node3D  # ThePlaneMovie
+var _plane_krup: Node3D
+var _plane_pip: Node3D
+var _plane_cam2: Node3D
+var _plane_cams: Array[Node3D] = []  # Camera1..3 by order
+var _plane_vase1: Node3D
+var _plane_vase2: Node3D
+var _plane_path: PackedVector3Array = PackedVector3Array()
+var _plane_path_i := 0
+var _plane_walking := false
+var _plane_phase := 0
+var _plane_vase := 0
+var _plane_pip2 := 0
+var _plane_arv := 0.0
+var _plane_cam_timer := 0.0
+
 
 func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud: GameHud = null) -> void:
 	_loader = loader
@@ -137,6 +156,23 @@ func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud
 	_walk_away = false
 	_stand_here_x = 0.0
 	_ztemp = 0.0
+	_plane_active = false
+	_plane_piposh = null
+	_plane_krupnik = null
+	_plane_krup = null
+	_plane_pip = null
+	_plane_cam2 = null
+	_plane_cams.clear()
+	_plane_vase1 = null
+	_plane_vase2 = null
+	_plane_path = PackedVector3Array()
+	_plane_path_i = 0
+	_plane_walking = false
+	_plane_phase = 0
+	_plane_vase = 0
+	_plane_pip2 = 0
+	_plane_arv = 0.0
+	_plane_cam_timer = 0.0
 	fov_arc = 60.0
 	_level_script = str(level_data.get("script", loader.level_name)).to_lower()
 
@@ -235,9 +271,37 @@ func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud
 				# Visible notepad next to ShikNote — same click → Shiks.
 				_make_clickable(node, "ShikKlik")
 			"Dummy":
-				# Studio.wdl Dummy = room tone; Shiks.wdl Dummy only stores XX.
+				# Studio.wdl Dummy = room tone; Plane.wdl = cockpit loop.
 				if _is_studio_level():
 					AudioBus.play_sfx("SFX105.WAV", -8.0)
+				elif _is_plane_level():
+					AudioBus.play_music("SFX089.WAV", -10.0)
+			"PiposhWalk":
+				_plane_piposh = node
+				_anim_frame(node, "Stand", 0.0)
+			"ThePlaneMovie":
+				_plane_krupnik = node
+				_anim_frame(node, "Peek", 0.0)
+			"Krup":
+				_plane_krup = node
+				node.visible = false
+				_anim_frame(node, "Stand", 0.0)
+			"Pip":
+				_plane_pip = node
+				node.visible = false
+				_anim_frame(node, "LookBack", 0.0)
+			"Cam2":
+				_plane_cam2 = node
+				_cams.append(node)
+				_hide_cam_mesh(node)
+			"Vase1":
+				_plane_vase1 = node
+				node.visible = false
+			"Vase2":
+				_plane_vase2 = node
+				node.visible = false
+			"Dome":
+				_anim_cycle(node, "Frame")
 			"Piposh2":
 				_piposh2 = node
 				_anim_frame(node, "Stand", 0.0)
@@ -285,6 +349,19 @@ func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud
 		pc.set_meta("cam_show", sk)
 		pc.set_meta("view_id", sk)
 
+	# Plane.wdl Cam skill1 is often garbage in WMB — assign Camera1..3 in order.
+	if _is_plane_level():
+		_plane_cams.clear()
+		for c in _cams:
+			if c == _plane_cam2:
+				continue
+			_plane_cams.append(c)
+			if _plane_cams.size() >= 3:
+				break
+		for i in _plane_cams.size():
+			_plane_cams[i].set_meta("view_id", i + 1)
+			_plane_cams[i].set_meta("skill1", i + 1)
+
 	if _hud and not _hud.dialog_choice.is_connected(_on_dialog_choice):
 		_hud.dialog_choice.connect(_on_dialog_choice)
 	if _hud and not _hud.skip_line_pressed.is_connected(_on_skip_line_pressed):
@@ -295,6 +372,8 @@ func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud
 		or _the_cam != null
 		or _the_cam2 != null
 		or _look_at_me != null
+		or _plane_krupnik != null
+		or _plane_piposh != null
 	)
 
 	if _is_start_level():
@@ -305,6 +384,8 @@ func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud
 		_begin_town()
 	elif _is_shiks_level():
 		_begin_shiks()
+	elif _is_plane_level():
+		_begin_plane()
 	elif scripted_camera:
 		mouse_look = true
 		_apply_mouse_mode()
@@ -322,6 +403,8 @@ func _process(delta: float) -> void:
 		_update_studio(delta)
 	elif _is_shiks_level() and _shiks_active:
 		_update_shiks(delta)
+	elif _is_plane_level() and _plane_active:
+		_update_plane(delta)
 	elif scripted_camera:
 		_update_town_cam()
 	_update_patrols(delta)
@@ -404,6 +487,119 @@ func _is_town_level() -> bool:
 
 func _is_shiks_level() -> bool:
 	return _level_script.contains("shik") or str(_loader.level_name).to_lower() == "shiks"
+
+
+func _is_plane_level() -> bool:
+	# Only Plane.wdl (not Plane2/Plane3 — different scripts).
+	var n := str(_loader.level_name).to_lower() if _loader else ""
+	return n == "plane" or _level_script == "plane.wdl"
+
+
+func _begin_plane() -> void:
+	# Plane.wdl main → SetVoice boot + dialog 3 + path walk.
+	scripted_camera = true
+	mouse_look = false
+	_plane_active = true
+	scene = -1
+	talking = 0
+	_plane_phase = 0
+	_plane_vase = 0
+	_plane_pip2 = 0
+	_plane_arv = 0.0
+	_dialog_index = 0
+	_dialog_busy = true
+	_apply_mouse_mode()
+	if _hud:
+		_hud.hide_dialog()
+	# Bind walk path (Plane.WMB path_001).
+	_plane_path = PackedVector3Array()
+	_plane_path_i = 0
+	for k in _paths.keys():
+		_plane_path = _paths[k]
+		break
+	if _plane_cams.size() > 0:
+		_copy_cam(_plane_cams[0], true)
+	elif _plane_cam2:
+		_copy_cam(_plane_cam2, true)
+	status.emit("Plane — boarding…")
+	_run_plane_boot()
+
+
+func _run_plane_boot() -> void:
+	# SetVoice: Scene -1 Wait, 0 KRP001, 1 DoDialog(3)
+	await _line("Wait.wav", 0, null)
+	scene = 0
+	if _plane_krupnik:
+		_anim_frame(_plane_krupnik, "Peek", 0.0)
+	await _line("KRP001.WAV", 2, _plane_krupnik)
+	scene = 1
+	talking = 0
+	_dialog_index = 3
+	_dialog_busy = false
+	if _hud:
+		_hud.show_dialog(3)
+	_plane_walking = true
+	status.emit("Plane — choose a line")
+
+
+func _update_plane(delta: float) -> void:
+	# Vase visibility
+	if _plane_vase1:
+		_plane_vase1.visible = _plane_vase == 1
+	if _plane_vase2:
+		_plane_vase2.visible = _plane_vase == 2
+	if _plane_krup:
+		_plane_krup.visible = _plane_phase == 1 or _plane_phase == 2
+	if _plane_pip:
+		_plane_pip.visible = _plane_pip2 == 1
+
+	# Cam2 while CamShow==1 (hammer beat)
+	if _cam_show == 1 and _plane_cam2:
+		_copy_cam(_plane_cam2, false)
+	elif _plane_cams.size() > 0 and _plane_pip2 == 0 and _cam_show == 0:
+		# Occasional ChangeCamera while cruising
+		_plane_cam_timer -= delta
+		if _plane_cam_timer <= 0.0 and scene > 0 and _plane_arv >= 100.0:
+			if randi() % 100 == 50:
+				var pick := _plane_cams[randi() % _plane_cams.size()]
+				_copy_cam(pick, false)
+				_plane_cam_timer = randf_range(2.0, 6.0)
+
+	# ThePlaneMovie Arrive scrub while Piposh talks early
+	if _plane_krupnik and talking == 1 and _plane_arv < 100.0:
+		_plane_arv = minf(100.0, _plane_arv + 40.0 * delta)
+		_anim_frame(_plane_krupnik, "Arrive", _plane_arv)
+
+	# Walk Piposh along path (also while dialog 3 is open, like WDL).
+	if _plane_walking and _plane_piposh and _plane_phase < 3:
+		_plane_walk_step(delta)
+
+	# Talk / blink actors
+	if talking == 1 and _plane_piposh and _plane_phase != 3:
+		_anim_talk(_plane_piposh)
+	elif _plane_piposh and _plane_phase != 3 and talking != 1:
+		_anim_blink(_plane_piposh)
+	if talking == 2 and _plane_krupnik:
+		_anim_talk_skins(_plane_krupnik, true)
+	elif _plane_krupnik and talking != 2:
+		_anim_talk_skins(_plane_krupnik, false)
+
+
+func _plane_walk_step(delta: float) -> void:
+	if _plane_path.is_empty() or _plane_piposh == null:
+		return
+	if _plane_path_i >= _plane_path.size():
+		return
+	var target := _plane_path[_plane_path_i]
+	var pos := _plane_piposh.global_position
+	var to := Vector3(target.x - pos.x, 0.0, target.z - pos.z)
+	if to.length() < 25.0:
+		_plane_path_i = mini(_plane_path_i + 1, _plane_path.size())
+		return
+	var step := to.normalized() * minf(35.0 * delta, to.length())
+	_plane_piposh.global_position += step
+	_plane_piposh.rotation_degrees.y = rad_to_deg(atan2(-step.z, step.x))
+	_anim_cycle(_plane_piposh, "Walk")
 
 
 func _begin_shiks() -> void:
@@ -521,9 +717,13 @@ func _update_shiks(delta: float) -> void:
 
 func _update_shiks_actors(delta: float) -> void:
 	if talking == 1 and _piposh3:
-		_anim_cycle(_piposh3, "Talk")
+		_anim_talk(_piposh3)
+		if _shik_x:
+			_anim_blink(_shik_x)
 	elif talking == 2 and _shik_x:
-		_anim_cycle(_shik_x, "Talk")
+		_anim_talk(_shik_x)
+		if _piposh3:
+			_anim_blink(_piposh3)
 	elif talking == 22 and _shik_x:
 		_anim_frame(_shik_x, "Scream", 0.0)
 	elif talking == 11 and _piposh3:
@@ -538,6 +738,12 @@ func _update_shiks_actors(delta: float) -> void:
 			_shik_x.rotation_degrees.y = rad_to_deg(atan2(-to.z, to.x))
 	elif talking == 13 and _piposh3:
 		_piposh3.visible = false
+	else:
+		# Idle — do not keep cycling Talk after the line ends.
+		if _piposh3:
+			_anim_blink(_piposh3)
+		if _shik_x:
+			_anim_blink(_shik_x)
 
 	for p in _pipis:
 		if _cam_show == 3:
@@ -733,9 +939,11 @@ func _update_start(delta: float) -> void:
 	elif _look_at_me != null:
 		_apply_start_camera()
 
-	if _yachdal and scene in [0, 2, 4] and Engine.get_process_frames() % 45 == 0:
+	# Mouth motion only while Start VO is actually playing.
+	if _yachdal and AudioBus.is_voice_playing() and scene in [0, 2, 4] \
+			and Engine.get_process_frames() % 45 == 0:
 		_anim_frame(_yachdal, "Speech", randf() * 100.0)
-	elif _yachdal and scene in [1, 3, 5]:
+	elif _yachdal:
 		_anim_frame(_yachdal, "Speech", 0.0)
 
 	# Scene 3: Shkufit hold (Start.wdl)
@@ -912,10 +1120,11 @@ func _update_studio(_delta: float) -> void:
 	_apply_studio_cam()
 	if dance == 1 and _naknik:
 		_anim_cycle(_naknik, "Dance")
-		_anim_talk_skins(_naknik, true)
+		# Talk2() mouth skins only while Piposh's line is active.
+		_anim_talk_skins(_naknik, talking == 1)
 		if talking == 2 and _ami:
 			_anim_talk(_ami)
-		elif talking != 2 and _ami:
+		elif _ami:
 			_anim_blink(_ami)
 		return
 	if talking == 1 and _naknik:
@@ -1074,9 +1283,11 @@ func _apply_random_building(node: Node3D) -> void:
 
 
 func _resolve_glb(stem: String) -> String:
-	var direct := "res://assets/converted/mdl/%s.glb" % stem
-	if ResourceLoader.exists(direct):
-		return direct
+	var glb_stems: Array[String] = [stem, stem.to_lower()]
+	for s in glb_stems:
+		var direct: String = "res://assets/converted/mdl/%s.glb" % s
+		if ResourceLoader.exists(direct):
+			return direct
 	var dir := DirAccess.open("res://assets/converted/mdl/")
 	if dir == null:
 		return ""
@@ -1085,7 +1296,9 @@ func _resolve_glb(stem: String) -> String:
 	var fn := dir.get_next()
 	while fn != "":
 		if fn.to_lower() == want:
-			return "res://assets/converted/mdl/" + fn
+			var path := "res://assets/converted/mdl/" + fn
+			if ResourceLoader.exists(path):
+				return path
 		fn = dir.get_next()
 	return ""
 
@@ -1206,10 +1419,67 @@ func _on_dialog_choice(choice: int) -> void:
 	if _dialog_busy or _studio_boot:
 		return
 	status.emit("Dialog choice %d" % choice)
-	if _is_shiks_level() and _shiks_active:
+	if _is_plane_level() and _plane_active:
+		_run_plane_choice(choice)
+	elif _is_shiks_level() and _shiks_active:
 		_run_shiks_choice(choice)
 	else:
 		_run_studio_choice(choice)
+
+
+func _run_plane_choice(choice: int) -> void:
+	# Plane.wdl PiposhWalk DialogIndex==3 branches.
+	_dialog_busy = true
+	if _hud:
+		_hud.hide_dialog()
+	match choice:
+		1:
+			await _line("PIP028.WAV", 1, _plane_piposh)
+			await _line("KRP002.WAV", 2, _plane_krupnik)
+			await _line("PIP029.WAV", 1, _plane_piposh)
+			await _line("KRP003.WAV", 2, _plane_krupnik)
+			_dialog_busy = false
+			_dialog_index = 3
+			if _hud:
+				_hud.show_dialog(3)
+		2:
+			await _line("PIP030.WAV", 1, _plane_piposh)
+			await _line("KRP004.WAV", 2, _plane_krupnik)
+			_dialog_busy = false
+			_dialog_index = 3
+			if _hud:
+				_hud.show_dialog(3)
+		3:
+			_plane_vase = 1
+			await _line("PIP031.WAV", 1, _plane_piposh)
+			if _plane_piposh:
+				_anim_frame(_plane_piposh, "Take", 100.0)
+			_plane_vase = 0
+			_plane_phase = 1
+			_cam_show = 1
+			await _line("KRP005.WAV", 2, _plane_krupnik)
+			_plane_phase = 2
+			await _line("KRP006.WAV", 2, _plane_krupnik)
+			if _plane_cams.size() > 0:
+				_copy_cam(_plane_cams[0], true)
+			if _plane_piposh:
+				_plane_piposh.visible = false
+			_plane_phase = 3
+			_plane_pip2 = 1
+			_plane_vase = 2
+			_cam_show = 0
+			await _line("PIP032.WAV", 1, _plane_pip)
+			await _line("KRP007.WAV", 2, _plane_krupnik)
+			await _line("PIP033.WAV", 1, _plane_pip)
+			_dialog_busy = false
+			_plane_walking = false
+			status.emit("Plane → Plane2")
+			request_run.emit("Plane2")
+		_:
+			_dialog_busy = false
+			_dialog_index = 3
+			if _hud:
+				_hud.show_dialog(3)
 
 
 func _run_studio_choice(choice: int) -> void:
@@ -1280,7 +1550,7 @@ func _line(wav: String, who: int, actor: Node3D) -> void:
 	if actor:
 		if dance == 1 and actor == _naknik:
 			_anim_cycle(actor, "Dance")
-			_anim_talk_skins(actor, true)
+			_anim_talk_skins(actor, who == 1)
 		elif who == 22:
 			_anim_frame(actor, "Scream", 0.0)
 		elif who == 1 or who == 2:
@@ -1294,6 +1564,14 @@ func _line(wav: String, who: int, actor: Node3D) -> void:
 		t += get_process_delta_time()
 	var skipped := _skip_line
 	_skip_line = false
+	# Stop mouth anim as soon as the VO ends (caller may set talking again).
+	if talking == who:
+		talking = 0
+	if actor and who != 0:
+		if dance == 1 and actor == _naknik:
+			_anim_talk_skins(actor, false)
+		else:
+			_anim_blink(actor)
 	if not skipped:
 		await get_tree().create_timer(0.05).timeout
 

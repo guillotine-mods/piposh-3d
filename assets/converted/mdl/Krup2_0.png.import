@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bfbcdfin3twc1"
 path.s3tc="res://.godot/imported/Krup2_0.png-4c4050fb1e21040272549399510f9765.s3tc.ctex"
+path.etc2="res://.godot/imported/Krup2_0.png-4c4050fb1e21040272549399510f9765.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Krup2_0.png"
-dest_files=["res://.godot/imported/Krup2_0.png-4c4050fb1e21040272549399510f9765.s3tc.ctex"]
+dest_files=["res://.godot/imported/Krup2_0.png-4c4050fb1e21040272549399510f9765.s3tc.ctex", "res://.godot/imported/Krup2_0.png-4c4050fb1e21040272549399510f9765.etc2.ctex"]
 
 [params]
 

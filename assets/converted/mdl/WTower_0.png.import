@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bv4o5axt1o8xv"
 path.s3tc="res://.godot/imported/WTower_0.png-6799876da0f66c766e11a2b8b0b382c4.s3tc.ctex"
+path.etc2="res://.godot/imported/WTower_0.png-6799876da0f66c766e11a2b8b0b382c4.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/WTower_0.png"
-dest_files=["res://.godot/imported/WTower_0.png-6799876da0f66c766e11a2b8b0b382c4.s3tc.ctex"]
+dest_files=["res://.godot/imported/WTower_0.png-6799876da0f66c766e11a2b8b0b382c4.s3tc.ctex", "res://.godot/imported/WTower_0.png-6799876da0f66c766e11a2b8b0b382c4.etc2.ctex"]
 
 [params]
 

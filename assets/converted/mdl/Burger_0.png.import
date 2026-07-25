@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://c4ut0is07vnc"
 path.s3tc="res://.godot/imported/Burger_0.png-2ef5c0a601d1b82c10c987ad7b1e1caf.s3tc.ctex"
+path.etc2="res://.godot/imported/Burger_0.png-2ef5c0a601d1b82c10c987ad7b1e1caf.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Burger_0.png"
-dest_files=["res://.godot/imported/Burger_0.png-2ef5c0a601d1b82c10c987ad7b1e1caf.s3tc.ctex"]
+dest_files=["res://.godot/imported/Burger_0.png-2ef5c0a601d1b82c10c987ad7b1e1caf.s3tc.ctex", "res://.godot/imported/Burger_0.png-2ef5c0a601d1b82c10c987ad7b1e1caf.etc2.ctex"]
 
 [params]
 

@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://cahkxvj3acnmy"
 path.s3tc="res://.godot/imported/Roda_0.png-750cb6febbe09638e59f1f6d2dd3d204.s3tc.ctex"
+path.etc2="res://.godot/imported/Roda_0.png-750cb6febbe09638e59f1f6d2dd3d204.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Roda_0.png"
-dest_files=["res://.godot/imported/Roda_0.png-750cb6febbe09638e59f1f6d2dd3d204.s3tc.ctex"]
+dest_files=["res://.godot/imported/Roda_0.png-750cb6febbe09638e59f1f6d2dd3d204.s3tc.ctex", "res://.godot/imported/Roda_0.png-750cb6febbe09638e59f1f6d2dd3d204.etc2.ctex"]
 
 [params]
 

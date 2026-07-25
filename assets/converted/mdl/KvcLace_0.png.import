@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://c824c7wpeinya"
 path.s3tc="res://.godot/imported/KvcLace_0.png-94b9e4e996100840e76058e8f78cd872.s3tc.ctex"
+path.etc2="res://.godot/imported/KvcLace_0.png-94b9e4e996100840e76058e8f78cd872.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/KvcLace_0.png"
-dest_files=["res://.godot/imported/KvcLace_0.png-94b9e4e996100840e76058e8f78cd872.s3tc.ctex"]
+dest_files=["res://.godot/imported/KvcLace_0.png-94b9e4e996100840e76058e8f78cd872.s3tc.ctex", "res://.godot/imported/KvcLace_0.png-94b9e4e996100840e76058e8f78cd872.etc2.ctex"]
 
 [params]
 

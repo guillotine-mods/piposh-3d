@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bypjh0ak6ydul"
 path.s3tc="res://.godot/imported/Buttface_0.png-5e1c9384fb943040a9cee57db326c628.s3tc.ctex"
+path.etc2="res://.godot/imported/Buttface_0.png-5e1c9384fb943040a9cee57db326c628.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Buttface_0.png"
-dest_files=["res://.godot/imported/Buttface_0.png-5e1c9384fb943040a9cee57db326c628.s3tc.ctex"]
+dest_files=["res://.godot/imported/Buttface_0.png-5e1c9384fb943040a9cee57db326c628.s3tc.ctex", "res://.godot/imported/Buttface_0.png-5e1c9384fb943040a9cee57db326c628.etc2.ctex"]
 
 [params]
 

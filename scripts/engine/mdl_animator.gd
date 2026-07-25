@@ -327,9 +327,11 @@ func _find_mesh(n: Node) -> MeshInstance3D:
 
 
 func _resolve_anim(stem: String) -> String:
-	var direct := "res://assets/converted/mdl/%s.mdlanim" % stem
-	if FileAccess.file_exists(direct):
-		return direct
+	var anim_stems: Array[String] = [stem, stem.to_lower()]
+	for s in anim_stems:
+		var direct: String = "res://assets/converted/mdl/%s.mdlanim" % s
+		if FileAccess.file_exists(direct):
+			return direct
 	var dir := DirAccess.open("res://assets/converted/mdl/")
 	if dir == null:
 		return ""
@@ -345,8 +347,14 @@ func _resolve_anim(stem: String) -> String:
 
 func _load_skins(stem: String) -> void:
 	_skin_textures.clear()
-	var path := "res://assets/converted/mdl/%s.skins" % stem
-	if not FileAccess.file_exists(path):
+	var path := ""
+	var skin_stems: Array[String] = [stem, stem.to_lower()]
+	for s in skin_stems:
+		var cand: String = "res://assets/converted/mdl/%s.skins" % s
+		if FileAccess.file_exists(cand):
+			path = cand
+			break
+	if path == "":
 		var dir := DirAccess.open("res://assets/converted/mdl/")
 		if dir:
 			var want := stem.to_lower() + ".skins"
@@ -357,7 +365,7 @@ func _load_skins(stem: String) -> void:
 					path = "res://assets/converted/mdl/" + fn
 					break
 				fn = dir.get_next()
-	if not FileAccess.file_exists(path):
+	if path == "" or not FileAccess.file_exists(path):
 		return
 	var f := FileAccess.open(path, FileAccess.READ)
 	if f == null:

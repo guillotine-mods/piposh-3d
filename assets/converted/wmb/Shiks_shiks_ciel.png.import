@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://chsbq6acrnfyh"
 path.s3tc="res://.godot/imported/Shiks_shiks_ciel.png-79df233146dc3f4f4f2d652a371cb3af.s3tc.ctex"
+path.etc2="res://.godot/imported/Shiks_shiks_ciel.png-79df233146dc3f4f4f2d652a371cb3af.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/wmb/Shiks_shiks_ciel.png"
-dest_files=["res://.godot/imported/Shiks_shiks_ciel.png-79df233146dc3f4f4f2d652a371cb3af.s3tc.ctex"]
+dest_files=["res://.godot/imported/Shiks_shiks_ciel.png-79df233146dc3f4f4f2d652a371cb3af.s3tc.ctex", "res://.godot/imported/Shiks_shiks_ciel.png-79df233146dc3f4f4f2d652a371cb3af.etc2.ctex"]
 
 [params]
 

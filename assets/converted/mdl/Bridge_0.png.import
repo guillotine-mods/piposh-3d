@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://c45cuhwlodkb0"
 path.s3tc="res://.godot/imported/Bridge_0.png-7e6a93e58ebfff00328e74baf60b0ebb.s3tc.ctex"
+path.etc2="res://.godot/imported/Bridge_0.png-7e6a93e58ebfff00328e74baf60b0ebb.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Bridge_0.png"
-dest_files=["res://.godot/imported/Bridge_0.png-7e6a93e58ebfff00328e74baf60b0ebb.s3tc.ctex"]
+dest_files=["res://.godot/imported/Bridge_0.png-7e6a93e58ebfff00328e74baf60b0ebb.s3tc.ctex", "res://.godot/imported/Bridge_0.png-7e6a93e58ebfff00328e74baf60b0ebb.etc2.ctex"]
 
 [params]
 

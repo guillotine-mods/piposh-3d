@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://b1jk00tne3aqx"
 path.s3tc="res://.godot/imported/Nanny_0.png-897f9057cc9d7e2e900bad214076d8be.s3tc.ctex"
+path.etc2="res://.godot/imported/Nanny_0.png-897f9057cc9d7e2e900bad214076d8be.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Nanny_0.png"
-dest_files=["res://.godot/imported/Nanny_0.png-897f9057cc9d7e2e900bad214076d8be.s3tc.ctex"]
+dest_files=["res://.godot/imported/Nanny_0.png-897f9057cc9d7e2e900bad214076d8be.s3tc.ctex", "res://.godot/imported/Nanny_0.png-897f9057cc9d7e2e900bad214076d8be.etc2.ctex"]
 
 [params]
 

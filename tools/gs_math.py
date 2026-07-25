@@ -8,10 +8,9 @@ Scale:     (sx, sy, sz)   →  (sx, sz, sy)
 Rotation (entity mesh):  pan/tilt/roll
            → Godot Euler degrees (pitch=tilt, yaw=+pan, roll=roll)
 
-MDL meshes: A5 (MDL3+) use the same Z-up→Y-up map and keep authored facing.
-IDPO/Quake meshes are snapped once so the painted face aims Godot +X (Acknex
-forward) via face-UV normals + soft-raster front/back; flat props are skipped.
-No per-model yaw tables — WED pan then orients every entity.
+MDL meshes: axis remap matches mdl-texture-editor. A5 keeps authored +X.
+IDPO Quake skins are snapped so the painted face aims +X (face-UV normals;
+no soft-raster 180 flip). WED pan/tilt/roll then orients every entity.
 
 Cameras are different: Acknex `ang_to_vec(pan,tilt)` must be remapped to a
 Godot forward vector — do **not** reuse entity euler for Camera3D (−Z look).

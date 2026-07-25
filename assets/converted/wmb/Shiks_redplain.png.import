@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://co3kklymg7yc3"
 path.s3tc="res://.godot/imported/Shiks_redplain.png-59247c64dc2ca87d36b07d8912cc9294.s3tc.ctex"
+path.etc2="res://.godot/imported/Shiks_redplain.png-59247c64dc2ca87d36b07d8912cc9294.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/wmb/Shiks_redplain.png"
-dest_files=["res://.godot/imported/Shiks_redplain.png-59247c64dc2ca87d36b07d8912cc9294.s3tc.ctex"]
+dest_files=["res://.godot/imported/Shiks_redplain.png-59247c64dc2ca87d36b07d8912cc9294.s3tc.ctex", "res://.godot/imported/Shiks_redplain.png-59247c64dc2ca87d36b07d8912cc9294.etc2.ctex"]
 
 [params]
 

@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://1ss48qvch5hl"
 path.s3tc="res://.godot/imported/Twins_0.png-02af938499ea1ddb9dc10b6528f967cd.s3tc.ctex"
+path.etc2="res://.godot/imported/Twins_0.png-02af938499ea1ddb9dc10b6528f967cd.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Twins_0.png"
-dest_files=["res://.godot/imported/Twins_0.png-02af938499ea1ddb9dc10b6528f967cd.s3tc.ctex"]
+dest_files=["res://.godot/imported/Twins_0.png-02af938499ea1ddb9dc10b6528f967cd.s3tc.ctex", "res://.godot/imported/Twins_0.png-02af938499ea1ddb9dc10b6528f967cd.etc2.ctex"]
 
 [params]
 

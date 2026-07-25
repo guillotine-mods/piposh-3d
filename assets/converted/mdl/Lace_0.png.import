@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://trab5h1q4ypa"
 path.s3tc="res://.godot/imported/Lace_0.png-80ae2115976c90383c94b774439570dd.s3tc.ctex"
+path.etc2="res://.godot/imported/Lace_0.png-80ae2115976c90383c94b774439570dd.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Lace_0.png"
-dest_files=["res://.godot/imported/Lace_0.png-80ae2115976c90383c94b774439570dd.s3tc.ctex"]
+dest_files=["res://.godot/imported/Lace_0.png-80ae2115976c90383c94b774439570dd.s3tc.ctex", "res://.godot/imported/Lace_0.png-80ae2115976c90383c94b774439570dd.etc2.ctex"]
 
 [params]
 

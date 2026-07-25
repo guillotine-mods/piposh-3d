@@ -8,16 +8,22 @@ extends Node3D
 
 const DEBUG_LEVELS := ["Studio", "Start", "Town", "Map", "Travel", "Desert", "Mansion", "Inn"]
 ## Levels that always use WDL scripted cameras (never free-player gravity).
-const SCRIPTED_LEVELS := ["studio", "start", "town", "menu", "credits", "shiks", "plane"]
+const SCRIPTED_LEVELS := [
+	"studio", "start", "town", "menu", "credits", "shiks", "plane", "plane2", "plane3"
+]
 
 var _director: WdlDirector
 var _script_cam: Camera3D
 var _game_hud: GameHud
+var _acknex_sky: AcknexSky
 
 
 func _ready() -> void:
 	AudioBus.rebuild_index()
 	_ensure_environment()
+	_acknex_sky = AcknexSky.new()
+	_acknex_sky.name = "AcknexSky"
+	add_child(_acknex_sky)
 	hud_title.visible = false
 	hud_hint.visible = false
 
@@ -49,7 +55,7 @@ func _ready() -> void:
 	var level := GameState.current_level
 	loader.entity_triggered.connect(_on_entity_triggered)
 	var ok := loader.load_level(level)
-	_apply_level_sky(level)
+	_apply_wdl_sky(level)
 
 	_director.setup(loader, _script_cam, loader.last_level_data, _game_hud)
 
@@ -111,28 +117,12 @@ func _ensure_environment() -> void:
 	add_child(we)
 
 
-func _apply_level_sky(level: String) -> void:
+func _apply_wdl_sky(level: String) -> void:
+	## IO.wdl / Level.wdl sky_map + scene_map (not solid placeholder colors).
 	var we := get_node_or_null("WorldEnvironment") as WorldEnvironment
-	if we == null or we.environment == null:
+	if we == null or we.environment == null or _acknex_sky == null:
 		return
-	var env := we.environment
-	match level.to_lower():
-		"town":
-			env.background_color = Color(0.52, 0.68, 0.88)
-			env.ambient_light_color = Color(0.62, 0.62, 0.66)
-		"desert":
-			env.background_color = Color(0.72, 0.62, 0.42)
-			env.ambient_light_color = Color(0.7, 0.62, 0.5)
-		"start":
-			env.background_color = Color(0.35, 0.4, 0.55)
-			env.ambient_light_color = Color(0.5, 0.5, 0.55)
-		"studio":
-			env.background_color = Color(0.12, 0.12, 0.14)
-			env.ambient_light_color = Color(0.55, 0.5, 0.45)
-			env.ambient_light_energy = 1.0
-		_:
-			env.background_color = Color(0.45, 0.55, 0.7)
-	env.background_mode = Environment.BG_COLOR
+	_acknex_sky.apply(level, loader.level_bounds, we.environment)
 
 
 func _unhandled_input(event: InputEvent) -> void:

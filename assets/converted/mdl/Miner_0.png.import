@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bln7dtk1fi1dp"
 path.s3tc="res://.godot/imported/Miner_0.png-d92fab3d98e58065e3273402a4fe376b.s3tc.ctex"
+path.etc2="res://.godot/imported/Miner_0.png-d92fab3d98e58065e3273402a4fe376b.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Miner_0.png"
-dest_files=["res://.godot/imported/Miner_0.png-d92fab3d98e58065e3273402a4fe376b.s3tc.ctex"]
+dest_files=["res://.godot/imported/Miner_0.png-d92fab3d98e58065e3273402a4fe376b.s3tc.ctex", "res://.godot/imported/Miner_0.png-d92fab3d98e58065e3273402a4fe376b.etc2.ctex"]
 
 [params]
 

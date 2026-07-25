@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dd77vxri1lcjj"
 path.s3tc="res://.godot/imported/WarCar_0.png-d85af444d9e77e75469aa616f9c6fe8a.s3tc.ctex"
+path.etc2="res://.godot/imported/WarCar_0.png-d85af444d9e77e75469aa616f9c6fe8a.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/WarCar_0.png"
-dest_files=["res://.godot/imported/WarCar_0.png-d85af444d9e77e75469aa616f9c6fe8a.s3tc.ctex"]
+dest_files=["res://.godot/imported/WarCar_0.png-d85af444d9e77e75469aa616f9c6fe8a.s3tc.ctex", "res://.godot/imported/WarCar_0.png-d85af444d9e77e75469aa616f9c6fe8a.etc2.ctex"]
 
 [params]
 

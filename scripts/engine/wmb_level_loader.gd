@@ -103,9 +103,14 @@ func load_level(p_level_name: String) -> bool:
 
 
 func _resolve_level_json(p_level_name: String) -> String:
-	var direct := LEVEL_DIR + p_level_name + ".json"
-	if FileAccess.file_exists(direct):
-		return direct
+	# Android PCK: prefer ResourceLoader / direct paths — DirAccess listing is unreliable.
+	var json_names: Array[String] = [
+		p_level_name, p_level_name.to_lower(), p_level_name.capitalize()
+	]
+	for name in json_names:
+		var direct: String = LEVEL_DIR + name + ".json"
+		if _file_ok(direct):
+			return direct
 	var dir := DirAccess.open(LEVEL_DIR)
 	if dir == null:
 		return ""
@@ -117,6 +122,10 @@ func _resolve_level_json(p_level_name: String) -> String:
 			return LEVEL_DIR + fn
 		fn = dir.get_next()
 	return ""
+
+
+func _file_ok(path: String) -> bool:
+	return ResourceLoader.exists(path) or FileAccess.file_exists(path)
 
 
 func _clear_children(node: Node) -> void:
@@ -143,15 +152,17 @@ func _spawn_brush_geometry(p_level_name: String) -> bool:
 
 
 func _resolve_brush_glb(p_level_name: String) -> String:
-	var candidates := [
-		LEVEL_DIR + p_level_name + "_brush.glb",
-		LEVEL_DIR + p_level_name + ".glb",
-		WMB_DIR + p_level_name + ".glb",
-		WMB_DIR + p_level_name + "_brush.glb",
-	]
-	for c in candidates:
-		if FileAccess.file_exists(c):
-			return c
+	var names: Array[String] = [p_level_name, p_level_name.to_lower()]
+	for name in names:
+		var candidates := [
+			LEVEL_DIR + name + "_brush.glb",
+			LEVEL_DIR + name + ".glb",
+			WMB_DIR + name + ".glb",
+			WMB_DIR + name + "_brush.glb",
+		]
+		for c in candidates:
+			if _file_ok(c):
+				return c
 	for base in [LEVEL_DIR, WMB_DIR]:
 		var dir := DirAccess.open(base)
 		if dir == null:
@@ -348,11 +359,11 @@ func _should_feet_snap(action: String, stem: String) -> bool:
 
 
 func _mount_wall_card(root: Node3D, stem: String) -> void:
-	# Pull off the far wall (z≈514) toward TheCam2 so the card is not buried
-	# inside brush geometry / z-fighting.
+	# Pull off the far wall so the card is not buried in brush z-fighting.
+	# Keep WED pan/tilt/roll (angle_gs) — do not invent facing overrides.
 	root.position.z -= 6.0
 	if stem == "shiknote":
-		# Brush is an edge-on slab; replace with a readable vertical poster.
+		# Extracted brush is an edge-on slab; poster uses WED pan (usually 180).
 		_hide_meshes(root)
 		var mi := MeshInstance3D.new()
 		mi.name = "ShikNotePoster"
@@ -371,13 +382,14 @@ func _mount_wall_card(root: Node3D, stem: String) -> void:
 		else:
 			mat.albedo_color = Color(0.85, 0.75, 0.45)
 		mi.material_override = mat
-		# QuadMesh faces +Z; yaw 180 → face −Z (into the studio).
-		root.rotation_degrees = Vector3(0.0, 180.0, 0.0)
+		# Quad faces +Z; WED pan=180 already on root → faces into the room.
 		root.scale = Vector3.ONE
+		# Flatten tilt/roll so the poster stands vertical (WED had slight tilt).
+		var pan := float(root.get_meta("pan", 180.0))
+		root.rotation_degrees = Vector3(0.0, pan, 0.0)
 		root.add_child(mi)
 	elif stem == "afg":
-		# Flat in XZ (thin Y) → pitch 90°, yaw 180° faces the room.
-		root.rotation_degrees = Vector3(90.0, 180.0, 0.0)
+		# WED already authored roll≈89 / tilt≈6 — only fix tiny scale.
 		if root.scale.x < 0.9:
 			root.scale *= 1.8
 
@@ -498,29 +510,55 @@ func _index_glb_dir(dir_path: String, into: Dictionary) -> void:
 		fn = dir.get_next()
 
 
+func _direct_glb(dir_path: String, stem: String) -> String:
+	## Packed Android builds often can't DirAccess-list res:// — probe known paths.
+	var casings: Array[String] = [stem, stem.to_lower()]
+	if stem.length() > 0:
+		casings.append(stem.substr(0, 1).to_upper() + stem.substr(1).to_lower())
+	for s in casings:
+		var path: String = dir_path + s + ".glb"
+		if ResourceLoader.exists(path):
+			return path
+	return ""
+
+
 func _find_glb(stem: String) -> String:
+	var direct := _direct_glb(MDL_DIR, stem)
+	if direct != "":
+		return direct
 	if _glb_index.is_empty():
 		_build_glb_index()
 	var key := stem.to_lower()
 	if _glb_index.has(key):
-		return str(_glb_index[key])
+		var indexed := str(_glb_index[key])
+		if ResourceLoader.exists(indexed) or FileAccess.file_exists(indexed):
+			return indexed
 	if key.length() >= 6:
 		for k in _glb_index.keys():
 			if str(k).begins_with(key) or key.begins_with(str(k)):
-				return str(_glb_index[k])
+				var path2 := str(_glb_index[k])
+				if ResourceLoader.exists(path2) or FileAccess.file_exists(path2):
+					return path2
 	return ""
 
 
 func _find_wmb_glb(stem: String) -> String:
+	var direct := _direct_glb(WMB_DIR, stem)
+	if direct != "":
+		return direct
 	if _wmb_index.is_empty():
 		_build_glb_index()
 	var key := stem.to_lower()
 	if _wmb_index.has(key):
-		return str(_wmb_index[key])
+		var indexed := str(_wmb_index[key])
+		if ResourceLoader.exists(indexed) or FileAccess.file_exists(indexed):
+			return indexed
 	# Also allow level-style brush names if a prop was exported there.
-	var brush := LEVEL_DIR + stem + "_brush.glb"
-	if FileAccess.file_exists(brush):
-		return brush
+	var brush_stems: Array[String] = [stem, stem.to_lower()]
+	for s in brush_stems:
+		var brush: String = LEVEL_DIR + s + "_brush.glb"
+		if _file_ok(brush):
+			return brush
 	return ""
 
 

@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dngxnbs213gsf"
 path.s3tc="res://.godot/imported/CanSing2_0.png-d2077bd89ed7d69456e7bf1a4564a5e9.s3tc.ctex"
+path.etc2="res://.godot/imported/CanSing2_0.png-d2077bd89ed7d69456e7bf1a4564a5e9.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/CanSing2_0.png"
-dest_files=["res://.godot/imported/CanSing2_0.png-d2077bd89ed7d69456e7bf1a4564a5e9.s3tc.ctex"]
+dest_files=["res://.godot/imported/CanSing2_0.png-d2077bd89ed7d69456e7bf1a4564a5e9.s3tc.ctex", "res://.godot/imported/CanSing2_0.png-d2077bd89ed7d69456e7bf1a4564a5e9.etc2.ctex"]
 
 [params]
 

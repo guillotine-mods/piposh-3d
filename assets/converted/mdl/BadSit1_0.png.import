@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bls46n45h6a3t"
 path.s3tc="res://.godot/imported/BadSit1_0.png-4205cbc558ccea9d3e797ea381a94ebd.s3tc.ctex"
+path.etc2="res://.godot/imported/BadSit1_0.png-4205cbc558ccea9d3e797ea381a94ebd.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/BadSit1_0.png"
-dest_files=["res://.godot/imported/BadSit1_0.png-4205cbc558ccea9d3e797ea381a94ebd.s3tc.ctex"]
+dest_files=["res://.godot/imported/BadSit1_0.png-4205cbc558ccea9d3e797ea381a94ebd.s3tc.ctex", "res://.godot/imported/BadSit1_0.png-4205cbc558ccea9d3e797ea381a94ebd.etc2.ctex"]
 
 [params]
 

@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://ed1m7rmwd44j"
 path.s3tc="res://.godot/imported/PozSit_0.png-ed97b1c1f9e1359f17cb96fbc578dff2.s3tc.ctex"
+path.etc2="res://.godot/imported/PozSit_0.png-ed97b1c1f9e1359f17cb96fbc578dff2.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/PozSit_0.png"
-dest_files=["res://.godot/imported/PozSit_0.png-ed97b1c1f9e1359f17cb96fbc578dff2.s3tc.ctex"]
+dest_files=["res://.godot/imported/PozSit_0.png-ed97b1c1f9e1359f17cb96fbc578dff2.s3tc.ctex", "res://.godot/imported/PozSit_0.png-ed97b1c1f9e1359f17cb96fbc578dff2.etc2.ctex"]
 
 [params]
 

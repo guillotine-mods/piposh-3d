@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bbpp1b4i1q0y7"
 path.s3tc="res://.godot/imported/Buffet_0.png-7b83492d16d4bc3765ddeb1ebf23eca8.s3tc.ctex"
+path.etc2="res://.godot/imported/Buffet_0.png-7b83492d16d4bc3765ddeb1ebf23eca8.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Buffet_0.png"
-dest_files=["res://.godot/imported/Buffet_0.png-7b83492d16d4bc3765ddeb1ebf23eca8.s3tc.ctex"]
+dest_files=["res://.godot/imported/Buffet_0.png-7b83492d16d4bc3765ddeb1ebf23eca8.s3tc.ctex", "res://.godot/imported/Buffet_0.png-7b83492d16d4bc3765ddeb1ebf23eca8.etc2.ctex"]
 
 [params]
 

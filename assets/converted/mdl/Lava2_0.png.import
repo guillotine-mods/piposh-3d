@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bj4e23nfits7y"
 path.s3tc="res://.godot/imported/Lava2_0.png-a2af50951f1e8bfec4650f8223495cd0.s3tc.ctex"
+path.etc2="res://.godot/imported/Lava2_0.png-a2af50951f1e8bfec4650f8223495cd0.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Lava2_0.png"
-dest_files=["res://.godot/imported/Lava2_0.png-a2af50951f1e8bfec4650f8223495cd0.s3tc.ctex"]
+dest_files=["res://.godot/imported/Lava2_0.png-a2af50951f1e8bfec4650f8223495cd0.s3tc.ctex", "res://.godot/imported/Lava2_0.png-a2af50951f1e8bfec4650f8223495cd0.etc2.ctex"]
 
 [params]
 

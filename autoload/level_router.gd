@@ -29,6 +29,11 @@ var aliases := {
 	"Ending": "Ending",
 	"Final": "Final",
 	"Outro": "Outro",
+	"Shiks": "Shiks",
+	"Plane": "Plane",
+	"Plane2": "Plane2",
+	"Plane3": "Plane3",
+	"Smash": "Smash",
 }
 
 

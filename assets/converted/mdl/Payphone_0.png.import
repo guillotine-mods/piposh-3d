@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://o8nmarv8um4x"
 path.s3tc="res://.godot/imported/Payphone_0.png-5fe204d1ed98b2bfd49986db9dadd558.s3tc.ctex"
+path.etc2="res://.godot/imported/Payphone_0.png-5fe204d1ed98b2bfd49986db9dadd558.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Payphone_0.png"
-dest_files=["res://.godot/imported/Payphone_0.png-5fe204d1ed98b2bfd49986db9dadd558.s3tc.ctex"]
+dest_files=["res://.godot/imported/Payphone_0.png-5fe204d1ed98b2bfd49986db9dadd558.s3tc.ctex", "res://.godot/imported/Payphone_0.png-5fe204d1ed98b2bfd49986db9dadd558.etc2.ctex"]
 
 [params]
 

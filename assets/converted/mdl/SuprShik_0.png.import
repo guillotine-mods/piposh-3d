@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dfavqy1cl8jfc"
 path.s3tc="res://.godot/imported/SuprShik_0.png-9e57564d9da7c91da56c11d8b7158001.s3tc.ctex"
+path.etc2="res://.godot/imported/SuprShik_0.png-9e57564d9da7c91da56c11d8b7158001.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/SuprShik_0.png"
-dest_files=["res://.godot/imported/SuprShik_0.png-9e57564d9da7c91da56c11d8b7158001.s3tc.ctex"]
+dest_files=["res://.godot/imported/SuprShik_0.png-9e57564d9da7c91da56c11d8b7158001.s3tc.ctex", "res://.godot/imported/SuprShik_0.png-9e57564d9da7c91da56c11d8b7158001.etc2.ctex"]
 
 [params]
 

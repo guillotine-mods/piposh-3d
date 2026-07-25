@@ -318,12 +318,10 @@ def _face_score_plus_x(
 
 
 def orient_mesh_face_plus_x(mesh: MeshData) -> MeshData:
-    """Snap Godot yaw so the painted face aims +X (Acknex forward). Deterministic.
+    """Snap IDPO painted face to Godot +X (Acknex forward). Deterministic.
 
-    Primary: average normal of triangles that sample the face UV on the skin.
-    Soft-raster picks front vs back (winding can point the normal either way).
-    Fallback: soft-raster over 0/90/180/270.
-    Flat props (AFG card, etc.) are left as authored — WED roll stands them up.
+    Face-UV triangle normals only — no soft-raster front/back (that flipped
+    Crowds 180°). Props with no face UV bbox are left as authored.
     """
     if mesh.positions.size == 0:
         return mesh
@@ -336,26 +334,8 @@ def orient_mesh_face_plus_x(mesh: MeshData) -> MeshData:
     except Exception:  # noqa: BLE001
         return mesh
     best_yaw = _face_uv_forward_yaw(mesh.positions, mesh.indices, mesh.uvs, skin)
-    if best_yaw is not None:
-        sc_a = _face_score_plus_x(
-            _yaw_rotate_y(mesh.positions, best_yaw), mesh.indices, mesh.uvs, skin
-        )
-        alt = (best_yaw + 180.0) % 360.0
-        sc_b = _face_score_plus_x(
-            _yaw_rotate_y(mesh.positions, alt), mesh.indices, mesh.uvs, skin
-        )
-        if sc_b > sc_a:
-            best_yaw = alt
-    else:
-        best_yaw = 0.0
-        best = -1e18
-        for yaw in (0.0, 90.0, 180.0, 270.0):
-            sc = _face_score_plus_x(
-                _yaw_rotate_y(mesh.positions, yaw), mesh.indices, mesh.uvs, skin
-            )
-            if sc > best:
-                best = sc
-                best_yaw = yaw
+    if best_yaw is None:
+        return mesh
     if abs(best_yaw) < 1e-3:
         return mesh
     mesh.positions = _yaw_rotate_y(mesh.positions, best_yaw).astype(np.float32)
@@ -719,15 +699,21 @@ def parse_quake_mdl(f: BinaryIO) -> MeshData:
 
 
 def parse_mdl(path: Path) -> MeshData:
+    """Uniform MDL → Godot convert:
+
+    1. Axis remap (A5 → `_gs_to_godot`, IDPO → `_idpo_to_godot`) — same as
+       mdl-texture-editor.
+    2. A5 meshes keep authored +X forward.
+    3. IDPO Quake meshes often do **not** face +X after remap; snap painted
+       face → +X via face-UV normals (`orient_mesh_face_plus_x`). Faceless
+       props are left alone. WED pan then orients every entity the same way.
+    """
     with path.open("rb") as f:
         magic = f.read(4)
         f.seek(0)
         if magic in (b"MDL3", b"MDL4", b"MDL5", b"MDL2"):
-            # A5 models are authored Acknex +X forward — do not re-yaw (Studio
-            # PipDog pans assume the converter leaves facing alone).
             return parse_conitec_mdl(f, magic)
         if magic == b"IDPO":
-            # Quake MDLs vary; snap face to +X once, then WED pan applies.
             return orient_mesh_face_plus_x(parse_quake_mdl(f))
         raise ValueError(f"Unsupported MDL magic {magic!r}")
 

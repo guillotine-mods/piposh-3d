@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://b4iqbrifcd6su"
 path.s3tc="res://.godot/imported/PozPhon1_0.png-789e074c6fcec423569d49bf396a467d.s3tc.ctex"
+path.etc2="res://.godot/imported/PozPhon1_0.png-789e074c6fcec423569d49bf396a467d.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/PozPhon1_0.png"
-dest_files=["res://.godot/imported/PozPhon1_0.png-789e074c6fcec423569d49bf396a467d.s3tc.ctex"]
+dest_files=["res://.godot/imported/PozPhon1_0.png-789e074c6fcec423569d49bf396a467d.s3tc.ctex", "res://.godot/imported/PozPhon1_0.png-789e074c6fcec423569d49bf396a467d.etc2.ctex"]
 
 [params]
 

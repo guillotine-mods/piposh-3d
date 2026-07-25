@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://cpeda471oioup"
 path.s3tc="res://.godot/imported/Pedestal_0.png-df5b8d1e00d513881807ac35265d53b2.s3tc.ctex"
+path.etc2="res://.godot/imported/Pedestal_0.png-df5b8d1e00d513881807ac35265d53b2.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Pedestal_0.png"
-dest_files=["res://.godot/imported/Pedestal_0.png-df5b8d1e00d513881807ac35265d53b2.s3tc.ctex"]
+dest_files=["res://.godot/imported/Pedestal_0.png-df5b8d1e00d513881807ac35265d53b2.s3tc.ctex", "res://.godot/imported/Pedestal_0.png-df5b8d1e00d513881807ac35265d53b2.etc2.ctex"]
 
 [params]
 

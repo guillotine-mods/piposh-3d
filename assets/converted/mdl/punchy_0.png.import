@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://0ascra1efns2"
 path.s3tc="res://.godot/imported/punchy_0.png-5eadec8f3fa1b1dd7902db88af84ddfc.s3tc.ctex"
+path.etc2="res://.godot/imported/punchy_0.png-5eadec8f3fa1b1dd7902db88af84ddfc.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/punchy_0.png"
-dest_files=["res://.godot/imported/punchy_0.png-5eadec8f3fa1b1dd7902db88af84ddfc.s3tc.ctex"]
+dest_files=["res://.godot/imported/punchy_0.png-5eadec8f3fa1b1dd7902db88af84ddfc.s3tc.ctex", "res://.godot/imported/punchy_0.png-5eadec8f3fa1b1dd7902db88af84ddfc.etc2.ctex"]
 
 [params]
 

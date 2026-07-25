@@ -45,7 +45,12 @@ Acknex / WED is **Z-up** (top view = X/Y). Godot is **Y-up**.
 |--------|-------|
 | position `(x, y, z)` | `(x, z, -y)` |
 | scale `(sx, sy, sz)` | `(sx, sz, sy)` |
-| euler `pan, tilt, roll` | `rotation_degrees = (tilt, -pan, roll)` |
+| euler `pan, tilt, roll` | `rotation_degrees = (tilt, +pan, roll)` |
+
+Entity local **+X** is Acknex forward. Cameras use `ang_to_vec` →
+`gs_view_forward_godot` (do **not** copy entity euler onto `Camera3D`).
+
+MDL convert is uniform for MDL3+ and IDPO: axis remap only, then WED pan.
 
 Shared helpers: `tools/gs_math.py`. Level JSON stores both `origin` (Godot) and `origin_gs` (raw).
 

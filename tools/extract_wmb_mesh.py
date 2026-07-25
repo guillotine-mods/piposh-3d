@@ -422,6 +422,8 @@ def main() -> int:
         "olympic",
         "shiks",
         "plane",
+        "plane2",
+        "plane3",
     }
 
     ok = 0

@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bhew46v3qobvo"
 path.s3tc="res://.godot/imported/Britphon_0.png-3a1bf5430b19a76d7f8e113fece3ade1.s3tc.ctex"
+path.etc2="res://.godot/imported/Britphon_0.png-3a1bf5430b19a76d7f8e113fece3ade1.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Britphon_0.png"
-dest_files=["res://.godot/imported/Britphon_0.png-3a1bf5430b19a76d7f8e113fece3ade1.s3tc.ctex"]
+dest_files=["res://.godot/imported/Britphon_0.png-3a1bf5430b19a76d7f8e113fece3ade1.s3tc.ctex", "res://.godot/imported/Britphon_0.png-3a1bf5430b19a76d7f8e113fece3ade1.etc2.ctex"]
 
 [params]
 

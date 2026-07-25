@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dmvigr2ojsx81"
 path.s3tc="res://.godot/imported/TownVesp_0.png-205da47672075edbada4d90d484df340.s3tc.ctex"
+path.etc2="res://.godot/imported/TownVesp_0.png-205da47672075edbada4d90d484df340.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/TownVesp_0.png"
-dest_files=["res://.godot/imported/TownVesp_0.png-205da47672075edbada4d90d484df340.s3tc.ctex"]
+dest_files=["res://.godot/imported/TownVesp_0.png-205da47672075edbada4d90d484df340.s3tc.ctex", "res://.godot/imported/TownVesp_0.png-205da47672075edbada4d90d484df340.etc2.ctex"]
 
 [params]
 

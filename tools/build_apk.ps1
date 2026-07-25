@@ -98,7 +98,7 @@ advanced_options=false
 dedicated_server=false
 custom_features=""
 export_filter="all_resources"
-include_filter=""
+include_filter="*.json, *.mdlanim, *.skins"
 exclude_filter=""
 export_path="build/android/Piposh3DAlpha.apk"
 encryption_include_filters=""
@@ -160,10 +160,16 @@ New-Item -ItemType Directory -Force -Path $outRoot | Out-Null
 $apkName = if ($Debug) { "Piposh3DAlpha-debug.apk" } else { "Piposh3DAlpha.apk" }
 $apkPath = Join-Path $outRoot $apkName
 
-# Keep preset export_path in sync
+# Keep preset export_path in sync (UTF-8 **without** BOM — Godot rejects BOM presets).
 $rel = "build/android/$apkName"
-(Get-Content $presetPath -Raw) -replace 'export_path="[^"]*"', "export_path=`"$rel`"" |
-    Set-Content $presetPath -Encoding UTF8 -NoNewline
+$utf8NoBom = New-Object System.Text.UTF8Encoding $false
+$presetText = [System.IO.File]::ReadAllText($presetPath)
+# Strip accidental BOM from earlier PowerShell Set-Content runs.
+if ($presetText.Length -gt 0 -and [int][char]$presetText[0] -eq 0xFEFF) {
+    $presetText = $presetText.Substring(1)
+}
+$presetText = $presetText -replace 'export_path="[^"]*"', "export_path=`"$rel`""
+[System.IO.File]::WriteAllText($presetPath, $presetText, $utf8NoBom)
 
 $exportFlag = if ($Debug) { "--export-debug" } else { "--export-release" }
 Write-Host "Exporting Android ($exportFlag) → $apkPath" -ForegroundColor Cyan

@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bqjabmcitf1y"
 path.s3tc="res://.godot/imported/Yoyo_0.png-43d4e33e1f6b929f8a24219d8e840a0c.s3tc.ctex"
+path.etc2="res://.godot/imported/Yoyo_0.png-43d4e33e1f6b929f8a24219d8e840a0c.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Yoyo_0.png"
-dest_files=["res://.godot/imported/Yoyo_0.png-43d4e33e1f6b929f8a24219d8e840a0c.s3tc.ctex"]
+dest_files=["res://.godot/imported/Yoyo_0.png-43d4e33e1f6b929f8a24219d8e840a0c.s3tc.ctex", "res://.godot/imported/Yoyo_0.png-43d4e33e1f6b929f8a24219d8e840a0c.etc2.ctex"]
 
 [params]
 

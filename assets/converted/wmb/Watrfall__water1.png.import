@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://c2k1yawqvpqqd"
 path.s3tc="res://.godot/imported/Watrfall__water1.png-86493ae0391bd8697078fac95d880444.s3tc.ctex"
+path.etc2="res://.godot/imported/Watrfall__water1.png-86493ae0391bd8697078fac95d880444.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/wmb/Watrfall__water1.png"
-dest_files=["res://.godot/imported/Watrfall__water1.png-86493ae0391bd8697078fac95d880444.s3tc.ctex"]
+dest_files=["res://.godot/imported/Watrfall__water1.png-86493ae0391bd8697078fac95d880444.s3tc.ctex", "res://.godot/imported/Watrfall__water1.png-86493ae0391bd8697078fac95d880444.etc2.ctex"]
 
 [params]
 

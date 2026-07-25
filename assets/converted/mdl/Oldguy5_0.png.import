@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://pflydgm4utb1"
 path.s3tc="res://.godot/imported/Oldguy5_0.png-94fd6a7360aedfa2589bbf87be1dffec.s3tc.ctex"
+path.etc2="res://.godot/imported/Oldguy5_0.png-94fd6a7360aedfa2589bbf87be1dffec.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Oldguy5_0.png"
-dest_files=["res://.godot/imported/Oldguy5_0.png-94fd6a7360aedfa2589bbf87be1dffec.s3tc.ctex"]
+dest_files=["res://.godot/imported/Oldguy5_0.png-94fd6a7360aedfa2589bbf87be1dffec.s3tc.ctex", "res://.godot/imported/Oldguy5_0.png-94fd6a7360aedfa2589bbf87be1dffec.etc2.ctex"]
 
 [params]
 

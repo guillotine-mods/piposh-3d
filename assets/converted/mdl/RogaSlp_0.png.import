@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://c3102s7g476hk"
 path.s3tc="res://.godot/imported/RogaSlp_0.png-6c1844ddc4b25a1a859e353034e0bc48.s3tc.ctex"
+path.etc2="res://.godot/imported/RogaSlp_0.png-6c1844ddc4b25a1a859e353034e0bc48.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/RogaSlp_0.png"
-dest_files=["res://.godot/imported/RogaSlp_0.png-6c1844ddc4b25a1a859e353034e0bc48.s3tc.ctex"]
+dest_files=["res://.godot/imported/RogaSlp_0.png-6c1844ddc4b25a1a859e353034e0bc48.s3tc.ctex", "res://.godot/imported/RogaSlp_0.png-6c1844ddc4b25a1a859e353034e0bc48.etc2.ctex"]
 
 [params]
 

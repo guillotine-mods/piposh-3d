@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://c3ghxfqy1j04b"
 path.s3tc="res://.godot/imported/Zimim_0.png-c494706b1d02ee6b7e23c33c72a7d70c.s3tc.ctex"
+path.etc2="res://.godot/imported/Zimim_0.png-c494706b1d02ee6b7e23c33c72a7d70c.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Zimim_0.png"
-dest_files=["res://.godot/imported/Zimim_0.png-c494706b1d02ee6b7e23c33c72a7d70c.s3tc.ctex"]
+dest_files=["res://.godot/imported/Zimim_0.png-c494706b1d02ee6b7e23c33c72a7d70c.s3tc.ctex", "res://.godot/imported/Zimim_0.png-c494706b1d02ee6b7e23c33c72a7d70c.etc2.ctex"]
 
 [params]
 

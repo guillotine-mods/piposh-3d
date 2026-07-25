@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dh1jr0d6rtr0n"
 path.s3tc="res://.godot/imported/MillEng_0.png-d5e062256cc7e9f87789d512fdfb1cdd.s3tc.ctex"
+path.etc2="res://.godot/imported/MillEng_0.png-d5e062256cc7e9f87789d512fdfb1cdd.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/MillEng_0.png"
-dest_files=["res://.godot/imported/MillEng_0.png-d5e062256cc7e9f87789d512fdfb1cdd.s3tc.ctex"]
+dest_files=["res://.godot/imported/MillEng_0.png-d5e062256cc7e9f87789d512fdfb1cdd.s3tc.ctex", "res://.godot/imported/MillEng_0.png-d5e062256cc7e9f87789d512fdfb1cdd.etc2.ctex"]
 
 [params]
 

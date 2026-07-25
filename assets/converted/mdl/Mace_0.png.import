@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://d3nlcirnyly4k"
 path.s3tc="res://.godot/imported/Mace_0.png-71605589861e47291f43a20ebd6bc1da.s3tc.ctex"
+path.etc2="res://.godot/imported/Mace_0.png-71605589861e47291f43a20ebd6bc1da.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Mace_0.png"
-dest_files=["res://.godot/imported/Mace_0.png-71605589861e47291f43a20ebd6bc1da.s3tc.ctex"]
+dest_files=["res://.godot/imported/Mace_0.png-71605589861e47291f43a20ebd6bc1da.s3tc.ctex", "res://.godot/imported/Mace_0.png-71605589861e47291f43a20ebd6bc1da.etc2.ctex"]
 
 [params]
 

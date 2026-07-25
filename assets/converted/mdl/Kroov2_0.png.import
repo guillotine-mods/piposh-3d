@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://b06wcsvs1jxjm"
 path.s3tc="res://.godot/imported/Kroov2_0.png-f0bd6eeb67697e6e9c8ed8010a4bad1f.s3tc.ctex"
+path.etc2="res://.godot/imported/Kroov2_0.png-f0bd6eeb67697e6e9c8ed8010a4bad1f.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Kroov2_0.png"
-dest_files=["res://.godot/imported/Kroov2_0.png-f0bd6eeb67697e6e9c8ed8010a4bad1f.s3tc.ctex"]
+dest_files=["res://.godot/imported/Kroov2_0.png-f0bd6eeb67697e6e9c8ed8010a4bad1f.s3tc.ctex", "res://.godot/imported/Kroov2_0.png-f0bd6eeb67697e6e9c8ed8010a4bad1f.etc2.ctex"]
 
 [params]
 

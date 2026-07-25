@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://g0wb0x32efe7"
 path.s3tc="res://.godot/imported/Bear_0.png-99149abf6f459c1e36cbeb6228778c84.s3tc.ctex"
+path.etc2="res://.godot/imported/Bear_0.png-99149abf6f459c1e36cbeb6228778c84.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Bear_0.png"
-dest_files=["res://.godot/imported/Bear_0.png-99149abf6f459c1e36cbeb6228778c84.s3tc.ctex"]
+dest_files=["res://.godot/imported/Bear_0.png-99149abf6f459c1e36cbeb6228778c84.s3tc.ctex", "res://.godot/imported/Bear_0.png-99149abf6f459c1e36cbeb6228778c84.etc2.ctex"]
 
 [params]
 

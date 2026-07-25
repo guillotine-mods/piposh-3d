@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://b4hvxbfbsiv6u"
 path.s3tc="res://.godot/imported/Shiks_WALLEAF.png-0b49bc0046ce9160e6d592d003bd22a3.s3tc.ctex"
+path.etc2="res://.godot/imported/Shiks_WALLEAF.png-0b49bc0046ce9160e6d592d003bd22a3.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/wmb/Shiks_WALLEAF.png"
-dest_files=["res://.godot/imported/Shiks_WALLEAF.png-0b49bc0046ce9160e6d592d003bd22a3.s3tc.ctex"]
+dest_files=["res://.godot/imported/Shiks_WALLEAF.png-0b49bc0046ce9160e6d592d003bd22a3.s3tc.ctex", "res://.godot/imported/Shiks_WALLEAF.png-0b49bc0046ce9160e6d592d003bd22a3.etc2.ctex"]
 
 [params]
 

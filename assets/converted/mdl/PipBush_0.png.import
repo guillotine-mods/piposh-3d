@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://uish4yrbhp53"
 path.s3tc="res://.godot/imported/PipBush_0.png-6e73c2ecfabf872f9cb377b4d65dd4e5.s3tc.ctex"
+path.etc2="res://.godot/imported/PipBush_0.png-6e73c2ecfabf872f9cb377b4d65dd4e5.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/PipBush_0.png"
-dest_files=["res://.godot/imported/PipBush_0.png-6e73c2ecfabf872f9cb377b4d65dd4e5.s3tc.ctex"]
+dest_files=["res://.godot/imported/PipBush_0.png-6e73c2ecfabf872f9cb377b4d65dd4e5.s3tc.ctex", "res://.godot/imported/PipBush_0.png-6e73c2ecfabf872f9cb377b4d65dd4e5.etc2.ctex"]
 
 [params]
 

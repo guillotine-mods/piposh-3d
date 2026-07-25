@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dh2naxcpnejpn"
 path.s3tc="res://.godot/imported/Taxi_0.png-412f3ab361a58cdeacfe04834f2e0d33.s3tc.ctex"
+path.etc2="res://.godot/imported/Taxi_0.png-412f3ab361a58cdeacfe04834f2e0d33.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Taxi_0.png"
-dest_files=["res://.godot/imported/Taxi_0.png-412f3ab361a58cdeacfe04834f2e0d33.s3tc.ctex"]
+dest_files=["res://.godot/imported/Taxi_0.png-412f3ab361a58cdeacfe04834f2e0d33.s3tc.ctex", "res://.godot/imported/Taxi_0.png-412f3ab361a58cdeacfe04834f2e0d33.etc2.ctex"]
 
 [params]
 

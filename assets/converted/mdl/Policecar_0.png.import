@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bfmj4v3bu7n4t"
 path.s3tc="res://.godot/imported/Policecar_0.png-5130da35b3430093e891d5d984af6019.s3tc.ctex"
+path.etc2="res://.godot/imported/Policecar_0.png-5130da35b3430093e891d5d984af6019.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Policecar_0.png"
-dest_files=["res://.godot/imported/Policecar_0.png-5130da35b3430093e891d5d984af6019.s3tc.ctex"]
+dest_files=["res://.godot/imported/Policecar_0.png-5130da35b3430093e891d5d984af6019.s3tc.ctex", "res://.godot/imported/Policecar_0.png-5130da35b3430093e891d5d984af6019.etc2.ctex"]
 
 [params]
 

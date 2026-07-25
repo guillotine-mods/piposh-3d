@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://byetane662j6u"
 path.s3tc="res://.godot/imported/Poz_0.png-61d3d3c85ca680889f8f91f4e4e1b915.s3tc.ctex"
+path.etc2="res://.godot/imported/Poz_0.png-61d3d3c85ca680889f8f91f4e4e1b915.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Poz_0.png"
-dest_files=["res://.godot/imported/Poz_0.png-61d3d3c85ca680889f8f91f4e4e1b915.s3tc.ctex"]
+dest_files=["res://.godot/imported/Poz_0.png-61d3d3c85ca680889f8f91f4e4e1b915.s3tc.ctex", "res://.godot/imported/Poz_0.png-61d3d3c85ca680889f8f91f4e4e1b915.etc2.ctex"]
 
 [params]
 

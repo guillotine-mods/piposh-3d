@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dt5xsxseay7ri"
 path.s3tc="res://.godot/imported/Beach ball_0.png-4c0058948e5a2b52fa3bd641232628aa.s3tc.ctex"
+path.etc2="res://.godot/imported/Beach ball_0.png-4c0058948e5a2b52fa3bd641232628aa.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Beach ball_0.png"
-dest_files=["res://.godot/imported/Beach ball_0.png-4c0058948e5a2b52fa3bd641232628aa.s3tc.ctex"]
+dest_files=["res://.godot/imported/Beach ball_0.png-4c0058948e5a2b52fa3bd641232628aa.s3tc.ctex", "res://.godot/imported/Beach ball_0.png-4c0058948e5a2b52fa3bd641232628aa.etc2.ctex"]
 
 [params]
 

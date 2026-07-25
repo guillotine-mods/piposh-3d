@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://c6v3htrqpntgl"
 path.s3tc="res://.godot/imported/MovBench_0.png-468bb2a765e1c457d8cd0d0188772926.s3tc.ctex"
+path.etc2="res://.godot/imported/MovBench_0.png-468bb2a765e1c457d8cd0d0188772926.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/MovBench_0.png"
-dest_files=["res://.godot/imported/MovBench_0.png-468bb2a765e1c457d8cd0d0188772926.s3tc.ctex"]
+dest_files=["res://.godot/imported/MovBench_0.png-468bb2a765e1c457d8cd0d0188772926.s3tc.ctex", "res://.godot/imported/MovBench_0.png-468bb2a765e1c457d8cd0d0188772926.etc2.ctex"]
 
 [params]
 

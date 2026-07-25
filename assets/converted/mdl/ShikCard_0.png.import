@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://b658ks5ox2o6t"
 path.s3tc="res://.godot/imported/ShikCard_0.png-84b6e7d163da2e8582bca2865931907f.s3tc.ctex"
+path.etc2="res://.godot/imported/ShikCard_0.png-84b6e7d163da2e8582bca2865931907f.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/ShikCard_0.png"
-dest_files=["res://.godot/imported/ShikCard_0.png-84b6e7d163da2e8582bca2865931907f.s3tc.ctex"]
+dest_files=["res://.godot/imported/ShikCard_0.png-84b6e7d163da2e8582bca2865931907f.s3tc.ctex", "res://.godot/imported/ShikCard_0.png-84b6e7d163da2e8582bca2865931907f.etc2.ctex"]
 
 [params]
 

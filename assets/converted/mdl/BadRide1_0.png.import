@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://ndtu225wn50q"
 path.s3tc="res://.godot/imported/BadRide1_0.png-0d640f65e6b05d21ad176ec8b670cd30.s3tc.ctex"
+path.etc2="res://.godot/imported/BadRide1_0.png-0d640f65e6b05d21ad176ec8b670cd30.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/BadRide1_0.png"
-dest_files=["res://.godot/imported/BadRide1_0.png-0d640f65e6b05d21ad176ec8b670cd30.s3tc.ctex"]
+dest_files=["res://.godot/imported/BadRide1_0.png-0d640f65e6b05d21ad176ec8b670cd30.s3tc.ctex", "res://.godot/imported/BadRide1_0.png-0d640f65e6b05d21ad176ec8b670cd30.etc2.ctex"]
 
 [params]
 
