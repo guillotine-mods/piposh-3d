@@ -76,6 +76,7 @@ var _piposh_skill2 := 1
 var _dialog_index := 0
 var _shiks_path: PackedVector3Array = PackedVector3Array()
 var _shiks_path_i := 0
+var _shiks_seg_t := 0.0  # 0..1 progress through the current Catmull-Rom segment
 var _shiks_walking := false
 var _shiks_fly := false
 var _walk_away := false
@@ -135,6 +136,23 @@ const P2_VVIEW3: Array[Vector3] = [
 ## Idle scenery (Wind / Land / Dome pan jitter).
 var _idle_spinners: Array[Node3D] = []
 
+## Range.wdl state (shooting-gallery minigame)
+var _range_active := false
+var _range_cam: Node3D
+var _range_handgun: Node3D
+var _range_pan := 0.0
+var _range_tilt := 0.0
+var _range_fire_length := 0.0
+var _range_health := 609.0
+var _range_terrorists := 15
+var _range_civilians := 5
+var _range_rapidness := 400.0
+var _range_over := false
+## One dict per Terrorist entity: node, pop, dying, going_up, delay, type, base, original_z.
+var _range_targets: Array[Dictionary] = []
+const RANGE_DEFAULT_DELAY := 10.0
+const RANGE_DMG := 20.0
+
 
 func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud: GameHud = null) -> void:
 	_loader = loader
@@ -187,6 +205,7 @@ func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud
 	_dialog_index = 0
 	_shiks_path = PackedVector3Array()
 	_shiks_path_i = 0
+	_shiks_seg_t = 0.0
 	_shiks_walking = false
 	_shiks_fly = false
 	_walk_away = false
@@ -237,6 +256,18 @@ func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud
 	_p2_jet_played = false
 	_p2_hammer_t = 0.0
 	_idle_spinners.clear()
+	_range_active = false
+	_range_cam = null
+	_range_handgun = null
+	_range_pan = 0.0
+	_range_tilt = 0.0
+	_range_fire_length = 0.0
+	_range_health = 609.0
+	_range_terrorists = 15
+	_range_civilians = 5
+	_range_rapidness = 400.0
+	_range_over = false
+	_range_targets.clear()
 	fov_arc = 60.0
 	_level_script = str(level_data.get("script", loader.level_name)).to_lower()
 
@@ -388,6 +419,25 @@ func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud
 				_hide_cam_mesh(node)
 			"Wind", "Land":
 				_idle_spinners.append(node)
+			"CamTarget":
+				_range_cam = node
+				_hide_cam_mesh(node)
+			"Handgun":
+				_range_handgun = node
+				node.visible = false
+			"Terrorist":
+				_range_targets.append({
+					"node": node,
+					"pop": false,
+					"dying": false,
+					"going_up": false,
+					"delay": 0.0,
+					"type": 0,
+					"base": 1,
+					"original_y": node.global_position.y,
+				})
+				node.set_meta("range_target", true)
+				_anim_frame(node, "Stand", 0.0)
 			"PiposhWalk":
 				_plane_piposh = node
 				_anim_frame(node, "Stand", 0.0)
@@ -523,6 +573,8 @@ func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud
 		_begin_plane()
 	elif _is_plane2_level():
 		_begin_plane2()
+	elif _is_range_level():
+		_begin_range()
 	elif fp:
 		# Generic FP (Inn/Mansion/…): LevelRunner owns the camera.
 		scripted_camera = false
@@ -547,6 +599,8 @@ func _process(delta: float) -> void:
 		_update_plane(delta)
 	elif _is_plane2_level() and _plane2_active:
 		_update_plane2(delta)
+	elif _is_range_level() and _range_active:
+		_update_range(delta)
 	elif scripted_camera:
 		_update_town_cam()
 	_update_patrols(delta)
@@ -606,14 +660,22 @@ func _unhandled_input(event: InputEvent) -> void:
 			fov_arc = minf(60.0, fov_arc + 1.0)
 			if _world_camera:
 				_world_camera.fov = fov_arc
+		elif event.button_index == MOUSE_BUTTON_LEFT and _is_range_level() and _range_active:
+			_range_fire()
 		elif event.button_index == MOUSE_BUTTON_LEFT and not mouse_look:
 			# Let dialog TextureButtons handle GUI clicks first.
 			if _hud and _hud.is_dialog_open():
 				return
 			_try_click()
 
+	if event is InputEventMouseMotion and _is_range_level() and _range_active:
+		# Range.wdl CamTarget: pan/tilt -= mickey/SEN(3), tilt clamped -15..45.
+		_range_pan -= event.relative.x / 3.0
+		_range_tilt = clampf(_range_tilt - event.relative.y / 3.0, -15.0, 45.0)
+
 	if event is InputEventMouseMotion and mouse_look and scripted_camera \
-			and not _is_start_level() and not _is_shiks_level() and not _is_plane_level():
+			and not _is_start_level() and not _is_shiks_level() and not _is_plane_level() \
+			and not _is_range_level():
 		# Town.wdl / generic Cam: pan/tilt -= mickey/5 while mouse_mode==0
 		var cam := _active_cam()
 		if cam:
@@ -635,6 +697,10 @@ func _is_studio_level() -> bool:
 
 func _is_town_level() -> bool:
 	return _level_script.contains("town") or str(_loader.level_name).to_lower() == "town"
+
+
+func _is_range_level() -> bool:
+	return _level_script.contains("range") or str(_loader.level_name).to_lower() == "range"
 
 
 func _is_shiks_level() -> bool:
@@ -925,6 +991,172 @@ func _run_plane2_finale() -> void:
 	await get_tree().create_timer(0.8).timeout
 	_p2_movie = false
 	status.emit("Plane2 → Range")
+	request_run.emit("Range")
+
+
+## ---- Range.wdl: shooting-gallery minigame ----------------------------
+## Terrorist/civilian targets (shared Fakeguy.MDL, skin swap for type/hit)
+## pop up at random; shoot terrorists, avoid civilians. All terrorists dead
+## -> Run("Plane3"). Health <= 0 or all civilians dead -> restart the level.
+
+
+func _begin_range() -> void:
+	scripted_camera = true
+	mouse_look = true
+	_apply_mouse_mode()
+	_range_active = true
+	_range_over = false
+	_range_health = 609.0
+	_range_terrorists = 15
+	_range_civilians = 5
+	_range_rapidness = 400.0
+	if _range_cam:
+		_range_pan = float(_range_cam.get_meta("pan", 270.0))
+		_range_tilt = 0.0
+	if _range_handgun:
+		_range_handgun.visible = true
+		_anim_frame(_range_handgun, "Aim", 0.0)
+		# It's an FP viewmodel, not a hittable prop — the generic FP-collision
+		# rule in wmb_level_loader.gd still gives it a solid body, which would
+		# otherwise block the shooting raycast at point-blank range.
+		_disable_collision(_range_handgun)
+	for t in _range_targets:
+		var node: Node3D = t["node"]
+		if node and is_instance_valid(node):
+			node.visible = true
+	status.emit("Range — shoot the terrorists, spare the civilians (LMB fires)")
+	_update_range_hud()
+
+
+func _update_range(delta: float) -> void:
+	if _range_cam == null or _world_camera == null or _range_over:
+		return
+	var t := delta * 16.0  # Acknex ticks (~16Hz) used by the original timers
+	_world_camera.global_position = _range_cam.global_position
+	_apply_acknex_view(_world_camera, _range_pan, _range_tilt, 0.0)
+	_world_camera.fov = _acknex_arc_to_godot_fov(fov_arc)
+	_world_camera.current = true
+
+	if _range_fire_length > 0.0:
+		_anim_frame(_range_handgun, "Fire", clampf(100.0 - _range_fire_length * 10.0, 0.0, 100.0))
+		_range_fire_length -= 3.0 * t
+	elif _range_handgun:
+		_anim_frame(_range_handgun, "Aim", 0.0)
+
+	for target in _range_targets:
+		_update_range_target(target, delta, t)
+
+	if _range_health <= 0.0 or _range_civilians <= 0:
+		_range_lose()
+	elif _range_terrorists <= 0:
+		_range_win()
+
+
+func _update_range_target(target: Dictionary, delta: float, t: float) -> void:
+	var node: Node3D = target["node"]
+	if node == null or not is_instance_valid(node):
+		return
+	if bool(target["dying"]):
+		node.global_position.y -= 5.0 * t * delta
+		if node.global_position.y < float(target["original_y"]):
+			node.global_position.y = float(target["original_y"])
+			target["dying"] = false
+			target["pop"] = false
+	if bool(target["going_up"]):
+		node.global_position.y += 10.0 * t * delta
+		if node.global_position.y > float(target["original_y"]) + 60.0:
+			target["going_up"] = false
+
+	if not bool(target["pop"]) and randi() % int(_range_rapidness) == int(_range_rapidness / 2.0):
+		var civilian := randi() % 6 != 3  # 1-in-6 chance of a terrorist, else civilian
+		if civilian:
+			target["type"] = 2
+			target["base"] = [1, 10, 13, 16].pick_random()
+			target["delay"] = RANGE_DEFAULT_DELAY * 2.0
+		else:
+			target["type"] = 1
+			target["base"] = [1, 4, 7].pick_random()
+			target["delay"] = RANGE_DEFAULT_DELAY * 1.8
+		target["going_up"] = true
+		target["pop"] = true
+		_anim_set_skin(node, int(target["base"]))
+
+	if bool(target["pop"]):
+		target["delay"] = float(target["delay"]) - t
+		if float(target["delay"]) < 10.0 and int(target["type"]) == 2:
+			_anim_set_skin(node, int(target["base"]) + 1)
+		if float(target["delay"]) < 0.0:
+			if int(target["type"]) == 2:
+				target["dying"] = true
+			elif int(target["type"]) == 1:
+				_anim_set_skin(node, int(target["base"]) + 1)
+				_range_health -= RANGE_DMG
+				target["delay"] = RANGE_DEFAULT_DELAY
+				_update_range_hud()
+
+
+func _range_fire() -> void:
+	if _range_fire_length > 0.0 or _world_camera == null:
+		return
+	_range_fire_length = 10.0
+	AudioBus.play_sfx("wham.wav", -6.0)
+	var center: Vector2 = Vector2(get_viewport().size) / 2.0
+	var from := _world_camera.project_ray_origin(center)
+	var dir := _world_camera.project_ray_normal(center)
+	var space := _world_camera.get_world_3d().direct_space_state
+	var q := PhysicsRayQueryParameters3D.create(from, from + dir * 4000.0)
+	var hit := space.intersect_ray(q)
+	if hit.is_empty():
+		return
+	var n: Node = hit.get("collider") as Node
+	while n:
+		if n.has_meta("range_target"):
+			_range_target_hit(n as Node3D)
+			return
+		if str(n.get_meta("action", "")) == "TNT":
+			(n as Node3D).visible = false
+			return
+		n = n.get_parent()
+
+
+func _range_target_hit(node: Node3D) -> void:
+	for target in _range_targets:
+		if target["node"] != node or not bool(target["pop"]) or bool(target["dying"]):
+			continue
+		_anim_set_skin(node, int(target["base"]) + 2)
+		if int(target["type"]) == 2:
+			_range_civilians -= 1
+		else:
+			_range_terrorists -= 1
+			_range_rapidness = maxf(float(_range_terrorists) * 20.0, 20.0)
+		target["dying"] = true
+		target["pop"] = false
+		_update_range_hud()
+		return
+
+
+func _update_range_hud() -> void:
+	status.emit(
+		"Range — health=%d terrorists=%d civilians=%d"
+		% [maxi(int(_range_health), 0), _range_terrorists, _range_civilians]
+	)
+
+
+func _range_win() -> void:
+	_range_over = true
+	_range_active = false
+	status.emit("Range cleared — all terrorists down")
+	await get_tree().create_timer(1.5).timeout
+	request_run.emit("Plane3")
+
+
+func _range_lose() -> void:
+	_range_over = true
+	_range_active = false
+	status.emit(
+		"Range failed — %s" % ("out of health" if _range_health <= 0.0 else "a civilian was lost")
+	)
+	await get_tree().create_timer(1.5).timeout
 	request_run.emit("Range")
 
 
@@ -1220,6 +1452,7 @@ func _begin_shiks() -> void:
 		var first_key: String = str(_paths.keys()[0])
 		_shiks_path = _paths[first_key]
 	_shiks_path_i = 0
+	_shiks_seg_t = 0.0
 	if _my_camera:
 		_cam_follow = _my_camera
 		if _ztemp != 0.0:
@@ -1282,32 +1515,70 @@ func _update_shiks(delta: float) -> void:
 			_start_shiks_fly()
 
 	if _shiks_fly and _my_camera and _shiks_path.size() > 0:
-		var idx := mini(_shiks_path_i, _shiks_path.size() - 1)
-		var target := _shiks_path[idx]
-		var pos := _my_camera.global_position
-		var to := Vector3(target.x - pos.x, 0.0, target.z - pos.z)
-		if to.length() < 12.0:
-			_shiks_path_i += 1
-			if _shiks_path_i >= mini(7, _shiks_path.size()):
-				_shiks_fly = false
-				_piposh_skill2 = 4
-				_dialog_index = 2
-				_dialog_busy = false
-				if _hud:
-					_hud.show_dialog(2)
-				status.emit("Shiks — dialog 2")
-				return
-		else:
-			var step := to.normalized() * minf(80.0 * delta, to.length())
-			_my_camera.global_position = pos + step
-			if _ztemp != 0.0:
-				_my_camera.global_position.y = _ztemp
-			# Face travel direction (Acknex actor_turnto).
-			var pan := rad_to_deg(atan2(-step.z, step.x))
-			_my_camera.set_meta("pan", pan)
-			_my_camera.set_meta("tilt", 0.0)
+		_update_shiks_fly_cam(delta)
 
 	_update_shiks_actors(delta)
+
+
+func _update_shiks_fly_cam(delta: float) -> void:
+	## Continuous Catmull-Rom flight through _shiks_path instead of straight
+	## point-to-point hops — the original per-waypoint linear moves read as
+	## "a couple of stitched movements" rather than one flow (user report).
+	## Y is left untouched, matching the original (which never interpolated
+	## height along this path either — see the pre-refactor version).
+	var count := mini(7, _shiks_path.size())
+	if _shiks_path_i == 0:
+		_shiks_path_i = 1
+		_shiks_seg_t = 0.0
+	if _shiks_path_i >= count:
+		_shiks_fly = false
+		_piposh_skill2 = 4
+		_dialog_index = 2
+		_dialog_busy = false
+		if _hud:
+			_hud.show_dialog(2)
+		status.emit("Shiks — dialog 2")
+		return
+	var i := _shiks_path_i
+	var p0 := _shiks_path[maxi(i - 2, 0)]
+	var p1 := _shiks_path[i - 1]
+	var p2 := _shiks_path[i]
+	var p3 := _shiks_path[mini(i + 1, count - 1)]
+	var seg_len := maxf(Vector2(p2.x - p1.x, p2.z - p1.z).length(), 1.0)
+	var old_y := _my_camera.global_position.y
+	_shiks_seg_t += (80.0 * delta) / seg_len
+	if _shiks_seg_t >= 1.0:
+		_shiks_seg_t = 0.0
+		_shiks_path_i += 1
+		var arrived := _catmull_rom_xz(p0, p1, p2, p3, 1.0)
+		_my_camera.global_position = Vector3(arrived.x, old_y, arrived.y)
+	else:
+		var pos_xz := _catmull_rom_xz(p0, p1, p2, p3, _shiks_seg_t)
+		var next_xz := _catmull_rom_xz(p0, p1, p2, p3, minf(_shiks_seg_t + 0.02, 1.0))
+		_my_camera.global_position = Vector3(pos_xz.x, old_y, pos_xz.y)
+		var dir := next_xz - pos_xz
+		if dir.length_squared() > 1e-6:
+			# Face travel direction (Acknex actor_turnto).
+			var pan := rad_to_deg(atan2(-dir.y, dir.x))
+			_my_camera.set_meta("pan", pan)
+			_my_camera.set_meta("tilt", 0.0)
+	if _ztemp != 0.0:
+		_my_camera.global_position.y = _ztemp
+
+
+func _catmull_rom_xz(p0: Vector3, p1: Vector3, p2: Vector3, p3: Vector3, t: float) -> Vector2:
+	var a0 := Vector2(p0.x, p0.z)
+	var a1 := Vector2(p1.x, p1.z)
+	var a2 := Vector2(p2.x, p2.z)
+	var a3 := Vector2(p3.x, p3.z)
+	var t2 := t * t
+	var t3 := t2 * t
+	return 0.5 * (
+		(2.0 * a1)
+		+ (a2 - a0) * t
+		+ (2.0 * a0 - 5.0 * a1 + 4.0 * a2 - a3) * t2
+		+ (a3 - 3.0 * a2 + 3.0 * a1 - a0) * t3
+	)
 
 
 func _update_shiks_actors(delta: float) -> void:
@@ -1378,6 +1649,7 @@ func _start_shiks_fly() -> void:
 	_piposh_skill2 = 2
 	_shiks_fly = true
 	_shiks_path_i = 0
+	_shiks_seg_t = 0.0
 	if _hud:
 		_hud.hide_dialog()
 	if _my_camera and _shiks_path.size() > 0:
@@ -2284,6 +2556,14 @@ func _run_afg_take(node: Node3D) -> void:
 	status.emit("Afgan card %d collected" % card_i)
 	node.queue_free()
 	_show_afg_card(card_i)
+
+
+func _disable_collision(n: Node) -> void:
+	if n is StaticBody3D:
+		(n as StaticBody3D).collision_layer = 0
+		(n as StaticBody3D).collision_mask = 0
+	for c in n.get_children():
+		_disable_collision(c)
 
 
 func _find_first_mesh(n: Node) -> MeshInstance3D:

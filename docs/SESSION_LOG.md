@@ -483,6 +483,59 @@ ones explicitly reported) since this touched the shared function all of
 them go through, not a named exclusion list. Needs a broad playtest to
 confirm rather than one more single-model check.
 
+## 2026-07-27 — Range minigame built; Shiks camera path smoothed
+
+Answer: user confirmed the general-fix approach and asked for two
+concrete builds instead of more one-off checks: (1) implement the Range
+shooting-gallery level for real ("write it and the scene and everything"),
+and (2) fix Shiks' camera — "it feels like originally it was one moving
+motion, not a couple of stitched ones."
+
+Range: read `original/piposh3d/Range.wdl` in full before writing anything
+(per CONTRACT rule #9). It's an on-rails shooting gallery: a fixed
+`CamTarget` camera aimed with the mouse (pan/tilt, tilt clamped -15..45),
+a `Handgun` viewmodel, and ~20 `Terrorist`-actioned entities that share one
+model (`Fakeguy.MDL`) and randomly pop up as either a terrorist or a
+civilian (skin-swapped per type); shoot terrorists (correct), let civilians
+be (shooting one is a mistake), terrorists that stay up too long shoot back
+(health damage). All terrorists down -> `Run("Plane3.exe")`; health or
+civilians hitting zero -> restart. None of this had any code before —
+confirmed via a grep across `wdl_director.gd` before starting, all of
+CamTarget/Handgun/Terrorist/TNT/Ground/SkyX/Cloud were absent from the
+match statement, so `scripted_camera` and `fp` both computed false and the
+level fell all the way through to "free player camera" with nothing
+happening — exactly "outside the plane and stuck".
+
+Implemented `_begin_range()`/`_update_range()` in `wdl_director.gd`: camera
+bound to `CamTarget` with the WDL's own mouse sensitivity/clamp, per-target
+state machine (pop/dying/going-up/delay) mirroring `action Terrorist`
+almost line-for-line, `_range_fire()` raycasting from screen center (the
+crosshair is screen-locked in the original too — you aim by moving the
+camera, not a cursor) against `Terrorist`/`TNT` entities via the same
+walk-up-parents pattern `_try_click` uses, health/civilian/terrorist
+counters surfaced through `status.emit` (the original's pixel-art HUD
+panels were not reproduced — noted as a simplification, not a silent gap).
+Disabled the Handgun viewmodel's auto-added collision body (the generic
+FP-collision rule in `wmb_level_loader.gd` would otherwise make it block
+its own shooting raycast at point-blank range). Not yet playtested — this
+is a full new feature, needs real gameplay verification, not just
+`check_all.ps1` passing.
+
+Shiks camera: replaced the discrete "move straight at waypoint, jump to
+next waypoint within 12 units" logic with a continuous Catmull-Rom spline
+through the same path points, parameterized by continuous arc-progress
+rather than a per-waypoint distance check. Height (Y) is still untouched
+by the path, matching the original's behavior exactly (it only ever
+computed direction from X/Z). Not yet playtested.
+
+`check_all.ps1` green after both changes (neither touches anything the
+existing test suite covers — new code paths, not modified shared ones).
+
+Result: Two features shipped this round instead of debug-and-ask, per the
+user's direction that these needed building, not diagnosing. Both need a
+real playtest — Range especially, since it's untested new gameplay, not a
+verified-then-applied fix like the facing/camera work above.
+
 ## 2026-07-26 — Camera/assets "off", characters sinking (general)
 
 Checked: user pasted `[feet-snap]` logs for Start/Menu/Studio/Shiks. Spot
