@@ -679,6 +679,103 @@ evidence of correctness unless a human specifically confirmed it; only
 external ground truth (a person's eyes) can validate an orientation fix,
 never an internal metric or "it matches an earlier commit."
 
+## 2026-07-27 — CLI silently re-enabled the just-deleted heuristic; found before it mattered again
+
+Answer: user reported Start's characters were *still* 90° off even after
+the heuristic deletion — a specific, measured, consistent amount (not the
+scattered errors a live heuristic guess produces).
+
+Checked: before assuming the deletion itself was wrong again, verified the
+actual CLI path used to regenerate assets. Found a real bug:
+`FACE_ORIENT = not args.no_face_orient` in `main()` — with the `--no-face-orient`
+flag defaulting to unset (`False`), this evaluates to `True` on every
+plain CLI run, silently overriding the new module-level default
+(`FACE_ORIENT = False`) back on. The entire "delete the heuristic, regenerate
+all 375 models" commit had been running through `main()` via
+`python tools/convert_mdl.py --magic IDPO` — meaning the heuristic was
+**still active** for that whole regeneration, despite the module default
+and `verify_mdl_facing.py` (which calls functions directly, bypassing
+`main()`) both correctly reflecting "off". The test passed because it
+never exercised the actual CLI path used to build the real assets.
+
+Fixed: renamed the flag to `--face-orient` (opt-in, matching `FIX_IDPO`'s
+`--legacy-idpo` opt-out pattern) so a plain run can no longer silently flip
+a default back on. Regenerated all 375 IDPO models again, this time via the
+corrected CLI — 250 files differ from the previous (still-heuristic-tainted)
+commit. `check_all.ps1` green; Sfan/Bus/B747 still byte-identical to their
+long-standing baseline (`cf1ecde`) as expected.
+
+Process lesson: **a unit test that calls internal functions directly does
+not prove the CLI entry point behaves the same way.** Always test (or at
+minimum spot-check the printed `[orient] FIX_IDPO=... FACE_ORIENT=...`
+line) through the actual command used to produce real output, not just the
+underlying functions.
+
+## 2026-07-27 — Crowd/Crowd2/Yachdal/Genia: legitimate per-model correction, not a heuristic guess
+
+After the CLI fix, Start's characters were re-tested and still 90° off —
+a genuine, consistent, human-measured data point, not heuristic noise. This
+is exactly the case `docs/CONTRACT.md` #2's exception process is for: a
+human-confirmed measurement, applied via `tools/mdl_yaw_allowlist.json`
+(a mechanism that existed in the repo, unwired, before this session).
+
+Wired it in: `convert_mdl.py` now has `_apply_yaw_allowlist()`, applied by
+`parse_mdl()` after the standard handedness-correct, no-heuristic remap.
+Added `Crowd`, `Crowd2`, `Yachdal`, `Genia` at `+90°` — a first guess at
+direction (the user reported magnitude, not direction); trivial to flip to
+`-90`/`270` if backwards. Added a `verify_mdl_facing.py` check confirming
+the allowlist entries are actually applied by the full `parse_mdl()`
+pipeline (required by CONTRACT's "no row without a test" rule).
+
+This is categorically different from the two failed heuristic attempts:
+it's not code guessing an angle from pixels, it's recording a fact a human
+already measured, in the one sanctioned place for such facts, with a test.
+
+## 2026-07-27 — Plane2 Krupnik hammer / TV: read the source, ported the real animation
+
+User reported Krupnik doesn't do the hammer-hitting animation and the TV
+has no animation. Checked `original/piposh3d/Plane2.wdl` directly (per
+CONTRACT rule #9) instead of guessing:
+
+- `action Krupnik`: idle `ent_cycle("Stand", ...)`; ~1/40 chance per tick to
+  start a hammer swing, then **continuously scrubs** `ent_frame("Hammer",
+  skill10)` as `skill10` ramps 0→100, playing a sound in the 50–60% window,
+  resetting at 100. The prior port did a single static `_anim_frame(...,
+  "Hammer", 50.0)` snapshot — a frozen mid-swing pose, not an animated hit.
+  Rewrote `_update_plane2`'s Krupnik block to scrub continuously, matching
+  the source exactly, with a played-once guard on the sound.
+- `action TV`: continuously cycles `my.skin` 1→12 every 4 ticks (~0.25s) —
+  a flipbook "video" effect. The prior port stored `_p2_tv` and never
+  animated it at all. Added the cycle using the existing `MdlAnimator`
+  skin-swap mechanism (same one AFG cards and Naknik already use).
+- "Control panel on the floor, should be higher/in the middle": no entity
+  named anything like "panel" exists in `Plane2.json` — likely refers to
+  Krupnik's own position/setup, not a separate object. Not fixed this
+  round; asked the user which specific model they mean.
+
+## 2026-07-27 — Range still not functional: found one real bug (skip button), added diagnostics for the rest
+
+User reports Range doesn't let them aim/shoot and no targets pop up, plus
+an unexplained "skip button" appearing after repeated deaths. Found one
+concrete, confirmed bug: `GameHud`'s skip-line button (`_skip_btn`) is
+built with `visible = true` and `mouse_filter = STOP`, and
+`set_skip_visible()` — the only way to hide it — is **never called
+anywhere in the codebase**. It's been visible (top-right, blocking clicks
+in its own rect) throughout the whole game the whole time; Range is just
+where the user happened to notice it. Fixed for Range specifically
+(`_begin_range()` now calls `_hud.set_skip_visible(false)`); the general
+case (button visible everywhere, always) is a separate, pre-existing gap,
+noted but not fixed game-wide this round.
+
+Could not find a further code-level explanation for "can't aim/shoot, no
+targets popping up" after re-reading the dispatch chain, input handlers,
+and target RNG logic — all read correctly in isolation. Added debug
+logging instead of guessing further: `_begin_range()` logs camera/handgun/
+target-count/mouse-mode on entry, `_update_range()` logs once on its first
+tick, `_range_fire()` logs every attempt (blocked/miss/hit-what). Next
+report should make the actual failure point obvious instead of requiring
+another guess.
+
 ## 2026-07-26 — Camera/assets "off", characters sinking (general)
 
 Checked: user pasted `[feet-snap]` logs for Start/Menu/Studio/Shiks. Spot

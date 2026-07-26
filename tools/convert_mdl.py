@@ -762,21 +762,58 @@ def parse_quake_mdl(f: BinaryIO) -> MeshData:
     )
 
 
+_YAW_ALLOWLIST_PATH = Path(__file__).resolve().parent / "mdl_yaw_allowlist.json"
+_yaw_allowlist_cache: dict[str, float] | None = None
+
+
+def _yaw_allowlist() -> dict[str, float]:
+    """`extra_yaw_deg` from mdl_yaw_allowlist.json, keyed lowercase stem.
+
+    The ONLY sanctioned per-model exception mechanism (docs/CONTRACT.md #2):
+    every row must be a human-confirmed measurement (a person reporting how
+    many degrees a specific model is off, in a specific level), never a
+    guess or a heuristic's opinion. Keep this list short — most models need
+    nothing here at all.
+    """
+    global _yaw_allowlist_cache
+    if _yaw_allowlist_cache is None:
+        try:
+            data = json.loads(_YAW_ALLOWLIST_PATH.read_text())
+            _yaw_allowlist_cache = {
+                k.lower(): float(v) for k, v in data.get("extra_yaw_deg", {}).items()
+            }
+        except Exception:  # noqa: BLE001
+            _yaw_allowlist_cache = {}
+    return _yaw_allowlist_cache
+
+
+def _apply_yaw_allowlist(mesh: MeshData, stem: str) -> MeshData:
+    deg = _yaw_allowlist().get(stem.lower())
+    if not deg:
+        return mesh
+    mesh.positions = _yaw_rotate_y(mesh.positions, deg).astype(np.float32)
+    mesh.frames = [(n, _yaw_rotate_y(p, deg).astype(np.float32)) for n, p in mesh.frames]
+    return mesh
+
+
 def parse_mdl(path: Path) -> MeshData:
     """Uniform MDL → Godot convert, same rule for every model regardless of
     source format (docs/CONTRACT.md #2): axis-remap into Godot with a
     handedness-correct (det +1) map, then **keep authored facing**. No
-    heuristic, no per-model branching. `_gs_to_godot` (A5) and
-    `_idpo_to_godot` with `FIX_IDPO` (IDPO) are both proper rotations; WED
-    `pan` does the rest, uniformly, exactly like the original engine.
+    heuristic, no per-model branching, except a short human-confirmed
+    `mdl_yaw_allowlist.json` (`_apply_yaw_allowlist`) for models measured to
+    need a fixed correction. `_gs_to_godot` (A5) and `_idpo_to_godot` with
+    `FIX_IDPO` (IDPO) are both proper rotations; WED `pan` does the rest,
+    uniformly, exactly like the original engine.
     """
     with path.open("rb") as f:
         magic = f.read(4)
         f.seek(0)
         if magic in (b"MDL3", b"MDL4", b"MDL5", b"MDL2"):
-            return parse_conitec_mdl(f, magic)
+            return _apply_yaw_allowlist(parse_conitec_mdl(f, magic), path.stem)
         if magic == b"IDPO":
-            return orient_mesh_face_plus_x(parse_quake_mdl(f), stem=path.stem)
+            mesh = orient_mesh_face_plus_x(parse_quake_mdl(f), stem=path.stem)
+            return _apply_yaw_allowlist(mesh, path.stem)
         raise ValueError(f"Unsupported MDL magic {magic!r}")
 
 
@@ -1004,15 +1041,20 @@ def main() -> int:
         "see docs/CONTRACT.md #2, docs/SESSION_LOG.md).",
     )
     ap.add_argument(
-        "--no-face-orient",
+        "--face-orient",
         action="store_true",
-        help="Disable the skin-pixel face heuristic (for A/B comparison only).",
+        help="Re-enable the retired skin-pixel face heuristic (for A/B comparison "
+        "only — see docs/CONTRACT.md #2, docs/SESSION_LOG.md for why this is off "
+        "by default). NOT the same flag as the old --no-face-orient; that name "
+        "silently re-enabled the heuristic by default via `not args.no_face_orient`"
+        " when this file's default flipped to FACE_ORIENT=False, undoing the fix "
+        "for every CLI-driven conversion — caught and fixed same day.",
     )
     args = ap.parse_args()
 
     global FIX_IDPO, FACE_ORIENT
     FIX_IDPO = not args.legacy_idpo
-    FACE_ORIENT = not args.no_face_orient
+    FACE_ORIENT = bool(args.face_orient)
     print(f"[orient] FIX_IDPO={FIX_IDPO} FACE_ORIENT={FACE_ORIENT}")
     if FIX_IDPO:
         # (x,y,z) -> (x,z,-y): guard the fixed permutation actually has det +1

@@ -126,7 +126,10 @@ var _p2_piposh_hit: Node3D
 var _p2_headphones: Array[Node3D] = []
 var _p2_b747_skill1 := 10.0
 var _p2_jet_played := false
-var _p2_hammer_t := 0.0
+var _p2_hammer_t := 0.0  # Plane2.wdl Krupnik my.skill10: 0 = idle, 1..100 = swing scrub
+var _p2_hammer_played := false
+var _p2_tv_t := 0.0
+var _p2_tv_skin := 1
 ## Fixed VView=3 cams from Plane2.wdl cameraX/Y/Z (Acknex → Godot).
 const P2_VVIEW3: Array[Vector3] = [
 	Vector3(35.0, 90.0, -533.0),
@@ -255,6 +258,10 @@ func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud
 	_p2_b747_skill1 = 10.0
 	_p2_jet_played = false
 	_p2_hammer_t = 0.0
+	_p2_hammer_played = false
+	_p2_tv_t = 0.0
+	_p2_tv_skin = 1
+	_range_update_logged = false
 	_idle_spinners.clear()
 	_range_active = false
 	_range_cam = null
@@ -746,19 +753,37 @@ func _begin_plane2() -> void:
 func _update_plane2(delta: float) -> void:
 	var t := delta * 16.0
 	# Krupnik hammer / talk skins when visible.
+	# Plane2.wdl action Krupnik: idle Stand cycle; ~1/40 chance per tick to
+	# start a hammer swing, then scrub my.skill10 0->100 via ent_frame
+	# ("Hammer", skill10) -- a continuous animated swing, not a static pose.
 	if _p2_krupnik and is_instance_valid(_p2_krupnik):
 		if talking == 3:
 			_anim_talk_skins(_p2_krupnik, true)
 			_face_toward(_p2_krupnik, _player_pos())
 		else:
 			_anim_talk_skins(_p2_krupnik, false)
-			_p2_hammer_t += t
-			if _p2_hammer_t > 40.0 and int(randi() % 80) == 20:
-				_p2_hammer_t = 0.0
-				_anim_frame(_p2_krupnik, "Hammer", 50.0)
-				AudioBus.play_sfx("SFX090.WAV", -12.0)
-			elif talking == 0:
+			if _p2_hammer_t <= 0.0 and int(randi() % 40) == 20:
+				_p2_hammer_t = 1.0
+				_p2_hammer_played = false
+			if _p2_hammer_t > 0.0:
+				_p2_hammer_t += 10.0 * t
+				_anim_frame(_p2_krupnik, "Hammer", clampf(_p2_hammer_t, 0.0, 100.0))
+				if _p2_hammer_t > 50.0 and _p2_hammer_t < 60.0 and not _p2_hammer_played:
+					_p2_hammer_played = true
+					AudioBus.play_sfx("SFX090.WAV", -12.0)
+				if _p2_hammer_t > 100.0:
+					_p2_hammer_t = 0.0
+			else:
 				_anim_cycle(_p2_krupnik, "Stand")
+	# Plane2.wdl action TV: continuous skin flip 1..12 every 4 ticks (~0.25s).
+	if _p2_tv and is_instance_valid(_p2_tv):
+		_p2_tv_t += t
+		if _p2_tv_t >= 4.0:
+			_p2_tv_t = 0.0
+			_p2_tv_skin += 1
+			if _p2_tv_skin > 12:
+				_p2_tv_skin = 1
+			_anim_set_skin(_p2_tv, _p2_tv_skin)
 	# STU1 always faces player when idle.
 	if _p2_stu1 and is_instance_valid(_p2_stu1) and not _p2_movie:
 		_face_toward(_p2_stu1, _player_pos())
@@ -1011,6 +1036,13 @@ func _begin_range() -> void:
 	# disable the player controller so nothing can fall back to free/FP
 	# movement (reported: could walk out of first person during the game).
 	_steal_camera()
+	if _hud:
+		# This button defaults to visible with mouse_filter=STOP and is never
+		# hidden anywhere in the codebase — confirmed as a real, general HUD
+		# gap while diagnosing "there was a skip button" during Range. Hiding
+		# it here at minimum; see docs/SESSION_LOG.md for the broader note.
+		_hud.set_skip_visible(false)
+		_hud.hide_dialog()
 	_range_active = true
 	_range_over = false
 	_range_health = 609.0
@@ -1033,9 +1065,27 @@ func _begin_range() -> void:
 			node.visible = true
 	status.emit("Range — shoot the terrorists, spare the civilians (LMB fires)")
 	_update_range_hud()
+	PiposhDebug.log_msg(
+		"range",
+		"begin: cam=%s handgun=%s targets=%d pan=%.1f tilt=%.1f mouse_mode=%s"
+		% [
+			str(_range_cam), str(_range_handgun), _range_targets.size(),
+			_range_pan, _range_tilt, str(Input.mouse_mode),
+		]
+	)
+
+
+var _range_update_logged := false
 
 
 func _update_range(delta: float) -> void:
+	if not _range_update_logged:
+		_range_update_logged = true
+		PiposhDebug.log_msg(
+			"range",
+			"update running: cam=%s world_cam=%s over=%s"
+			% [str(_range_cam), str(_world_camera), _range_over]
+		)
 	if _range_cam == null or _world_camera == null or _range_over:
 		return
 	var t := delta * 16.0  # Acknex ticks (~16Hz) used by the original timers
@@ -1103,6 +1153,11 @@ func _update_range_target(target: Dictionary, delta: float, t: float) -> void:
 
 
 func _range_fire() -> void:
+	PiposhDebug.log_msg(
+		"range",
+		"fire attempt: fire_length=%.1f world_cam=%s active=%s over=%s"
+		% [_range_fire_length, str(_world_camera), _range_active, _range_over]
+	)
 	if _range_fire_length > 0.0 or _world_camera == null:
 		return
 	_range_fire_length = 10.0
@@ -1114,16 +1169,21 @@ func _range_fire() -> void:
 	var q := PhysicsRayQueryParameters3D.create(from, from + dir * 4000.0)
 	var hit := space.intersect_ray(q)
 	if hit.is_empty():
+		PiposhDebug.log_msg("range", "fire: MISS (no collider under crosshair)")
 		return
 	var n: Node = hit.get("collider") as Node
+	var collider_name: String = str(n.name) if n else "?"
 	while n:
 		if n.has_meta("range_target"):
+			PiposhDebug.log_msg("range", "fire: HIT target %s (via %s)" % [n.name, collider_name])
 			_range_target_hit(n as Node3D)
 			return
 		if str(n.get_meta("action", "")) == "TNT":
+			PiposhDebug.log_msg("range", "fire: HIT TNT %s" % n.name)
 			(n as Node3D).visible = false
 			return
 		n = n.get_parent()
+	PiposhDebug.log_msg("range", "fire: hit %s but no range_target/TNT in its ancestry" % collider_name)
 
 
 func _range_target_hit(node: Node3D) -> void:

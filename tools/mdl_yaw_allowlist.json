@@ -1,4 +1,9 @@
 {
-  "_comment": "Optional extra yaw (degrees) baked after IDPO face-UV orient. Empty by default — contract forbids silent per-model tables. Add a row only with a verify_mdl_facing.py expectation.",
-  "extra_yaw_deg": {}
+  "_comment": "Extra yaw (degrees) baked onto a specific model's authored facing, applied after the standard handedness-correct remap (docs/CONTRACT.md #2). Every row here must be a human-confirmed measurement -- never a guess or a heuristic's output. Keep this short.",
+  "extra_yaw_deg": {
+    "Crowd": 90.0,
+    "Crowd2": 90.0,
+    "Yachdal": 90.0,
+    "Genia": 90.0
+  }
 }

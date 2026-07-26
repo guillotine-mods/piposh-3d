@@ -68,6 +68,27 @@ def main() -> int:
         else:
             print(f"OK {stem}: authored facing kept, not re-yawed")
 
+    # mdl_yaw_allowlist.json rows: human-confirmed corrections, applied by
+    # parse_mdl() (the full pipeline), not by the disabled heuristic above.
+    for stem, expect_deg in cm._yaw_allowlist().items():
+        path = MDL_DIR / f"{stem}.MDL"
+        if not path.exists():
+            print(f"FAIL {stem}: missing {path} (in mdl_yaw_allowlist.json)")
+            failed += 1
+            continue
+        with path.open("rb") as f:
+            magic = f.read(4)
+            f.seek(0)
+            base = cm.orient_mesh_face_plus_x(cm.parse_quake_mdl(f), stem=stem)
+            f.seek(0)
+            full = cm.parse_mdl(path)
+        expected = cm._yaw_rotate_y(base.positions, expect_deg)
+        if not np.allclose(full.positions, expected):
+            print(f"FAIL {stem}: allowlist yaw {expect_deg} not applied as expected")
+            failed += 1
+        else:
+            print(f"OK {stem}: allowlist yaw {expect_deg} applied")
+
     if failed:
         print(f"\n{failed} facing contract failure(s)", file=sys.stderr)
         return 1
