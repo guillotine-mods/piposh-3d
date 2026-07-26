@@ -430,6 +430,59 @@ fixed with strong reasoning and passing tests, needs visual confirmation.
 Piposh/Plane narrowed to two candidates, needs the user to disambiguate.
 Range and Shiks camera smoothing still waiting on a priority call.
 
+## 2026-07-27 — IDPO facing: the actual systemic fix (not per-model)
+
+Answer: Plane + Bus confirmed facing correctly. New report: "the stationary
+one in Start", "the many characters in the middle and the speaker that's
+a bit upper than them" (Start's Crowd/Crowd2 audience + Yachdal, who gives
+a speech from a raised position) are ~90 off. Notably, Crowd/Yachdal/Genia
+are 3 of the 5 models `verify_mdl_facing.py` already claims are correct —
+so a per-model exclusion approach (like Bus/B747) couldn't be the answer
+here; something about the *test itself* wasn't catching a real problem.
+User explicitly asked to stop fixing this "one by one" and fix the parsing
+generally.
+
+Checked: confirmed empirically that `FIX_IDPO`'s winding flip reverses the
+sign of the cross-product face normal in `_face_uv_forward_yaw`, shifting
+its computed direction by exactly 180° (measured directly: Crowd's raw
+face-UV yaw is 90° with legacy winding, 270° with FIX_IDPO winding — a
+clean 180° gap, not a coincidence). This means the previously "passing"
+verify_mdl_facing.py result was only correct *relative to the mirrored
+(det -1) legacy geometry* — the actual mesh vertices for every
+heuristic-oriented IDPO model are a left-right mirror image of the
+authored original, which a rotation can partially disguise (the model
+still ends up facing +X) but can't fully fix (asymmetric mesh details —
+a name tag, an asymmetric prop, non-mirror-symmetric anatomy — stay
+mirrored), which plausibly reads as "still somehow wrong" even after the
+heuristic "corrects" the facing direction. This is a deeper bug than
+"model faces the wrong way" — it's "model is a mirror image of itself."
+
+Fixed: added a 180° compensation inside `_face_uv_forward_yaw` itself,
+active whenever `FIX_IDPO` is set, so the heuristic's face-direction
+conclusion becomes winding-independent. Verified empirically before
+touching any real assets: with `FIX_IDPO=True` + compensation, all 5
+protected models (Crowd, Crowd2, Yachdal, Genia, Island) plus Ami compute
+`post≈0` (correctly oriented), same as before. Re-derived and updated
+`verify_mdl_facing.py`'s `EXPECT_PRE_YAW` table for the new (now
+handedness-correct, un-mirrored) numbers — documented why each one is what
+it is, not just the new values.
+
+Made `FIX_IDPO=True` the actual global default (previously `False`) now
+that it's verified compatible with every model the test suite protects,
+plus the two known heuristic-false-positive vehicles (Bus, B747, via
+`NON_FACE_STEMS`, unaffected by this specific compensation since they skip
+the heuristic entirely). Reconverted all 375 IDPO models in the game (not
+one at a time) — `check_all.ps1` green. This is the actual "parse the
+models to fix, not one-by-one" the user asked for: every IDPO model in the
+game now gets correct handedness, and every model with a genuine painted
+face gets a heuristic that's no longer silently coupled to a mirroring bug.
+
+Result: Should resolve Start's Crowd/Crowd2/Yachdal/Genia report (and any
+other similarly-affected IDPO model across the whole game, not just the
+ones explicitly reported) since this touched the shared function all of
+them go through, not a named exclusion list. Needs a broad playtest to
+confirm rather than one more single-model check.
+
 ## 2026-07-26 — Camera/assets "off", characters sinking (general)
 
 Checked: user pasted `[feet-snap]` logs for Start/Menu/Studio/Shiks. Spot

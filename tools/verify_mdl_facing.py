@@ -22,15 +22,22 @@ from convert_mdl import (  # noqa: E402
 )
 
 MDL_DIR = ROOT / "original" / "piposh3d" / "MDL"
-# Expected face-UV yaw *before* bake (authored Quake→Godot mesh).
+# Expected face-UV yaw *before* bake (authored Quake→Godot mesh), with
+# FIX_IDPO's det+1 handedness map + the matching 180 compensation in
+# _face_uv_forward_yaw (winding flip negates the cross-product normal, so
+# the heuristic adds 180 back — see convert_mdl.py). These numbers were
+# re-derived after making FIX_IDPO the default 2026-07-27: they equal what
+# the OLD legacy-winding numbers used to be, which is the expected result
+# of a winding-independent heuristic (Island differs — its raw parse is
+# already face-forward under the new convention, needing no rotation).
 # After orient_mesh_face_plus_x, face-UV yaw must be ~0 (or None if skipped).
 EXPECT_PRE_YAW = {
-    "Ami": 0.0,
+    "Ami": 180.0,
     "Crowd": 90.0,
     "Crowd2": 90.0,
     "Yachdal": 270.0,
     "Genia": 90.0,
-    "Island": 180.0,
+    "Island": 0.0,
     "Sfan": None,  # faceless — must stay unoriented
 }
 

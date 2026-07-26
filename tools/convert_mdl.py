@@ -108,18 +108,22 @@ def _image_to_png_bytes(im: Image.Image) -> bytes:
 # FIX_IDPO: use a handedness-consistent Quake map (det +1, same as A5) plus a
 #   compensating winding flip, instead of the legacy reflection (det -1). This
 #   makes A5 and Quake models share one handedness so a single cull/winding
-#   rule is correct for both. Opt-in + verify with tools/smoke_orient.gd on
-#   one model before making it the default (see docs/CONTRACT.md #2).
+#   rule is correct for both. Made the default 2026-07-27 — see below.
 # FACE_ORIENT: run the skin-pixel "find the painted face and snap to +X"
-#   heuristic. tools/verify_mdl_facing.py encodes tested-correct results for
-#   5 specific models (Crowd, Crowd2, Yachdal, Genia, Island) that DEPEND on
-#   this heuristic + the legacy winding convention together — flipping
-#   FIX_IDPO's winding changes what "front-facing" means to this heuristic's
-#   normal computation, so the two are coupled. Do not flip either default
-#   without re-deriving/updating that test's expected angles for the new
-#   winding convention, or you will silently regress already-correct models
-#   (found the hard way 2026-07-27 — see docs/SESSION_LOG.md).
-FIX_IDPO = False
+#   heuristic (only meaningful for models with an actual painted face —
+#   vehicles are excluded via NON_FACE_STEMS below).
+#
+# These two used to be coupled in a way that silently broke: winding flip
+# reverses the sign of the cross-product face normal in
+# _face_uv_forward_yaw, shifting its answer by exactly 180 (confirmed
+# empirically). `_face_uv_forward_yaw` now compensates for this internally
+# when FIX_IDPO is set, so the heuristic's face-direction conclusion is
+# winding-independent — verified this reproduces post≈0 for all 5 models
+# tools/verify_mdl_facing.py depends on (Crowd, Crowd2, Yachdal, Genia,
+# Island) plus Ami, under the corrected handedness. That test's expected
+# "pre" values were re-derived alongside this change; update both together
+# if either the compensation or these defaults change again.
+FIX_IDPO = True
 FACE_ORIENT = True
 
 
@@ -317,6 +321,13 @@ def _face_uv_forward_yaw(
         return None
     # Outward face normal at atan2(hz,hx); yaw-rotate by that angle → +X.
     ang = math.degrees(math.atan2(hz, hx))
+    if FIX_IDPO:
+        # FIX_IDPO flips triangle winding (see parse_quake_mdl), which flips
+        # the sign of this cross-product normal, shifting the computed
+        # face direction by exactly 180 — confirmed empirically (Crowd: 90
+        # with legacy winding, 270 with FIX_IDPO winding). Compensate so the
+        # heuristic's face-direction conclusion is winding-independent.
+        ang += 180.0
     return float((round(ang / 90.0) * 90.0) % 360.0)
 
 
@@ -989,24 +1000,20 @@ def main() -> int:
         help="Only convert models with this 4-byte magic (e.g. IDPO, MDL3)",
     )
     ap.add_argument(
-        "--fix-idpo",
+        "--legacy-idpo",
         action="store_true",
-        help="Use handedness-consistent Quake map (det +1) + winding flip. Verify "
-        "with tools/smoke_orient.gd on ONE model at a time — this changes what "
-        "orient_mesh_face_plus_x's normal computation considers 'front', so it is "
-        "NOT a drop-in default without re-deriving verify_mdl_facing.py's expected "
-        "angles (see docs/CONTRACT.md #2, docs/SESSION_LOG.md).",
+        help="Revert to the old det -1 reflection map (for A/B comparison only — "
+        "see docs/CONTRACT.md #2, docs/SESSION_LOG.md).",
     )
     ap.add_argument(
         "--no-face-orient",
         action="store_true",
-        help="Disable the skin-pixel face heuristic (only combine with --fix-idpo "
-        "for models verify_mdl_facing.py does NOT cover, e.g. faceless props).",
+        help="Disable the skin-pixel face heuristic (for A/B comparison only).",
     )
     args = ap.parse_args()
 
     global FIX_IDPO, FACE_ORIENT
-    FIX_IDPO = bool(args.fix_idpo)
+    FIX_IDPO = not args.legacy_idpo
     FACE_ORIENT = not args.no_face_orient
     print(f"[orient] FIX_IDPO={FIX_IDPO} FACE_ORIENT={FACE_ORIENT}")
     if FIX_IDPO:
