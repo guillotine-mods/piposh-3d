@@ -13,14 +13,21 @@ replaced, not appended to, so it stays scannable.
 
 ## Facing / orientation
 
+**2026-07-27: the face-orient heuristic is now deleted entirely** (not
+patched again) — every IDPO model uses the same one rule as A5: correct
+handedness, keep authored facing, no exceptions. Everything below marked
+FIX reflects this new pipeline and has never been human-confirmed in this
+form — needs a full fresh sweep, not spot checks of the previously-reported
+items only, since 315 models changed at once.
+
 | Item | Status | Note |
 |---|---|---|
-| Studio: Sfan (fan) | OK | Confirmed correct by user. |
-| Studio: Ami, Naknik | FIX | Restored to original (byte-identical to pre-session commit) after a bad "compensation" attempt mirrored them. Needs re-test. |
-| Start: Crowd, Crowd2, Yachdal, Genia | FIX | Same restoration as above. Needs re-test. |
-| Shiks: ShikFond ("ShikX"), Wwheel (propeller/water wheel) | FIX | Same restoration as above. Needs re-test. |
-| Shiks: Bus | **?** | Reported 180° off, but `Bus.glb` is provably unchanged since the commit the user confirmed it correct in. No explanation found — please re-check specifically (may have been conflated with Plane's B747). |
-| Plane/Plane2: B747 | FIX | Excluded from a face-detection heuristic that doesn't apply to vehicles; needs re-confirmation since the pipeline changed again since it was last checked. |
+| Studio: Sfan (fan) | OK | Confirmed correct by user (unaffected by this change — was already on this exact rule). |
+| Studio: Ami, Naknik | FIX | Now on the uniform no-heuristic rule. Needs test. |
+| Start: Crowd, Crowd2, Yachdal, Genia | FIX | Reported 90° off under the *previous* (legacy-heuristic) attempt — that attempt is gone now, this is a genuinely different result. Needs test. |
+| Shiks: ShikFond ("ShikX"), Wwheel (water wheel) | FIX | Same — reported 90° off under the now-deleted heuristic attempt. Needs test. |
+| Shiks: Bus | **?** | Reported 180° off twice, unchanged both times (it was already on the no-heuristic rule before this fix — this fix doesn't touch it). Likely a genuine one-off exception, not the heuristic problem, but no fix applied without a confirmed re-check first — see CONTRACT.md #2 on why guessing here is exactly the mistake to avoid repeating. |
+| Plane/Plane2: B747 | FIX | Same rule as Bus, unaffected by this change. Needs re-confirmation. |
 | Plane: "Pip" vs "PiposhWalk" | ? | Which one did "Piposh in Plane 90 off" mean? `PiposhWalk` faces its movement direction (shared formula, unlikely buggy); `Pip` is stationary with a static angle (if wrong, the bug is in `Piposh2.MDL` itself). Need to know which. |
 | Intro cutscenes | BUG | Reported wrong, unconfirmed root cause. 69/135 Intro models are IDPO. Need one specific model name to test. |
 | "Other mid scenes ~90° off" | BUG | No specific model named yet. |

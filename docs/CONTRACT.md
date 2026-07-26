@@ -29,42 +29,39 @@ Godot is right-handed Y-up.
 
 ## 2. MDL convert (`tools/convert_mdl.py`)
 
-Same pipeline for every model:
+**One rule, no per-model branching, for every model, A5 or IDPO alike:**
+axis-remap with the handedness-correct, det **+1** map, then **keep
+authored facing**. No face-detection heuristic runs on anything, ever.
+`_gs_to_godot` (A5) and `_idpo_to_godot` (IDPO, `FIX_IDPO` path) are both
+proper rotations from their native format into Godot; WED's `pan` then
+orients every entity uniformly regardless of source format, exactly as
+Acknex itself does. This *is* the original design intent (see history
+below) — do not reintroduce per-model classification, allowlists, or a
+heuristic without a human-confirmed reason and a byte-diff to prove it, per
+rule 3 below.
 
-1. **A5 (MDL2–5):** `_gs_to_godot` axis remap; **keep authored facing**
-   (WED pans assume MED orientation — do not face-UV re-yaw A5).
-2. **IDPO:** handled by `_convert_idpo()`, which picks per-model between
-   legacy (det -1) and FIX_IDPO (det +1) winding — see rule 5 below. Then
-   `orient_mesh_face_plus_x` (face-UV normals → +X) on whichever winding was
-   picked. **No** soft-raster 180 flip.
-3. Faceless / paper-thin props: leave authored facing.
-4. **Forbidden:** global `pan+180`, flipping IDPO to A5 Z-sign “to try”,
-   or silent per-model yaw tables. Exceptions only via
-   `tools/mdl_yaw_allowlist.json` + a test row.
-5. **A det -1 (legacy) IDPO mesh and its det +1 (FIX_IDPO) counterpart are
-   mirror images (chirality), not two rotations of the same shape.** No yaw
-   can turn one into the other for an asymmetric mesh. This means:
-   - **Never** "fix" `_face_uv_forward_yaw` or any orientation heuristic to
-     algebraically compensate for a winding/handedness change (e.g. adding
-     180° because the cross-product sign flipped). That compensation can
-     make the heuristic's own success metric pass while it silently mirrors
-     the model — a real regression that shipped once (2026-07-27: broke
-     Ami, Crowd, Crowd2, Yachdal, Genia, ShikFond, Wwheel; see
-     `docs/SESSION_LOG.md`) precisely because the test only checked the
-     heuristic's own post-orient yaw, which is self-referential and cannot
-     detect mirroring.
-   - The only sound per-model check is **direct data comparison**: does
-     switching handedness change the model's positions to something that
-     does *not* match a known-good baseline (a prior commit, or a
-     `verify_mdl_facing.py` reference)? `tools/verify_mdl_facing.py` now
-     asserts this way — extend it the same way, never by comparing angles.
-   - `_convert_idpo()`'s actual rule: if the face-orient heuristic has *any*
-     opinion on a model (even "0° rotation is already correct" — check via
-     `_face_uv_forward_yaw(...) is not None`, never via "did positions
-     change", which cannot tell a correct no-op from no-opinion-at-all),
-     keep legacy winding, matching what the heuristic was tuned against. If
-     the heuristic has no opinion (faceless/excluded), use FIX_IDPO. This is
-     deterministic and data-driven per model — not a hand-maintained list.
+1. Axis remap only: `_gs_to_godot` for MDL2–5, `_idpo_to_godot` with
+   `FIX_IDPO` for IDPO. Both are det +1 — assert it
+   (`_assert_proper_rotation`).
+2. **Forbidden:** face-UV / skin-pixel heuristics, soft-raster front/back
+   guessing, global `pan+180`, per-model yaw tables, or any mechanism that
+   decides facing from anything other than the raw authored mesh + WED pan.
+   If a specific model is later found to need an exception, it must come
+   with (a) a human-confirmed screenshot/description of what's wrong, and
+   (b) the fix must be checked by comparing rendered output, not by an
+   internal metric grading itself.
+3. **The only sound verification for an orientation change is external
+   ground truth** — a human's description of what they see, or a rendered
+   image — never a metric computed by the same code path being changed.
+   `docs/SESSION_LOG.md` 2026-07-27 has the two-strikes history of why this
+   rule exists: a "det -1 vs det +1 mirror" mistake, then a "restore to a
+   prior commit" mistake where the prior commit itself was never actually
+   human-validated for most of the affected models. A model matching an
+   earlier commit only proves *determinism*, not *correctness* — Crowd,
+   Wwheel, and Bus were all still wrong after being restored to
+   byte-identical prior states, because those prior states were never
+   confirmed correct either; they just predated this session's changes.
+   Don't equate "unchanged from before" with "right."
 
 ## 3. WMB / levels
 

@@ -104,26 +104,22 @@ def _image_to_png_bytes(im: Image.Image) -> bytes:
     return buf.getvalue()
 
 
-# --- Orientation behaviour flags -------------------------------------------
-# FIX_IDPO: use a handedness-consistent Quake map (det +1, same as A5)
-#   instead of the legacy reflection (det -1).
-# FACE_ORIENT: run the skin-pixel "find the painted face and snap to +X"
-#   heuristic.
+# --- Orientation: one rule, no per-model branching (docs/CONTRACT.md #2) ---
+# FIX_IDPO: handedness-consistent Quake map (det +1, same as A5). Always on.
+# FACE_ORIENT: skin-pixel "find the painted face" heuristic. Always OFF.
 #
-# For IDPO models these are no longer independent global switches — see
-# `_convert_idpo()`, which is what actually decides per-model, and is the
-# only correct place to do so. A det -1 (legacy) vs det +1 (FIX_IDPO) mesh
-# are genuine mirror images of each other (chirality), not two rotations of
-# the same shape, so "does the heuristic's own yaw metric read as fixed"
-# CANNOT tell you whether switching handedness broke an asymmetric model —
-# it silently mirrors it while still reporting success. That mistake shipped
-# once (2026-07-27, a "180 compensation" in _face_uv_forward_yaw) and
-# regressed several already-correct characters (Ami, Crowd, Yachdal, Genia,
-# ShikFond, Wwheel) — see docs/SESSION_LOG.md and docs/CONTRACT.md #2.
-# These module vars now only matter as the fallback for non-IDPO code paths
-# and for --legacy-idpo/--no-face-orient forced A/B comparisons.
+# The heuristic and its history of "compensating" for winding changes are
+# retired, not fixed further. Two separate mistakes shipped from trying to
+# make it work: (1) a 180-compensation that mirrored asymmetric models while
+# its own self-check kept passing, (2) a "restore to a prior commit" repair
+# that only proved determinism, not correctness, because the heuristic was
+# never actually human-validated for most of the models it touched (Crowd,
+# Wwheel, Bus were all still wrong after being restored to byte-identical
+# prior states). The only human-confirmed-correct IDPO model all along was
+# Sfan — FIX_IDPO, no heuristic. That's the rule now, for every model, same
+# as A5's "keep authored facing". See docs/SESSION_LOG.md 2026-07-27.
 FIX_IDPO = True
-FACE_ORIENT = True
+FACE_ORIENT = False
 
 
 def _assert_proper_rotation(m: np.ndarray) -> np.ndarray:
@@ -767,13 +763,12 @@ def parse_quake_mdl(f: BinaryIO) -> MeshData:
 
 
 def parse_mdl(path: Path) -> MeshData:
-    """Uniform MDL → Godot convert:
-
-    1. Axis remap (A5 → `_gs_to_godot`, IDPO → `_idpo_to_godot`) — same as
-       mdl-texture-editor.
-    2. **A5 (MDL2–5):** keep authored +X forward — WED pans were authored
-       against MED orientation. Face-UV re-yaw breaks those entities.
-    3. **IDPO:** decided per-model by `_convert_idpo` — see its docstring.
+    """Uniform MDL → Godot convert, same rule for every model regardless of
+    source format (docs/CONTRACT.md #2): axis-remap into Godot with a
+    handedness-correct (det +1) map, then **keep authored facing**. No
+    heuristic, no per-model branching. `_gs_to_godot` (A5) and
+    `_idpo_to_godot` with `FIX_IDPO` (IDPO) are both proper rotations; WED
+    `pan` does the rest, uniformly, exactly like the original engine.
     """
     with path.open("rb") as f:
         magic = f.read(4)
@@ -781,62 +776,8 @@ def parse_mdl(path: Path) -> MeshData:
         if magic in (b"MDL3", b"MDL4", b"MDL5", b"MDL2"):
             return parse_conitec_mdl(f, magic)
         if magic == b"IDPO":
-            return _convert_idpo(f, path.stem)
+            return orient_mesh_face_plus_x(parse_quake_mdl(f), stem=path.stem)
         raise ValueError(f"Unsupported MDL magic {magic!r}")
-
-
-def _convert_idpo(f: BinaryIO, stem: str) -> MeshData:
-    """Per-model, data-driven choice between the two IDPO conventions.
-
-    FIX_IDPO (det +1, correct handedness) is only "free" when nothing else
-    depends on the mesh's chirality — i.e. when the face-orient heuristic
-    has no opinion (faceless props: Sfan, Bus, B747, confirmed correct by
-    playtest). When the heuristic DOES find and re-yaw a painted face, the
-    legacy (det -1) winding is what it was tuned and playtest-validated
-    against; FIX_IDPO's winding flip makes the mesh a genuine mirror image
-    (chirality — no yaw can undo that for an asymmetric mesh), so switching
-    handedness on a heuristic-dependent model silently mirrors it even
-    though a self-check on the heuristic's own yaw metric appears to pass.
-    That mistake shipped once already (2026-07-27) and broke several
-    already-correct characters — see docs/SESSION_LOG.md. Hence: try the
-    legacy convention first; only use FIX_IDPO if the heuristic is a no-op
-    on this specific model. Deterministic, not a per-model guess list —
-    the mesh's own measured heuristic response decides.
-    """
-    global FIX_IDPO
-    saved = FIX_IDPO
-    try:
-        FIX_IDPO = False
-        f.seek(0)
-        legacy_mesh = parse_quake_mdl(f)
-        has_face = _mesh_has_face_uv(legacy_mesh, stem=stem)
-        if has_face:
-            # Heuristic has an opinion (even if that opinion is "already
-            # correct, 0 rotation") — keep legacy winding, do not switch.
-            return orient_mesh_face_plus_x(legacy_mesh, stem=stem)
-        FIX_IDPO = True
-        f.seek(0)
-        return orient_mesh_face_plus_x(parse_quake_mdl(f), stem=stem)
-    finally:
-        FIX_IDPO = saved
-
-
-def _mesh_has_face_uv(mesh: MeshData, stem: str) -> bool:
-    """True if orient_mesh_face_plus_x would find a face to act on — even if
-    the resulting yaw happens to be 0 (a no-op). Must NOT be inferred from
-    "did positions change", since a correct 0-rotation answer and "no face
-    found at all" are otherwise indistinguishable — the bug that shipped
-    2026-07-27 (see _convert_idpo docstring)."""
-    if not FACE_ORIENT or stem.lower() in NON_FACE_STEMS or mesh.positions.size == 0:
-        return False
-    ext = mesh.positions.max(0) - mesh.positions.min(0)
-    if float(ext.min()) < max(float(ext.max()) * 0.04, 0.5):
-        return False
-    try:
-        skin = np.array(Image.open(BytesIO(mesh.skin_png)).convert("RGBA"))
-    except Exception:  # noqa: BLE001
-        return False
-    return _face_uv_forward_yaw(mesh.positions, mesh.indices, mesh.uvs, skin) is not None
 
 
 def _clip_name(frame_name: str) -> str:

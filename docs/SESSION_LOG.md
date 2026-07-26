@@ -616,6 +616,69 @@ Process lesson: when "reverting to a known-good state," always diff the
 output against the actual prior artifact, never re-derive and trust a
 metric alone, however well-reasoned it seems.
 
+## 2026-07-27 — The "restore to prior commit" fix was ALSO wrong; deleted the heuristic entirely
+
+Answer: user reported the just-restored models are STILL wrong — "Start:
+characters and crowd facing 90 off", "Shiks: water-wheel 90 off, bus still
+180 off" — and pushed back hard: "the code should be 1 parse to get
+EVERYTHING correct", explicitly rejecting further per-instance chasing.
+
+This was the second wrong turn in a row, and it exposed a mistake in my
+own reasoning, not just the code: **"byte-identical to a prior commit"
+proves determinism, not correctness.** I verified the restored
+Ami/Crowd/Yachdal/Genia/ShikFond/Wwheel `.glb`s matched commits from before
+this session touched anything, and treated that as proof they were right.
+But those prior commits were never actually confirmed correct by a human
+for most of these models — only Sfan ever got an explicit "yes that's
+correct now" from the user. Crowd, Wwheel, and Bus were all *still wrong*
+after being perfectly restored to their untouched, original state, because
+that original state was itself never validated. The face-orient heuristic
+had been running on these models since before this session began, entirely
+unverified — I had been protecting a heuristic's output as if it were
+ground truth just because it predated my own changes.
+
+Re-read `docs/CONTRACT.md`'s own pre-existing (pre-session) prescription
+for this exact problem, which had been sitting unimplemented: "use a det +1
+IDPO map matching A5, and flip triangle winding... Then delete the
+skin-pixel heuristic — WED pan orients every entity uniformly, exactly like
+A5 models." That is: no heuristic, no per-model classification, one rule
+for every model. This session tried two more-clever-seeming alternatives
+first (the 180 compensation, then per-model legacy/fixed classification)
+instead of trusting that simpler, already-written answer — both failed.
+
+Fixed: deleted the heuristic path from the live pipeline entirely.
+`FACE_ORIENT` now defaults to `False`; `parse_mdl` applies the same rule to
+every IDPO model as A5 always used — handedness-correct axis remap
+(`FIX_IDPO`, det +1, unconditional), then keep authored facing, full stop.
+No `_convert_idpo`, no per-model winding choice, no `NON_FACE_STEMS`
+special-casing needed (still defined, but now unreachable in the default
+path — the heuristic it exists for never runs). Rewrote
+`verify_mdl_facing.py` to check the only thing that now matters: that nothing
+gets re-yawed, for a representative sample spanning every model this
+session fought over (Ami, Crowd, Crowd2, Yachdal, Genia, Island, ShikFond,
+Wwheel, Sfan, Bus, B747). Reconverted all 375 IDPO models — 315 changed
+from the "restore per-model" state (everything that had been on legacy
+winding switches to the simple, uniform rule); Sfan/Bus/B747 unchanged
+(they were already on this exact treatment). `check_all.ps1` green.
+Documented as the permanent rule in `docs/CONTRACT.md` #2, replacing the
+per-model version from two commits ago.
+
+Bus specifically: still unchanged by this fix (it was already using
+handedness-correct-no-heuristic before), and still reported wrong. This
+means Bus is likely a genuine, narrow exception — not another instance of
+the heuristic problem — but I have not applied a guessed correction for it;
+that would repeat the exact mistake this entry is about. Needs the user to
+re-confirm against this new build specifically before any targeted fix.
+
+Result: This is now the actual "1 parse, everything correct" architecture
+CONTRACT.md always specified. Every previously-heuristic-touched model in
+the whole game changed, not just the reported ones — needs a broad
+re-test, not a narrow one. Process lesson recorded permanently in
+CONTRACT.md: an unchanged-since-before-this-session artifact is not
+evidence of correctness unless a human specifically confirmed it; only
+external ground truth (a person's eyes) can validate an orientation fix,
+never an internal metric or "it matches an earlier commit."
+
 ## 2026-07-26 — Camera/assets "off", characters sinking (general)
 
 Checked: user pasted `[feet-snap]` logs for Start/Menu/Studio/Shiks. Spot

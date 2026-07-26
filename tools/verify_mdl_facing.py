@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
-"""Guard IDPO face->+X convert contract (docs/CONTRACT.md #2).
+"""Guard IDPO facing contract (docs/CONTRACT.md #2): one uniform rule for
+every model, no heuristic, no per-model branching.
 
-Verifies _convert_idpo()'s per-model decision directly, not just a yaw
-metric. A det -1 (legacy) vs det +1 (FIX_IDPO) mesh are mirror images of
-each other, not two rotations of the same shape — a "does the heuristic's
-own yaw metric read as ~0" check can pass while the model is silently
-mirrored (this happened for real: 2026-07-27, a "180 compensation" broke
-Ami/Crowd/Yachdal/Genia/ShikFond/Wwheel while every yaw-metric check kept
-passing). So this test checks WHICH winding convention _convert_idpo
-actually used, by comparing its output against a manually-forced parse of
-each convention, for both classes of model.
+FIX_IDPO must be on and FACE_ORIENT must be off by default, and parse_mdl
+must not re-yaw ANY model's geometry — authored facing + WED pan is the
+only source of truth, exactly like A5. This test exists because a
+heuristic-based "fix" was tried twice (2026-07-27) and both attempts
+regressed real, previously-working models while every self-check they used
+kept passing — see docs/SESSION_LOG.md. Checking "nothing gets re-yawed,
+ever" directly is what would have caught both.
 """
 from __future__ import annotations
 
@@ -25,49 +24,13 @@ import convert_mdl as cm  # noqa: E402
 
 MDL_DIR = ROOT / "original" / "piposh3d" / "MDL"
 
-# Heuristic-dependent: the face-orient heuristic finds and re-yaws a painted
-# face on these, so _convert_idpo must keep them on the legacy (det -1)
-# winding that heuristic was tuned and playtest-validated against.
-EXPECT_LEGACY = ["Ami", "Crowd", "Crowd2", "Yachdal", "Genia", "Island", "ShikFond", "Wwheel"]
-
-# Faceless / heuristic-excluded: nothing depends on chirality, so
-# _convert_idpo should use the corrected det +1 handedness.
-EXPECT_FIXED = ["Sfan", "Bus", "B747"]
-
-
-def _force_parse(stem: str, fix_idpo: bool):
-    saved = cm.FIX_IDPO
-    try:
-        cm.FIX_IDPO = fix_idpo
-        with (MDL_DIR / f"{stem}.MDL").open("rb") as f:
-            return cm.orient_mesh_face_plus_x(cm.parse_quake_mdl(f), stem=stem)
-    finally:
-        cm.FIX_IDPO = saved
-
-
-def _check(stem: str, expect_legacy: bool) -> str | None:
-    path = MDL_DIR / f"{stem}.MDL"
-    if not path.exists():
-        return f"missing {path}"
-    with path.open("rb") as f:
-        magic = f.read(4)
-        if magic != b"IDPO":
-            return None  # not applicable, skip silently
-    with path.open("rb") as f:
-        actual = cm._convert_idpo(f, stem)
-    legacy_ref = _force_parse(stem, fix_idpo=False)
-    fixed_ref = _force_parse(stem, fix_idpo=True)
-    matches_legacy = np.allclose(actual.positions, legacy_ref.positions)
-    matches_fixed = np.allclose(actual.positions, fixed_ref.positions)
-    if expect_legacy and not matches_legacy:
-        return "expected legacy (det -1) winding, got fixed (det +1) — model silently mirrored"
-    if not expect_legacy and not matches_fixed:
-        return "expected fixed (det +1) handedness, got legacy (det -1) winding"
-    if matches_legacy and matches_fixed:
-        # Only possible if the heuristic was a no-op under both conventions
-        # (a truly symmetric/faceless mesh) — fine either way, not a failure.
-        return None
-    return None
+# A representative spread: models previously fought over by the heuristic
+# (Ami, Crowd, Crowd2, Yachdal, Genia, Island, ShikFond, Wwheel), the one
+# human-confirmed-correct case (Sfan), and two vehicles (Bus, B747).
+SAMPLE_STEMS = [
+    "Ami", "Crowd", "Crowd2", "Yachdal", "Genia", "Island",
+    "ShikFond", "Wwheel", "Sfan", "Bus", "B747",
+]
 
 
 def main() -> int:
@@ -76,20 +39,34 @@ def main() -> int:
         return 0
 
     failed = 0
-    for stem in EXPECT_LEGACY:
-        err = _check(stem, expect_legacy=True)
-        if err:
-            print(f"FAIL {stem}: {err}")
+
+    if not cm.FIX_IDPO:
+        print("FAIL: FIX_IDPO default is False, must be True")
+        failed += 1
+    if cm.FACE_ORIENT:
+        print("FAIL: FACE_ORIENT default is True, must be False (no heuristic)")
+        failed += 1
+
+    for stem in SAMPLE_STEMS:
+        path = MDL_DIR / f"{stem}.MDL"
+        if not path.exists():
+            print(f"FAIL {stem}: missing {path}")
+            failed += 1
+            continue
+        with path.open("rb") as f:
+            magic = f.read(4)
+            f.seek(0)
+            if magic != b"IDPO":
+                print(f"SKIP {stem}: magic {magic!r}")
+                continue
+            raw = cm.parse_quake_mdl(f)
+        before = raw.positions.copy()
+        oriented = cm.orient_mesh_face_plus_x(raw, stem=stem)
+        if not np.allclose(oriented.positions, before):
+            print(f"FAIL {stem}: geometry was re-yawed — heuristic must be a no-op")
             failed += 1
         else:
-            print(f"OK {stem}: legacy winding (heuristic-corrected)")
-    for stem in EXPECT_FIXED:
-        err = _check(stem, expect_legacy=False)
-        if err:
-            print(f"FAIL {stem}: {err}")
-            failed += 1
-        else:
-            print(f"OK {stem}: fixed handedness (faceless/excluded)")
+            print(f"OK {stem}: authored facing kept, not re-yawed")
 
     if failed:
         print(f"\n{failed} facing contract failure(s)", file=sys.stderr)
