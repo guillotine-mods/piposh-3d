@@ -237,6 +237,82 @@ report before making further behavior changes — deliberately avoided
 guessing fixes into the camera-"not seen" mystery or the Plane2 state
 machine without more data.
 
+## 2026-07-27 — Major regression found: feet-snap policy inverted (opt-in vs opt-out)
+
+Checked: user reported fans/lights/curtains sinking below the floor
+specifically in Studio, described as "the same issue we had before." Pulled
+each entity's raw `origin_gs`/GLB mesh bounds directly:
+`StudioL_mdl_004..007` (light fixtures) all sit at raw Acknex Z=0 (floor
+level) yet their GLB mesh spans local Y from -288 to +117 — a huge range
+straddling the origin, meaning without a feet/mount-snap a large chunk of
+each fixture renders underground. Compared current `_should_feet_snap`
+(opt-in: only snap entities on a `FLOOR_ACTIONS`/`FLOOR_STEMS` whitelist)
+against the checkpoint's *pre-rewrite* version of the same function (still
+visible in this session's initial diff): the old version was opt-OUT —
+`return true` for everything except a short exclusion list (cameras, wall
+cards) — with a comment reading verbatim: **"Without snap, curtains/fans/
+StudioL sink under the floor."** That is exactly the bug just reported.
+The rewrite replaced a safe "snap by default, list the exceptions" policy
+with an unsafe "snap only these named cases" policy, silently un-snapping
+every scenery prop not on the new whitelist (fans, curtains, light rigs,
+smoke machines, ...) game-wide, not just in Studio.
+
+Note: this does NOT explain Shiks' character/camera sinking — those
+entities (stem "piposh") were already covered by the old whitelist, so the
+regression doesn't apply there; that report is still open (needs the
+`[copy-cam]`/`[feet-snap]` logs asked for last round, which weren't pasted
+this time).
+
+Fixed: restored opt-out policy in `_should_feet_snap` (default `true`,
+keeping every existing named exclusion — cameras, wall cards, window/glass/
+b747/cockpit/tv/island/headphone/biplane/hanger/towerw/dutyfree,
+land/wind/ent_rotate/item_pickup — each for the same documented reason as
+before). Removed the now-dead `_stem_has_walk_or_stand` helper and the
+whitelist constants. Updated `tools/verify_feet_snap_policy.py`, which had
+been silently mirroring the *old buggy* opt-in logic and never actually
+exercised the regressed cases (Sfan/Curtain/StudioL/Shtomba) — added those
+as explicit regression-guard test cases so this can't quietly reappear.
+
+This is level-agnostic (any level, any non-whitelisted prop), so it likely
+also explains the separately reported "Plane level assets not in place."
+
+## 2026-07-27 — AFG_Card double-wired in Plane2, second wiring wins
+
+Checked: user reported "an item I can't click" in Plane2. `AFG_Card` also
+appears in `Plane2.json` (in addition to Studio). The main entity loop
+correctly wires it to `"AFG_Take"` (this session's earlier fix). But
+`_begin_plane2()` also calls `_wire_first_person_clickables()`, whose
+`CLICK` whitelist included `"afg_card"`, re-registering the same node with
+the *raw* `"AFG_Card"` action string — which has no handler in
+`_handle_click_action`. `_make_clickable` unconditionally overwrites
+`click_action` on every call, so whichever wiring pass runs last wins;
+for Plane2 that's the second, broken one. Studio's AFG_Card wasn't affected
+because Studio's director path never calls `_wire_first_person_clickables`.
+Also checked `original/piposh3d/WDL/Plane2.wdl` for the two other
+candidates before touching anything: `PiposhHit` and the lone
+`item_pickup`-actioned entity (`BiPlane2`, a distant background prop) are
+both genuinely non-interactive by design (`PiposhHit` is a hidden
+"you got hit" camera-swap proxy driven by a global flag, not a click
+target; the `item_pickup`-actioned `BiPlane2` is 29,469 units away —
+background scenery, not a real pickup) — left both alone rather than
+"fixing" something that was already correct.
+
+Fixed: removed `"afg_card"` from `_wire_first_person_clickables`'s `CLICK`
+list, so the main loop's correct wiring (and its "already collected → skip
+spawn" check, which the whitelist path didn't replicate at all) is the only
+one that touches these entities.
+
+Asked: (see reply to user)
+
+Answer: (pending)
+
+Result: Two systemic fixes this round (feet-snap default, AFG double-wire).
+Still open: Shiks camera/character sinking (need the logs), Plane2's
+"static camera after the movie, should be walking" (state machine too
+complex to guess into — pointed at F10 overlay + asked for exact repro
+sequence, not yet answered), and Intro MDL facing (still blocked on a
+render the user needs to run).
+
 ## 2026-07-26 — Camera/assets "off", characters sinking (general)
 
 Checked: user pasted `[feet-snap]` logs for Start/Menu/Studio/Shiks. Spot

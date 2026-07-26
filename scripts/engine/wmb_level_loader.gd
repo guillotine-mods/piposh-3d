@@ -421,7 +421,14 @@ func _is_first_person_action(action: String) -> bool:
 
 
 func _should_feet_snap(action: String, stem: String) -> bool:
-	## Opt-in: floor actors only. Attachment scenery must keep WED origin.
+	## Opt-OUT: snap by default. WED origin is the floor/attachment point and
+	## MDL geometry commonly hangs below it — without this, curtains, fans,
+	## and light-rig props (StudioL) sink under the floor. A prior rewrite
+	## inverted this to opt-in (floor actors only), which silently stopped
+	## snapping every non-whitelisted prop — regression found via a user
+	## playtest report ("fans, lights and curtains a bit down under the
+	## floor" in Studio); see docs/SESSION_LOG.md. Only exclude entities
+	## whose origin is deliberately NOT a floor/feet reference.
 	if _is_camera_action(action) or stem.to_lower() == "cam":
 		return false
 	var a := action.to_lower()
@@ -437,32 +444,7 @@ func _should_feet_snap(action: String, stem: String) -> bool:
 		return false
 	if a in ["headphone", "land", "wind", "ent_rotate", "item_pickup"]:
 		return false
-	if _stem_has_walk_or_stand(s):
-		return true
-	const FLOOR_ACTIONS := [
-		"ami", "naknik", "piposhwalk", "theplanemovie", "krup", "pip",
-		"crowd", "player_walk2", "player_walk", "player_stand", "defineyachdel",
-		"passanger", "stu1", "stu2", "sikot", "krupnik", "piposhhit", "a1",
-	]
-	const FLOOR_STEMS := [
-		"piposh", "piposh2", "fpiposh", "ami", "pipdog", "krupnik", "krup2",
-		"crowd", "crowd2", "yachdal", "genia", "passn", "peggy",
-	]
-	return a in FLOOR_ACTIONS or s in FLOOR_STEMS
-
-
-func _stem_has_walk_or_stand(stem: String) -> bool:
-	var anim_path := "res://assets/converted/mdl/%s.mdlanim" % stem
-	if not (ResourceLoader.exists(anim_path) or FileAccess.file_exists(anim_path)):
-		# Case-insensitive fallback via index is expensive; try common casing.
-		anim_path = "res://assets/converted/mdl/%s.mdlanim" % stem.to_lower()
-		if not (ResourceLoader.exists(anim_path) or FileAccess.file_exists(anim_path)):
-			return false
-	var f := FileAccess.open(anim_path, FileAccess.READ)
-	if f == null:
-		return false
-	var txt := f.get_as_text()
-	return txt.contains("\"Walk\"") or txt.contains("\"Stand\"") or txt.contains("'Walk'") or txt.contains("'Stand'")
+	return true
 
 
 func _acknex_entity_basis(pan_deg: float, tilt_deg: float, roll_deg: float) -> Basis:

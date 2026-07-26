@@ -1007,8 +1007,14 @@ func _wire_first_person_clickables() -> void:
 	var entities := _loader.get_node_or_null("Entities") if _loader else null
 	if entities == null:
 		return
+	## afg_card is deliberately excluded: the main entity loop already wires
+	## it to the real "AFG_Take" handler (and removes already-collected
+	## cards). Re-wiring it here with the raw "AFG_Card" action clobbered
+	## that with an unhandled action string, silently breaking the click in
+	## Plane2 (Studio's AFG_Card was unaffected — its director never calls
+	## this function). See docs/SESSION_LOG.md.
 	const CLICK := [
-		"stu1", "stu2", "tv", "sikot", "headphone", "passanger", "afg_card",
+		"stu1", "stu2", "tv", "sikot", "headphone", "passanger",
 		"hitme", "a1", "item_pickup",
 	]
 	for n in entities.get_children():

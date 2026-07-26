@@ -1,15 +1,23 @@
 #!/usr/bin/env python3
-"""Feet-snap must be opt-in for floor actors — scenery must stay denied."""
+"""Feet-snap must be opt-OUT (snap by default) — only specific attachment
+scenery (cameras, wall cards, glass/cockpit/tv/island/etc.) is denied.
+
+Mirror scripts/engine/wmb_level_loader.gd _should_feet_snap policy in Python
+so CI fails if the contract drifts without updating this test.
+
+An earlier rewrite inverted this to opt-in (floor actors only via a
+name whitelist), which silently stopped snapping every non-whitelisted prop
+(fans, curtains, light rigs) and sank them under the floor — found via a
+user playtest report in Studio. See docs/SESSION_LOG.md. The test cases
+below include those exact regressed props so this can't silently recur.
+"""
 from __future__ import annotations
 
 import sys
 from pathlib import Path
 
-# Mirror scripts/engine/wmb_level_loader.gd _should_feet_snap policy in Python
-# so CI fails if the contract drifts without updating this test.
 
-
-def should_feet_snap(action: str, stem: str, has_walk_stand: bool) -> bool:
+def should_feet_snap(action: str, stem: str) -> bool:
     a = action.lower()
     s = stem.lower()
     if a in {
@@ -28,19 +36,7 @@ def should_feet_snap(action: str, stem: str, has_walk_stand: bool) -> bool:
         return False
     if a in {"headphone", "land", "wind", "ent_rotate", "item_pickup"}:
         return False
-    # Opt-in: floor actors only.
-    if has_walk_stand:
-        return True
-    floor_actions = {
-        "ami", "naknik", "piposhwalk", "theplanemovie", "krup", "pip",
-        "crowd", "player_walk2", "player_walk", "player_stand", "defineyachdel",
-        "passanger", "stu1", "stu2", "sikot", "krupnik", "piposhhit", "a1",
-    }
-    floor_stems = {
-        "piposh", "piposh2", "fpiposh", "ami", "pipdog", "krupnik", "krup2",
-        "crowd", "crowd2", "yachdal", "genia", "passn", "peggy",
-    }
-    return a in floor_actions or s in floor_stems
+    return True
 
 
 def main() -> int:
@@ -54,19 +50,30 @@ def main() -> int:
         ("Land", "BiPlane2"),
         ("Cam", "Cam"),
     ]:
-        if should_feet_snap(action, stem, False):
+        if should_feet_snap(action, stem):
             print(f"FAIL scenery snapped: {action}/{stem}")
             errs += 1
     # Floor actors must snap.
-    for action, stem, anim in [
-        ("Ami", "Ami", True),
-        ("PiposhWalk", "Piposh", True),
-        ("ThePlaneMovie", "Krupnik", True),
-        ("player_walk2", "Piposh", True),
-        ("Crowd", "Crowd", True),
+    for action, stem in [
+        ("Ami", "Ami"),
+        ("PiposhWalk", "Piposh"),
+        ("ThePlaneMovie", "Krupnik"),
+        ("player_walk2", "Piposh"),
+        ("Crowd", "Crowd"),
     ]:
-        if not should_feet_snap(action, stem, anim):
+        if not should_feet_snap(action, stem):
             print(f"FAIL floor actor not snapped: {action}/{stem}")
+            errs += 1
+    # Regression guard: set-dressing props with no dedicated exclusion must
+    # default to snapping (the exact bug reported in Studio).
+    for action, stem in [
+        ("", "Sfan"),
+        ("", "Curtain"),
+        ("", "StudioL"),
+        ("", "Shtomba"),
+    ]:
+        if not should_feet_snap(action, stem):
+            print(f"FAIL set-dressing prop not snapped (regression): {action}/{stem}")
             errs += 1
     if errs:
         print(f"verify_feet_snap_policy: {errs} failure(s)")
