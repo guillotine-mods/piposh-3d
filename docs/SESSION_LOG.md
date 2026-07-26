@@ -536,6 +536,86 @@ user's direction that these needed building, not diagnosing. Both need a
 real playtest — Range especially, since it's untested new gameplay, not a
 verified-then-applied fix like the facing/camera work above.
 
+## 2026-07-27 — The 180° "compensation" was wrong: mirroring vs rotation
+
+Answer: user reported the "systemic" fix regressed several previously-good
+models — Start's crowd/Yachdal now 180° off (was 90° before), Ami now 180°
+off (was confirmed correct before this session touched it), Shiks'
+ShikFond ("Shick") 180° off, a Shiks propeller (Wwheel, WaterWheel) 90°
+off. Bus reported 180° off too, despite its `.glb` being provably untouched
+since the confirmed-good `cf1ecde` commit (see below — unresolved).
+
+Root cause of the regression: the "180 compensation" added to
+`_face_uv_forward_yaw` was based on a false premise. A det -1 (legacy) IDPO
+mesh and its det +1 (FIX_IDPO) counterpart are **mirror images of each
+other** (chirality) — not two different rotations of the same shape. No
+yaw rotation can turn a mirrored asymmetric mesh into the unmirrored one.
+The compensation made the heuristic's *own* post-orient yaw metric read as
+correct, but that metric is self-referential — it only proves "the
+heuristic agrees with itself," not "the geometry matches what was
+previously confirmed correct." This is exactly why `verify_mdl_facing.py`
+kept passing throughout: it was checking the same biased function it was
+supposed to be validating.
+
+Fixed properly (`tools/convert_mdl.py`):
+- Removed the compensation from `_face_uv_forward_yaw` entirely — restored
+  to a plain, uncompensated computation.
+- Added `_convert_idpo()`: for each IDPO model, parse under **legacy**
+  winding first. If the face-orient heuristic has *any* opinion on it
+  (checked via `_face_uv_forward_yaw(...) is not None` — NOT "did positions
+  change", which can't distinguish "heuristic correctly decided 0°
+  rotation" from "heuristic found nothing at all"; this exact confusion
+  caused a second bug attempt to fail Ami/ShikFond even after removing the
+  180 compensation, caught before shipping), keep legacy winding — matching
+  what the heuristic was tuned and playtest-validated against. Only use
+  FIX_IDPO when the heuristic has no opinion at all (faceless/excluded
+  props: Sfan, Bus, B747).
+- Rewrote `verify_mdl_facing.py` to check this **by direct data
+  comparison** (does `_convert_idpo()`'s output match a manually-forced
+  legacy parse, or a manually-forced FIX_IDPO parse?) instead of an angle
+  metric — the class of check that would have caught the original mistake.
+- **Verified against ground truth, not self-consistency**: diffed the
+  regenerated `Ami.glb`/`Crowd.glb` against the very first commit
+  (`1db264d`/`df96b0d`, before this session touched anything) — **zero
+  bytes different**. Same for `ShikFond.glb`/`Wwheel.glb`. And diffed
+  `Sfan.glb`/`Bus.glb`/`B747.glb` against their confirmed-good commit
+  (`cf1ecde`) — also zero bytes different. This is the standard the lesson
+  demands: not "a metric says it's fine" but "byte-identical to a state a
+  human already confirmed with their eyes."
+- Documented this as a permanent rule in `docs/CONTRACT.md` §2.5 so this
+  exact mistake class (algebraically "fixing" an orientation metric instead
+  of comparing real output data) cannot recur without contradicting a
+  written rule.
+
+Bus (Shiks) remains unexplained — its `.glb` has not changed since the
+commit the user confirmed it working in. Either that confirmation was
+about a different model (B747, easily conflated with "bus"), or something
+context-dependent is going on. Not guessing further; asked the user to
+re-confirm specifically.
+
+Range gameplay bugs also addressed this round (not a facing issue, no
+connection to the above): `_begin_range()` now calls `_steal_camera()` to
+actually disable the player controller/FP camera (previously nothing
+stopped a fallback to free/3rd-person movement — likely why "it enables me
+to move from first person to 3rd which shouldn't be possible"), excluded
+Range from the generic RMB mouse-look toggle (it has no cursor mode in the
+original), and added a real always-visible HUD label
+(`GameHud.set_range_hud`) for health/terrorist/civilian counts — the
+previous version only used `status.emit()`, which is gated behind the F10
+debug overlay and therefore invisible in normal play, explaining "there's
+no overlays with the stats of the game".
+
+Still open, not investigated this round: Plane2's control-panel position,
+a moving-animation that should be closer to Krupnik, TV with no animation
+inside, and "there should be a scene before Range and other graphics" —
+logged in `docs/PLAYTEST.md`, need specifics/repro before touching.
+
+Result: Facing pipeline now verified against real committed baselines, not
+a self-checking metric — this is the standard to hold going forward.
+Process lesson: when "reverting to a known-good state," always diff the
+output against the actual prior artifact, never re-derive and trust a
+metric alone, however well-reasoned it seems.
+
 ## 2026-07-26 — Camera/assets "off", characters sinking (general)
 
 Checked: user pasted `[feet-snap]` logs for Start/Menu/Studio/Shiks. Spot

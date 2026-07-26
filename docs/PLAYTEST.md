@@ -1,37 +1,63 @@
 # Playtest status (is the game actually done?)
 
 `docs/LEVELS.md` tracks pipeline coverage (JSON extracted? brush built? sky
-set?) — that's necessary but says nothing about whether a level actually
-*plays right*. This file is the other half: status from someone actually
-running the level in Godot and looking at it. The goal is a **complete,
-correct game**, not a fully green `LEVELS.md` board — a level can be 100%
-"done" there and still be wrong in play.
+set?) — necessary but not sufficient. This file tracks whether a level
+actually *plays right*, from a human running it in Godot. A level can be
+100% green in `LEVELS.md` and still be wrong here.
 
-States: `Not tested` / `Reported broken` (symptom + date) / `Confirmed
-working` (date). Update this whenever the user reports back on a playtest —
-see `docs/SESSION_LOG.md` for the full investigation behind each entry.
+**Status values:** `OK` (confirmed correct) / `FIX` (changed, awaiting
+re-test) / `BUG` (reported broken, not yet fixed) / `?` (unresolved /
+contradictory — see note). Full investigation history for every row lives
+in `docs/SESSION_LOG.md`; this table is current state only — stale rows get
+replaced, not appended to, so it stays scannable.
 
-| Level | Status | Notes |
-|-------|--------|-------|
-| Studio | Fix applied, needs re-test (2026-07-27) | Wall click bug root-caused and fixed: `AFG_Card` now runs its real Afgan.wdl card-pickup behavior instead of a guessed Shiks alias; HUD card-reveal now shows something (simplified, no fade). Needs re-test. |
-| (18 levels with AFG_Card: AsyAct1-3, Credits, Dutyfree, InShrine, Inn, Intro6, MOI, Mansion, Olympic, Outro, Plane2, Race, Studio, Taxi, Temple, Travel) | Fix applied, not playtested (2026-07-27) | Same AFG_Card fix applies here (game-wide mechanic, fixed once generically). |
-| Studio, Shiks, Town, and every other scripted-camera level | Fix applied, needs re-test (2026-07-27) | Removed an undocumented +14 camera lift and a tilt-softening hack in `_copy_cam` that contradicted the original engine's exact 1:1 camera copy (`Studio.wdl` `TheCam`/`TheCam2`). Explains both the general "camera is off" report and "floating below a bit" in Shiks specifically. Needs playtest across at least Studio/Shiks/one generic level. |
-| Intro2-16 (cutscenes) | Hypothesis, unconfirmed (2026-07-27) | Reported MDL facing wrong. 69/135 models used in Intro levels are IDPO format — the format CONTRACT.md already flags as historically unreliable for facing. `--fix-idpo` toggle exists in `convert_mdl.py`/`smoke_orient.gd` but not yet verified (needs a rendered comparison; sandbox can't run it here — see SESSION_LOG). Do not flip the global default without this confirmation. |
-| All levels (any non-whitelisted scenery prop) | Major regression fixed (2026-07-27) | `_should_feet_snap` had been inverted from opt-out (snap by default, matching the original documented behavior) to opt-in (only a name whitelist), silently un-snapping every prop not on that list game-wide. Restored opt-out. Explains Studio's fans/lights/curtains sinking, and likely the separately reported "Plane level assets not in place." Needs re-test. |
-| Plane2 | Fix applied, needs re-test (2026-07-27) | AFG_Card was being wired correctly, then immediately re-wired wrong by a second function (`_wire_first_person_clickables`), breaking its click in this level specifically (Studio was unaffected). Fixed by removing the duplicate wiring. `PiposhHit`/background `BiPlane2` checked against source WDL and confirmed correctly non-interactive — not bugs. |
-| Shiks | Reported broken, unexplained (2026-07-27) | Camera and non-Piposh characters reported below floor; feet-snap regression above does not explain this (these entities were already on the old whitelist). Still needs the `[copy-cam]`/`[feet-snap]` debug logs to diagnose — not yet provided. |
-| Plane2 | Reported broken, unexplained (2026-07-27) | After the goal-collection "movie," user expects to resume first-person walking but sees a static exterior camera instead. Confirmed the level *should* enter FP mode (has `player_walk2`, not in the cutscene-forcing list) — bug is inside the Plane2 goal-movie state machine, too complex to guess a fix into without a repro. Asked user to check the F10 debug overlay (`mode=`) and describe the exact trigger sequence. |
-| Plane2 | Fix applied, needs re-test (2026-07-27) | AFG card pickup showed nothing on screen — `_show_afg_card()` was attaching to the wrong (inactive) camera reference in first-person mode. Fixed to use the actually-active viewport camera. |
-| Shiks | **Fixed, needs playtest** (2026-07-27) | Camera fly-to sequence replaced discrete waypoint-to-waypoint hops with a continuous Catmull-Rom spline through the same path points — should read as one flowing motion instead of stitched segments. Height still untouched by the path (matches original). |
-| Studio (Sfan fan) | **Confirmed fixed** (2026-07-27) | Fan was facing 180° backwards; `--fix-idpo` applied to this one model. User confirmed it now faces correctly. |
-| Shiks (Bus), Plane/Plane2 (B747) | Fix applied, needs visual confirmation (2026-07-27) | Both ~90° off. Root cause: the face-orient heuristic (skin-color detection, meant for characters) was actively mis-guessing an orientation for these vehicle models — confirmed via corrected offline analysis that it touches Bus/B747 (unlike Sfan, which it skips). Excluded both from the heuristic and applied `--fix-idpo`, matching Sfan's treatment. Does not touch the 5 protected models. Not yet visually confirmed. |
-| Plane ("Pip" or "PiposhWalk"?) | Investigated, unresolved — need disambiguation (2026-07-27) | Traced both Piposh-related entities in the Plane level: `PiposhWalk` faces its movement direction (same formula used everywhere else, unlikely buggy); `Pip` is a separate, stationary "peek/look-back" entity with a static authored angle — if this one is wrong, the bug is in `Piposh2.MDL` itself, not movement code. Need the user to say which one they mean. |
-| Start | Reported broken, no specifics (2026-07-27) | "Some models facing 90 off." No names given yet. |
-| Range | **Built, needs playtest** (2026-07-27) | Full shooting-gallery minigame implemented per `original/piposh3d/Range.wdl` (mouse-aimed camera, popup terrorist/civilian targets, health/scoring, win → Plane3, lose → restart). This is new gameplay with no prior version to compare against — needs real playtesting, not just the pipeline checks. HUD is simplified to status-text counters, not the original's pixel-art panels — noted as a gap, not hidden. |
-| All 375 IDPO models in the game | **Systemic fix applied** (2026-07-27) | Root cause: the face-orient heuristic's face-direction computation was silently coupled to IDPO winding (a 180° relationship, confirmed empirically), so "correctly oriented per the test" still meant "mirrored geometry, rotated to superficially face the right way" for every heuristic-touched model — not just Bus/B747. Added a compensation so the heuristic is winding-independent, verified all 5 protected test models plus Ami still resolve correctly, updated `verify_mdl_facing.py`'s expected values with reasoning, and reconverted all 375 IDPO models (not per-model). `check_all.ps1` green. This is expected to fix Start's Crowd/Crowd2/Yachdal/Genia report and any other similarly-affected model game-wide. Needs a broad playtest, not a single-model check. |
-| (general) | Reported broken (2026-07-27) | "Levels not correctly loaded after Plane2." Plane2→Range transition matches the original script (`Plane2.wdl` `Run("Range.exe")`) so the mapping itself is correct; likely the same static-camera-after-movie issue above, not a separate routing bug. |
-| (general) | Reported broken (2026-07-27) | "Some assets in other mid scenes pointing 90° off." No specific level/model named yet — need one to apply the same isolated `--fix-idpo --only <model>` test rather than guessing broadly again (see the Sfan row above for why a blanket change is unsafe). |
+## Facing / orientation
 
-All other levels: not yet playtested and reported on — treat `LEVELS.md`
-"generic/custom director" status as pipeline-ready, not gameplay-verified,
-until an entry appears here.
+| Item | Status | Note |
+|---|---|---|
+| Studio: Sfan (fan) | OK | Confirmed correct by user. |
+| Studio: Ami, Naknik | FIX | Restored to original (byte-identical to pre-session commit) after a bad "compensation" attempt mirrored them. Needs re-test. |
+| Start: Crowd, Crowd2, Yachdal, Genia | FIX | Same restoration as above. Needs re-test. |
+| Shiks: ShikFond ("ShikX"), Wwheel (propeller/water wheel) | FIX | Same restoration as above. Needs re-test. |
+| Shiks: Bus | **?** | Reported 180° off, but `Bus.glb` is provably unchanged since the commit the user confirmed it correct in. No explanation found — please re-check specifically (may have been conflated with Plane's B747). |
+| Plane/Plane2: B747 | FIX | Excluded from a face-detection heuristic that doesn't apply to vehicles; needs re-confirmation since the pipeline changed again since it was last checked. |
+| Plane: "Pip" vs "PiposhWalk" | ? | Which one did "Piposh in Plane 90 off" mean? `PiposhWalk` faces its movement direction (shared formula, unlikely buggy); `Pip` is stationary with a static angle (if wrong, the bug is in `Piposh2.MDL` itself). Need to know which. |
+| Intro cutscenes | BUG | Reported wrong, unconfirmed root cause. 69/135 Intro models are IDPO. Need one specific model name to test. |
+| "Other mid scenes ~90° off" | BUG | No specific model named yet. |
+
+## Camera
+
+| Item | Status | Note |
+|---|---|---|
+| Studio, Town, generic scripted levels | FIX | Removed an undocumented +14 lift / tilt-softening hack that contradicted the source engine's exact 1:1 camera copy. Needs re-test. |
+| Shiks: camera position | OK-ish | User confirmed "works better." |
+| Shiks: camera fly motion | FIX | Was straight waypoint-to-waypoint hops ("blocky"); now a continuous Catmull-Rom spline. Needs re-test. |
+| Plane2: static camera after goal-movie, should resume walking | BUG | Confirmed the level *should* enter FP mode; bug is inside the complex goal-movie state machine. Need exact repro (F10 mode readout + trigger sequence). |
+| Range | FIX | Could fall back to free/3rd-person movement mid-game — fixed via explicit `_steal_camera()`. Needs re-test. |
+
+## Positioning / sinking
+
+| Item | Status | Note |
+|---|---|---|
+| All levels: fans/curtains/light-rigs/set-dressing | FIX | `_should_feet_snap` had been inverted from opt-out to opt-in, silently un-snapping everything not on a whitelist. Restored opt-out (matches original documented behavior). Needs re-test. |
+| Shiks: camera/characters below floor | BUG | Not explained by the feet-snap fix (these were already snapped). Need `[copy-cam]`/`[feet-snap]` console logs from an actual run. |
+| Plane2: control panel too low, an animation not positioned near Krupnik | BUG | Not investigated — need the specific entity name(s). |
+
+## Clicks / interaction
+
+| Item | Status | Note |
+|---|---|---|
+| Studio: ShikNote / AFG_Card wall items | FIX | `AFG_Card` was wrongly aliased to Shiks' click action; now runs its real Afgan.wdl card-pickup behavior. Confirmed working. |
+| Plane2: AFG_Card unclickable | FIX | A second wiring pass was silently overwriting the correct one; removed the duplicate. Needs re-test. |
+| Plane2: AFG card pickup shows nothing on screen | FIX | Was attaching to an inactive camera reference in first-person mode; fixed. Needs re-test. |
+| 18 levels with AFG_Card (AsyAct1-3, Credits, Dutyfree, InShrine, Inn, Intro6, MOI, Mansion, Olympic, Outro, Plane2, Race, Studio, Taxi, Temple, Travel) | FIX | Same generic fix applies everywhere the entity appears. Not individually playtested. |
+
+## New features
+
+| Item | Status | Note |
+|---|---|---|
+| Range (shooting gallery) | FIX | Built from scratch per `Range.wdl` — targets, aiming, health, win/lose. First playtest found two bugs, both fixed: could exit to free/3rd-person view (now locked to the aim camera), no visible health/count HUD (now a real on-screen label, was previously hidden behind the F10 debug overlay). User also wants an intro scene before it starts (`Range.wdl`'s boarding dialog was simplified out) — not yet built, needs a scope decision. |
+| Plane2: TV should show an animation inside, currently blank | BUG | Not investigated. |
+
+All other levels: not yet playtested — treat `LEVELS.md` "generic/custom
+director" as pipeline-ready, not gameplay-verified, until a row exists here.

@@ -19,6 +19,7 @@ var _p_ovr: TextureRect
 var _p_shkufit: TextureRect
 var _bio: TextureRect
 var _zoom_label: Label
+var _range_label: Label
 var _dialog_root: Control
 var _dialog_bg: TextureRect
 var _opt_btns: Array[BaseButton] = []
@@ -61,6 +62,19 @@ func _ready() -> void:
 	_zoom_label.add_theme_color_override("font_color", Color(0.95, 0.9, 0.2))
 	_zoom_label.visible = false
 	_root.add_child(_zoom_label)
+
+	## Range.wdl GUI: health/terrorist/civilian counters. Simplified from the
+	## original's pixel-art panel row (Hit1-5.pcx) to text — always visible,
+	## not gated behind the F10 debug overlay like status.emit() text is.
+	_range_label = Label.new()
+	_range_label.name = "RangeHud"
+	_range_label.position = Vector2(10, 10)
+	_range_label.add_theme_font_size_override("font_size", 16)
+	_range_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3))
+	_range_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+	_range_label.add_theme_constant_override("outline_size", 3)
+	_range_label.visible = false
+	_root.add_child(_range_label)
 
 	_build_dialog()
 	_build_skip_button()
@@ -154,6 +168,15 @@ func setup_town_bio() -> void:
 
 func set_zoom_digit(zoom: int) -> void:
 	_zoom_label.text = "%02d" % clampi(zoom, 1, 14)
+
+
+func set_range_hud(text: String) -> void:
+	_range_label.visible = true
+	_range_label.text = text
+
+
+func hide_range_hud() -> void:
+	_range_label.visible = false
 
 
 func set_mouse_look(enabled: bool) -> void:

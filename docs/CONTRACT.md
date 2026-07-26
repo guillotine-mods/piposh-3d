@@ -33,12 +33,38 @@ Same pipeline for every model:
 
 1. **A5 (MDL2–5):** `_gs_to_godot` axis remap; **keep authored facing**
    (WED pans assume MED orientation — do not face-UV re-yaw A5).
-2. **IDPO:** `_idpo_to_godot` axis remap; then `orient_mesh_face_plus_x`
-   (face-UV normals → +X). **No** soft-raster 180 flip.
+2. **IDPO:** handled by `_convert_idpo()`, which picks per-model between
+   legacy (det -1) and FIX_IDPO (det +1) winding — see rule 5 below. Then
+   `orient_mesh_face_plus_x` (face-UV normals → +X) on whichever winding was
+   picked. **No** soft-raster 180 flip.
 3. Faceless / paper-thin props: leave authored facing.
 4. **Forbidden:** global `pan+180`, flipping IDPO to A5 Z-sign “to try”,
    or silent per-model yaw tables. Exceptions only via
    `tools/mdl_yaw_allowlist.json` + a test row.
+5. **A det -1 (legacy) IDPO mesh and its det +1 (FIX_IDPO) counterpart are
+   mirror images (chirality), not two rotations of the same shape.** No yaw
+   can turn one into the other for an asymmetric mesh. This means:
+   - **Never** "fix" `_face_uv_forward_yaw` or any orientation heuristic to
+     algebraically compensate for a winding/handedness change (e.g. adding
+     180° because the cross-product sign flipped). That compensation can
+     make the heuristic's own success metric pass while it silently mirrors
+     the model — a real regression that shipped once (2026-07-27: broke
+     Ami, Crowd, Crowd2, Yachdal, Genia, ShikFond, Wwheel; see
+     `docs/SESSION_LOG.md`) precisely because the test only checked the
+     heuristic's own post-orient yaw, which is self-referential and cannot
+     detect mirroring.
+   - The only sound per-model check is **direct data comparison**: does
+     switching handedness change the model's positions to something that
+     does *not* match a known-good baseline (a prior commit, or a
+     `verify_mdl_facing.py` reference)? `tools/verify_mdl_facing.py` now
+     asserts this way — extend it the same way, never by comparing angles.
+   - `_convert_idpo()`'s actual rule: if the face-orient heuristic has *any*
+     opinion on a model (even "0° rotation is already correct" — check via
+     `_face_uv_forward_yaw(...) is not None`, never via "did positions
+     change", which cannot tell a correct no-op from no-opinion-at-all),
+     keep legacy winding, matching what the heuristic was tuned against. If
+     the heuristic has no opinion (faceless/excluded), use FIX_IDPO. This is
+     deterministic and data-driven per model — not a hand-maintained list.
 
 ## 3. WMB / levels
 

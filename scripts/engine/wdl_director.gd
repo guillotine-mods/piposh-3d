@@ -647,8 +647,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			request_run.emit("Menu")
 
 	if event is InputEventMouseButton and event.pressed:
-		if event.button_index == MOUSE_BUTTON_RIGHT and (scripted_camera or _loader_has_fp()):
+		if event.button_index == MOUSE_BUTTON_RIGHT and (scripted_camera or _loader_has_fp()) \
+				and not _is_range_level():
 			# IO.wdl mouse_toggle — Town/Studio cams + Plane2 FP click targets.
+			# Range has no cursor mode at all — always aim-with-mouse.
 			mouse_look = not mouse_look
 			_apply_mouse_mode()
 			status.emit("Mouse look" if mouse_look else "Cursor mode — click targets")
@@ -1004,6 +1006,11 @@ func _begin_range() -> void:
 	scripted_camera = true
 	mouse_look = true
 	_apply_mouse_mode()
+	# Range has no free-roam/3rd-person mode in the original at all — always
+	# aim-with-mouse from a fixed CamTarget. Explicitly take the camera and
+	# disable the player controller so nothing can fall back to free/FP
+	# movement (reported: could walk out of first person during the game).
+	_steal_camera()
 	_range_active = true
 	_range_over = false
 	_range_health = 609.0
@@ -1136,16 +1143,22 @@ func _range_target_hit(node: Node3D) -> void:
 
 
 func _update_range_hud() -> void:
-	status.emit(
-		"Range — health=%d terrorists=%d civilians=%d"
+	var msg := (
+		"Health: %d\nTerrorists: %d\nCivilians: %d"
 		% [maxi(int(_range_health), 0), _range_terrorists, _range_civilians]
 	)
+	if _hud:
+		_hud.set_range_hud(msg)
+	status.emit("Range — health=%d terrorists=%d civilians=%d"
+		% [maxi(int(_range_health), 0), _range_terrorists, _range_civilians])
 
 
 func _range_win() -> void:
 	_range_over = true
 	_range_active = false
 	status.emit("Range cleared — all terrorists down")
+	if _hud:
+		_hud.hide_range_hud()
 	await get_tree().create_timer(1.5).timeout
 	request_run.emit("Plane3")
 
@@ -1156,6 +1169,8 @@ func _range_lose() -> void:
 	status.emit(
 		"Range failed — %s" % ("out of health" if _range_health <= 0.0 else "a civilian was lost")
 	)
+	if _hud:
+		_hud.hide_range_hud()
 	await get_tree().create_timer(1.5).timeout
 	request_run.emit("Range")
 
