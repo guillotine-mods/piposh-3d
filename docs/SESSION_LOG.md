@@ -380,6 +380,56 @@ learned the hard way: `FIX_IDPO` and `FACE_ORIENT` are coupled through
 winding/normal direction and must never be changed as a blanket default
 without re-deriving `verify_mdl_facing.py`'s expected angles first.
 
+## 2026-07-27 — Sfan confirmed fixed; Bus/B747 90°-off root-caused (vehicles + face heuristic don't mix)
+
+Answer: Sfan (Studio fan) confirmed facing correctly now. New reports: some
+"Start" models 90° off (unspecified which), Shiks bus 90° off, Piposh in
+"Plane" ~90° off, Plane2's moving plane 90° off, Shiks camera fly still
+blocky, Range still stuck outside the plane.
+
+Checked: found and fixed a real classification bug in my own investigation
+tooling first — a throwaway script to check whether `orient_mesh_face_plus_x`
+touches a given IDPO model returned "unchanged" for literally every model,
+because that function mutates `mesh.positions` **in place** and returns the
+same object; comparing it to itself after the fact is always true. Fixed by
+snapshotting positions before the call. Rerun showed Bus and B747 (both
+confirmed IDPO) ARE actively re-yawed by the face-orient heuristic — unlike
+Sfan, which the heuristic never touched. That heuristic looks for
+skin-colored ("face-like") pixel regions — a concept that doesn't apply to
+a bus or an airliner hull; it likely locks onto some warm-colored livery
+patch and guesses an arbitrary wrong orientation, which fits "~90 off"
+better than the clean 180 a handedness-only bug would produce.
+
+Fixed: added `NON_FACE_STEMS = {"bus", "b747"}` in `convert_mdl.py` —
+`orient_mesh_face_plus_x` now skips the heuristic entirely for these (kept
+"authored, faceless" like Sfan), and `--fix-idpo` applied to just these two
+(matching Sfan's already-confirmed treatment). This does NOT touch the 5
+heuristic-dependent protected models (verified: `verify_mdl_facing.py`
+still passes unchanged) since it's a disjoint set. `check_all.ps1` green.
+Not yet visually confirmed by the user.
+
+Investigated but not yet fixed: "Piposh in Plane 90 off". Traced Plane's
+two separate Piposh-related entities in `wdl_director.gd`: `PiposhWalk` (a
+walking NPC, faces its movement direction every frame via
+`atan2(-step.z, step.x)` — matches the same formula used everywhere else
+in the codebase, so unlikely to be the bug) and `Pip` (a distinct,
+stationary "peek and look back" entity per `original/piposh3d/Plane.wdl`'s
+`action Pip` — invisible/visible toggle + `LookBack` frame + talk, no
+movement at all). If it's `Pip` that's wrong, that points at `Piposh2.MDL`
+itself (its file), not at movement logic — but this needs the user to say
+which of the two they mean before guessing further.
+
+Not investigated this round (no specifics yet): "some Start models 90
+off" — need names.
+
+Asked: (see reply to user)
+
+Result: Net this round — Sfan confirmed working end to end (first fully
+closed loop of the debug→ask→fix→verify cycle this session). Bus/B747
+fixed with strong reasoning and passing tests, needs visual confirmation.
+Piposh/Plane narrowed to two candidates, needs the user to disambiguate.
+Range and Shiks camera smoothing still waiting on a priority call.
+
 ## 2026-07-26 — Camera/assets "off", characters sinking (general)
 
 Checked: user pasted `[feet-snap]` logs for Start/Menu/Studio/Shiks. Spot

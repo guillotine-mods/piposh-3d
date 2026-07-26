@@ -351,7 +351,18 @@ def _face_score_plus_x(
     return aspect * 800.0 + width * 15.0 + face_skin * 10.0 + features * 40.0
 
 
-def orient_mesh_face_plus_x(mesh: MeshData) -> MeshData:
+# Vehicles have no face for the skin-color heuristic to find, so it locks
+# onto whatever warm-colored paint/livery happens to be on their hull and
+# guesses an arbitrary, wrong orientation — confirmed via user playtest
+# (Bus in Shiks, B747 in Plane/Plane2 both ~90 off) and reproduced offline:
+# both ARE actively re-yawed by orient_mesh_face_plus_x (not left alone like
+# genuinely faceless props). Excluded here so they keep the same "authored
+# facing, correct handedness" treatment as Sfan (see docs/SESSION_LOG.md).
+# Add a row only with matching evidence — do not grow this speculatively.
+NON_FACE_STEMS = {"bus", "b747"}
+
+
+def orient_mesh_face_plus_x(mesh: MeshData, stem: str = "") -> MeshData:
     """Snap IDPO painted face to Godot +X (Acknex forward). Deterministic.
 
     Face-UV triangle normals only — no soft-raster front/back (that flipped
@@ -360,6 +371,8 @@ def orient_mesh_face_plus_x(mesh: MeshData) -> MeshData:
     """
     if not FACE_ORIENT:
         return mesh  # deterministic: rely on WED pan, not skin-pixel guessing
+    if stem.lower() in NON_FACE_STEMS:
+        return mesh
     if mesh.positions.size == 0:
         return mesh
     ext = mesh.positions.max(0) - mesh.positions.min(0)
@@ -754,7 +767,7 @@ def parse_mdl(path: Path) -> MeshData:
         if magic in (b"MDL3", b"MDL4", b"MDL5", b"MDL2"):
             return parse_conitec_mdl(f, magic)
         if magic == b"IDPO":
-            return orient_mesh_face_plus_x(parse_quake_mdl(f))
+            return orient_mesh_face_plus_x(parse_quake_mdl(f), stem=path.stem)
         raise ValueError(f"Unsupported MDL magic {magic!r}")
 
 
