@@ -313,6 +313,73 @@ complex to guess into — pointed at F10 overlay + asked for exact repro
 sequence, not yet answered), and Intro MDL facing (still blocked on a
 render the user needs to run).
 
+## 2026-07-27 — Follow-up: Shiks camera "blocky", AFG card invisible in Plane2 (again), IDPO facing attempt + near-miss regression
+
+Answer (to prior asks): Shiks confirmed better, but camera motion is
+"three blocky movements" instead of one flow. Plane2 AFG card: taken, but
+still nothing appears on screen (a *second*, different bug from last
+time — see below). Studio: only remaining issue is the fan (Sfan) facing
+180° backwards. Range (post-Plane2 level): camera not in the right place,
+"stage doesn't start." Some assets in "other mid scenes" pointing 90° off.
+
+Checked/fixed:
+- **AFG card in Plane2 invisible**: `_show_afg_card()` parented the card to
+  `_world_camera` (the scripted-cam reference passed to `setup()`), but
+  Plane2 runs in first-person, where the actual rendering camera is the
+  player's own `Camera3D` — `_world_camera` is a different, inactive node.
+  Fixed to use `get_viewport().get_camera_3d()` (same pattern `_try_click`
+  already used), falling back to `_world_camera` for scripted levels.
+- **Shiks camera "blocky"**: traced to `_start_shiks_fly`/`_update_shiks` —
+  the camera moves toward `_shiks_path` waypoints in straight X/Z segments
+  (Y is not interpolated at all), advancing to the next point within 12
+  units. The extracted path data has a `bezier` field per edge that isn't
+  used at runtime — likely why it reads as segmented rather than curved.
+  Not fixed this round (lower priority, scoped as a real gap, not a quick
+  guess) — flagged for the user to confirm priority.
+- **Sfan 180° + IDPO facing, attempted a global fix, reverted after it
+  broke tested models**: confirmed `Sfan.MDL` is IDPO (matches CONTRACT's
+  documented unreliable-facing path). Given IDPO is 750/1298 of all game
+  models, and the report pattern (180° here, ~90° elsewhere) matches a
+  per-model heuristic guessing wrong rather than one consistent sign error,
+  flipped `convert_mdl.py`'s `FIX_IDPO`/`FACE_ORIENT` defaults game-wide and
+  reconverted all 375 IDPO models. `tools/check_all.ps1` caught the mistake
+  immediately: `verify_mdl_facing.py` encodes a **previous session's own
+  tested fix** for 5 specific models (Crowd, Crowd2, Yachdal, Genia,
+  Island) that depends on `FACE_ORIENT`'s heuristic *and* the legacy
+  winding convention together — flipping `FIX_IDPO`'s winding changes what
+  "front-facing" means to that heuristic's normal computation, so my
+  change regressed all 5 while only being an unverified guess for Sfan.
+  Reverted defaults to `FIX_IDPO=False, FACE_ORIENT=True` (all 375 IDPO
+  models reconverted again — diff against committed `.glb`s came back
+  empty, confirming a clean revert). Documented this coupling in
+  `convert_mdl.py` so it isn't attempted blind again.
+- Applied `--fix-idpo` to **only Sfan** (`--only Sfan`, default
+  `FACE_ORIENT` untouched) — Sfan is "faceless" per `verify_mdl_facing.py`
+  (no clear face-UV bbox), so the heuristic never touched it either way;
+  this isolates the handedness/winding fix to exactly the one model with
+  actual playtest evidence, without touching the 5 tested ones.
+  `check_all.ps1` passes. **Not visually confirmed** — need the user to
+  check the Studio fan specifically.
+- Range: confirmed its entities (`Handgun`, `Terrorist`, `TNT`,
+  `CamTarget`, `CameraEngine`) are a full shooting-range minigame with no
+  case in `wdl_director.gd`'s match statement at all — i.e. it was never
+  given custom director logic (`docs/LEVELS.md` lists it "generic", not
+  "custom:range"). "Camera not in the right place, stage doesn't start" is
+  consistent with there being no implemented gameplay to start, not a
+  parsing defect — geometry/entities extract fine per the pipeline. This
+  needs new behavior code, not a re-parse; flagged as a scope question for
+  the user rather than guessing at a minigame's rules from geometry alone.
+
+Asked: (see reply to user)
+
+Result: Net this round — 1 real fix shipped (AFG camera-attach), 1 targeted
+experiment shipped needing visual confirmation (Sfan `--fix-idpo`), 1 gap
+scoped but not fixed (Shiks path smoothing), 1 scope question raised
+(Range minigame — new feature, not a bug), and one important lesson
+learned the hard way: `FIX_IDPO` and `FACE_ORIENT` are coupled through
+winding/normal direction and must never be changed as a blanket default
+without re-deriving `verify_mdl_facing.py`'s expected angles first.
+
 ## 2026-07-26 — Camera/assets "off", characters sinking (general)
 
 Checked: user pasted `[feet-snap]` logs for Start/Menu/Studio/Shiks. Spot

@@ -2302,7 +2302,14 @@ func _show_afg_card(card_i: int) -> void:
 	## flat, unshaded quad parented to the active camera (so it reads as a
 	## HUD card) for a fixed duration, no alpha ramp — the original's smooth
 	## fade is not yet ported (see docs/SESSION_LOG.md).
-	if _world_camera == null:
+	## Must attach to whichever Camera3D is actually rendering right now —
+	## _world_camera is the scripted-cam reference and is NOT current in
+	## first-person levels (Plane2), which is why the card didn't show
+	## there even though pickup worked (see docs/SESSION_LOG.md).
+	var cam := get_viewport().get_camera_3d()
+	if cam == null:
+		cam = _world_camera
+	if cam == null:
 		return
 	var path := "res://assets/converted/mdl/LeCards.glb"
 	if not ResourceLoader.exists(path):
@@ -2313,7 +2320,7 @@ func _show_afg_card(card_i: int) -> void:
 	var card := (packed as PackedScene).instantiate() as Node3D
 	if card == null:
 		return
-	_world_camera.add_child(card)
+	cam.add_child(card)
 	# Small + far enough to read as a corner HUD card, not fill the screen.
 	# Tune CARD_SCALE/CARD_DIST together after a playtest — LeCards.glb's
 	# authored size wasn't known ahead of time (see docs/SESSION_LOG.md).

@@ -111,8 +111,14 @@ def _image_to_png_bytes(im: Image.Image) -> bytes:
 #   rule is correct for both. Opt-in + verify with tools/smoke_orient.gd on
 #   one model before making it the default (see docs/CONTRACT.md #2).
 # FACE_ORIENT: run the skin-pixel "find the painted face and snap to +X"
-#   heuristic. Once FIX_IDPO is confirmed, this guessing should be turned off
-#   (WED pan orients every entity uniformly, same as A5 models).
+#   heuristic. tools/verify_mdl_facing.py encodes tested-correct results for
+#   5 specific models (Crowd, Crowd2, Yachdal, Genia, Island) that DEPEND on
+#   this heuristic + the legacy winding convention together — flipping
+#   FIX_IDPO's winding changes what "front-facing" means to this heuristic's
+#   normal computation, so the two are coupled. Do not flip either default
+#   without re-deriving/updating that test's expected angles for the new
+#   winding convention, or you will silently regress already-correct models
+#   (found the hard way 2026-07-27 — see docs/SESSION_LOG.md).
 FIX_IDPO = False
 FACE_ORIENT = True
 
@@ -973,12 +979,16 @@ def main() -> int:
         "--fix-idpo",
         action="store_true",
         help="Use handedness-consistent Quake map (det +1) + winding flip. Verify "
-        "with tools/smoke_orient.gd, then make it the default once confirmed.",
+        "with tools/smoke_orient.gd on ONE model at a time — this changes what "
+        "orient_mesh_face_plus_x's normal computation considers 'front', so it is "
+        "NOT a drop-in default without re-deriving verify_mdl_facing.py's expected "
+        "angles (see docs/CONTRACT.md #2, docs/SESSION_LOG.md).",
     )
     ap.add_argument(
         "--no-face-orient",
         action="store_true",
-        help="Disable the skin-pixel face heuristic (recommended with --fix-idpo).",
+        help="Disable the skin-pixel face heuristic (only combine with --fix-idpo "
+        "for models verify_mdl_facing.py does NOT cover, e.g. faceless props).",
     )
     args = ap.parse_args()
 
@@ -986,6 +996,10 @@ def main() -> int:
     FIX_IDPO = bool(args.fix_idpo)
     FACE_ORIENT = not args.no_face_orient
     print(f"[orient] FIX_IDPO={FIX_IDPO} FACE_ORIENT={FACE_ORIENT}")
+    if FIX_IDPO:
+        # (x,y,z) -> (x,z,-y): guard the fixed permutation actually has det +1
+        # (see docs/CONTRACT.md #2 — "assert det +1 at runtime").
+        _assert_proper_rotation(np.array([[1, 0, 0], [0, 0, 1], [0, -1, 0]], dtype=float))
 
     files = sorted(args.src.glob("*.[Mm][Dd][Ll]"))
     if args.only:
