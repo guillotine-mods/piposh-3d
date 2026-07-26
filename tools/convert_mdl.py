@@ -322,6 +322,7 @@ def orient_mesh_face_plus_x(mesh: MeshData) -> MeshData:
 
     Face-UV triangle normals only — no soft-raster front/back (that flipped
     Crowds 180°). Props with no face UV bbox are left as authored.
+    IDPO only — do not run on A5/MED meshes (WED pans assume authored facing).
     """
     if mesh.positions.size == 0:
         return mesh
@@ -703,10 +704,10 @@ def parse_mdl(path: Path) -> MeshData:
 
     1. Axis remap (A5 → `_gs_to_godot`, IDPO → `_idpo_to_godot`) — same as
        mdl-texture-editor.
-    2. A5 meshes keep authored +X forward.
-    3. IDPO Quake meshes often do **not** face +X after remap; snap painted
-       face → +X via face-UV normals (`orient_mesh_face_plus_x`). Faceless
-       props are left alone. WED pan then orients every entity the same way.
+    2. **A5 (MDL2–5):** keep authored +X forward — WED pans were authored
+       against MED orientation. Face-UV re-yaw breaks those entities.
+    3. **IDPO:** Quake meshes often do not face +X after remap; snap painted
+       face → +X via face-UV normals. Faceless props are left alone.
     """
     with path.open("rb") as f:
         magic = f.read(4)

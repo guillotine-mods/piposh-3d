@@ -98,6 +98,42 @@ var _plane_vase := 0
 var _plane_pip2 := 0
 var _plane_arv := 0.0
 var _plane_cam_timer := 0.0
+var _plane_view: Node3D  # current ChangeCamera / Camera1 hold
+
+## Plane2.wdl state
+var _plane2_active := false
+var _p2_goal_hp := false
+var _p2_goal_tv := false
+var _p2_goal_pass := false
+var _p2_goal_sikot := false
+var _p2_hit_him := 0
+var _p2_vview := 1
+var _p2_movie := false
+var _p2_finale := false
+var _p2_passanger: Node3D
+var _p2_stu1: Node3D
+var _p2_stu2: Node3D
+var _p2_tv: Node3D
+var _p2_sikot: Node3D
+var _p2_krupnik: Node3D
+var _p2_cam3: Node3D
+var _p2_cam4: Node3D
+var _p2_cam_plane: Node3D
+var _p2_b747: Node3D
+var _p2_a1s: Array[Node3D] = []
+var _p2_piposh_hit: Node3D
+var _p2_headphones: Array[Node3D] = []
+var _p2_b747_skill1 := 10.0
+var _p2_jet_played := false
+var _p2_hammer_t := 0.0
+## Fixed VView=3 cams from Plane2.wdl cameraX/Y/Z (Acknex → Godot).
+const P2_VVIEW3: Array[Vector3] = [
+	Vector3(35.0, 90.0, -533.0),
+	Vector3(-73.0, 240.0, -282.0),
+	Vector3(-40.0, 240.0, 475.0),
+]
+## Idle scenery (Wind / Land / Dome pan jitter).
+var _idle_spinners: Array[Node3D] = []
 
 
 func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud: GameHud = null) -> void:
@@ -173,6 +209,34 @@ func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud
 	_plane_pip2 = 0
 	_plane_arv = 0.0
 	_plane_cam_timer = 0.0
+	_plane_view = null
+	_cam_show = 0
+	_plane2_active = false
+	_p2_goal_hp = false
+	_p2_goal_tv = false
+	_p2_goal_pass = false
+	_p2_goal_sikot = false
+	_p2_hit_him = 0
+	_p2_vview = 1
+	_p2_movie = false
+	_p2_finale = false
+	_p2_passanger = null
+	_p2_stu1 = null
+	_p2_stu2 = null
+	_p2_tv = null
+	_p2_sikot = null
+	_p2_krupnik = null
+	_p2_cam3 = null
+	_p2_cam4 = null
+	_p2_cam_plane = null
+	_p2_b747 = null
+	_p2_a1s.clear()
+	_p2_piposh_hit = null
+	_p2_headphones.clear()
+	_p2_b747_skill1 = 10.0
+	_p2_jet_played = false
+	_p2_hammer_t = 0.0
+	_idle_spinners.clear()
 	fov_arc = 60.0
 	_level_script = str(level_data.get("script", loader.level_name)).to_lower()
 
@@ -271,11 +335,50 @@ func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud
 				# Visible notepad next to ShikNote — same click → Shiks.
 				_make_clickable(node, "ShikKlik")
 			"Dummy":
-				# Studio.wdl Dummy = room tone; Plane.wdl = cockpit loop.
+				# Studio.wdl Dummy = room tone; Plane/Plane2 = cockpit loop.
 				if _is_studio_level():
 					AudioBus.play_sfx("SFX105.WAV", -8.0)
-				elif _is_plane_level():
+				elif _is_plane_level() or _is_plane2_level():
 					AudioBus.play_music("SFX089.WAV", -10.0)
+			"Passanger":
+				_p2_passanger = node
+				_anim_frame(node, "Sit", 0.0)
+			"STU1":
+				_p2_stu1 = node
+				_anim_cycle(node, "Stand")
+			"STU2":
+				_p2_stu2 = node
+				_anim_blink(node)
+			"TV":
+				_p2_tv = node
+			"Sikot":
+				_p2_sikot = node
+			"HeadPhone":
+				_p2_headphones.append(node)
+			"Krupnik":
+				_p2_krupnik = node
+				_anim_cycle(node, "Stand")
+			"Cam3":
+				_p2_cam3 = node
+				_hide_cam_mesh(node)
+			"Cam4":
+				_p2_cam4 = node
+				_hide_cam_mesh(node)
+			"CamPlane":
+				_p2_cam_plane = node
+				_hide_cam_mesh(node)
+			"B747":
+				_p2_b747 = node
+			"A1":
+				_p2_a1s.append(node)
+				node.visible = false
+			"PiposhHit":
+				_p2_piposh_hit = node
+				node.visible = false
+			"CameraEngine":
+				_hide_cam_mesh(node)
+			"Wind", "Land":
+				_idle_spinners.append(node)
 			"PiposhWalk":
 				_plane_piposh = node
 				_anim_frame(node, "Stand", 0.0)
@@ -302,6 +405,7 @@ func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud
 				node.visible = false
 			"Dome":
 				_anim_cycle(node, "Frame")
+				_idle_spinners.append(node)
 			"Piposh2":
 				_piposh2 = node
 				_anim_frame(node, "Stand", 0.0)
@@ -349,31 +453,53 @@ func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud
 		pc.set_meta("cam_show", sk)
 		pc.set_meta("view_id", sk)
 
-	# Plane.wdl Cam skill1 is often garbage in WMB — assign Camera1..3 in order.
+	# Plane.wdl: Camera1..3 from Cam.skill1 (OLD ENTITY pad fixed in extractor).
 	if _is_plane_level():
 		_plane_cams.clear()
+		var by_skill: Dictionary = {}
 		for c in _cams:
 			if c == _plane_cam2:
 				continue
-			_plane_cams.append(c)
-			if _plane_cams.size() >= 3:
-				break
-		for i in _plane_cams.size():
-			_plane_cams[i].set_meta("view_id", i + 1)
-			_plane_cams[i].set_meta("skill1", i + 1)
+			var sk := int(round(float(c.get_meta("skills", [0])[0]))) if c.get_meta("skills", []).size() > 0 else 0
+			if sk < 1:
+				sk = int(c.get_meta("view_id", 0))
+			if sk >= 1 and sk <= 3 and not by_skill.has(sk):
+				by_skill[sk] = c
+		for i in range(1, 4):
+			if by_skill.has(i):
+				var cam_n: Node3D = by_skill[i]
+				cam_n.set_meta("view_id", i)
+				cam_n.set_meta("skill1", i)
+				_plane_cams.append(cam_n)
+		# Fallback: first three non-Cam2 cams in WMB order.
+		if _plane_cams.size() < 3:
+			_plane_cams.clear()
+			for c in _cams:
+				if c == _plane_cam2:
+					continue
+				_plane_cams.append(c)
+				if _plane_cams.size() >= 3:
+					break
+			for i in _plane_cams.size():
+				_plane_cams[i].set_meta("view_id", i + 1)
+				_plane_cams[i].set_meta("skill1", i + 1)
 
 	if _hud and not _hud.dialog_choice.is_connected(_on_dialog_choice):
 		_hud.dialog_choice.connect(_on_dialog_choice)
 	if _hud and not _hud.skip_line_pressed.is_connected(_on_skip_line_pressed):
 		_hud.skip_line_pressed.connect(_on_skip_line_pressed)
 
+	var fp := _loader != null and _loader.has_first_person()
 	scripted_camera = (
-		_cams.size() > 0
-		or _the_cam != null
-		or _the_cam2 != null
-		or _look_at_me != null
-		or _plane_krupnik != null
-		or _plane_piposh != null
+		not fp
+		and (
+			_cams.size() > 0
+			or _the_cam != null
+			or _the_cam2 != null
+			or _look_at_me != null
+			or _plane_krupnik != null
+			or _plane_piposh != null
+		)
 	)
 
 	if _is_start_level():
@@ -386,12 +512,17 @@ func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud
 		_begin_shiks()
 	elif _is_plane_level():
 		_begin_plane()
-	elif scripted_camera:
+	elif _is_plane2_level():
+		_begin_plane2()
+	elif fp:
+		# Generic FP (Inn/Mansion/…): LevelRunner owns the camera.
+		scripted_camera = false
 		mouse_look = true
-		_apply_mouse_mode()
-		view_index = 1
-		_snap_to_active_cam(true)
-		status.emit("Cam mode — RMB toggles cursor, V=view, scroll=zoom")
+		_wire_generic_run_clickables()
+		_wire_first_person_clickables()
+		status.emit("%s — first person" % str(_loader.level_name))
+	elif scripted_camera:
+		_begin_generic_level()
 	else:
 		status.emit("Free player camera")
 
@@ -405,9 +536,12 @@ func _process(delta: float) -> void:
 		_update_shiks(delta)
 	elif _is_plane_level() and _plane_active:
 		_update_plane(delta)
+	elif _is_plane2_level() and _plane2_active:
+		_update_plane2(delta)
 	elif scripted_camera:
 		_update_town_cam()
 	_update_patrols(delta)
+	_update_idle_spinners(delta)
 	if _hud and _is_town_level():
 		# Town.wdl Zoom = ((60 - camera.arc) / 4) + 1
 		var z := int(((60.0 - fov_arc) / 4.0) + 1.0)
@@ -436,14 +570,22 @@ func _unhandled_input(event: InputEvent) -> void:
 			view_index = 2 if view_index == 1 else 1
 			_snap_to_active_cam(true)
 			status.emit("View %d" % view_index)
+		elif event.keycode == KEY_V and _is_plane2_level() and _plane2_active and not _p2_movie:
+			# Plane2.wdl ToggleView — F1 kept for Menu; V cycles 1↔3.
+			_p2_vview = 3 if _p2_vview == 1 else 1
+			if _p2_vview == 1:
+				_restore_fp_camera()
+			else:
+				_steal_camera()
+			status.emit("Plane2 VView %d" % _p2_vview)
 		elif event.keycode == KEY_SPACE:
 			_on_skip_line_pressed()
 		elif event.keycode == KEY_ESCAPE and _is_start_level():
 			request_run.emit("Menu")
 
 	if event is InputEventMouseButton and event.pressed:
-		if event.button_index == MOUSE_BUTTON_RIGHT and (_is_town_level() or _is_studio_level()):
-			# IO.wdl mouse_toggle
+		if event.button_index == MOUSE_BUTTON_RIGHT and (scripted_camera or _loader_has_fp()):
+			# IO.wdl mouse_toggle — Town/Studio cams + Plane2 FP click targets.
 			mouse_look = not mouse_look
 			_apply_mouse_mode()
 			status.emit("Mouse look" if mouse_look else "Cursor mode — click targets")
@@ -461,8 +603,9 @@ func _unhandled_input(event: InputEvent) -> void:
 				return
 			_try_click()
 
-	if event is InputEventMouseMotion and mouse_look and _is_town_level():
-		# Town.wdl Cam: pan/tilt -= mickey/5 while mouse_mode==0
+	if event is InputEventMouseMotion and mouse_look and scripted_camera \
+			and not _is_start_level() and not _is_shiks_level() and not _is_plane_level():
+		# Town.wdl / generic Cam: pan/tilt -= mickey/5 while mouse_mode==0
 		var cam := _active_cam()
 		if cam:
 			var pan: float = float(cam.get_meta("pan", 0.0)) - event.relative.x / 5.0
@@ -495,6 +638,380 @@ func _is_plane_level() -> bool:
 	return n == "plane" or _level_script == "plane.wdl"
 
 
+func _is_plane2_level() -> bool:
+	var n := str(_loader.level_name).to_lower() if _loader else ""
+	return n == "plane2" or _level_script == "plane2.wdl"
+
+
+func _loader_has_fp() -> bool:
+	return _loader != null and _loader.has_first_person()
+
+
+func _begin_plane2() -> void:
+	## Plane2.wdl: Vview=1 FP + four goals → Scene 2 movie → Range.
+	_plane2_active = true
+	scripted_camera = false
+	mouse_look = true
+	scene = 0
+	talking = 0
+	_p2_vview = 1
+	_p2_movie = false
+	_p2_finale = false
+	_p2_hit_him = 0
+	_apply_mouse_mode()
+	_wire_generic_run_clickables()
+	_wire_first_person_clickables()
+	if not AudioBus.is_music_playing():
+		AudioBus.play_music("SFX089.WAV", -10.0)
+	status.emit("Plane2 — collect four goals (V=view, RMB=cursor)")
+
+
+func _update_plane2(delta: float) -> void:
+	var t := delta * 16.0
+	# Krupnik hammer / talk skins when visible.
+	if _p2_krupnik and is_instance_valid(_p2_krupnik):
+		if talking == 3:
+			_anim_talk_skins(_p2_krupnik, true)
+			_face_toward(_p2_krupnik, _player_pos())
+		else:
+			_anim_talk_skins(_p2_krupnik, false)
+			_p2_hammer_t += t
+			if _p2_hammer_t > 40.0 and int(randi() % 80) == 20:
+				_p2_hammer_t = 0.0
+				_anim_frame(_p2_krupnik, "Hammer", 50.0)
+				AudioBus.play_sfx("SFX090.WAV", -12.0)
+			elif talking == 0:
+				_anim_cycle(_p2_krupnik, "Stand")
+	# STU1 always faces player when idle.
+	if _p2_stu1 and is_instance_valid(_p2_stu1) and not _p2_movie:
+		_face_toward(_p2_stu1, _player_pos())
+		_anim_cycle(_p2_stu1, "Stand")
+	if _p2_stu2 and is_instance_valid(_p2_stu2) and not _p2_movie:
+		_face_toward(_p2_stu2, _player_pos())
+		if talking == 2:
+			_anim_talk(_p2_stu2)
+			_anim_talk_skins(_p2_stu2, true)
+		else:
+			_anim_talk_skins(_p2_stu2, false)
+			_anim_blink(_p2_stu2)
+	# A1 / Cam4 while headphones movie (Scene == 1).
+	for a1 in _p2_a1s:
+		if a1 and is_instance_valid(a1):
+			a1.visible = scene == 1
+			if scene == 1 and talking == 1:
+				_anim_talk_skins(a1, true)
+			else:
+				_anim_talk_skins(a1, false)
+	if scene == 1 and _p2_cam4:
+		_copy_cam(_p2_cam4, true)
+	# Cam3 during passenger hit.
+	if _p2_hit_him > 0 and _p2_cam3:
+		_copy_cam(_p2_cam3, true)
+	# VView 3 fixed cams.
+	if _p2_vview == 3 and _p2_hit_him == 0 and scene == 0 and not _p2_movie:
+		_apply_plane2_vview3()
+	# Scene 2 finale: CamPlane tracks B747.
+	if scene == 2 and _p2_cam_plane and _p2_b747:
+		_p2_cam_plane.global_position += Vector3(-5.0, -10.0, -10.0) * t
+		_p2_b747.global_position += Vector3(0.0, 0.0, -_p2_b747_skill1) * t
+		if AudioBus.is_voice_playing():
+			# Near end of KRP009 — accelerate + climb (Jet).
+			pass
+		var look := _p2_b747.global_position - _p2_cam_plane.global_position
+		if look.length_squared() > 1.0:
+			var pan := rad_to_deg(atan2(-look.z, look.x))
+			var tilt := rad_to_deg(atan2(look.y, Vector2(look.x, look.z).length()))
+			_p2_cam_plane.set_meta("pan", pan)
+			_p2_cam_plane.set_meta("tilt", tilt)
+			_p2_cam_plane.set_meta("roll", 0.0)
+		_copy_cam(_p2_cam_plane, true)
+	# Goals complete → finale once.
+	if (
+		not _p2_finale
+		and _p2_goal_hp and _p2_goal_tv and _p2_goal_pass and _p2_goal_sikot
+		and not _p2_movie
+	):
+		_run_plane2_finale()
+
+
+func _apply_plane2_vview3() -> void:
+	var p := _player_pos()
+	var best_i := 0
+	var best_d := INF
+	for i in P2_VVIEW3.size():
+		var d := P2_VVIEW3[i].distance_squared_to(p)
+		if d < best_d:
+			best_d = d
+			best_i = i
+	if _world_camera == null:
+		return
+	_steal_camera()
+	_world_camera.global_position = P2_VVIEW3[best_i]
+	var look := p - _world_camera.global_position
+	if look.length_squared() > 1.0:
+		var pan := rad_to_deg(atan2(-look.z, look.x))
+		var tilt := rad_to_deg(atan2(look.y, Vector2(look.x, look.z).length()))
+		_apply_acknex_view(_world_camera, pan, tilt, 0.0)
+	_world_camera.current = true
+
+
+func _player_pos() -> Vector3:
+	var player := _find_player()
+	if player:
+		return player.global_position
+	if _loader and not _loader.first_person_spawn.is_empty():
+		return _loader.first_person_spawn.get("origin", Vector3.ZERO)
+	return Vector3.ZERO
+
+
+func _find_player() -> CharacterBody3D:
+	var parent := get_parent()
+	if parent == null:
+		return null
+	return parent.get_node_or_null("Player") as CharacterBody3D
+
+
+func _face_toward(node: Node3D, target: Vector3) -> void:
+	if node == null or not is_instance_valid(node):
+		return
+	var d := target - node.global_position
+	d.y = 0.0
+	if d.length_squared() < 1e-4:
+		return
+	var pan := rad_to_deg(atan2(-d.z, d.x))
+	_set_entity_pan(node, pan)
+
+
+func _steal_camera() -> void:
+	scripted_camera = true
+	if _world_camera:
+		_world_camera.current = true
+	var player := _find_player()
+	if player:
+		var cam := player.get_node_or_null("Camera3D") as Camera3D
+		if cam:
+			cam.current = false
+		player.set_physics_process(false)
+		player.set_process_unhandled_input(false)
+
+
+func _restore_fp_camera() -> void:
+	scripted_camera = false
+	_p2_vview = 1
+	var player := _find_player()
+	if player:
+		player.set_physics_process(true)
+		player.set_process_unhandled_input(true)
+		var cam := player.get_node_or_null("Camera3D") as Camera3D
+		if cam:
+			cam.current = true
+	if _world_camera:
+		_world_camera.current = false
+	mouse_look = true
+	_apply_mouse_mode()
+
+
+func _run_plane2_hp() -> void:
+	if _p2_goal_hp or _p2_movie:
+		return
+	_p2_movie = true
+	scene = 1
+	_steal_camera()
+	if _p2_cam4:
+		_copy_cam(_p2_cam4, true)
+	await _line("SHK019.WAV", 0, null)
+	await _line("PIP039.WAV", 1, _p2_a1s[0] if _p2_a1s.size() > 0 else null)
+	await _line("SHK020.WAV", 0, null)
+	await _line("PIP040.WAV", 1, _p2_a1s[0] if _p2_a1s.size() > 0 else null)
+	await _line("SHK021.WAV", 0, null)
+	talking = 0
+	scene = 0
+	_p2_movie = false
+	_p2_goal_hp = true
+	_restore_fp_camera()
+	status.emit("Goal: Headphones")
+
+
+func _run_plane2_tv() -> void:
+	if _p2_goal_tv or _p2_movie:
+		return
+	_p2_movie = true
+	await _line("KRP008.WAV", 3, _p2_krupnik)
+	talking = 0
+	_p2_movie = false
+	_p2_goal_tv = true
+	status.emit("Goal: TV")
+
+
+func _run_plane2_passanger() -> void:
+	if _p2_goal_pass or _p2_movie:
+		return
+	_p2_movie = true
+	_p2_hit_him = 1
+	_steal_camera()
+	if _p2_cam3:
+		_copy_cam(_p2_cam3, true)
+	var player := _find_player()
+	var saved_y := 0.0
+	if player:
+		saved_y = player.global_position.y
+		player.global_position.y = saved_y + 500.0
+	if _p2_piposh_hit:
+		_p2_piposh_hit.visible = true
+	AudioBus.play_sfx("SFX026.WAV")
+	if _p2_passanger:
+		for pct in range(0, 101, 8):
+			_anim_frame(_p2_passanger, "Hit", float(pct))
+			await get_tree().process_frame
+		_anim_frame(_p2_passanger, "Sit", 0.0)
+	await _line("SFX119.WAV", 0, _p2_passanger)
+	_p2_hit_him = 2
+	await _line("PIP034.WAV", 1, null)
+	_p2_hit_him = 0
+	if _p2_piposh_hit:
+		_p2_piposh_hit.visible = false
+	if player:
+		player.global_position.y = saved_y
+	_p2_movie = false
+	_p2_goal_pass = true
+	_restore_fp_camera()
+	status.emit("Goal: Passenger")
+
+
+func _run_plane2_sikot() -> void:
+	if _p2_goal_sikot or _p2_movie:
+		return
+	_p2_movie = true
+	await _line("PIP036.WAV", 1, null)
+	await _line("STU001.WAV", 2, _p2_stu2)
+	await _line("PIP037.WAV", 1, null)
+	await _line("STU002.WAV", 2, _p2_stu2)
+	await _line("PIP038.WAV", 1, null)
+	talking = 0
+	_p2_movie = false
+	_p2_goal_sikot = true
+	status.emit("Goal: Sikot")
+
+
+func _run_plane2_stu1() -> void:
+	if _p2_movie:
+		return
+	_p2_movie = true
+	await _line("PIP035.WAV", 1, null)
+	talking = 0
+	_p2_movie = false
+
+
+func _run_plane2_finale() -> void:
+	_p2_finale = true
+	_p2_movie = true
+	scene = 2
+	_steal_camera()
+	status.emit("Plane2 Scene 2 — departure")
+	await _line("KRP009.WAV", 3, _p2_krupnik)
+	if not _p2_jet_played:
+		_p2_jet_played = true
+		AudioBus.play_sfx("SFX143.WAV", -6.0)
+		_p2_b747_skill1 = 40.0
+	await get_tree().create_timer(0.8).timeout
+	_p2_movie = false
+	status.emit("Plane2 → Range")
+	request_run.emit("Range")
+
+
+func _update_idle_spinners(delta: float) -> void:
+	var t := delta * 16.0
+	for n in _idle_spinners:
+		if n == null or not is_instance_valid(n):
+			continue
+		var action := str(n.get_meta("action", "")).to_lower()
+		if action == "dome":
+			var pan := float(n.get_meta("pan", 0.0)) + 0.2 * t
+			_set_entity_pan(n, pan)
+		elif action in ["wind", "land"]:
+			# Subtle pan jitter / cycle if clips exist.
+			var anim := n.get_node_or_null("MdlAnimator") as MdlAnimator
+			if anim:
+				_anim_cycle(n, "Frame")
+			else:
+				var pan2 := float(n.get_meta("pan", 0.0)) + 0.05 * t
+				n.set_meta("pan", pan2)
+
+
+func _begin_generic_level() -> void:
+	## Uniform fallback: any level with Cam/paths works without a custom chapter.
+	## Transitions come from levels.json Run list + clickable entity actions.
+	scripted_camera = true
+	mouse_look = true
+	_apply_mouse_mode()
+	view_index = 1
+	_snap_to_active_cam(true)
+	_wire_generic_run_clickables()
+	status.emit(
+		"%s — generic cam (RMB cursor, click exits)" % str(_loader.level_name)
+	)
+
+
+func _wire_generic_run_clickables() -> void:
+	var flow_path := "res://assets/converted/levels.json"
+	if not (ResourceLoader.exists(flow_path) or FileAccess.file_exists(flow_path)):
+		return
+	var f := FileAccess.open(flow_path, FileAccess.READ)
+	if f == null:
+		return
+	var data = JSON.parse_string(f.get_as_text())
+	if typeof(data) != TYPE_DICTIONARY:
+		return
+	var levels: Dictionary = data.get("levels", {})
+	var key := str(_loader.level_name)
+	var info: Dictionary = levels.get(key, levels.get(key.to_lower(), {}))
+	var runs: Array = info.get("run", [])
+	var run_keys: Dictionary = {}  # lower -> canonical
+	for r in runs:
+		var name := str(r).replace(".exe", "").replace(".EXE", "")
+		run_keys[name.to_lower()] = name
+	# Also allow GoToX / action name matching any known level.
+	for lk in levels.keys():
+		run_keys[str(lk).to_lower()] = str(lk)
+
+	var entities := _loader.get_node_or_null("Entities")
+	if entities == null:
+		return
+	for n in entities.get_children():
+		if not (n is Node3D):
+			continue
+		var node := n as Node3D
+		var action := str(node.get_meta("action", ""))
+		if action == "":
+			continue
+		var a := action.to_lower()
+		if a.begins_with("goto"):
+			var target := action.substr(4)  # GoToDesert → Desert
+			_make_clickable(node, target if target != "" else action)
+			continue
+		if run_keys.has(a):
+			_make_clickable(node, str(run_keys[a]))
+
+
+func _wire_first_person_clickables() -> void:
+	## Plane2 / Mansion-style enable_click props (STU1, TV, Sikot, headphones…).
+	var entities := _loader.get_node_or_null("Entities") if _loader else null
+	if entities == null:
+		return
+	const CLICK := [
+		"stu1", "stu2", "tv", "sikot", "headphone", "passanger", "afg_card",
+		"hitme", "a1", "item_pickup",
+	]
+	for n in entities.get_children():
+		if not (n is Node3D):
+			continue
+		var node := n as Node3D
+		var action := str(node.get_meta("action", ""))
+		var a := action.to_lower()
+		if a in CLICK or a.begins_with("headphone") or a.begins_with("stu"):
+			_make_clickable(node, action)
+
+
 func _begin_plane() -> void:
 	# Plane.wdl main → SetVoice boot + dialog 3 + path walk.
 	scripted_camera = true
@@ -506,21 +1023,24 @@ func _begin_plane() -> void:
 	_plane_vase = 0
 	_plane_pip2 = 0
 	_plane_arv = 0.0
+	_plane_cam_timer = 0.0
+	_cam_show = 0
 	_dialog_index = 0
 	_dialog_busy = true
 	_apply_mouse_mode()
 	if _hud:
 		_hud.hide_dialog()
+		_hud.set_mouse_look(false)
 	# Bind walk path (Plane.WMB path_001).
 	_plane_path = PackedVector3Array()
 	_plane_path_i = 0
 	for k in _paths.keys():
 		_plane_path = _paths[k]
 		break
-	if _plane_cams.size() > 0:
-		_copy_cam(_plane_cams[0], true)
-	elif _plane_cam2:
-		_copy_cam(_plane_cam2, true)
+	_plane_view = _plane_cams[0] if _plane_cams.size() > 0 else _plane_cam2
+	_apply_plane_cam(true)
+	# PiposhWalk follows the path during Wait/KRP001 (before DialogIndex==3).
+	_plane_walking = true
 	status.emit("Plane — boarding…")
 	_run_plane_boot()
 
@@ -534,12 +1054,27 @@ func _run_plane_boot() -> void:
 	await _line("KRP001.WAV", 2, _plane_krupnik)
 	scene = 1
 	talking = 0
+	# Plane.wdl: while Dialog.visible → Blink only (no walk).
+	_plane_walking = false
+	if _plane_piposh:
+		_anim_blink(_plane_piposh)
 	_dialog_index = 3
 	_dialog_busy = false
 	if _hud:
 		_hud.show_dialog(3)
-	_plane_walking = true
 	status.emit("Plane — choose a line")
+
+
+func _apply_plane_cam(hard: bool = false) -> void:
+	# ThePlaneMovie holds Camera1; Cam2 while CamShow==1; else ChangeCamera picks.
+	if _cam_show == 1 and _plane_cam2:
+		_copy_cam(_plane_cam2, hard)
+	elif _plane_view:
+		_copy_cam(_plane_view, hard)
+	elif _plane_cams.size() > 0:
+		_copy_cam(_plane_cams[0], hard)
+	elif _plane_cam2:
+		_copy_cam(_plane_cam2, hard)
 
 
 func _update_plane(delta: float) -> void:
@@ -553,51 +1088,96 @@ func _update_plane(delta: float) -> void:
 	if _plane_pip:
 		_plane_pip.visible = _plane_pip2 == 1
 
-	# Cam2 while CamShow==1 (hammer beat)
-	if _cam_show == 1 and _plane_cam2:
-		_copy_cam(_plane_cam2, false)
-	elif _plane_cams.size() > 0 and _plane_pip2 == 0 and _cam_show == 0:
-		# Occasional ChangeCamera while cruising
+	# Cam2 while CamShow==1 (hammer beat); else hold current view / ChangeCamera.
+	if _cam_show == 0 and _plane_pip2 == 0 and _plane_cams.size() > 0:
 		_plane_cam_timer -= delta
 		if _plane_cam_timer <= 0.0 and scene > 0 and _plane_arv >= 100.0:
 			if randi() % 100 == 50:
-				var pick := _plane_cams[randi() % _plane_cams.size()]
-				_copy_cam(pick, false)
-				_plane_cam_timer = randf_range(2.0, 6.0)
+				_plane_view = _plane_cams[randi() % _plane_cams.size()]
+				_plane_cam_timer = randf_range(2.5, 5.0)  # ~150–200 ticks
+			else:
+				_plane_cam_timer = 0.05
+	_apply_plane_cam(false)
 
 	# ThePlaneMovie Arrive scrub while Piposh talks early
-	if _plane_krupnik and talking == 1 and _plane_arv < 100.0:
-		_plane_arv = minf(100.0, _plane_arv + 40.0 * delta)
+	if _plane_krupnik and talking == 1 and _plane_arv < 100.0 and _plane_phase < 3:
+		_plane_arv = minf(100.0, _plane_arv + 80.0 * delta)
 		_anim_frame(_plane_krupnik, "Arrive", _plane_arv)
 
-	# Walk Piposh along path (also while dialog 3 is open, like WDL).
+	# Walk Piposh along path only while DialogIndex != 3 (boot / non-dialog).
 	if _plane_walking and _plane_piposh and _plane_phase < 3:
 		_plane_walk_step(delta)
 
-	# Talk / blink actors
-	if talking == 1 and _plane_piposh and _plane_phase != 3:
-		_anim_talk(_plane_piposh)
-	elif _plane_piposh and _plane_phase != 3 and talking != 1:
-		_anim_blink(_plane_piposh)
-	if talking == 2 and _plane_krupnik:
-		_anim_talk_skins(_plane_krupnik, true)
-	elif _plane_krupnik and talking != 2:
-		_anim_talk_skins(_plane_krupnik, false)
+	# Talk / blink actors — match Plane.wdl ThePlaneMovie / PiposhWalk / Pip / Krup.
+	if _plane_piposh and _plane_phase != 3:
+		if _plane_vase == 1:
+			# PIP031: ent_frame("Take",100) + Talk2 skins.
+			_anim_frame(_plane_piposh, "Take", 100.0)
+			_anim_talk_skins(_plane_piposh, talking == 1)
+		elif _plane_walking:
+			pass  # walk step sets Walk cycle
+		elif talking == 1:
+			_anim_talk(_plane_piposh)
+		else:
+			_anim_talk_skins(_plane_piposh, false)
+			_anim_blink(_plane_piposh)
+
+	if _plane_krupnik:
+		if _plane_phase == 3:
+			_anim_frame(_plane_krupnik, "Jump", 0.0)
+			_anim_talk_skins(_plane_krupnik, talking == 2)
+		elif talking == 1 and _plane_arv < 100.0:
+			_anim_talk_skins(_plane_krupnik, false)
+		elif scene == 0:
+			# Peek + Talk2 skins while Krupnik's opening line plays.
+			if talking == 2:
+				_anim_talk_skins(_plane_krupnik, true)
+				if Engine.get_process_frames() % 40 == 20:
+					_anim_frame(_plane_krupnik, "Peek", float(randi() % 3) * 50.0)
+			else:
+				_anim_talk_skins(_plane_krupnik, false)
+				_anim_frame(_plane_krupnik, "Peek", 0.0)
+		elif talking == 2:
+			_anim_talk_skins(_plane_krupnik, true)
+			if Engine.get_process_frames() % 40 == 20:
+				_anim_frame(_plane_krupnik, "Talk", float(randi() % 7) * 16.0)
+		else:
+			_anim_talk_skins(_plane_krupnik, false)
+			if _plane_arv >= 100.0:
+				_anim_blink(_plane_krupnik)
+
+	if _plane_pip and _plane_pip2 == 1:
+		if talking == 1:
+			_anim_talk(_plane_pip)
+		else:
+			_anim_frame(_plane_pip, "LookBack", 0.0)
+
+	# Krup.wdl: Stand jitters in phase 1; Hammer scrub in phase 2.
+	if _plane_krup and (_plane_phase == 1 or _plane_phase == 2):
+		_anim_talk_skins(_plane_krup, talking == 2)
+		if _plane_phase == 1 and Engine.get_process_frames() % 40 == 20:
+			_anim_frame(_plane_krup, "Stand", float(randi() % 3) * 50.0)
+		elif _plane_phase == 2:
+			_anim_frame(_plane_krup, "Hammer", fmod(Time.get_ticks_msec() / 50.0, 100.0))
 
 
 func _plane_walk_step(delta: float) -> void:
 	if _plane_path.is_empty() or _plane_piposh == null:
 		return
 	if _plane_path_i >= _plane_path.size():
+		_anim_blink(_plane_piposh)
 		return
 	var target := _plane_path[_plane_path_i]
 	var pos := _plane_piposh.global_position
+	# Acknex actor_move keeps Z (height) from path; we lerp Y toward waypoint.
 	var to := Vector3(target.x - pos.x, 0.0, target.z - pos.z)
 	if to.length() < 25.0:
 		_plane_path_i = mini(_plane_path_i + 1, _plane_path.size())
+		_plane_piposh.global_position.y = target.y
 		return
 	var step := to.normalized() * minf(35.0 * delta, to.length())
 	_plane_piposh.global_position += step
+	_plane_piposh.global_position.y = move_toward(pos.y, target.y, 20.0 * delta)
 	_plane_piposh.rotation_degrees.y = rad_to_deg(atan2(-step.z, step.x))
 	_anim_cycle(_plane_piposh, "Walk")
 
@@ -1012,15 +1592,20 @@ func _apply_start_camera() -> void:
 		_cam_height_locked = true
 	_world_camera.global_position = Vector3(node.global_position.x, _cam_lock_y, node.global_position.z)
 	if scene in [0, 2] and _yachdal != null:
-		var look := _yachdal.global_position
-		look.y = _cam_lock_y
+		# Aim at chest/head — flattening look.y to cam height buried the actor.
+		var look := _yachdal.global_position + Vector3(0.0, 55.0, 0.0)
 		_world_camera.look_at(look, Vector3.UP)
 	elif scene in [1, 5]:
 		# Start.wdl: camera.pan = 270
 		_apply_acknex_view(_world_camera, 270.0, 0.0, 0.0)
 	else:
-		_world_camera.global_rotation = node.global_rotation
-	_world_camera.fov = 60.0
+		_apply_acknex_view(
+			_world_camera,
+			float(node.get_meta("pan", 0.0)),
+			float(node.get_meta("tilt", 0.0)),
+			float(node.get_meta("roll", 0.0))
+		)
+	_world_camera.fov = _acknex_arc_to_godot_fov(60.0)
 	_world_camera.current = true
 
 
@@ -1070,6 +1655,8 @@ func ensure_scripted_view() -> void:
 		_apply_start_camera()
 	elif _is_shiks_level():
 		_apply_shiks_cam()
+	elif _is_plane_level():
+		_apply_plane_cam(true)
 	elif _cams.size() > 0:
 		_snap_to_active_cam(true)
 	if _world_camera:
@@ -1173,7 +1760,7 @@ func _update_town_cam() -> void:
 	if cam == null or _world_camera == null:
 		return
 	_copy_cam(cam)
-	_world_camera.fov = maxf(fov_arc, 1.0)
+	_world_camera.fov = _acknex_arc_to_godot_fov(fov_arc)
 
 
 func _snap_studio_cam() -> void:
@@ -1189,22 +1776,16 @@ func _snap_to_active_cam(_reset_look: bool) -> void:
 func _apply_cam_smooth(cam: Node3D, delta: float) -> void:
 	if cam == null or _world_camera == null:
 		return
-	var target_pos := cam.global_position
 	if not _cam_pos_ready:
-		_cam_pos = target_pos
-		_cam_pos_ready = true
 		_copy_cam(cam, true)
 		return
-	# Exponential blend — kills the multi-metre Y jump between studio cams.
+	# Blend toward lifted lens pose (same as _copy_cam).
+	const CAM_LENS_LIFT := 14.0
+	var target_pos := cam.global_position + Vector3(0.0, CAM_LENS_LIFT, 0.0)
 	var k := 1.0 - exp(-CAM_FOLLOW_SPEED * delta)
 	_cam_pos = _cam_pos.lerp(target_pos, k)
 	_world_camera.global_position = _cam_pos
-	var pan: float = float(cam.get_meta("pan", 0.0))
-	var tilt: float = float(cam.get_meta("tilt", 0.0))
-	var roll: float = float(cam.get_meta("roll", 0.0))
-	_apply_acknex_view(_world_camera, pan, tilt, roll)
-	_world_camera.fov = maxf(fov_arc, 1.0)
-	_world_camera.current = true
+	_copy_cam(cam, false)
 
 
 func _copy_cam(cam: Node3D, hard: bool = true) -> void:
@@ -1212,16 +1793,43 @@ func _copy_cam(cam: Node3D, hard: bool = true) -> void:
 		return
 	# Position from entity; orientation from Acknex ang_to_vec(pan,tilt).
 	# Entity euler is for MDL +X facing — wrong for Camera3D (−Z).
+	# Slight Y lift: WED Cam.MDL origin sits a bit low vs the intended lens.
+	const CAM_LENS_LIFT := 14.0
+	var pos := cam.global_position + Vector3(0.0, CAM_LENS_LIFT, 0.0)
 	if hard:
-		_cam_pos = cam.global_position
+		_cam_pos = pos
 		_cam_pos_ready = true
-		_world_camera.global_position = cam.global_position
+		_world_camera.global_position = pos
+	elif _cam_pos_ready:
+		_world_camera.global_position = _cam_pos
+	else:
+		_world_camera.global_position = pos
 	var pan: float = float(cam.get_meta("pan", 0.0))
 	var tilt: float = float(cam.get_meta("tilt", 0.0))
 	var roll: float = float(cam.get_meta("roll", 0.0))
-	_apply_acknex_view(_world_camera, pan, tilt, roll)
-	_world_camera.fov = maxf(fov_arc, 1.0)
+	# Soften strong look-down so subjects sit higher in frame.
+	var twrap := tilt
+	if twrap > 180.0:
+		twrap -= 360.0
+	elif twrap < -180.0:
+		twrap += 360.0
+	if twrap < -2.0:
+		twrap = twrap * 0.65 + 4.0
+	_apply_acknex_view(_world_camera, pan, twrap, roll)
+	_world_camera.fov = _acknex_arc_to_godot_fov(fov_arc)
 	_world_camera.current = true
+
+
+func _acknex_arc_to_godot_fov(arc_deg: float) -> float:
+	## Acknex camera.arc is horizontal FOV; Godot Camera3D.fov is vertical.
+	## Use original 4:3 design aspect so vertical framing matches 640×480 A5
+	## (widescreen then gains extra horizontal FOV via stretch/expand).
+	var h := absf(arc_deg)
+	if h < 1.0:
+		h = 60.0
+	const DESIGN_ASPECT := 4.0 / 3.0
+	var v := rad_to_deg(2.0 * atan(tan(deg_to_rad(h * 0.5)) / DESIGN_ASPECT))
+	return clampf(v, 1.0, 170.0)
 
 
 func _apply_acknex_view(cam: Camera3D, pan_deg: float, tilt_deg: float, roll_deg: float = 0.0) -> void:
@@ -1279,7 +1887,48 @@ func _apply_random_building(node: Node3D) -> void:
 	if packed is PackedScene:
 		node.add_child((packed as PackedScene).instantiate())
 	var pans: Array[float] = [0.0, 90.0, 180.0, 270.0]
-	node.rotation_degrees.y = pans[randi() % pans.size()]
+	_set_entity_pan(node, pans[randi() % pans.size()])
+
+
+func _set_entity_pan(node: Node3D, pan_deg: float) -> void:
+	## Rebuild ang_to_matrix basis for pure pan — preserves local scale.
+	if node == null or not is_instance_valid(node):
+		return
+	var scl := node.transform.basis.get_scale()
+	if scl.x <= 0.001 or scl.y <= 0.001 or scl.z <= 0.001:
+		scl = Vector3.ONE
+	var b := _acknex_entity_basis_local(pan_deg, 0.0, 0.0)
+	var pos := node.global_position
+	node.global_transform = Transform3D(b * Basis.from_scale(scl.abs()), pos)
+	node.set_meta("pan", pan_deg)
+	node.set_meta("tilt", 0.0)
+	node.set_meta("roll", 0.0)
+
+
+func _acknex_entity_basis_local(pan_deg: float, tilt_deg: float, roll_deg: float) -> Basis:
+	## Conitec ang_to_matrix → Godot (same as WmbLevelLoader).
+	var tilt := tilt_deg
+	if tilt > 180.0:
+		tilt -= 360.0
+	elif tilt < -180.0:
+		tilt += 360.0
+	var p := deg_to_rad(pan_deg)
+	var t := deg_to_rad(tilt)
+	var r := deg_to_rad(roll_deg)
+	var cp := cos(p)
+	var sp := sin(p)
+	var ct := cos(t)
+	var st := sin(t)
+	var cr := cos(r)
+	var sr := sin(r)
+	var x_dx := Vector3(ct * cp, st, ct * sp)
+	var y_dx := Vector3(-cr * st * cp + sr * sp, cr * ct, -cr * st * sp - sr * cp)
+	var z_dx := Vector3(-sr * st * cp - cr * sp, sr * ct, cr * cp - sr * st * sp)
+	return Basis(
+		Vector3(x_dx.x, x_dx.y, -x_dx.z),
+		Vector3(y_dx.x, y_dx.y, -y_dx.z),
+		Vector3(-z_dx.x, -z_dx.y, z_dx.z)
+	)
 
 
 func _resolve_glb(stem: String) -> String:
@@ -1304,14 +1953,14 @@ func _resolve_glb(stem: String) -> String:
 
 
 func _start_patrol(node: Node3D, skills: Array) -> void:
-	var path_names: Array[String] = ["path_001", "path_002", "path_003", "path_004"]
-	var pick: String = path_names[randi() % path_names.size()]
+	# Bind nearest WMB path (Town.wdl scan_path) — not a random pick.
+	var pick := _nearest_path_name(node.global_position)
 	if skills.size() > 19 and int(skills[19]) == 1:
 		_make_clickable(node, "Taxi")
-	if not _paths.has(pick):
+	if pick == "" or not _paths.has(pick):
 		if _paths.is_empty():
 			return
-		pick = str(_paths.keys()[randi() % _paths.size()])
+		pick = str(_paths.keys()[0])
 	_patrols.append({
 		"node": node,
 		"path": pick,
@@ -1338,8 +1987,11 @@ func _update_patrols(delta: float) -> void:
 			p["index"] = (idx + 1) % pts.size()
 			continue
 		var step := minf(p["speed"] * delta, dist)
-		node.global_position = pos + to.normalized() * step
-		node.rotation.y = atan2(-to.x, -to.z)
+		var dir := to.normalized()
+		node.global_position = pos + dir * step
+		# Entity +X forward (Acknex pan), not Godot −Z.
+		var pan_deg := rad_to_deg(atan2(-dir.z, dir.x))
+		_set_entity_pan(node, pan_deg)
 		_anim_cycle(node, "Walk")
 
 
@@ -1367,11 +2019,14 @@ func _make_clickable(node: Node3D, action: String) -> void:
 
 
 func _try_click() -> void:
-	if _world_camera == null:
+	var cam := get_viewport().get_camera_3d()
+	if cam == null:
+		cam = _world_camera
+	if cam == null:
 		return
-	var from := _world_camera.project_ray_origin(get_viewport().get_mouse_position())
-	var dir := _world_camera.project_ray_normal(get_viewport().get_mouse_position())
-	var space := _world_camera.get_world_3d().direct_space_state
+	var from := cam.project_ray_origin(get_viewport().get_mouse_position())
+	var dir := cam.project_ray_normal(get_viewport().get_mouse_position())
+	var space := cam.get_world_3d().direct_space_state
 	var q := PhysicsRayQueryParameters3D.create(from, from + dir * 8000.0)
 	q.collide_with_areas = true
 	q.collide_with_bodies = true
@@ -1401,6 +2056,25 @@ func _handle_click_action(action: String) -> void:
 	if action == "ShikKlik":
 		_run_shik()
 		return
+	if _is_plane2_level() and _plane2_active:
+		if _p2_movie or _p2_finale:
+			return
+		var a := action.to_lower()
+		if a == "headphone" or a.begins_with("headphone"):
+			_run_plane2_hp()
+			return
+		if a == "tv":
+			_run_plane2_tv()
+			return
+		if a == "passanger" or a == "hitme":
+			_run_plane2_passanger()
+			return
+		if a == "sikot":
+			_run_plane2_sikot()
+			return
+		if a == "stu1":
+			_run_plane2_stu1()
+			return
 	var map := {
 		"Taxi": "Taxi", "GoToTaxi": "Taxi",
 		"Inn": "Inn", "GoToInn": "Inn",
@@ -1411,8 +2085,19 @@ func _handle_click_action(action: String) -> void:
 	if map.has(action):
 		status.emit("WDL Run(\"%s.exe\")" % map[action])
 		request_run.emit(str(map[action]))
-	else:
-		status.emit("WDL action: %s" % action)
+		return
+	# Uniform: any clickable whose action is a known level name → Run.
+	var level_name := action
+	if action.to_lower().begins_with("goto") and action.length() > 4:
+		level_name = action.substr(4)
+	var json_path := "res://assets/converted/levels/%s.json" % level_name
+	var json_alt := "res://assets/converted/levels/%s.json" % level_name.capitalize()
+	if ResourceLoader.exists(json_path) or FileAccess.file_exists(json_path) \
+			or ResourceLoader.exists(json_alt) or FileAccess.file_exists(json_alt):
+		status.emit("WDL Run(\"%s.exe\")" % level_name)
+		request_run.emit(level_name)
+		return
+	status.emit("WDL action: %s" % action)
 
 
 func _on_dialog_choice(choice: int) -> void:
@@ -1451,23 +2136,23 @@ func _run_plane_choice(choice: int) -> void:
 				_hud.show_dialog(3)
 		3:
 			_plane_vase = 1
-			await _line("PIP031.WAV", 1, _plane_piposh)
-			if _plane_piposh:
-				_anim_frame(_plane_piposh, "Take", 100.0)
+			# PIP031: Take frame + Talk2 — driven by _update_plane while vase==1.
+			await _line("PIP031.WAV", 1, null)
 			_plane_vase = 0
 			_plane_phase = 1
 			_cam_show = 1
 			await _line("KRP005.WAV", 2, _plane_krupnik)
 			_plane_phase = 2
 			await _line("KRP006.WAV", 2, _plane_krupnik)
+			_cam_show = 0
 			if _plane_cams.size() > 0:
-				_copy_cam(_plane_cams[0], true)
+				_plane_view = _plane_cams[0]
+			_apply_plane_cam(true)
 			if _plane_piposh:
 				_plane_piposh.visible = false
 			_plane_phase = 3
 			_plane_pip2 = 1
 			_plane_vase = 2
-			_cam_show = 0
 			await _line("PIP032.WAV", 1, _plane_pip)
 			await _line("KRP007.WAV", 2, _plane_krupnik)
 			await _line("PIP033.WAV", 1, _plane_pip)
@@ -1547,12 +2232,17 @@ func _line(wav: String, who: int, actor: Node3D) -> void:
 		_snap_studio_cam()
 	elif _is_shiks_level():
 		_apply_shiks_cam()
+	elif _is_plane_level():
+		_apply_plane_cam(false)
 	if actor:
 		if dance == 1 and actor == _naknik:
 			_anim_cycle(actor, "Dance")
 			_anim_talk_skins(actor, who == 1)
 		elif who == 22:
 			_anim_frame(actor, "Scream", 0.0)
+		elif _is_plane_level() and actor == _plane_krupnik:
+			# ThePlaneMovie: Talk2 skins + Peek/Arrive/Talk frames in _update_plane.
+			_anim_talk_skins(actor, who == 2)
 		elif who == 1 or who == 2:
 			_anim_talk(actor)
 		else:
@@ -1569,6 +2259,8 @@ func _line(wav: String, who: int, actor: Node3D) -> void:
 		talking = 0
 	if actor and who != 0:
 		if dance == 1 and actor == _naknik:
+			_anim_talk_skins(actor, false)
+		elif _is_plane_level() and actor == _plane_krupnik:
 			_anim_talk_skins(actor, false)
 		else:
 			_anim_blink(actor)

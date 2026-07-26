@@ -8,6 +8,7 @@ tiny menu-only subset.
 from __future__ import annotations
 
 import argparse
+import json
 import shutil
 from pathlib import Path
 
@@ -53,7 +54,17 @@ def main() -> int:
             if p.is_file() and p.suffix.lower() in {".wav", ".aif", ".aiff"}:
                 shutil.copy2(p, dst / p.name)
                 copied += 1
-    print(f"SFX files in {dst}: {copied}")
+    # Export-safe catalog — AudioBus cannot rely on DirAccess inside a PCK.
+    files = sorted(
+        p.name
+        for p in dst.iterdir()
+        if p.is_file() and p.suffix.lower() in {".wav", ".ogg"}
+    )
+    (dst / "sfx_index.json").write_text(
+        json.dumps({"files": files, "count": len(files)}, indent=2),
+        encoding="utf-8",
+    )
+    print(f"SFX files in {dst}: {copied} (index={len(files)})")
     return 0
 
 

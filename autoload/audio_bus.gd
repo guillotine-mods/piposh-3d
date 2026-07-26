@@ -1,13 +1,15 @@
 extends Node
 ## Plays WAV from converted SFX (case-insensitive).
+## Export-safe: uses sfx_index.json because DirAccess often cannot list PCK folders.
 
 signal sfx_finished
 
 const SFX_RES := "res://assets/converted/sfx/"
+const SFX_INDEX := "res://assets/converted/sfx/sfx_index.json"
 
 var _player: AudioStreamPlayer
 var _music: AudioStreamPlayer
-var _index: Dictionary = {}  # lower filename -> res path
+var _index: Dictionary = {}  # lower filename / stem -> res path
 var _voice_busy := false
 
 
@@ -80,18 +82,31 @@ func rebuild_index() -> void:
 
 func _rebuild_index() -> void:
 	_index.clear()
+	# 1) Packed JSON index (required for EXE/APK — DirAccess list is unreliable).
+	if ResourceLoader.exists(SFX_INDEX) or FileAccess.file_exists(SFX_INDEX):
+		var f := FileAccess.open(SFX_INDEX, FileAccess.READ)
+		if f:
+			var data = JSON.parse_string(f.get_as_text())
+			if typeof(data) == TYPE_DICTIONARY:
+				var files: Array = data.get("files", [])
+				for fn in files:
+					var name := str(fn)
+					var lower := name.to_lower()
+					var path := SFX_RES + name
+					_index[lower] = path
+					_index[lower.get_basename()] = path
+	# 2) DirAccess fallback (editor / when index missing).
 	var dir := DirAccess.open(SFX_RES)
-	if dir == null:
-		return
-	dir.list_dir_begin()
-	var fn := dir.get_next()
-	while fn != "":
-		if not dir.current_is_dir():
-			var lower := fn.to_lower()
-			if lower.ends_with(".wav") or lower.ends_with(".ogg"):
-				_index[lower] = SFX_RES + fn
-				_index[lower.get_basename()] = SFX_RES + fn
-		fn = dir.get_next()
+	if dir:
+		dir.list_dir_begin()
+		var fn := dir.get_next()
+		while fn != "":
+			if not dir.current_is_dir():
+				var lower := fn.to_lower()
+				if lower.ends_with(".wav") or lower.ends_with(".ogg"):
+					_index[lower] = SFX_RES + fn
+					_index[lower.get_basename()] = SFX_RES + fn
+			fn = dir.get_next()
 
 
 func _load_stream(name: String) -> AudioStream:
@@ -108,22 +123,40 @@ func _load_stream(name: String) -> AudioStream:
 	for key in candidates:
 		if _index.has(key):
 			var path: String = _index[key]
-			if ResourceLoader.exists(path):
-				return load(path) as AudioStream
-	# Direct path fallback (DirAccess can miss freshly copied files)
-	var exts: Array[String] = [".wav", ".WAV", ".ogg"]
-	for ext in exts:
-		var direct: String = SFX_RES + stem + ext
-		if ResourceLoader.exists(direct):
-			_index[stem] = direct
-			_index[stem + ".wav"] = direct
-			return load(direct) as AudioStream
-	# Retry after rebuild (new files copied while editor open)
+			var stream := _try_load(path)
+			if stream:
+				return stream
+	# Direct path fallback (case variants) — works when index misses a file.
+	var exts: Array[String] = [".wav", ".WAV", ".ogg", ".OGG"]
+	var stems: Array[String] = [stem, stem.to_upper(), stem.to_lower()]
+	# Preserve common Acknex mixed case (Pip001 already lowercased).
+	for s in stems:
+		for ext in exts:
+			var direct: String = SFX_RES + s + ext
+			var stream2 := _try_load(direct)
+			if stream2:
+				_index[stem] = direct
+				_index[stem + ".wav"] = direct
+				return stream2
 	_rebuild_index()
 	for key in candidates:
 		if _index.has(key):
-			var path2: String = _index[key]
-			if ResourceLoader.exists(path2):
-				return load(path2) as AudioStream
-	push_warning("SFX missing: %s" % name)
+			var stream3 := _try_load(str(_index[key]))
+			if stream3:
+				return stream3
+	push_warning("SFX missing: %s (index=%d)" % [name, _index.size()])
+	return null
+
+
+func _try_load(path: String) -> AudioStream:
+	if path == "":
+		return null
+	if ResourceLoader.exists(path):
+		var s = load(path)
+		if s is AudioStream:
+			return s as AudioStream
+	if FileAccess.file_exists(path):
+		var s2 = load(path)
+		if s2 is AudioStream:
+			return s2 as AudioStream
 	return null

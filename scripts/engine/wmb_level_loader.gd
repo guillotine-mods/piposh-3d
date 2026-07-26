@@ -11,13 +11,16 @@ const WMB_DIR := "res://assets/converted/wmb/"
 const LEVEL_DIR := "res://assets/converted/levels/"
 ## Island.MDL uses scale 20; allow generous but reject skybox junk.
 const MAX_UNIFORM_SCALE := 64.0
-const MAX_ORIGIN_DIST := 20000.0
+## CamPlane / far scenery can sit tens of thousands of quants out.
+const MAX_ORIGIN_DIST := 80000.0
 
 var level_name: String = ""
 var spawn_position := Vector3(0, 2, 8)
 var level_bounds := AABB(Vector3(-20, 0, -20), Vector3(40, 10, 40))
 var floor_y := 0.0
 var last_level_data: Dictionary = {}
+## Set when WMB has player_walk* / player_stand — first-person spawn (Plane2…).
+var first_person_spawn: Dictionary = {}  # origin, pan, action, node_name
 
 var _entities_root: Node3D
 var _geometry_root: Node3D
@@ -35,8 +38,13 @@ func _ready() -> void:
 	_build_glb_index()
 
 
+func has_first_person() -> bool:
+	return not first_person_spawn.is_empty()
+
+
 func load_level(p_level_name: String) -> bool:
 	level_name = p_level_name
+	first_person_spawn = {}
 	_clear_children(_geometry_root)
 	_clear_children(_entities_root)
 
@@ -221,13 +229,25 @@ func _is_brush_duplicate_entity(obj: Dictionary) -> bool:
 	return stem in ["townl", "desertl", "mansionl", "innl"]
 
 
-func _snap_mesh_feet_to_origin(root: Node3D) -> void:
-	# AABB in root-local space (root transform excluded; scale applied separately).
+func _snap_mesh_feet_to_origin(root: Node3D, _scale_y: float = 1.0) -> void:
+	## Put the lowest mesh point on the WED origin plane (world +Y).
+	## Uses root basis (scale+pan) so we do not double-scale local AABB.
 	var aabb := _mesh_aabb_local(root, Transform3D.IDENTITY, true)
 	if aabb.size.y <= 0.001:
 		return
-	# Local min Y * scale.y is how far feet sit below the entity origin.
-	root.position.y -= aabb.position.y * root.scale.y
+	var b := root.transform.basis
+	var min_y := INF
+	for i in 8:
+		var corner := Vector3(
+			aabb.position.x if (i & 1) == 0 else aabb.position.x + aabb.size.x,
+			aabb.position.y if (i & 2) == 0 else aabb.position.y + aabb.size.y,
+			aabb.position.z if (i & 4) == 0 else aabb.position.z + aabb.size.z
+		)
+		min_y = minf(min_y, (b * corner).y)
+	if min_y == INF or absf(min_y) < 0.001:
+		return
+	# Lift root so lowest transformed point sits at origin Y.
+	root.position.y -= min_y
 
 
 func _mesh_aabb_local(node: Node, parent_xf: Transform3D, skip_node_xf: bool) -> AABB:
@@ -269,33 +289,48 @@ func _spawn_entity(obj: Dictionary) -> bool:
 
 	var root := Node3D.new()
 	root.name = str(obj.get("name", file)).replace(".", "_")
-	root.position = pos
-	root.scale = scl
 	root.set_meta("action", action)
 	root.set_meta("skills", obj.get("skills", []))
 	root.set_meta("file", file)
 	if obj.has("origin_gs"):
 		root.set_meta("origin_gs", obj.get("origin_gs"))
-	# Acknex pan/tilt/roll — required for Camera3D (entity euler ≠ view dir).
-	# Prefer angle_gs: yaw = +pan (model +X forward). Older JSON angle_deg is
-	# [tilt, -pan, roll] from early extractors — recover pan for cameras.
+	# Acknex pan/tilt/roll via Conitec ang_to_matrix → Godot basis.
+	# Euler (tilt,±pan,roll) is wrong when tilt/roll ≠ 0 (Glass, Cam2, …).
+	var pan_a := 0.0
+	var tilt_a := 0.0
+	var roll_a := 0.0
 	if obj.has("angle_gs"):
 		var ag: Variant = obj.get("angle_gs")
 		if ag is Array and ag.size() >= 2:
-			var pan_a := float(ag[0])
-			var tilt_a := float(ag[1])
-			var roll_a := float(ag[2]) if ag.size() > 2 else 0.0
+			pan_a = float(ag[0])
+			tilt_a = float(ag[1])
+			roll_a = float(ag[2]) if ag.size() > 2 else 0.0
 			root.set_meta("angle_gs", ag)
-			root.set_meta("pan", pan_a)
-			root.set_meta("tilt", tilt_a)
-			root.set_meta("roll", roll_a)
-			root.rotation_degrees = Vector3(tilt_a, pan_a, roll_a)
 		else:
-			_apply_legacy_angle_deg(root, obj)
+			var legacy := _legacy_pan_tilt_roll(obj)
+			pan_a = legacy.x
+			tilt_a = legacy.y
+			roll_a = legacy.z
 	else:
-		_apply_legacy_angle_deg(root, obj)
-	if obj.has("flags"):
-		root.set_meta("flags", int(obj.get("flags", 0)))
+		var legacy2 := _legacy_pan_tilt_roll(obj)
+		pan_a = legacy2.x
+		tilt_a = legacy2.y
+		roll_a = legacy2.z
+	root.set_meta("pan", pan_a)
+	root.set_meta("tilt", tilt_a)
+	root.set_meta("roll", roll_a)
+	# WED origin + local scale, then ang_to_matrix orientation (1:1 with A5).
+	root.transform = Transform3D(
+		_acknex_entity_basis(pan_a, tilt_a, roll_a) * Basis.from_scale(scl),
+		pos
+	)
+	var flags := int(obj.get("flags", 0))
+	root.set_meta("flags", flags)
+	# A5 WED: bit0 = INVISIBLE, bit10 (0x400) = passable/non-solid prop.
+	var flag_invisible := (flags & 0x1) != 0
+	var flag_passable := (flags & 0x400) != 0
+	root.set_meta("invisible", flag_invisible)
+	root.set_meta("passable", flag_passable)
 
 	var stem := file.get_file().get_basename()
 	var is_wmb := file.to_lower().ends_with(".wmb")
@@ -309,25 +344,27 @@ func _spawn_entity(obj: Dictionary) -> bool:
 			root.add_child(inst)
 			if not is_wmb:
 				_attach_animator(root, stem, action)
-			# Raise meshes whose feet hang below the WED origin (most MDLs).
-			# Skip wall cards — they are thin flats re-oriented below.
+			# Opt-in feet-snap for floor actors only (see CONTRACT).
 			if _should_feet_snap(action, stem):
-				_snap_mesh_feet_to_origin(root)
-			# StudioL sits ~4u under the brush floor in WED — nudge up.
-			if stem.to_lower() == "studiol":
-				root.position.y += 4.0
-			# Wall posters: authored as floor-plane flats. Stand them up facing
-			# the room (−Z toward TheCam2) and pull slightly off the wall so
-			# they do not z-fight / sit inside the brush.
+				_snap_mesh_feet_to_origin(root, scl.y)
 			if stem.to_lower() in ["shiknote", "afg"]:
 				_mount_wall_card(root, stem.to_lower())
+			# FP levels need solid props; skip passable / cameras / FP body.
+			if (
+				not is_wmb
+				and not flag_passable
+				and not _is_camera_action(action)
+				and not _is_first_person_action(action)
+				and stem.to_lower() != "cam"
+			):
+				_add_mesh_collision(inst)
 		else:
 			_add_marker(root, action, is_wmb)
 	else:
 		_add_marker(root, action, is_wmb)
 
 	# Camera placeholders should not render Cam.MDL blobs.
-	if _is_camera_action(action) or stem.to_lower() == "cam":
+	if _is_camera_action(action) or stem.to_lower() == "cam" or flag_invisible:
 		_hide_meshes(root)
 
 	if _is_trigger_action(action) or (is_wmb and action.to_lower().contains("door")):
@@ -344,18 +381,113 @@ func _spawn_entity(obj: Dictionary) -> bool:
 		root.add_child(area)
 
 	_entities_root.add_child(root)
+
+	# First-person player proxy (Plane2 player_walk2, Inn, Mansion, …).
+	# Record after feet-snap + enter tree so origin matches the standing pose.
+	if _is_first_person_action(action) and first_person_spawn.is_empty():
+		first_person_spawn = {
+			"origin": root.global_position,
+			"pan": pan_a,
+			"tilt": tilt_a,
+			"action": action,
+			"node": root,
+		}
+		spawn_position = root.global_position
+		# move_view_1st GENIUS — don't draw the player body in FP.
+		_hide_meshes(root)
 	return true
+
+
+func _is_first_person_action(action: String) -> bool:
+	var a := action.to_lower()
+	return (
+		a.begins_with("player_walk")
+		or a in ["player_stand", "player_fly", "player_walkinn", "player_walktravel"]
+	)
 
 
 func _should_feet_snap(action: String, stem: String) -> bool:
+	## Opt-in: floor actors only. Attachment scenery must keep WED origin.
 	if _is_camera_action(action) or stem.to_lower() == "cam":
 		return false
-	# Wall cards are re-oriented separately — do not feet-snap.
-	if stem.to_lower() in ["afg", "shiknote"]:
+	var a := action.to_lower()
+	var s := stem.to_lower()
+	if s in ["afg", "shiknote"]:
 		return false
-	# Everything else: WED origin is the floor/attachment point; MDL geometry
-	# hangs below it. Without snap, curtains/fans/StudioL sink under the floor.
-	return true
+	if a == "window":
+		return false
+	if s in [
+		"glass", "b747", "cockpit", "tv", "island", "headphone",
+		"biplane", "biplane2", "hanger", "towerw", "dutyfree",
+	]:
+		return false
+	if a in ["headphone", "land", "wind", "ent_rotate", "item_pickup"]:
+		return false
+	if _stem_has_walk_or_stand(s):
+		return true
+	const FLOOR_ACTIONS := [
+		"ami", "naknik", "piposhwalk", "theplanemovie", "krup", "pip",
+		"crowd", "player_walk2", "player_walk", "player_stand", "defineyachdel",
+		"passanger", "stu1", "stu2", "sikot", "krupnik", "piposhhit", "a1",
+	]
+	const FLOOR_STEMS := [
+		"piposh", "piposh2", "fpiposh", "ami", "pipdog", "krupnik", "krup2",
+		"crowd", "crowd2", "yachdal", "genia", "passn", "peggy",
+	]
+	return a in FLOOR_ACTIONS or s in FLOOR_STEMS
+
+
+func _stem_has_walk_or_stand(stem: String) -> bool:
+	var anim_path := "res://assets/converted/mdl/%s.mdlanim" % stem
+	if not (ResourceLoader.exists(anim_path) or FileAccess.file_exists(anim_path)):
+		# Case-insensitive fallback via index is expensive; try common casing.
+		anim_path = "res://assets/converted/mdl/%s.mdlanim" % stem.to_lower()
+		if not (ResourceLoader.exists(anim_path) or FileAccess.file_exists(anim_path)):
+			return false
+	var f := FileAccess.open(anim_path, FileAccess.READ)
+	if f == null:
+		return false
+	var txt := f.get_as_text()
+	return txt.contains("\"Walk\"") or txt.contains("\"Stand\"") or txt.contains("'Walk'") or txt.contains("'Stand'")
+
+
+func _acknex_entity_basis(pan_deg: float, tilt_deg: float, roll_deg: float) -> Basis:
+	## Conitec ang_to_matrix (DirectX) conjugated by S=diag(1,1,-1) → Godot RH.
+	var tilt := tilt_deg
+	if tilt > 180.0:
+		tilt -= 360.0
+	elif tilt < -180.0:
+		tilt += 360.0
+	var p := deg_to_rad(pan_deg)
+	var t := deg_to_rad(tilt)
+	var r := deg_to_rad(roll_deg)
+	var cp := cos(p)
+	var sp := sin(p)
+	var ct := cos(t)
+	var st := sin(t)
+	var cr := cos(r)
+	var sr := sin(r)
+	# Rows of ang_to_matrix = entity axes in DirectX Y-up.
+	var x_dx := Vector3(ct * cp, st, ct * sp)
+	var y_dx := Vector3(-cr * st * cp + sr * sp, cr * ct, -cr * st * sp - sr * cp)
+	var z_dx := Vector3(-sr * st * cp - cr * sp, sr * ct, cr * cp - sr * st * sp)
+	# R_g = S * R_dx * S with S=diag(1,1,-1): flip Z on X/Y axes, flip X/Y on Z.
+	var x_g := Vector3(x_dx.x, x_dx.y, -x_dx.z)
+	var y_g := Vector3(y_dx.x, y_dx.y, -y_dx.z)
+	var z_g := Vector3(-z_dx.x, -z_dx.y, z_dx.z)
+	return Basis(x_g, y_g, z_g)
+
+
+func _legacy_pan_tilt_roll(obj: Dictionary) -> Vector3:
+	# Early extractors stored Godot euler as [tilt, -pan, roll].
+	# Returns (pan, tilt, roll) in Acknex order.
+	var ad: Variant = obj.get("angle_deg", [0, 0, 0])
+	if ad is Array and ad.size() >= 2:
+		var tilt_a := float(ad[0])
+		var pan_a := -float(ad[1])
+		var roll_a := float(ad[2]) if ad.size() > 2 else 0.0
+		return Vector3(pan_a, tilt_a, roll_a)
+	return Vector3.ZERO
 
 
 func _mount_wall_card(root: Node3D, stem: String) -> void:
@@ -382,11 +514,9 @@ func _mount_wall_card(root: Node3D, stem: String) -> void:
 		else:
 			mat.albedo_color = Color(0.85, 0.75, 0.45)
 		mi.material_override = mat
-		# Quad faces +Z; WED pan=180 already on root → faces into the room.
-		root.scale = Vector3.ONE
-		# Flatten tilt/roll so the poster stands vertical (WED had slight tilt).
+		# Quad faces +Z; WED pan orients the card (flatten authored tilt/roll).
 		var pan := float(root.get_meta("pan", 180.0))
-		root.rotation_degrees = Vector3(0.0, pan, 0.0)
+		root.transform = Transform3D(_acknex_entity_basis(pan, 0.0, 0.0), root.position)
 		root.add_child(mi)
 	elif stem == "afg":
 		# WED already authored roll≈89 / tilt≈6 — only fix tiny scale.
@@ -560,21 +690,6 @@ func _find_wmb_glb(stem: String) -> String:
 		if _file_ok(brush):
 			return brush
 	return ""
-
-
-func _apply_legacy_angle_deg(root: Node3D, obj: Dictionary) -> void:
-	# Early extractors stored Godot euler as [tilt, -pan, roll].
-	var ad: Variant = obj.get("angle_deg", [0, 0, 0])
-	if ad is Array and ad.size() >= 2:
-		var tilt_a := float(ad[0])
-		var pan_a := -float(ad[1])
-		var roll_a := float(ad[2]) if ad.size() > 2 else 0.0
-		root.set_meta("pan", pan_a)
-		root.set_meta("tilt", tilt_a)
-		root.set_meta("roll", roll_a)
-		root.rotation_degrees = Vector3(tilt_a, pan_a, roll_a)
-	else:
-		root.rotation_degrees = Vector3.ZERO
 
 
 func _is_camera_action(action: String) -> bool:

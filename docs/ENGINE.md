@@ -1,5 +1,9 @@
 # Piposh 3D → Godot engine notes
 
+**Frozen translation rules:** see [`docs/CONTRACT.md`](CONTRACT.md).  
+**Level status board:** [`docs/LEVELS.md`](LEVELS.md) (regenerate with `tools/build_level_board.py`).  
+**Regression gate:** `powershell -File tools/check_all.ps1`
+
 ## Original architecture
 
 Piposh 3D is a **multi-EXE Acknex A5** title. **WDL + WMB are the full game description** — not just assets:
@@ -25,7 +29,7 @@ Town example (`Town.wdl`):
 | Format | Role | Converter |
 |--------|------|-----------|
 | `.wdl` | Scripts | Parsed for flow (`levels.json`); logic reimplemented in GDScript |
-| `.wmb` | Compiled levels (WMB4/5) | Entities → JSON; brush/BSP mesh TBD |
+| `.wmb` | Compiled levels (WMB4/5) | Entities → JSON; brush → `*_brush.glb` |
 | `.mdl` | Models (MDL3/4/5 + IDPO) | → `.glb` |
 | `.pcx` / `.bmp` | UI / skins | → `.png` |
 | `.wav` | Voice / SFX / music | Copied; Godot imports WAV |
@@ -39,18 +43,19 @@ Town example (`Town.wdl`):
 
 ## Coordinates
 
-Acknex / WED is **Z-up** (top view = X/Y). Godot is **Y-up**.
+Acknex A5 / WED is **right-handed Z-up** (RHZUP; top view = X/Y). Godot is **Y-up**.
+Full semantics: [`docs/TRANSLATION.md`](TRANSLATION.md).
 
 | Acknex | Godot |
 |--------|-------|
 | position `(x, y, z)` | `(x, z, -y)` |
 | scale `(sx, sy, sz)` | `(sx, sz, sy)` |
-| euler `pan, tilt, roll` | `rotation_degrees = (tilt, +pan, roll)` |
+| euler `pan, tilt, roll` | Conitec `ang_to_matrix` → Godot basis (`S R S`) |
 
-Entity local **+X** is Acknex forward. Cameras use `ang_to_vec` →
+Entity local **+X** is Acknex forward. Cameras use `vec_for_angle` →
 `gs_view_forward_godot` (do **not** copy entity euler onto `Camera3D`).
 
-MDL convert is uniform for MDL3+ and IDPO: axis remap only, then WED pan.
+MDL convert is uniform for MDL3+ and IDPO: axis remap, then WED pan/tilt/roll.
 
 Shared helpers: `tools/gs_math.py`. Level JSON stores both `origin` (Godot) and `origin_gs` (raw).
 

@@ -1,35 +1,39 @@
 {
   "source": "Ground2.wmb",
   "magic": "WMB4",
+  "script": "Ground2.wdl",
+  "coord_space": "godot_y_up_from_acknex_z_up",
   "info": {
     "type": "info"
   },
   "bounds": {
     "min": [
-      -20.0,
-      0.0,
-      -20.0
+      -20,
+      0,
+      -20
     ],
     "max": [
-      20.0,
-      5.0,
-      20.0
+      20,
+      5,
+      20
     ],
     "center": [
-      0.0,
-      1.0,
-      0.0
+      0,
+      1,
+      0
     ],
     "size": [
-      40.0,
-      5.0,
-      40.0
-    ]
+      40,
+      5,
+      40
+    ],
+    "floor_y": 0.0
   },
   "spawn": [
-    0.0,
-    3.0,
-    14.0
+    0,
+    2.0,
+    8.0
   ],
+  "paths": [],
   "objects": []
 }

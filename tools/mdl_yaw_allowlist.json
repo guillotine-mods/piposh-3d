@@ -1,0 +1,4 @@
+{
+  "_comment": "Optional extra yaw (degrees) baked after IDPO face-UV orient. Empty by default — contract forbids silent per-model tables. Add a row only with a verify_mdl_facing.py expectation.",
+  "extra_yaw_deg": {}
+}

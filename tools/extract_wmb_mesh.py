@@ -408,7 +408,8 @@ def main() -> int:
         want = {s.lower() for s in args.only}
         files = [p for p in files if p.stem.lower() in want]
 
-    # Playable levels get *_brush.glb beside JSON; map-entity WMBs → converted/wmb/.
+    # Levels listed in levels.json (or with a matching Level.json) get
+    # levels/{Name}_brush.glb; other WMB props go to converted/wmb/.
     playable = {
         "studio",
         "start",
@@ -424,7 +425,34 @@ def main() -> int:
         "plane",
         "plane2",
         "plane3",
+        "fight",
+        "taxi",
+        "inn",
+        "temple",
+        "mine",
+        "smash",
+        "vilint",
+        "vilend",
+        "dutyfree",
+        "cardgame",
+        "golf",
+        "race",
+        "range",
+        "ziggy",
+        "asyact1",
+        "asyact2",
+        "asyact3",
     }
+    flow = ROOT / "assets" / "converted" / "levels.json"
+    if flow.is_file():
+        try:
+            data = json.loads(flow.read_text(encoding="utf-8"))
+            for name, info in data.get("levels", {}).items():
+                playable.add(str(name).lower())
+                for wmb in info.get("load_level", []):
+                    playable.add(Path(str(wmb)).stem.lower())
+        except Exception:  # noqa: BLE001
+            pass
 
     ok = 0
     for src in files:

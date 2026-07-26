@@ -174,6 +174,8 @@ def parse_wmb(path: Path) -> dict[str, Any]:
             o += 13
             action = _c_str(bytes(chunk[o : o + 20]))
             o += 20
+            # 3 pad bytes float-align skills (WED/A5 OLD ENTITY layout).
+            o += 3
             skills = list(struct.unpack_from("<8f", chunk, o))
             o += 32
             flags = struct.unpack_from("<I", chunk, o)[0] if o + 4 <= len(chunk) else 0

@@ -1,6 +1,8 @@
 {
   "source": "Stomach.wmb",
   "magic": "WMB4",
+  "script": "Stomach.wdl",
+  "coord_space": "godot_y_up_from_acknex_z_up",
   "info": {
     "type": "info"
   },
@@ -24,16 +26,23 @@
       4.0,
       4.0,
       4.0
-    ]
+    ],
+    "floor_y": 0.0
   },
   "spawn": [
     0.0,
     2.0,
     8.0
   ],
+  "paths": [],
   "objects": [
     {
       "type": "light",
+      "origin_gs": [
+        0.0,
+        0.0,
+        0.0
+      ],
       "origin": [
         0.0,
         0.0,

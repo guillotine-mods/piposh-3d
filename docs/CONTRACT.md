@@ -1,0 +1,93 @@
+# Piposh 3D → Godot contract (frozen)
+
+This is the **single source of truth** for Acknex A5→Godot translation.
+Levels must work from **uniform convert + spawn + WDL data**, not per-level hacks.
+
+If a fix requires violating this file, **add a failing test first**, then update
+this contract in the same change.
+
+See also [`docs/TRANSLATION.md`](TRANSLATION.md) for engine semantics.
+
+## 1. Transforms (`tools/gs_math.py`)
+
+Acknex A5 / WED is **right-handed Z-up** (RHZUP): +X east, +Y north, +Z up.
+Godot is right-handed Y-up.
+
+| Quantity | Formula |
+|----------|---------|
+| Position | `(x,y,z)_gs → (x, z, -y)_godot` |
+| Scale | `(sx,sy,sz) → (sx, sz, sy)` |
+| **Entity** basis | Conitec `ang_to_matrix` (DX) → `R_g = S R_dx S`, `S=diag(1,1,-1)` |
+| **Camera** forward | Acknex `vec_for_angle` / `ang_to_vec(pan,tilt)` → Godot `(x, z, -y)`, then `look_at` |
+
+- Entity local **+X** is Acknex forward. `pan=0` → +X, `pan=90` → +Y (Godot −Z).
+- **Forbidden:** spawn or re-orient via Euler `(tilt, ±pan, roll)` alone when tilt/roll
+  may be nonzero. Rebuild basis with `ang_to_matrix` / `_acknex_entity_basis`.
+- Cameras **must not** copy entity basis onto `Camera3D`.
+- Level JSON stores raw `angle_gs = [pan, tilt, roll]`. Spawn reads **`angle_gs` only**.
+- JSON `angle_deg` is a legacy dump field; ignore at runtime.
+
+## 2. MDL convert (`tools/convert_mdl.py`)
+
+Same pipeline for every model:
+
+1. **A5 (MDL2–5):** `_gs_to_godot` axis remap; **keep authored facing**
+   (WED pans assume MED orientation — do not face-UV re-yaw A5).
+2. **IDPO:** `_idpo_to_godot` axis remap; then `orient_mesh_face_plus_x`
+   (face-UV normals → +X). **No** soft-raster 180 flip.
+3. Faceless / paper-thin props: leave authored facing.
+4. **Forbidden:** global `pan+180`, flipping IDPO to A5 Z-sign “to try”,
+   or silent per-model yaw tables. Exceptions only via
+   `tools/mdl_yaw_allowlist.json` + a test row.
+
+## 3. WMB / levels
+
+1. Extract with `tools/extract_wmb_full.py` (entities, skills, paths, `angle_gs`, flags).
+2. OLD ENTITY (`typ==3`): **3 pad bytes** after action before the 8 skills.
+3. Brush mesh with `tools/extract_wmb_mesh.py` → `levels/{Name}_brush.glb`.
+4. Loader resolves GLB/JSON via **`ResourceLoader` / direct paths first**
+   (Android PCK-safe).
+5. **Origin vs feet:** WED point = **model origin**. Engine feet = `Z + MIN_Z`.
+   Feet-snap is an **opt-in** lift for floor actors (Walk/Stand characters) so
+   mesh AABB min Y lands on the WED origin. **Off** for cameras, wall cards,
+   and attachment scenery (`Window`, `Glass`, `B747`, `Cockpit`, `TV`, `Island`,
+   `HeadPhone`, `Land`, biplanes). Never default-snap everything.
+6. **Flags:** apply at spawn — `INVISIBLE` (bit0) hides meshes; `PASSABLE`-class
+   bits skip prop collision.
+7. **First person:** WMB `player_walk*` / `player_stand` / `player_fly` →
+   `move_view_1st` (LevelRunner FP). Eye =
+   `MIN_Z + 0.8*(MAX_Z−MIN_Z)`. Wins over generic Cam scripting.
+8. Outdoor sky: `AcknexSky` from `wdl_meta.json`. No solid-color fake sky outdoors.
+
+## 4. WDL runtime
+
+Prefer **data-driven** behaviour from WMB actions + `levels.json` + `wdl_meta.json`:
+
+- `Cam` / `MyCamera` → scripted camera
+- `player_walk*` → first person
+- paths → walk / LookAtMe (nearest / skill-bound, not random)
+- click actions / `Run("X.exe")` → `LevelRouter.goto_level`
+- `scene_map` → horizon cylinder
+
+Custom director chapters (Start/Studio/Shiks/Plane/Plane2) are **overlays** on
+this generic runtime, not a separate transform system.
+
+## 5. Talk / audio
+
+- Mouth / Talk skins only while voice is playing (or an explicit WDL phase).
+- SFX live under `assets/converted/sfx/` and **are committed** to git.
+
+## 6. Android export
+
+- `export_presets.cfg` UTF-8 **without BOM**
+- `include_filter` must keep non-resource sidecars: `*.json, *.mdlanim, *.skins`
+- Never rely on DirAccess-only indexes inside a PCK
+
+## 7. Agent / PR rules
+
+1. Read this file before changing facing, spawn, convert, or sky.
+2. Change **one layer** at a time (convert xor spawn xor director).
+3. Run `powershell -File tools/check_all.ps1` before claiming fixed.
+4. Forbidden without a new failing test: pan sign flip, disable face-UV,
+   feet-snap on scenery, solid outdoor skies, one-off model yaw hacks,
+   or Euler spawn / re-yaw instead of `ang_to_matrix`.
