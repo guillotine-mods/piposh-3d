@@ -1819,6 +1819,21 @@ func _copy_cam(cam: Node3D, hard: bool = true) -> void:
 	_apply_acknex_view(_world_camera, pan, tilt, roll)
 	_world_camera.fov = _acknex_arc_to_godot_fov(fov_arc)
 	_world_camera.current = true
+	if hard:
+		PiposhDebug.log_msg(
+			"copy-cam",
+			"level=%s cam_entity=%s pos=%s pan=%.1f tilt=%.1f roll=%.1f -> world_cam_pos=%s world_cam_rot=%s"
+			% [
+				str(_loader.level_name) if _loader else "?",
+				cam.name,
+				str(pos),
+				pan,
+				tilt,
+				roll,
+				str(_world_camera.global_position),
+				str(_world_camera.rotation_degrees),
+			]
+		)
 
 
 func _acknex_arc_to_godot_fov(arc_deg: float) -> float:
@@ -2265,6 +2280,16 @@ func _run_afg_take(node: Node3D) -> void:
 	_show_afg_card(card_i)
 
 
+func _find_first_mesh(n: Node) -> MeshInstance3D:
+	if n is MeshInstance3D:
+		return n as MeshInstance3D
+	for c in n.get_children():
+		var m := _find_first_mesh(c)
+		if m:
+			return m
+	return null
+
+
 func _show_afg_card(card_i: int) -> void:
 	## Afgan.wdl AFG_Show: a view=camera LeCards.mdl entity, skin=my.skill1,
 	## visible ~60 ticks then alpha-fades out. Simplified here: shown as a
@@ -2283,13 +2308,30 @@ func _show_afg_card(card_i: int) -> void:
 	if card == null:
 		return
 	_world_camera.add_child(card)
-	card.position = Vector3(0.0, 0.0, -6.0)
+	# Small + far enough to read as a corner HUD card, not fill the screen.
+	# Tune CARD_SCALE/CARD_DIST together after a playtest — LeCards.glb's
+	# authored size wasn't known ahead of time (see docs/SESSION_LOG.md).
+	const CARD_SCALE := 0.12
+	const CARD_DIST := 30.0
+	card.position = Vector3(8.0, -4.0, -CARD_DIST)
+	card.scale = Vector3.ONE * CARD_SCALE
 	card.rotation_degrees = Vector3.ZERO
 	var anim := MdlAnimator.new()
 	anim.name = "MdlAnimator"
 	card.add_child(anim)
 	if anim.setup_from_stem("LeCards", card):
 		anim.set_skin(card_i)
+	var card_mesh := _find_first_mesh(card)
+	PiposhDebug.log_msg(
+		"afg-card",
+		"card_i=%d mesh_aabb=%s scale=%.2f dist=%.1f"
+		% [
+			card_i,
+			str(card_mesh.get_aabb()) if card_mesh else "no mesh found",
+			CARD_SCALE,
+			CARD_DIST,
+		]
+	)
 	var t := get_tree().create_timer(3.0)
 	t.timeout.connect(func() -> void:
 		if is_instance_valid(card):

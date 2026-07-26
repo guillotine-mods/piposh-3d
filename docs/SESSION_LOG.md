@@ -185,6 +185,58 @@ visual facing/camera checks) needs to be run by the user locally, not by me
 in this sandbox. Noted so a future session doesn't re-attempt this and
 waste time waiting on the same hang.
 
+## 2026-07-27 — Follow-up round: AFG card too big, camera fix "not seen", sinking confirmed in 2 levels, Plane2 walking broken
+
+Answer (to prior round's asks): AFG card pickup confirmed working, but
+`_show_afg_card()`'s placeholder size/distance (position -6 on Z, no
+explicit scale) was too large on screen. User also confirmed sinking
+happens in **both** Studio (Ami) and Shiks — not level-specific. User
+reports "all graphical changes besides AFG card were not seen" — i.e. the
+`_copy_cam` lift/tilt removal appeared to have no visible effect. New:
+after the Plane2 "movie" (goal-collection finale), user expected to keep
+walking first-person but instead sees a static camera outside the plane.
+
+Checked:
+- AFG card: no way to know LeCards.glb's authored scale without a render.
+  Added an explicit small scale (0.12) + moved further away (30 units) +
+  a debug print of the raw mesh AABB, so the next report gives real
+  numbers to tune from instead of guessing a second time blind.
+- Camera fix "not seen": since the AFG fix *was* visible, stale
+  code/caching is ruled out — the user is running fresh code. Rather than
+  guess further at why `_copy_cam`'s change didn't register, added a
+  print of the exact computed position/pan/tilt/roll and resulting
+  Camera3D transform every time `_copy_cam(hard=true)` runs (level entry /
+  cam switch), so the next report either confirms the new (unlifted)
+  numbers are being applied — meaning the bug is elsewhere entirely — or
+  reveals something is still adding an offset downstream of this function.
+- Sinking in 2 levels: re-examined `MdlAnimator._set_blended_frame` —
+  it rebuilds a fresh `ArrayMesh` each pose change (not an in-place vertex
+  poke), so `Mesh.get_aabb()` should already reflect the posed mesh, not a
+  stale bind-pose AABB — my initial "stale AABB" hypothesis doesn't hold
+  up on inspection. Rather than guess a different cause, added the
+  MdlAnimator's actual `_current_clip` and the raw local AABB size to the
+  `[feet-snap]` print, to see the real clip/size data instead of assuming.
+- Plane2 walking: confirmed via JSON that `Plane2.json` does have a
+  `player_walk2` entity and "plane2" is correctly excluded from
+  `level_runner.gd`'s `CUTSCENE_LEVELS` list, so FP mode *should* engage on
+  entry — the state machine in `_update_plane2`/the four goal-movie
+  functions (`_run_plane2_hp/_tv/_passanger/_sikot`, `_run_plane2_finale`)
+  is complex enough that guessing which one fails to hand control back is
+  not worth the risk of breaking working parts. `level_runner.gd` already
+  has an on-screen debug label (F10) showing `mode=FP/scripted/free` —
+  pointed the user at this existing tool instead of adding new code.
+
+Asked: (see reply to user)
+
+Answer: (pending)
+
+Result: Three debug iterations added (AFG card size/AABB, camera transform
+per hard-cut, feet-snap clip+AABB size), plus a pointer to the existing F10
+debug overlay for the Plane2 FP-mode question. Waiting on next playtest
+report before making further behavior changes — deliberately avoided
+guessing fixes into the camera-"not seen" mystery or the Plane2 state
+machine without more data.
+
 ## 2026-07-26 — Camera/assets "off", characters sinking (general)
 
 Checked: user pasted `[feet-snap]` logs for Start/Menu/Studio/Shiks. Spot

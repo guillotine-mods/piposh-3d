@@ -249,10 +249,18 @@ func _snap_mesh_feet_to_origin(root: Node3D, _scale_y: float = 1.0) -> void:
 	var y_before := root.position.y
 	# Lift root so lowest transformed point sits at origin Y.
 	root.position.y -= min_y
+	var anim := root.get_node_or_null("MdlAnimator")
+	var clip := str(anim.get("_current_clip")) if anim else "(no MdlAnimator)"
 	PiposhDebug.log_msg(
 		"feet-snap",
-		"level=%s node=%s action=%s min_y=%.3f y_before=%.3f y_after=%.3f"
-		% [level_name, root.name, str(root.get_meta("action", "")), min_y, y_before, root.position.y]
+		(
+			"level=%s node=%s action=%s clip=%s local_aabb_size=%s min_y=%.3f "
+			+ "y_before=%.3f y_after=%.3f"
+		)
+		% [
+			level_name, root.name, str(root.get_meta("action", "")), clip,
+			str(aabb.size), min_y, y_before, root.position.y,
+		]
 	)
 
 
