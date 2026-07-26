@@ -91,3 +91,23 @@ this generic runtime, not a separate transform system.
 4. Forbidden without a new failing test: pan sign flip, disable face-UV,
    feet-snap on scenery, solid outdoor skies, one-off model yaw hacks,
    or Euler spawn / re-yaw instead of `ang_to_matrix`.
+5. **Check `docs/SESSION_LOG.md` before retrying a fix.** If a prior session
+   already tried an approach for this symptom and it failed, don't repeat it
+   blindly — that's how this project loops. Read why it failed, then try
+   something different or ask the user something more specific.
+6. **A runtime bug gets a debug-log iteration before it's "fixed."** If a
+   `tools/verify_*.py` script can mechanically decide the question (angles
+   match raw WMB, det +1, entity→GLB coverage), that's sufficient. Otherwise
+   — facing "looks wrong," something "sinks," a click "doesn't work" — add
+   targeted `print()`/`push_warning()` output, ask the user to run the game
+   and report the exact output, and log the question + answer in
+   `docs/SESSION_LOG.md`. Static code reading can narrow hypotheses; it does
+   not confirm them (see the "silent, invisible errors" warning at the top of
+   `fixes/SKILL.md`).
+7. **Commit after each verified change**, not in one large uncommitted batch.
+   Small, reviewable diffs are how loops and regressions get caught early;
+   a 2000-file uncommitted changeset is not reviewable by anyone.
+8. **Track completion in `docs/PLAYTEST.md`, not just `docs/LEVELS.md`.** The
+   goal is a complete, correct game — pipeline coverage (JSON/brush/director
+   present) is necessary but not sufficient. Don't call a level done because
+   its `LEVELS.md` row is green; call it done when a playtest confirms it.

@@ -25,6 +25,7 @@ config/icon="res://icon.svg"
 GameState="*res://autoload/game_state.gd"
 LevelRouter="*res://autoload/level_router.gd"
 AudioBus="*res://autoload/audio_bus.gd"
+PiposhDebug="*res://autoload/piposh_debug.gd"
 
 [display]
 

@@ -246,8 +246,14 @@ func _snap_mesh_feet_to_origin(root: Node3D, _scale_y: float = 1.0) -> void:
 		min_y = minf(min_y, (b * corner).y)
 	if min_y == INF or absf(min_y) < 0.001:
 		return
+	var y_before := root.position.y
 	# Lift root so lowest transformed point sits at origin Y.
 	root.position.y -= min_y
+	PiposhDebug.log_msg(
+		"feet-snap",
+		"level=%s node=%s action=%s min_y=%.3f y_before=%.3f y_after=%.3f"
+		% [level_name, root.name, str(root.get_meta("action", "")), min_y, y_before, root.position.y]
+	)
 
 
 func _mesh_aabb_local(node: Node, parent_xf: Transform3D, skip_node_xf: bool) -> AABB:

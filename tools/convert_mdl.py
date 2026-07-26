@@ -104,10 +104,32 @@ def _image_to_png_bytes(im: Image.Image) -> bytes:
     return buf.getvalue()
 
 
+# --- Orientation behaviour flags (set from CLI in main) --------------------
+# FIX_IDPO: use a handedness-consistent Quake map (det +1, same as A5) plus a
+#   compensating winding flip, instead of the legacy reflection (det -1). This
+#   makes A5 and Quake models share one handedness so a single cull/winding
+#   rule is correct for both. Opt-in + verify with tools/smoke_orient.gd on
+#   one model before making it the default (see docs/CONTRACT.md #2).
+# FACE_ORIENT: run the skin-pixel "find the painted face and snap to +X"
+#   heuristic. Once FIX_IDPO is confirmed, this guessing should be turned off
+#   (WED pan orients every entity uniformly, same as A5 models).
+FIX_IDPO = False
+FACE_ORIENT = True
+
+
+def _assert_proper_rotation(m: np.ndarray) -> np.ndarray:
+    """Guard: an axis remap for positions must preserve handedness (det +1).
+    A det -1 map mirrors geometry (front faces become back faces) unless
+    winding is also flipped — the source of hard-to-see orientation bugs."""
+    d = round(float(np.linalg.det(m)))
+    assert d == 1, f"axis map has det {d} (reflection); expected +1 (proper rotation)"
+    return m
+
+
 def _gs_to_godot(pos: np.ndarray) -> np.ndarray:
     """Acknex/A5 Z-up (X,Y,Z) → Godot Y-up via rotateX(-90): (X, Z, -Y).
 
-    Matches mdl-texture-editor `geo.rotateX(-Math.PI/2)`.
+    Matches mdl-texture-editor `geo.rotateX(-Math.PI/2)`. det = +1.
     """
     out = np.empty_like(pos)
     out[:, 0] = pos[:, 0]
@@ -117,14 +139,20 @@ def _gs_to_godot(pos: np.ndarray) -> np.ndarray:
 
 
 def _idpo_to_godot(pos: np.ndarray) -> np.ndarray:
-    """IDPO/Quake → Godot, matching mdl-texture-editor.
+    """IDPO/Quake → Godot.
 
-    Editor decodes Quake LH as (x, -y, z) then rotateX(-90) → (x, z, y).
+    LEGACY (FIX_IDPO=False): (x, y, z) → (x, z, y). Matches the reference
+        mdl-texture-editor but is a REFLECTION (det -1): Quake models come
+        out mirrored/opposite-handed vs A5 models, which is why facing was
+        unreliable and why the skin-pixel face heuristic got bolted on.
+    FIXED  (FIX_IDPO=True):  (x, y, z) → (x, z, -y), identical handedness to
+        A5 (det +1). `parse_quake_mdl` flips triangle winding to compensate,
+        so the two model families finally share one convention.
     """
     out = np.empty_like(pos)
     out[:, 0] = pos[:, 0]
     out[:, 1] = pos[:, 2]
-    out[:, 2] = pos[:, 1]
+    out[:, 2] = -pos[:, 1] if FIX_IDPO else pos[:, 1]
     return out
 
 
@@ -324,6 +352,8 @@ def orient_mesh_face_plus_x(mesh: MeshData) -> MeshData:
     Crowds 180°). Props with no face UV bbox are left as authored.
     IDPO only — do not run on A5/MED meshes (WED pans assume authored facing).
     """
+    if not FACE_ORIENT:
+        return mesh  # deterministic: rely on WED pan, not skin-pixel guessing
     if mesh.positions.size == 0:
         return mesh
     ext = mesh.positions.max(0) - mesh.positions.min(0)
@@ -669,9 +699,12 @@ def parse_quake_mdl(f: BinaryIO) -> MeshData:
     uv_list: list[tuple[float, float]] = []
 
     for facesfront, v0, v1, v2 in tris:
-        # Keep authored winding — `_idpo_to_godot` already applies the LH→RH
-        # axis map matching mdl-texture-editor; do not swap corners again.
-        for vi in (v0, v1, v2):
+        # Legacy map (det -1) is a reflection, so authored winding already
+        # reads correct after mirroring — do not swap. The FIX_IDPO map
+        # (det +1) is a proper rotation, so winding must flip once to keep
+        # faces outward.
+        corners = (v0, v2, v1) if FIX_IDPO else (v0, v1, v2)
+        for vi in corners:
             onseam, s, t = stverts[vi]
             ss, tt = s, t
             if onseam and not facesfront:
@@ -936,7 +969,23 @@ def main() -> int:
         default="",
         help="Only convert models with this 4-byte magic (e.g. IDPO, MDL3)",
     )
+    ap.add_argument(
+        "--fix-idpo",
+        action="store_true",
+        help="Use handedness-consistent Quake map (det +1) + winding flip. Verify "
+        "with tools/smoke_orient.gd, then make it the default once confirmed.",
+    )
+    ap.add_argument(
+        "--no-face-orient",
+        action="store_true",
+        help="Disable the skin-pixel face heuristic (recommended with --fix-idpo).",
+    )
     args = ap.parse_args()
+
+    global FIX_IDPO, FACE_ORIENT
+    FIX_IDPO = bool(args.fix_idpo)
+    FACE_ORIENT = not args.no_face_orient
+    print(f"[orient] FIX_IDPO={FIX_IDPO} FACE_ORIENT={FACE_ORIENT}")
 
     files = sorted(args.src.glob("*.[Mm][Dd][Ll]"))
     if args.only:

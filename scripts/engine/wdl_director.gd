@@ -2004,6 +2004,7 @@ func _make_clickable(node: Node3D, action: String) -> void:
 			has_area = true
 			(c as Area3D).input_ray_pickable = true
 			break
+	var radius := 48.0 if action == "ShikKlik" else 28.0
 	if not has_area:
 		var area := Area3D.new()
 		area.collision_layer = 2
@@ -2012,10 +2013,15 @@ func _make_clickable(node: Node3D, action: String) -> void:
 		var cs := CollisionShape3D.new()
 		var shape := SphereShape3D.new()
 		# Studio notepad (AFG / ShikNote) sits far from TheCam2 — large pick.
-		shape.radius = 48.0 if action == "ShikKlik" else 28.0
+		shape.radius = radius
 		cs.shape = shape
 		area.add_child(cs)
 		node.add_child(area)
+	PiposhDebug.log_msg(
+		"click-wire",
+		"node=%s action=%s pos=%s radius=%.1f had_existing_area=%s"
+		% [node.name, action, str(node.global_position), radius, has_area]
+	)
 
 
 func _try_click() -> void:
@@ -2033,13 +2039,25 @@ func _try_click() -> void:
 	q.collision_mask = 0xFFFFFFFF
 	var hit := space.intersect_ray(q)
 	if hit.is_empty():
+		PiposhDebug.log_msg("click-hit", "MISS (no collider under cursor)")
 		return
-	var n: Node = hit.get("collider") as Node
+	var collider: Node = hit.get("collider") as Node
+	var n: Node = collider
 	while n:
 		if n.has_meta("click_action") or n.has_meta("action"):
-			_handle_click_action(str(n.get_meta("click_action", n.get_meta("action", ""))))
+			var resolved := str(n.get_meta("click_action", n.get_meta("action", "")))
+			PiposhDebug.log_msg(
+				"click-hit",
+				"collider=%s resolved_node=%s action=%s point=%s"
+				% [collider.name, n.name, resolved, str(hit.get("position"))]
+			)
+			_handle_click_action(resolved)
 			return
 		n = n.get_parent()
+	PiposhDebug.log_msg(
+		"click-hit",
+		"collider=%s had no click_action/action in its ancestry" % collider.name
+	)
 
 
 func handle_action(action: String) -> void:
