@@ -102,6 +102,89 @@ Still open: re-verify after this fix that `ShikNote` (→ Shiks) and
 `AFG_Card` (→ card pickup) are now independently clickable, not just
 differently-behaving-but-still-cross-triggering. Ask user to re-test.
 
+Follow-up: user confirmed the card is now taken, but reported nothing
+appears on screen (`AFG_Show`, the HUD card-reveal, was explicitly flagged
+as not-yet-ported above). Implemented `_show_afg_card()`: instantiates
+`LeCards.glb`, sets its skin to the card index via the existing
+`MdlAnimator.set_skin()` (same mechanism already used for Naknik's skin),
+parents it to the active camera for ~3s, then frees it. Simplified vs.
+original: no alpha fade-in/out (original ramps `AFG_Show.alpha` over ~90
+ticks), shown as a flat pop-in/pop-out instead. Noted in code comments as a
+known simplification, not silently faked. Not yet playtested.
+
+## 2026-07-27 — Camera "off" (general) + "floating below" in Shiks
+
+Checked: `_copy_cam()` / `_apply_cam_smooth()` in `wdl_director.gd` — used
+by every scripted-camera level (Studio, Town, Shiks, generic). Found a
+hardcoded `CAM_LENS_LIFT := 14.0` added to every camera's Y position, plus a
+tilt-softening curve (`if twrap < -2.0: twrap = twrap*0.65+4.0`) applied to
+every camera's look angle. Compared against `original/piposh3d/Studio.wdl`
+`TheCam`/`TheCam2` (the actions these entities actually run): the real
+engine does an **exact** copy — `camera.x=my.x; camera.z=my.z;
+camera.tilt=my.tilt; camera.pan=my.pan; camera.roll=my.roll` — no offset,
+no softening anywhere. Both constants were undocumented, uncited guesses
+(comments said "sits a bit low" / "soften... so subjects sit higher" with
+no source reference) tuned against one level (Studio) and then applied
+game-wide — the same mistake pattern as `AFG_Card`, just in the camera path
+instead of a click handler. This directly explains both symptoms: "camera
+off" in general (wrong tilt reshaping the look direction everywhere) and
+"floating below a bit" in Shiks specifically (a flat +14 that happened to
+look OK-ish for Studio's camera entities doesn't have to hold for Shiks'
+differently-placed `MyCamera`/`PipiCam` entities).
+
+Fixed: removed both. `_copy_cam` now copies entity position and Acknex
+pan/tilt/roll unmodified (the existing `_apply_acknex_view` already handles
+the WED tilt wrap-around, e.g. 345=-15, so no behavior lost there).
+
+Asked: (not yet — re-test is the ask; see reply to user)
+
+Answer: (pending)
+
+Result: Fix applied, affects every scripted-camera level uniformly (not
+per-level). Needs playtest confirmation across at least Studio, Shiks, and
+one generic level, since removing a blanket hack could reveal it was
+partially compensating for something real in one of them.
+
+## 2026-07-27 — MDL facing in Intro levels (IDPO hypothesis, unconfirmed)
+
+Checked: scanned all `Intro*.json` level files for referenced `.MDL` files
+and read each one's 4-byte magic from `original/piposh3d/MDL/`. Of 135
+distinct models used across Intro cutscenes: 69 are `IDPO`, 50 are `MDL3`,
+16 are `MDL5`. `docs/CONTRACT.md` already documents IDPO as the
+historically unreliable facing path (legacy axis map is a det -1
+reflection vs. A5's det +1) — this session added the `--fix-idpo`/
+`--no-face-orient` toggle to `tools/convert_mdl.py` and `tools/
+smoke_orient.gd` for exactly this test, but hasn't run it (headless Godot
+rendering hangs in this sandbox — see below). Given IDPO is the majority
+format in Intro content, this is circumstantial support for "Intro facing
+is wrong" being the same known IDPO handedness issue, not proof.
+
+Asked: (see reply to user — asking them to run smoke_orient.gd on one IDPO
+model, legacy vs --fix-idpo, and compare)
+
+Answer: (pending)
+
+Result: Open. Do NOT flip `FIX_IDPO` default without this confirmation —
+it would change every IDPO model in the game at once with no verification,
+exactly the kind of ungrounded sweeping change the process is meant to
+prevent.
+
+## 2026-07-27 — Sandbox limitation: headless Godot rendering hangs
+
+Checked: both `tools/smoke_orient.gd` and a trivial throwaway script that
+merely calls `WdlDirector.new()` and quits hung indefinitely when run via
+`godot --headless -s ...` in this environment, while `tools/smoke_test.gd`
+(pure JSON/file checks, no rendering/Node instantiation) completed in
+seconds, and `godot --headless --import` also completes normally. This
+looks like a sandbox rendering/GPU limitation, not a code defect — `--import`
+already exercises full script compilation (would have caught real syntax
+errors) and passed clean both before and after this session's edits.
+
+Result: Any test requiring an actual rendered frame (`smoke_orient.gd`,
+visual facing/camera checks) needs to be run by the user locally, not by me
+in this sandbox. Noted so a future session doesn't re-attempt this and
+waste time waiting on the same hang.
+
 ## 2026-07-26 — Camera/assets "off", characters sinking (general)
 
 Checked: user pasted `[feet-snap]` logs for Start/Menu/Studio/Shiks. Spot

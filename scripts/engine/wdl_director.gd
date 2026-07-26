@@ -1788,9 +1788,7 @@ func _apply_cam_smooth(cam: Node3D, delta: float) -> void:
 	if not _cam_pos_ready:
 		_copy_cam(cam, true)
 		return
-	# Blend toward lifted lens pose (same as _copy_cam).
-	const CAM_LENS_LIFT := 14.0
-	var target_pos := cam.global_position + Vector3(0.0, CAM_LENS_LIFT, 0.0)
+	var target_pos := cam.global_position
 	var k := 1.0 - exp(-CAM_FOLLOW_SPEED * delta)
 	_cam_pos = _cam_pos.lerp(target_pos, k)
 	_world_camera.global_position = _cam_pos
@@ -1800,11 +1798,13 @@ func _apply_cam_smooth(cam: Node3D, delta: float) -> void:
 func _copy_cam(cam: Node3D, hard: bool = true) -> void:
 	if cam == null or _world_camera == null:
 		return
-	# Position from entity; orientation from Acknex ang_to_vec(pan,tilt).
-	# Entity euler is for MDL +X facing — wrong for Camera3D (−Z).
-	# Slight Y lift: WED Cam.MDL origin sits a bit low vs the intended lens.
-	const CAM_LENS_LIFT := 14.0
-	var pos := cam.global_position + Vector3(0.0, CAM_LENS_LIFT, 0.0)
+	# Position + orientation copied 1:1 from the entity, matching the original
+	# engine exactly (Studio.wdl TheCam/TheCam2: `camera.x=my.x; camera.z=my.z;
+	# camera.tilt=my.tilt; camera.pan=my.pan; camera.roll=my.roll` — no offset,
+	# no softening). A prior session added a +14 Y "lens lift" and a tilt
+	# softening curve here, both eyeballed guesses with no source backing —
+	# removed after Shiks reported the camera sitting wrong (see SESSION_LOG).
+	var pos := cam.global_position
 	if hard:
 		_cam_pos = pos
 		_cam_pos_ready = true
@@ -1816,15 +1816,7 @@ func _copy_cam(cam: Node3D, hard: bool = true) -> void:
 	var pan: float = float(cam.get_meta("pan", 0.0))
 	var tilt: float = float(cam.get_meta("tilt", 0.0))
 	var roll: float = float(cam.get_meta("roll", 0.0))
-	# Soften strong look-down so subjects sit higher in frame.
-	var twrap := tilt
-	if twrap > 180.0:
-		twrap -= 360.0
-	elif twrap < -180.0:
-		twrap += 360.0
-	if twrap < -2.0:
-		twrap = twrap * 0.65 + 4.0
-	_apply_acknex_view(_world_camera, pan, twrap, roll)
+	_apply_acknex_view(_world_camera, pan, tilt, roll)
 	_world_camera.fov = _acknex_arc_to_godot_fov(fov_arc)
 	_world_camera.current = true
 
@@ -2270,6 +2262,39 @@ func _run_afg_take(node: Node3D) -> void:
 	GameState.save_slot(0)
 	status.emit("Afgan card %d collected" % card_i)
 	node.queue_free()
+	_show_afg_card(card_i)
+
+
+func _show_afg_card(card_i: int) -> void:
+	## Afgan.wdl AFG_Show: a view=camera LeCards.mdl entity, skin=my.skill1,
+	## visible ~60 ticks then alpha-fades out. Simplified here: shown as a
+	## flat, unshaded quad parented to the active camera (so it reads as a
+	## HUD card) for a fixed duration, no alpha ramp — the original's smooth
+	## fade is not yet ported (see docs/SESSION_LOG.md).
+	if _world_camera == null:
+		return
+	var path := "res://assets/converted/mdl/LeCards.glb"
+	if not ResourceLoader.exists(path):
+		return
+	var packed := load(path)
+	if not (packed is PackedScene):
+		return
+	var card := (packed as PackedScene).instantiate() as Node3D
+	if card == null:
+		return
+	_world_camera.add_child(card)
+	card.position = Vector3(0.0, 0.0, -6.0)
+	card.rotation_degrees = Vector3.ZERO
+	var anim := MdlAnimator.new()
+	anim.name = "MdlAnimator"
+	card.add_child(anim)
+	if anim.setup_from_stem("LeCards", card):
+		anim.set_skin(card_i)
+	var t := get_tree().create_timer(3.0)
+	t.timeout.connect(func() -> void:
+		if is_instance_valid(card):
+			card.queue_free()
+	)
 
 
 func _line(wav: String, who: int, actor: Node3D) -> void:
