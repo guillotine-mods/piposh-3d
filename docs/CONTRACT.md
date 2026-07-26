@@ -111,3 +111,12 @@ this generic runtime, not a separate transform system.
    goal is a complete, correct game — pipeline coverage (JSON/brush/director
    present) is necessary but not sufficient. Don't call a level done because
    its `LEVELS.md` row is green; call it done when a playtest confirms it.
+9. **Before wiring an entity `action` to a behaviour, grep
+   `original/piposh3d/WDL/*.wdl` (and the level's own `.wdl`) for that action
+   name.** Do not infer behaviour from spatial/visual proximity to another
+   entity ("it's on the same wall as X, so it probably does what X does") —
+   that produced the `AFG_Card` bug (aliased to `ShikNote`'s Shiks-scene
+   click because it sits on the same wall; the real script,
+   `WDL/Afgan.wdl`, is an unrelated 32-card collectible system). If no WDL
+   source defines the action, say so explicitly instead of guessing — an
+   inert/stubbed entity is more honest than a wrong one.

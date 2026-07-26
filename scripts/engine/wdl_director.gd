@@ -332,8 +332,17 @@ func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud
 			"ShikNote":
 				_make_clickable(node, "ShikKlik")
 			"AFG_Card":
-				# Visible notepad next to ShikNote — same click → Shiks.
-				_make_clickable(node, "ShikKlik")
+				# Afgan.wdl collectible: my.skill1 = card index (0-31), click
+				# picks it up (persists to GameState.afg, removes entity).
+				# Was previously wrongly aliased to ShikKlik (Shiks scene) —
+				# that guessed at behavior from wall proximity instead of
+				# reading original/piposh3d/WDL/Afgan.wdl; see SESSION_LOG.
+				var card_i := int(round(float(skills[0]))) if skills.size() > 0 else -1
+				if card_i >= 0 and card_i < GameState.afg.size() and GameState.afg[card_i] == 1:
+					node.queue_free()  # already collected in a prior session
+				else:
+					node.set_meta("afg_card_index", card_i)
+					_make_clickable(node, "AFG_Take")
 			"Dummy":
 				# Studio.wdl Dummy = room tone; Plane/Plane2 = cockpit loop.
 				if _is_studio_level():
@@ -2051,7 +2060,7 @@ func _try_click() -> void:
 				"collider=%s resolved_node=%s action=%s point=%s"
 				% [collider.name, n.name, resolved, str(hit.get("position"))]
 			)
-			_handle_click_action(resolved)
+			_handle_click_action(resolved, n as Node3D)
 			return
 		n = n.get_parent()
 	PiposhDebug.log_msg(
@@ -2061,10 +2070,10 @@ func _try_click() -> void:
 
 
 func handle_action(action: String) -> void:
-	_handle_click_action(action)
+	_handle_click_action(action, null)
 
 
-func _handle_click_action(action: String) -> void:
+func _handle_click_action(action: String, node: Node3D = null) -> void:
 	if action == "StartDialog":
 		if _dialog_busy or _studio_boot:
 			return
@@ -2073,6 +2082,9 @@ func _handle_click_action(action: String) -> void:
 		return
 	if action == "ShikKlik":
 		_run_shik()
+		return
+	if action == "AFG_Take":
+		_run_afg_take(node)
 		return
 	if _is_plane2_level() and _plane2_active:
 		if _p2_movie or _p2_finale:
@@ -2241,6 +2253,23 @@ func _run_shik() -> void:
 	_dialog_busy = false
 	talking = 0
 	request_run.emit("Shiks")
+
+
+func _run_afg_take(node: Node3D) -> void:
+	## Afgan.wdl AFG_Take: AFG[my.skill1]=1; WriteGameData(0); remove(my);
+	## plus a HUD "card shown" fade the original does via AFG_Show — not yet
+	## ported (see docs/SESSION_LOG.md). Persisting the flag + removing the
+	## entity is the gameplay-relevant part: without it the same card could
+	## be picked up again every visit.
+	if node == null:
+		return
+	var card_i := int(node.get_meta("afg_card_index", -1))
+	if card_i < 0 or card_i >= GameState.afg.size():
+		return
+	GameState.afg[card_i] = 1
+	GameState.save_slot(0)
+	status.emit("Afgan card %d collected" % card_i)
+	node.queue_free()
 
 
 func _line(wav: String, who: int, actor: Node3D) -> void:

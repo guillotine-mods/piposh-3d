@@ -57,9 +57,70 @@ NOT guess further — added debug prints instead (see next entry) rather than
 picking one hypothesis blind, per the project's own "never guess from vibes"
 rule.
 
-Asked: (pending — see instructions given alongside the debug-print commit)
+Asked: run Studio, click each wall item, paste `[click-wire]`/`[click-hit]`
+console output.
+
+Answer: user pasted logs. Both `ShikNote` (87, 95, 508) and the AFG entity
+(158, 152, 508, auto-renamed `@Node3D@150` by Godot — see naming note below)
+registered fine, radius 48 each. All 8 logged clicks resolved to the AFG
+node with `action=ShikKlik`, i.e. clicking (at least the area tested)
+fired the Shiks scene every time. User also separately reported the camera
+and some assets are generally "off" / not in the right place, and asked for
+systemic fixes, not per-MDL heuristics.
+
+Result: **Root cause found — not a click-resolution bug, a wrong-behavior
+bug.** `AFG_Card`'s Godot handler aliased it to `ShikNote`'s `"ShikKlik"`
+action with the comment "same click → Shiks" — a guess based on the two
+objects sitting on the same wall. Checked `original/piposh3d/WDL/Afgan.wdl`:
+`AFG_Card` is an unrelated 32-card collectible pickup system
+(`AFG[my.skill1]=1`, `WriteGameData(0)`, remove entity, HUD card-fade via a
+separate `AFG_Show` entity) — nothing to do with Shiks. Confirmed via the
+entity's `skills[0]=16.0` in `Studio.json` (card index 16), and the same
+`action: "AFG_Card"` appears in 18 different level JSONs, confirming it's a
+game-wide mechanic, not level-specific — validates fixing it generically
+rather than per-level.
+
+Fixed: added `GameState.afg` (32-int array, mirrors `IO.wdl`'s `piece`/
+`village`/etc. pattern), wired `AFG_Card` → `AFG_Take` in
+`wdl_director.gd` (persist pickup, remove entity, skip re-spawn if already
+collected), removed the false `ShikKlik` alias. **Not yet ported:** the
+`AFG_Show` HUD card-reveal fade sprite — flagged in code comments, not
+silently dropped. Added CONTRACT.md rule #9: grep `original/piposh3d/WDL/*`
+for an action's real script before wiring behavior from spatial guessing.
+
+Naming note (not a bug, don't re-investigate): `Studio.json`'s `ShikNote`
+and `AFG_Card` entities both have JSON `"name": "ShikNote_mdl_014"` — this
+is literally in the source WMB's `name20` field (probably the original WED
+author copy-pasted the ShikNote object to place AFG and never renamed the
+copy). Godot auto-renames the second child to avoid a collision
+(`@Node3D@150` in logs). Harmless for behavior since nothing keys off
+`node.name`; just confusing in debug logs. Don't assume other duplicate
+`name` values across the level corpus indicate an extraction bug — check
+the raw WMB name20 bytes first.
+
+Still open: re-verify after this fix that `ShikNote` (→ Shiks) and
+`AFG_Card` (→ card pickup) are now independently clickable, not just
+differently-behaving-but-still-cross-triggering. Ask user to re-test.
+
+## 2026-07-26 — Camera/assets "off", characters sinking (general)
+
+Checked: user pasted `[feet-snap]` logs for Start/Menu/Studio/Shiks. Spot
+check (Studio/Ami: `min_y=-57.057`, `y_before=0.0`, `y_after=57.057`,
+`floor_y=0.0`) — the math is internally consistent with the documented
+contract (mesh AABB min lands exactly on the original WED-origin height,
+i.e. `y_after + min_y == y_before`). This doesn't confirm the *visual*
+result is correct, only that the feet-snap function itself isn't
+introducing an arithmetic bug — the bug (if the model still looks sunk)
+would have to be upstream (floor_y extraction, brush mesh height, or a
+different code path entirely for cameras, which are never feet-snapped).
+
+Asked: (not yet — need a specific level + whether it's the player, an NPC,
+or the camera, and roughly how far off, before adding more targeted debug
+output; see reply to user for the exact ask).
 
 Answer: (pending)
 
-Result: Open. Debug prints added in `_make_clickable` / `_try_click`;
-waiting on playtest report.
+Result: Open. User's report is currently too general ("camera is off",
+"some assets ... not in the correct place or not pointing to the right
+place") to instrument without guessing. Do not add per-entity heuristics
+for this — get a specific repro first.

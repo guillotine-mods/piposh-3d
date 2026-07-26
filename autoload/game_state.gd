@@ -9,6 +9,11 @@ var volcano: Array[int] = [0, 0, 0, 0, 0]
 var olympic: Array[int] = [0, 0, 0, 0]
 var mansion: Array[int] = [0, 0, 0]
 var asylum: Array[int] = [0, 0, 0]
+## Afgan.wdl `var AFG[32]` — collectible card set, index = my.skill1.
+var afg: Array[int] = [
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+]
 
 var flag_first_village := 0
 var flag_first_asylum := 0
@@ -36,6 +41,7 @@ func reset_new_game() -> void:
 	olympic = [0, 0, 0, 0]
 	mansion = [0, 0, 0]
 	asylum = [0, 0, 0]
+	afg = _to_int_array([], 32)
 	flag_first_village = 0
 	flag_first_asylum = 0
 	flag_first_mansion = 0
@@ -55,6 +61,7 @@ func to_dict() -> Dictionary:
 		"olympic": olympic.duplicate(),
 		"mansion": mansion.duplicate(),
 		"asylum": asylum.duplicate(),
+		"afg": afg.duplicate(),
 		"flag_first_village": flag_first_village,
 		"flag_first_asylum": flag_first_asylum,
 		"flag_first_mansion": flag_first_mansion,
@@ -75,6 +82,7 @@ func from_dict(d: Dictionary) -> void:
 	olympic = _to_int_array(d.get("olympic", olympic), 4)
 	mansion = _to_int_array(d.get("mansion", mansion), 3)
 	asylum = _to_int_array(d.get("asylum", asylum), 3)
+	afg = _to_int_array(d.get("afg", afg), 32)
 	flag_first_village = int(d.get("flag_first_village", 0))
 	flag_first_asylum = int(d.get("flag_first_asylum", 0))
 	flag_first_mansion = int(d.get("flag_first_mansion", 0))
