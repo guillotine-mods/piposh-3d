@@ -233,9 +233,19 @@ def extract_brush(data: bytes) -> dict | None:
 
 
 def write_multi_glb(mesh: dict, dst: Path, name: str) -> None:
+    # glTF 2.0 binary spec requires the JSON chunk padded with trailing
+    # SPACE (0x20), not NUL (0x00) -- NUL is not valid JSON whitespace, so
+    # a strict JSON.parse() (browsers, three.js GLTFLoader) throws on it
+    # even though Godot's glTF importer tolerated it. See the matching fix
+    # + comment in tools/convert_mdl.py write_glb(), found via
+    # tools/wmb_web_viewer.py (2026-07-27).
     def align4(b: bytes) -> bytes:
         pad = (4 - (len(b) % 4)) % 4
         return b + (b"\x00" * pad)
+
+    def align4_json(b: bytes) -> bytes:
+        pad = (4 - (len(b) % 4)) % 4
+        return b + (b" " * pad)
 
     bin_blob = bytearray()
     buffer_views: list[dict] = []
@@ -349,7 +359,7 @@ def write_multi_glb(mesh: dict, dst: Path, name: str) -> None:
         "bufferViews": buffer_views,
         "accessors": accessors,
     }
-    json_bytes = align4(json.dumps(gltf, separators=(",", ":")).encode("utf-8"))
+    json_bytes = align4_json(json.dumps(gltf, separators=(",", ":")).encode("utf-8"))
     bin_aligned = align4(bytes(bin_blob))
     total_len = 12 + 8 + len(json_bytes) + 8 + len(bin_aligned)
     out = bytearray()

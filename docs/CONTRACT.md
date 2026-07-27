@@ -87,6 +87,19 @@ rule 3 below.
    scoped to 4 files instead of all 375. Don't try a geometry/UV heuristic
    to replace this table — that was already tried twice and both attempts
    regressed previously-correct models (rule 3's history).
+5. **GLB container: JSON chunk pads with SPACE (`0x20`), BIN chunk pads
+   with NUL (`0x00`) — never the same padding byte for both.** Both
+   `convert_mdl.py write_glb()` and `extract_wmb_mesh.py
+   write_multi_glb()` NUL-padded the JSON chunk for a long time (a shared
+   `align4()` used for both chunks). Godot's glTF importer tolerated it,
+   so every model rendered fine in Godot all along — but NUL is not valid
+   JSON whitespace, so any strict parser's `JSON.parse`/`json.loads`
+   (browsers, `tools/wmb_web_viewer.py`'s three.js `GLTFLoader`, likely
+   any non-Godot glTF consumer) throws on it and the model silently fails
+   to load. Found 2026-07-27 via the standalone web viewer (see
+   `docs/SESSION_LOG.md`) after models rendered as bare arrows with no
+   mesh. Fixed with a separate `align4_json()`; if you touch either GLB
+   writer again, keep this split — don't reunify "for simplicity."
 
 ## 3. WMB / levels
 

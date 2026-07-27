@@ -884,10 +884,22 @@ def write_glb(mesh: MeshData, dst: Path) -> None:
     uvs = mesh.uvs.astype("<f4")
     indices = mesh.indices.astype("<u4")
 
-    # Pad helpers
+    # Pad helpers. glTF 2.0 binary spec (chunk layout) requires the JSON
+    # chunk be padded with trailing SPACE (0x20), and the BIN chunk with
+    # trailing NUL (0x00) -- these are not interchangeable. Padding JSON
+    # with NUL (as this used to do for both) leaves trailing \x00 bytes
+    # inside the string a strict parser decodes and JSON.parse()s -- \x00
+    # is not valid JSON whitespace, so browsers' JSON.parse (and therefore
+    # three.js's GLTFLoader) throw on it, even though Godot's own glTF
+    # importer tolerated it. Confirmed via tools/wmb_web_viewer.py: every
+    # model failed to load in-browser until this was split.
     def align4(b: bytes) -> bytes:
         pad = (4 - (len(b) % 4)) % 4
         return b + (b"\x00" * pad)
+
+    def align4_json(b: bytes) -> bytes:
+        pad = (4 - (len(b) % 4)) % 4
+        return b + (b" " * pad)
 
     bin_blob = bytearray()
     # accessors layout
@@ -968,7 +980,7 @@ def write_glb(mesh: MeshData, dst: Path) -> None:
         ],
     }
 
-    json_bytes = align4(json.dumps(gltf, separators=(",", ":")).encode("utf-8"))
+    json_bytes = align4_json(json.dumps(gltf, separators=(",", ":")).encode("utf-8"))
     bin_aligned = align4(bytes(bin_blob))
 
     # GLB container

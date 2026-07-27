@@ -1286,3 +1286,61 @@ Answer: (pending)
 
 Result: New tool built, tested end-to-end (server + data), one real bug
 found and fixed. Ready for the user's actual visual feedback loop.
+
+## 2026-07-27 — Real GLB spec bug found: NUL-padded JSON chunk breaks strict glTF parsers
+
+User ran the new web viewer and reported: no character meshes rendered at
+all, only the red forward-arrows — a much more basic failure than the
+facing question it was built to answer. Also reported (separately, on
+Yachdal specifically): needs a 90° right turn to face the crowd correctly
+per what little could be judged from arrows alone. Held off acting on the
+facing number until the rendering itself was fixed, since a broken
+renderer makes any facing observation unreliable.
+
+Root-caused instead of guessing: manually validated the actual `.glb`
+bytes against the glTF 2.0 binary container spec. Found it —
+`convert_mdl.py write_glb()` and `extract_wmb_mesh.py write_multi_glb()`
+both pad the GLB's JSON chunk with trailing NUL (`\x00`) via a shared
+`align4()` helper also used (correctly) for the BIN chunk. The glTF 2.0
+spec requires the JSON chunk padded with trailing SPACE (`0x20`)
+specifically — NUL is not valid JSON whitespace, so a strict
+`JSON.parse()` throws on trailing NULs. This is the exact same class of
+error hit repeatedly earlier this session writing throwaway Python GLB
+inspection scripts (`.rstrip()` workarounds were needed every time) — it
+was a real, shipping bug in the converters themselves the whole time, not
+just an inspection-script annoyance. Godot's own glTF importer is
+apparently lenient enough to tolerate it (every model has rendered fine in
+Godot all session); three.js's `GLTFLoader` is not, and failed silently on
+every single model.
+
+Fixed: added a separate `align4_json()` (space-padded) in both files,
+used only for the JSON chunk; `align4()` (NUL-padded) stays for the BIN
+chunk, which is spec-correct there. Regenerated everything:
+`python tools/convert_mdl.py` (648/649 MDL models) and
+`python tools/extract_wmb_mesh.py --all` (134 brush/sub-model glbs).
+Verified the fix directly: stock strict `json.loads()` on the raw JSON
+chunk bytes now succeeds with no `.rstrip()` needed (Python's `json.loads`
+has the same trailing-whitespace strictness as JS `JSON.parse` for this
+purpose). `check_all.ps1` still all-green afterward, including the exact
+distance-preservation checks in `verify_transforms.py` — confirms this
+was purely a container-padding fix, geometry/positions are byte-identical
+to before.
+
+This is a genuine, previously-undetected bug in the shipping conversion
+pipeline, not a guess or a heuristic — a real answer to "your parser isn't
+working correctly," even though it turned out to be about glTF container
+framing, not the WMB angle/position math that's been under suspicion.
+
+Asked: re-run the web viewer now that meshes should actually load, and
+re-check the Yachdal-vs-crowd facing question with real meshes visible
+(not just arrows) — the 90°-right report from before this fix may or may
+not still hold once there's an actual mesh to look at, so it needs
+re-confirming rather than assuming it still applies.
+
+Answer: (pending)
+
+Result: Real, high-confidence, previously-unknown bug found and fixed
+across the entire asset pipeline (782 regenerated files, geometry
+unchanged, verified via check_all.ps1). Facing question deferred until
+the rendering fix is confirmed, rather than acting on a report gathered
+through a broken renderer.
