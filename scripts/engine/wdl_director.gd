@@ -102,6 +102,8 @@ var _plane_vase := 0
 var _plane_pip2 := 0
 var _plane_arv := 0.0
 var _plane_cam_timer := 0.0
+var _plane_update_logged := false
+var _plane_log_t := 0.0
 var _plane_view: Node3D  # current ChangeCamera / Camera1 hold
 
 ## Plane2.wdl state
@@ -269,6 +271,8 @@ func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud
 	_p2_tv_skin = 1
 	_range_update_logged = false
 	_town_cam_range_warned = false
+	_plane_update_logged = false
+	_plane_log_t = 0.0
 	_idle_spinners.clear()
 	_range_active = false
 	_range_cam = null
@@ -1371,6 +1375,20 @@ func _begin_plane() -> void:
 	# PiposhWalk follows the path during Wait/KRP001 (before DialogIndex==3).
 	_plane_walking = true
 	status.emit("Plane — boarding…")
+	PiposhDebug.log_msg(
+		"plane",
+		(
+			"begin: piposh=%s krupnik=%s path_pts=%d cams=%d view=%s "
+			+ "cam_positions=%s piposh_pos=%s"
+		)
+		% [
+			str(_plane_piposh), str(_plane_krupnik), _plane_path.size(),
+			_plane_cams.size(), str(_plane_view),
+			str(_plane_cams.map(func(c): return c.global_position)),
+			str(_plane_piposh.global_position if _plane_piposh else null),
+		]
+	)
+	_plane_update_logged = false
 	_run_plane_boot()
 
 
@@ -1407,6 +1425,34 @@ func _apply_plane_cam(hard: bool = false) -> void:
 
 
 func _update_plane(delta: float) -> void:
+	if not _plane_update_logged:
+		_plane_update_logged = true
+		PiposhDebug.log_msg(
+			"plane",
+			"update running: piposh_visible=%s piposh_pos=%s active_cam=%s"
+			% [
+				str(_plane_piposh.visible if _plane_piposh else null),
+				str(_plane_piposh.global_position if _plane_piposh else null),
+				str(_plane_view),
+			]
+		)
+	_plane_log_t += delta
+	if _plane_log_t >= 1.0:
+		_plane_log_t = 0.0
+		PiposhDebug.log_msg(
+			"plane",
+			(
+				"tick: scene=%d talking=%d phase=%d walking=%s piposh_visible=%s "
+				+ "piposh_pos=%s cam_show=%d view=%s world_cam_pos=%s"
+			)
+			% [
+				scene, talking, _plane_phase, str(_plane_walking),
+				str(_plane_piposh.visible if _plane_piposh else null),
+				str(_plane_piposh.global_position if _plane_piposh else null),
+				_cam_show, str(_plane_view),
+				str(_world_camera.global_position if _world_camera else null),
+			]
+		)
 	# Vase visibility
 	if _plane_vase1:
 		_plane_vase1.visible = _plane_vase == 1
@@ -1625,6 +1671,29 @@ func _update_shiks_fly_cam(delta: float) -> void:
 		if _hud:
 			_hud.show_dialog(2)
 		status.emit("Shiks — dialog 2")
+		# Landing spot check: Shiks.wdl has no explicit look-at once the fly
+		# loop ends (MyCamera's own action stops updating camera at skill2==4)
+		# — camera just freezes at the last flown position/heading. Log where
+		# that actually lands vs. where Piposh3/ShikX stand, since a static
+		# geometric check on the extracted path found the last waypoint
+		# ~550-620 units away with a ~294° facing mismatch (docs/SESSION_LOG.md
+		# 2026-07-27) — confirm live whether that's really what renders.
+		PiposhDebug.log_msg(
+			"shiks",
+			(
+				"fly-cam ended: cam_pos=%s cam_pan_meta=%s piposh3=%s "
+				+ "piposh3_pos=%s piposh3_visible=%s shikx=%s shikx_pos=%s "
+				+ "world_cam_pos=%s"
+			)
+			% [
+				str(_my_camera.global_position if _my_camera else null),
+				str(_my_camera.get_meta("pan", null) if _my_camera else null),
+				str(_piposh3), str(_piposh3.global_position if _piposh3 else null),
+				str(_piposh3.visible if _piposh3 else null),
+				str(_shik_x), str(_shik_x.global_position if _shik_x else null),
+				str(_world_camera.global_position if _world_camera else null),
+			]
+		)
 		return
 	var i := _shiks_path_i
 	var p0 := _shiks_path[maxi(i - 2, 0)]
@@ -1669,6 +1738,11 @@ func _catmull_rom_xz(p0: Vector3, p1: Vector3, p2: Vector3, p3: Vector3, t: floa
 
 
 func _update_shiks_actors(delta: float) -> void:
+	# Shiks.wdl TurnVase: `if (Talking==11) invisible=off; else invisible=on;`
+	# re-checked every tick — mirror that exactly instead of only setting
+	# visible=true inside the talking==11 branch below with no reset.
+	if _turn_vase:
+		_turn_vase.visible = talking == 11
 	if talking == 1 and _piposh3:
 		_anim_talk(_piposh3)
 		if _shik_x:
@@ -1681,8 +1755,6 @@ func _update_shiks_actors(delta: float) -> void:
 		_anim_frame(_shik_x, "Scream", 0.0)
 	elif talking == 11 and _piposh3:
 		_anim_cycle(_piposh3, "Dumb")
-		if _turn_vase:
-			_turn_vase.visible = true
 	elif talking == 12 and _piposh3:
 		_anim_cycle(_piposh3, "Walk")
 		_piposh3.global_position += Vector3(-10.0, 0.0, 10.0) * delta

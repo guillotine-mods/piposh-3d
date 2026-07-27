@@ -1054,3 +1054,104 @@ Feet-snap exclusion list: one stem (Dutyfree) now has a measured
 justification, one real bug found and fixed (Headphon typo + a live
 inconsistent-instance case), the rest still need the gallery screenshot
 to close out — not further guessing.
+
+## 2026-07-27 — Three new bugs reported (Shiks post-conversation Piposh missing; Plane1 Piposh missing first half + wrong camera); Yachdal/crowd mutual-facing independently confirmed
+
+User reported three concrete symptoms and, separately, a useful ground-
+truth detail from the original game: "Yachdal_mdl_001 is facing the
+crowd and the crowd is facing him" — explicit instruction not to
+"fix this heuristically," i.e. verify against real data, don't patch the
+symptom.
+
+**Yachdal/crowd mutual-facing — checked against real WMB placement data,
+confirmed correct, not a heuristic guess:** computed the bearing from
+Yachdal's position to the Crowd instances' centroid in `Start.json`:
+271.1°. Current `mdl_yaw_allowlist.json` value for yachdal: 270.0° — match
+within measurement noise. Then checked, for every one of Crowd's 63
+placed instances (Crowd + Crowd2 combined) game-wide, whether its
+authored WMB pan *plus* the current +90° allowlist correction points back
+toward Yachdal: circular mean deviation 2.9°, consistency R=0.906 (1.0 =
+perfect agreement across all instances). Both allowlist values are now
+independently geometrically confirmed against real placement data, not
+just "not re-reported as wrong."
+
+**Shiks — investigated the post-conversation Piposh-not-appearing report
+by reading `Shiks.wdl` in full.** Two separate Piposh actors exist:
+`Piposh2` (walks in, talks with Shik, DialogIndex 1) and `Piposh3`/
+`piposh2x` (a second placement near the "photo booth" area, used from
+DialogIndex 2 onward — `talking` states 1/11/12/13 drive its Talk/Dumb/
+Walk/hide behavior). Confirmed both are correctly bound in
+`wdl_director.gd` (`_piposh2`, `_piposh3`) and spawn normally (WMB flags
+262144 on Piposh3/ShikX don't map to any bit our loader currently
+interprets — checked, not the cause; loader only reads bit0/bit10).
+
+Found a **real, checkable discrepancy** via the extracted path data:
+`Shiks.wmb`'s only path (`path_002`, 7 points) is what `MyCamera` flies
+along after `Bumped` triggers (`Piposh.skill2` 1→2); once the fly
+completes, `MyCamera`'s own action stops updating `camera.*` entirely (its
+`if` only covers `skill2==1` or `skill2==2`) — so per source, the camera
+just freezes at the path's last waypoint and heading, with no separate
+look-at for the DialogIndex-2 conversation. Computed that last waypoint
+(`(-327, 475)` in GS X,Y) against Piposh3 `(-1,-48)` / ShikX `(-3,35)`:
+~550-620 units away, with the final travel heading (~7.7°) pointing
+~294° away from Piposh3's actual bearing (301.9° needed vs 7.7° actual).
+If this is really what Acknex rendered too, the original may have simply
+not shown Piposh3/ShikX in a tight shot at that exact moment (voice-over
+during a scenic pan) rather than this being a port bug — genuinely
+unclear from static reading alone. **Did not "fix" this** (would be a
+guess — e.g. snapping the camera to Piposh3 has no textual justification
+in the source). Instead added `PiposhDebug.log_msg("shiks", ...)` right
+where the fly-cam loop ends, dumping camera position/heading vs. Piposh3/
+ShikX position/visibility, so the next playtest report settles it with a
+real number instead of another static-reading guess.
+
+Also fixed one real, source-grounded (non-heuristic) bug found while
+reading this code: `TurnVase` in `Shiks.wdl` is `if (Talking==11)
+invisible=off; else invisible=on;` — re-checked **every tick**. The port
+only ever set `_turn_vase.visible = true` once, inside the `talking==11`
+branch, with no corresponding reset — so once shown, it stayed visible
+forever instead of hiding again when `talking` moved on. Fixed to
+re-evaluate every frame like the source does.
+
+**Plane (first level) — investigated "Piposh not shown first half" +
+"camera points to the wrong place" by reading `Plane.wdl` in full and
+checking the extracted data.** Confirmed via data, not guesswork: (1)
+`Cam` entities correctly carry `skill1` 1/2/3 matching `Camera1/2/3` in
+source (extractor's "OLD ENTITY pad" fix holds up), so
+`_plane_cams[0]` genuinely is Camera1, matching `ThePlaneMovie`'s one-time
+snap-to-Camera1 at boot. (2) Camera1's authored pan (90°) matches the
+real bearing to both Krupnik (85.3°) and the walk path's endpoint (93.1°,
+after correctly converting `origin_gs` and path points — which are stored
+in *different* coordinate conventions, raw-GS vs. pre-converted-Godot
+respectively; my first pass compared them directly and wrongly looked
+like a coordinate bug before re-checking types). So the initial camera
+framing is data-correct: Camera1 should show both Krupnik and Piposh's
+walk-up. No `_plane_piposh.visible = false` exists anywhere in the port
+before `_plane_phase == 3`, matching source (`PiposhWalk`'s own action
+never sets `invisible=on` until deep in `DialogChoice==3`). Static
+reading did not find the bug — ruled out the data/parsing-level
+explanations that would have been "one correct parse" fixes, which is
+exactly why they're worth recording (saves re-checking the same three
+hypotheses next time). Added `PiposhDebug.log_msg("plane", ...)`: once at
+`_begin_plane()` (resolved camera positions + piposh binding), once on
+the first `_update_plane` tick, and once per second thereafter (scene/
+talking/phase/walking state, Piposh visibility + position, active camera
+identity + world camera position) — this is a live-state bug, not a
+static one, per CONTRACT.md rule 6.
+
+Asked: reproduce both Shiks (choose dialogue leading to the vase/window
+ending) and Plane1 (from level start through the first camera change),
+and paste the console output (`[shiks]` / `[plane]` tagged lines). This
+replaces guessing with the exact runtime state at the moment each bug
+happens.
+
+Answer: (pending)
+
+Result: Yachdal/Crowd facing now has independent geometric confirmation,
+not just "not re-reported wrong" — closes that open item for good. Shiks
+flycam-landing mismatch is a concrete, data-verified lead, instrumented
+rather than guessed at. TurnVase visibility-reset bug found and fixed
+(genuine source mismatch, not a guess). Plane1: ruled out the camera-
+selection and Piposh-visibility-flag hypotheses with real data; the
+actual cause needs the live debug output, not another read of the
+source.
