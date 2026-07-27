@@ -30,7 +30,7 @@ def should_feet_snap(action: str, stem: str) -> bool:
     if a == "window":
         return False
     if s in {
-        "glass", "b747", "cockpit", "tv", "island", "headphone", "biplane",
+        "glass", "b747", "tv", "island", "headphone", "biplane",
         "biplane2", "hanger", "towerw", "dutyfree",
     }:
         return False
@@ -45,7 +45,6 @@ def main() -> int:
     for action, stem in [
         ("Window", "Glass"),
         ("", "B747"),
-        ("", "Cockpit"),
         ("HeadPhone", "HeadPhone"),
         ("Land", "BiPlane2"),
         ("Cam", "Cam"),
@@ -71,6 +70,7 @@ def main() -> int:
         ("", "Curtain"),
         ("", "StudioL"),
         ("", "Shtomba"),
+        ("", "Cockpit"),
     ]:
         if not should_feet_snap(action, stem):
             print(f"FAIL set-dressing prop not snapped (regression): {action}/{stem}")

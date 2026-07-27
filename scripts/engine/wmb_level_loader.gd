@@ -438,10 +438,17 @@ func _should_feet_snap(action: String, stem: String) -> bool:
 	if a == "window":
 		return false
 	if s in [
-		"glass", "b747", "cockpit", "tv", "island", "headphone",
+		"glass", "b747", "tv", "island", "headphone",
 		"biplane", "biplane2", "hanger", "towerw", "dutyfree",
 	]:
 		return false
+	# "cockpit" was excluded here on the assumption it's fixed attachment
+	# scenery like a ceiling light, needing no feet/origin correction.
+	# Measured directly from Cockpit.glb: local Y spans -165.66..+76.83 (the
+	# mesh hangs mostly BELOW its own origin, same shape of bug as StudioL's
+	# light rigs) — so it needs the opt-out default like everything else,
+	# not an exclusion. User screenshot confirmed the console rendering
+	# mostly below floor level in Plane/Plane2 (docs/SESSION_LOG.md).
 	if a in ["headphone", "land", "wind", "ent_rotate", "item_pickup"]:
 		return false
 	return true

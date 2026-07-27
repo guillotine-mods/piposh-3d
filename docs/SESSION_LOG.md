@@ -776,6 +776,58 @@ tick, `_range_fire()` logs every attempt (blocked/miss/hit-what). Next
 report should make the actual failure point obvious instead of requiring
 another guess.
 
+## 2026-07-27 — Screenshot-driven fixes: Cockpit feet-snap, water-wheel/vase roll axis, Yachdal direction flip
+
+User sent a screenshot of the Plane2 cockpit (first image shared instead of
+a text description) plus: "DefineYachdel is facing 90 off" (still, after
+the earlier +90 correction), "water electricity generation now spins on
+the wrong axis", "Plane/Plane2 controller still lower than it should be",
+"Range still completely off", and a direct challenge: "you have the MDL,
+read it, parse it... why do you need to manually fix things."
+
+**Cockpit** (the "control panel"): the screenshot showed it rendering near
+floor/knee height next to Krupnik. No entity is literally named "panel" in
+`Plane2.json` — `Cockpit.MDL` (blank action, pure scenery) is the object,
+positioned almost exactly at Krupnik's own Y (33/49 vs Krup2's 35/51).
+Measured its GLB directly (same method as the original StudioL find in the
+first session): local Y spans -165.66..+76.83 — the mesh hangs mostly
+*below* its own origin, same bug shape as the earlier light-rig props. It
+had been excluded from feet-snap on the assumption it's fixed "attachment
+scenery" (grouped with B747/Island/etc. in `wmb_level_loader.gd`) — that
+assumption doesn't hold for this model. Removed "cockpit" from the
+exclusion list; updated `verify_feet_snap_policy.py` to match (moved from
+the "must never snap" cases to the "regression guard, must snap" cases).
+
+**Water wheel / turn vase**: checked `Shiks.wdl` directly. `WaterWheel`
+does `my.roll += 5`; `TurnVase` does `my.tilt += 20*time; my.roll +=
+20*time`. Acknex tilt/roll rotate about the entity's OWN local axes (post
+pan), not a fixed world axis. The port had hardcoded
+`rotation_degrees.z +=` / `.x += ... .z +=` (Godot world/local axes),
+which only coincidentally matches Acknex tilt/roll when pan happens to be
+0 — this session's facing pipeline changes likely altered the wheel's
+effective authored pan, exposing a latent bug as "spins on the wrong
+axis" (the bug predates this session, the facing fix just surfaced it).
+Added `_set_entity_tilt_roll()` (rebuilds the full `ang_to_matrix` basis
+from stored pan + new tilt/roll, mirroring the existing `_set_entity_pan`)
+and used it for both.
+
+**Yachdal direction**: flipped `mdl_yaw_allowlist.json` from `90` to `270`
+(i.e. -90) — the first guess was the wrong rotational direction; text
+("90 degrees off") can't disambiguate direction, which is exactly why this
+round-trip was needed. Crowd/Crowd2/Genia untouched (not re-reported as
+wrong).
+
+**On "why can't you just parse it correctly instead of manual fixes"**:
+answered the user directly, not just in code. For facing, the blueprint
+(raw MDL geometry) genuinely is being read and used directly — correct
+handedness + keep-authored-facing is what fixed ~371 of 375 IDPO models
+with zero per-model intervention. The remaining handful are models whose
+own 3D data, even correctly handedness-fixed, doesn't point +X — not a
+parsing gap, a fact about how those specific assets were originally
+authored that nothing in the MDL format self-declares. Proposed leaning on
+screenshots more (the user can render, I can read images) as a faster,
+unambiguous alternative to "N degrees off" text going forward.
+
 ## 2026-07-26 — Camera/assets "off", characters sinking (general)
 
 Checked: user pasted `[feet-snap]` logs for Start/Menu/Studio/Shiks. Spot

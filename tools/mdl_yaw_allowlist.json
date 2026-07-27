@@ -3,7 +3,7 @@
   "extra_yaw_deg": {
     "Crowd": 90.0,
     "Crowd2": 90.0,
-    "Yachdal": 90.0,
+    "Yachdal": 270.0,
     "Genia": 90.0
   }
 }

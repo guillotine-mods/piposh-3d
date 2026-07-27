@@ -25,8 +25,10 @@ guess, a recorded measurement.
 |---|---|---|
 | Studio: Sfan (fan) | OK | Confirmed correct by user. |
 | Studio: Ami, Naknik | FIX | On the uniform no-heuristic rule, regenerated through the corrected CLI. Needs test. |
-| Start: Crowd, Crowd2, Yachdal, Genia | FIX | Still 90° off after the heuristic deletion (confirmed via the corrected CLI, so this was a real measurement, not a stale build) — added a `+90°` correction via `mdl_yaw_allowlist.json`. Direction is a first guess; if backwards, trivial to flip to `-90`. Needs test. |
-| Shiks: ShikFond ("ShikX"), Wwheel (water wheel) | FIX | On the uniform no-heuristic rule, regenerated through the corrected CLI (not yet re-reported since the CLI fix). Needs test. |
+| Start: Crowd, Crowd2, Genia | FIX | `+90°` correction via `mdl_yaw_allowlist.json` (not re-reported wrong after applying, tentatively holding). Needs explicit re-confirmation. |
+| Start: Yachdal (DefineYachdel) | FIX | `+90` was the wrong direction (still 90° off after applying it) — flipped to `-90`/`270`. Needs test. |
+| Shiks: ShikFond ("ShikX") | FIX | On the uniform no-heuristic rule, regenerated through the corrected CLI. Needs test. |
+| Shiks: Wwheel (water wheel) facing | FIX | On the uniform no-heuristic rule. Separately, its *spin axis* was also wrong — see Camera/Positioning section below. Needs test. |
 | Shiks: Bus | **?** | Reported 180° off twice, unchanged both times. Likely a genuine one-off needing its own measured correction (same mechanism as Crowd/Yachdal/Genia above) — need the exact degree/direction, or at minimum reconfirmation against this latest build. |
 | Plane/Plane2: B747 | FIX | Same rule as Bus, unaffected by recent changes. Needs re-confirmation. |
 | Plane: "Pip" vs "PiposhWalk" | ? | Which one did "Piposh in Plane 90 off" mean? `PiposhWalk` faces its movement direction (shared formula, unlikely buggy); `Pip` is stationary with a static angle (if wrong, the bug is in `Piposh2.MDL` itself). Need to know which. |
@@ -42,6 +44,7 @@ guess, a recorded measurement.
 | Shiks: camera fly motion | FIX | Was straight waypoint-to-waypoint hops ("blocky"); now a continuous Catmull-Rom spline. Needs re-test. |
 | Plane2: static camera after goal-movie, should resume walking | BUG | Confirmed the level *should* enter FP mode; bug is inside the complex goal-movie state machine. Need exact repro (F10 mode readout + trigger sequence). |
 | Range | FIX | Could fall back to free/3rd-person movement mid-game — fixed via explicit `_steal_camera()`. Needs re-test. |
+| Shiks: water wheel / turn vase rotation | FIX | Both used hardcoded Godot world-axis rotation (`rotation_degrees.z/.x +=`) instead of Acknex's own local tilt/roll semantics (`Shiks.wdl`: `my.roll += 5` / `my.tilt += 20*time; my.roll += 20*time`) — only coincidentally correct when pan=0. Added `_set_entity_tilt_roll()` and used it for both. Needs test. |
 
 ## Positioning / sinking
 
@@ -49,7 +52,7 @@ guess, a recorded measurement.
 |---|---|---|
 | All levels: fans/curtains/light-rigs/set-dressing | FIX | `_should_feet_snap` had been inverted from opt-out to opt-in, silently un-snapping everything not on a whitelist. Restored opt-out (matches original documented behavior). Needs re-test. |
 | Shiks: camera/characters below floor | BUG | Not explained by the feet-snap fix (these were already snapped). Need `[copy-cam]`/`[feet-snap]` console logs from an actual run. |
-| Plane2: control panel too low, should be higher/"in the middle" | ? | No entity named anything like "panel" exists in `Plane2.json` — likely means Krupnik's own position, not a separate object. Need clarification on which model. |
+| Plane/Plane2: cockpit control panel too low | FIX | Identified via user screenshot: `Cockpit.MDL` (blank-action scenery near Krupnik), mesh measured to hang mostly below its own origin — was wrongly excluded from feet-snap as "attachment scenery". Removed the exclusion. Needs test. |
 
 ## Clicks / interaction
 

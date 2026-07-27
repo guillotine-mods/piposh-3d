@@ -67,6 +67,9 @@ var _turn_vase: Node3D
 var _weasel: Node3D
 var _bus: Node3D
 var _water_wheel: Node3D
+var _water_wheel_roll := 0.0
+var _turn_vase_tilt := 0.0
+var _turn_vase_roll := 0.0
 var _pipis: Array[Node3D] = []
 var _stand_here_x := 0.0
 var _ztemp := 0.0
@@ -185,6 +188,9 @@ func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud
 	_weasel = null
 	_bus = null
 	_water_wheel = null
+	_water_wheel_roll = 0.0
+	_turn_vase_tilt = 0.0
+	_turn_vase_roll = 0.0
 	_pipis.clear()
 	talking = 0
 	scene = 0
@@ -1566,10 +1572,15 @@ func _run_shiks_boot() -> void:
 func _update_shiks(delta: float) -> void:
 	_apply_shiks_cam()
 	if _water_wheel:
-		_water_wheel.rotation_degrees.z += 5.0 * delta * 16.0
+		# Shiks.wdl WaterWheel: my.roll += 5 (about the wheel's own local
+		# forward axis, not a fixed world axis — see _set_entity_tilt_roll).
+		_water_wheel_roll += 5.0 * delta * 16.0
+		_set_entity_roll(_water_wheel, _water_wheel_roll)
 	if _turn_vase and _turn_vase.visible:
-		_turn_vase.rotation_degrees.x += 20.0 * delta * 16.0
-		_turn_vase.rotation_degrees.z += 20.0 * delta * 16.0
+		# Shiks.wdl TurnVase: my.tilt += 20*time; my.roll += 20*time.
+		_turn_vase_tilt += 20.0 * delta * 16.0
+		_turn_vase_roll += 20.0 * delta * 16.0
+		_set_entity_tilt_roll(_turn_vase, _turn_vase_tilt, _turn_vase_roll)
 	if _shtomba and _piposh2 and _piposh_skill2 < 4:
 		_shtomba.global_position = _piposh2.global_position + Vector3(-5.0, 20.0, 0.0)
 
@@ -2257,6 +2268,32 @@ func _apply_random_building(node: Node3D) -> void:
 		node.add_child((packed as PackedScene).instantiate())
 	var pans: Array[float] = [0.0, 90.0, 180.0, 270.0]
 	_set_entity_pan(node, pans[randi() % pans.size()])
+
+
+func _set_entity_tilt_roll(node: Node3D, tilt_deg: float, roll_deg: float) -> void:
+	## Rebuild ang_to_matrix basis for a tilt/roll change, keeping authored
+	## pan. Acknex tilt/roll rotate about the entity's OWN local axes (post
+	## pan), not fixed world axes — e.g. Shiks.wdl WaterWheel does
+	## `my.roll += 5` and TurnVase does `my.tilt += 20*time; my.roll +=
+	## 20*time`. Hardcoded `rotation_degrees.x/z +=` (Godot world/local
+	## axes) only coincidentally matches for pan=0. Reported: water wheel
+	## "spins on the wrong axis" once the facing pipeline changed its
+	## authored pan — this is the general fix (see docs/SESSION_LOG.md).
+	if node == null or not is_instance_valid(node):
+		return
+	var scl := node.transform.basis.get_scale()
+	if scl.x <= 0.001 or scl.y <= 0.001 or scl.z <= 0.001:
+		scl = Vector3.ONE
+	var pan := float(node.get_meta("pan", 0.0))
+	var b := _acknex_entity_basis_local(pan, tilt_deg, roll_deg)
+	var pos := node.global_position
+	node.global_transform = Transform3D(b * Basis.from_scale(scl.abs()), pos)
+	node.set_meta("tilt", tilt_deg)
+	node.set_meta("roll", roll_deg)
+
+
+func _set_entity_roll(node: Node3D, roll_deg: float) -> void:
+	_set_entity_tilt_roll(node, float(node.get_meta("tilt", 0.0)), roll_deg)
 
 
 func _set_entity_pan(node: Node3D, pan_deg: float) -> void:
