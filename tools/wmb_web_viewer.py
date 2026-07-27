@@ -693,6 +693,40 @@ async function buildScene(level) {
   }
 
   statusEl.textContent = `${level.entities.length} entities placed (models loaded where a matching .glb exists; cyan cones otherwise).`;
+
+  // Debug hook for automated inspection (e.g. puppeteer) -- lets an
+  // external script read back actual rendered world transforms instead of
+  // only trusting the JS source. THREE is a module-scope import so it's
+  // otherwise unreachable from outside; expose what's needed to compute a
+  // world-space forward vector for any entity by name/file substring.
+  window.__WMB_DEBUG__ = {
+    THREE,
+    camera,
+    controls,
+    pickable,
+    findByFile: (needle) => pickable.filter((p) => p.data.file.toLowerCase().includes(needle.toLowerCase())),
+    worldForward: (mesh) => {
+      const q = new THREE.Quaternion();
+      mesh.getWorldQuaternion(q);
+      return new THREE.Vector3(1, 0, 0).applyQuaternion(q).toArray();
+    },
+    worldPos: (mesh) => {
+      const v = new THREE.Vector3();
+      mesh.getWorldPosition(v);
+      return v.toArray();
+    },
+    // Camera placed along an explicit world-space forward vector, looking
+    // back at the target -- if that forward vector is really where the
+    // character faces, the front should be visible from here.
+    setForwardCamera: (forwardArr, posArr, dist) => {
+      const c = new THREE.Vector3(...posArr);
+      const f = new THREE.Vector3(...forwardArr).normalize();
+      const camPos = c.clone().addScaledVector(f, dist).add(new THREE.Vector3(0, dist * 0.15, 0));
+      camera.position.copy(camPos);
+      controls.target.copy(c);
+      controls.update();
+    },
+  };
 }
 
 let activeLi = null;

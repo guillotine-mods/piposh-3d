@@ -25,8 +25,8 @@ guess, a recorded measurement.
 |---|---|---|
 | Studio: Sfan (fan) | OK | Confirmed correct by user. |
 | Studio: Ami, Naknik | FIX | On the uniform no-heuristic rule, regenerated through the corrected CLI. Needs test. |
-| Start: Crowd, Crowd2, Genia | OK | `+90°` correction via `mdl_yaw_allowlist.json`. **2026-07-27: independently confirmed against real WMB placement data** (not just "not re-reported wrong") — user noted the original shows the crowd facing Yachdal; checked all 63 Crowd/Crowd2 instances' authored pan + this correction against the actual bearing to Yachdal's position: mean deviation 2.9°, consistency R=0.906. |
-| Start: Yachdal (DefineYachdel) | OK | Flipped to `270°`. **2026-07-27: independently confirmed** — bearing from Yachdal's WMB position to the Crowd centroid is 271.1°, matching the allowlist value within noise. |
+| Start: Crowd, Crowd2, Genia | OK | **2026-07-28: the `+90°` value was wrong** — exactly 180° backwards, almost certainly measured in a prior session under a viewer that (per 2026-07-27/28 SESSION_LOG entries) had real, since-fixed rendering bugs of its own. A bearing-math check against the old +90° value looked "consistent" (R=0.906) but that check could only verify *some* reference vector pointed at Yachdal, not that the character's actual face did — it can't distinguish a correct facing from an exactly-backwards one. Corrected to `270°` (matching Yachdal) via `tools/wmb_web_viewer.py`, confirmed by direct user observation of the live re-render ("you successfully spinned the crowd by 180"). Also searched exhaustively for a non-guessed source of truth before accepting this as a measurement (every MDL header field, frame names, raw WMB hex bytes, every `.wdl` file) — confirmed nothing in the data encodes authored-forward; it's a pure modeling convention, same conclusion as the original 2026-07-27 finding, now re-verified by actually checking every field rather than reasoning it through again. Also found: **no `action Genia` exists anywhere in `Start.wdl`** — she's inert decoration in the original game, not a scripted character. |
+| Start: Yachdal (DefineYachdel) | OK | `270°`. Confirmed twice: independently via bearing math (2026-07-27) and via a real forward-facing camera render in `tools/wmb_web_viewer.py` showing his face (not back) pointing the predicted direction (2026-07-28). |
 | Shiks: ShikFond ("ShikX") | FIX | On the uniform no-heuristic rule, regenerated through the corrected CLI. Needs test. |
 | Shiks: Wwheel (water wheel) facing | FIX | On the uniform no-heuristic rule. Separately, its *spin axis* was also wrong — see Camera/Positioning section below. Needs test. |
 | Shiks: Bus | **?** | Reported 180° off twice, unchanged both times. Likely a genuine one-off needing its own measured correction (same mechanism as Crowd/Yachdal/Genia above) — need the exact degree/direction, or at minimum reconfirmation against this latest build. |
@@ -43,6 +43,15 @@ red +X reference arrow per model) replaces testing one model at a time via
 set. Not yet run/confirmed — this is the fastest path to closing out every
 `?`/`FIX`-needs-retest row above in one or two screenshots instead of
 one-off reports.
+
+**2026-07-28: second, independent verification tool added** —
+`tools/wmb_web_viewer.py Start` (or any level name) starts a local server
+and opens a Three.js viewer in a real browser, entirely independent of
+Godot's editor/import/rendering pipeline. Used this to root-cause and fix
+the Crowd/Crowd2/Genia allowlist error above. Click any entity for its
+raw position/angle/allowlist data; search box to jump to a specific
+entity by name. This is now the fastest path to re-check any remaining
+`?`/`FIX` row that involves IDPO character facing.
 
 ## Camera
 

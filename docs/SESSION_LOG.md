@@ -1425,3 +1425,79 @@ path). The facing question specifically has a strong mathematical
 prediction now (Crowd/Yachdal arrows exactly opposite) but still needs
 the user's actual re-render to confirm, per this file's whole standing
 rule: computed agreement is not the same as confirmed agreement.
+
+## 2026-07-28 — Found the real facing bug: Crowd/Crowd2/Genia's allowlist value was measured backwards, in a prior session, under a broken viewer
+
+User's re-render showed Genia and the crowd still wrong even with a
+correct mesh, correct arrow, correct scale, and correct feet-snap — all
+four independently confirmed working by this point. When pushed on why
+this was being "hunted" instead of just fixed, and then directly asked
+"why are you guessing instead of correctly parsing and emulating the
+engine, search the MDL/WDL/WMB/EXE for what it actually knows" — did that
+search for real rather than re-asserting the earlier conclusion:
+
+- **Every MDL header field**, including ones previously called "unused"
+  (`eye`, `synctype`, `flags`, `size`), compared across Crowd/Crowd2/Genia
+  vs. 6 confirmed-correct IDPO models — byte-identical, no signal.
+- **Animation frame names** — no orientation hint (Crowd has only generic
+  `Frame 1-4`; Genia/Yachdal have semantic names like `Walk1`/`Speech1`,
+  unrelated to facing).
+- **Raw WMB bytes, hex-dumped by hand**, bypassing both `extract_wmb_full.py`
+  and `wmb_web_viewer.py` entirely — confirmed Yachdal's pan bytes are
+  literally `00000000` (0.0) and Genia's are `00003843` (184.0) exactly.
+  Not a parsing bug on either parser's part.
+- **Every `.wdl` file, not just `Start.wdl`** — found something real:
+  **no `action Genia { ... }` exists anywhere in `Start.wdl`.** Her WMB
+  `action` field says "Genia" but nothing implements it — she's inert
+  decoration in the original game, not a scripted character (the other
+  "Genia"/"Crowd" hits across the codebase are unrelated dialogue-state
+  variables and sound names in five different, unrelated levels).
+
+Conclusion, grounded in this search rather than asserted again: the MDL
+format genuinely has no field for authored-forward, confirmed exhaustively
+this time, not just previously reasoned through. The engine itself doesn't
+"know" either — it trusts the raw vertex data the artist built, with zero
+verification, same as this pipeline now does once the correction is right.
+
+**The actual, concrete bug**: `mdl_yaw_allowlist.json`'s `Crowd`/`Crowd2`/
+`Genia` value (90°) was exactly 180° backwards. Confirmed empirically, not
+by more reasoning: flipped it to 270° (matching Yachdal, which was already
+correct), regenerated the three affected `.glb`/`.mdlanim` files, and
+re-rendered in `tools/wmb_web_viewer.py` — user directly confirmed the
+crowd visibly rotated correctly ("you successfully spinned the crowd by
+180"). This value was almost certainly measured in a prior session using a
+viewer that was itself broken at the time (this session alone found and
+fixed three real rendering bugs in the new tool before this measurement
+could even be trusted: GLB JSON padding preventing any mesh from loading,
+missing entity scale, missing feet-snap) — the 90° number was a bad
+measurement taken under bad conditions, not a parsing failure.
+
+Also caught and fixed a real methodology bug in my own verification: an
+early re-test compared "front" vs "back" camera candidates positioned
+*relative to* the value being tested (`ent.forward`) — flipping the
+allowlist value moved the camera along with it, so the comparison was
+circular and couldn't actually show whether anything changed. Redid it
+with a camera at a literal fixed world-space position, independent of the
+value under test, before trusting any before/after comparison.
+
+Regenerated: `Crowd.glb`/`.mdlanim`, `Crowd2.glb`/`.mdlanim`,
+`Genia.glb`/`.mdlanim`. `check_all.ps1` all-green, including
+`verify_mdl_facing.py` (reads the allowlist dynamically, no hardcoded
+values to update). Updated `mdl_yaw_allowlist.json`'s own comment to
+record the correction and why, so a future session sees this history
+instead of re-measuring blind.
+
+Asked: (nothing further needed for Start/Yachdal/Crowd/Genia specifically —
+user already confirmed the fix visually). Still open: does this same
+90-degrees-backwards class of error affect any of the OTHER allowlist-free
+"confirmed correct" IDPO models, or any levels beyond Start — no evidence
+either way yet, not re-checked.
+
+Answer: n/a (user confirmed directly, not via a follow-up question).
+
+Result: Real bug found and fixed with actual evidence (exhaustive field
+search + empirical before/after re-render + direct user confirmation),
+not a guess and not a heuristic. `mdl_yaw_allowlist.json` remains exactly
+what CONTRACT.md #2 rule 4 says it should be: a short, human-confirmed
+correction table — this entry was simply wrong, and is now right, measured
+under a viewer that actually works.
