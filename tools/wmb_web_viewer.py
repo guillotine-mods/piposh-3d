@@ -124,6 +124,112 @@ def entity_basis_columns(pan_deg: float, tilt_deg: float, roll_deg: float) -> li
     return [*x_g, *y_g, *z_g]
 
 
+_YAW_ALLOWLIST_PATH = ROOT / "tools" / "mdl_yaw_allowlist.json"
+_yaw_allowlist_cache: dict[str, float] | None = None
+
+
+def yaw_allowlist() -> dict[str, float]:
+    """`extra_yaw_deg` from mdl_yaw_allowlist.json (same file convert_mdl.py
+    reads), keyed lowercase stem -- read fresh here too rather than assumed,
+    since the arrow gizmo needs to know about it: this correction is baked
+    directly into the .glb's vertex data at convert time, so a mesh and the
+    "raw pan/tilt/roll" arrow will *always* disagree by this amount for any
+    allowlisted model unless the arrow also accounts for it."""
+    global _yaw_allowlist_cache
+    if _yaw_allowlist_cache is None:
+        try:
+            data = json.loads(_YAW_ALLOWLIST_PATH.read_text())
+            _yaw_allowlist_cache = {k.lower(): float(v) for k, v in data.get("extra_yaw_deg", {}).items()}
+        except Exception:
+            _yaw_allowlist_cache = {}
+    return _yaw_allowlist_cache
+
+
+def yaw_rotate_y_three(v: tuple[float, float, float], deg: float) -> tuple[float, float, float]:
+    """Same rotation convert_mdl.py's _yaw_rotate_y applies to mesh vertices
+    (right-handed Y-up, rotate about +Y) -- used here to compute what
+    direction the *mesh itself* (after its baked-in allowlist correction)
+    actually points, for the arrow gizmo."""
+    a = math.radians(deg)
+    c, s = math.cos(a), math.sin(a)
+    x, y, z = v
+    return (x * c + z * s, y, -x * s + z * c)
+
+
+# --- Feet-snap policy, fresh port of _should_feet_snap in
+# scripts/engine/wmb_level_loader.gd (see docs/CONTRACT.md #3) -- entities
+# are placed at their raw WED origin by default here, same as this whole
+# tool's philosophy of showing raw parsed data, but without any floor
+# correction at all every character appears to float/sink relative to
+# where the actual game puts them. Ported so the viewer matches Godot's
+# real spawn behavior instead of looking wrong in a *third*, new way.
+_CAMERA_ACTIONS = {
+    "cam", "thecam", "thecam2", "farcam", "scam", "cammy", "lookatme",
+    "mycamera", "pipicam", "cam2", "cam3", "cam4", "camplane", "cameraengine",
+}
+_FEET_SNAP_EXCLUDE_STEMS = {
+    "glass", "b747", "tv", "island", "headphon", "biplane",
+    "biplane2", "hanger", "towerw", "dutyfree",
+}
+
+
+def should_feet_snap(action: str, stem: str) -> bool:
+    a = action.lower()
+    s = stem.lower()
+    if a in _CAMERA_ACTIONS or s == "cam":
+        return False
+    if s in {"afg", "shiknote"}:
+        return False
+    if a == "window":
+        return False
+    if s in _FEET_SNAP_EXCLUDE_STEMS:
+        return False
+    if a in {"headphone", "land", "wind", "ent_rotate", "item_pickup"}:
+        return False
+    return True
+
+
+def _make_entity_dict(
+    name: str, filename: str, action: str,
+    ox: float, oy: float, oz: float,
+    pan: float, tilt: float, roll: float,
+    sx: float, sy: float, sz: float,
+    skills: list[float], flags: int,
+) -> dict:
+    stem = Path(filename).stem.lower() if filename else ""
+    mesh_yaw = yaw_allowlist().get(stem, 0.0)
+    basis = entity_basis_columns(pan, tilt, roll)
+    x_col = basis[0:3]
+    y_col = basis[3:6]
+    z_col = basis[6:9]
+    # Arrow direction = entity basis applied to the mesh's OWN forward,
+    # which includes any baked-in mdl_yaw_allowlist.json correction --
+    # without this the arrow only shows the raw WMB pan and will disagree
+    # with the mesh by exactly the allowlist amount even when everything
+    # is working correctly (this was the source of a false-positive "mesh
+    # doesn't match arrow" report -- see docs/SESSION_LOG.md 2026-07-27).
+    local_fwd = yaw_rotate_y_three((1.0, 0.0, 0.0), mesh_yaw)
+    forward = [
+        local_fwd[0] * x_col[0] + local_fwd[1] * y_col[0] + local_fwd[2] * z_col[0],
+        local_fwd[0] * x_col[1] + local_fwd[1] * y_col[1] + local_fwd[2] * z_col[1],
+        local_fwd[0] * x_col[2] + local_fwd[1] * y_col[2] + local_fwd[2] * z_col[2],
+    ]
+    return {
+        "name": name,
+        "file": filename,
+        "action": action,
+        "pos": pos_gs_to_three(ox, oy, oz),
+        "pan_tilt_roll_gs": [float(pan), float(tilt), float(roll)],
+        "scale": scale_gs_to_three(sx, sy, sz),
+        "skills": skills,
+        "flags": int(flags),
+        "basis": basis,
+        "mesh_yaw_deg": mesh_yaw,
+        "forward": forward,
+        "should_feet_snap": should_feet_snap(action, stem),
+    }
+
+
 def parse_wmb(path: Path) -> dict:
     data = path.read_bytes()
     magic = data[:4]
@@ -200,17 +306,7 @@ def parse_wmb(path: Path) -> dict:
             o += 32
             flags = struct.unpack_from("<I", chunk, o)[0] if o + 4 <= len(chunk) else 0
             entities.append(
-                {
-                    "name": name,
-                    "file": filename,
-                    "action": action,
-                    "pos": pos_gs_to_three(ox, oy, oz),
-                    "pan_tilt_roll_gs": [float(pan), float(tilt), float(roll)],
-                    "scale": scale_gs_to_three(sx, sy, sz),
-                    "skills": skills,
-                    "flags": int(flags),
-                    "basis": entity_basis_columns(pan, tilt, roll),
-                }
+                _make_entity_dict(name, filename, action, ox, oy, oz, pan, tilt, roll, sx, sy, sz, skills, flags)
             )
             continue
 
@@ -232,17 +328,7 @@ def parse_wmb(path: Path) -> dict:
             flags = struct.unpack_from("<I", chunk, o)[0]
             o += 4
             entities.append(
-                {
-                    "name": name,
-                    "file": filename,
-                    "action": action,
-                    "pos": pos_gs_to_three(ox, oy, oz),
-                    "pan_tilt_roll_gs": [float(pan), float(tilt), float(roll)],
-                    "scale": scale_gs_to_three(sx, sy, sz),
-                    "skills": skills,
-                    "flags": int(flags),
-                    "basis": entity_basis_columns(pan, tilt, roll),
-                }
+                _make_entity_dict(name, filename, action, ox, oy, oz, pan, tilt, roll, sx, sy, sz, skills, flags)
             )
             continue
 
@@ -441,9 +527,12 @@ function makeLabelSprite(text) {
   return sprite;
 }
 
-function addArrow(basisArr, pos, length, color) {
-  // basis columns: [xX,xY,xZ, yX,yY,yZ, zX,zY,zZ] -- local +X is "forward".
-  const fwd = new THREE.Vector3(basisArr[0], basisArr[1], basisArr[2]).normalize();
+function addArrow(forwardArr, pos, length, color) {
+  // forwardArr already includes both the entity's pan/tilt/roll AND the
+  // mesh's own baked-in mdl_yaw_allowlist.json correction (computed
+  // server-side in _make_entity_dict) -- so this is what the mesh's own
+  // forward SHOULD look like, not just the raw WMB angle.
+  const fwd = new THREE.Vector3(...forwardArr).normalize();
   const origin = new THREE.Vector3(...pos);
   const arrow = new THREE.ArrowHelper(fwd, origin, length, color, length * 0.25, length * 0.15);
   entityGroup.add(arrow);
@@ -501,6 +590,7 @@ async function buildScene(level) {
   const listEl = document.getElementById("entity-list");
   const bbox = new THREE.Box3();
   let anyPoint = false;
+  const rawAabbCache = new Map(); // model_url -> Box3 in raw mesh-local space
 
   for (const ent of level.entities) {
     const li = document.createElement("li");
@@ -508,19 +598,46 @@ async function buildScene(level) {
     li.dataset.search = li.textContent.toLowerCase();
     listEl.appendChild(li);
 
-    const pos = ent.pos;
-    bbox.expandByPoint(new THREE.Vector3(...pos));
-    anyPoint = true;
+    let pos = ent.pos.slice();
+    // Rotation+scale only (no translation yet) -- used both for the final
+    // placement matrix and, before that, to feet-snap: same approach as
+    // wmb_level_loader.gd's _snap_mesh_feet_to_origin (transform the raw
+    // local AABB's 8 corners by this matrix, take the min Y, lift so the
+    // lowest point lands on the WED origin plane) instead of placing every
+    // entity at its raw, un-snapped WED origin -- which is usually a
+    // *reference* point, not the model's own visual floor, so without this
+    // everything looks like it's floating or sunk relative to what the
+    // actual game shows.
+    const rs = entityBasisMatrix(...ent.pan_tilt_roll_gs);
+    rs.scale(new THREE.Vector3(...ent.scale));
 
     let visualAdded = null;
     if (ent.model_url) {
       const template = await loadModel(ent.model_url);
       if (template) {
+        if (ent.should_feet_snap) {
+          if (!rawAabbCache.has(ent.model_url)) {
+            rawAabbCache.set(ent.model_url, new THREE.Box3().setFromObject(template));
+          }
+          const raw = rawAabbCache.get(ent.model_url);
+          if (isFinite(raw.min.x)) {
+            let minY = Infinity;
+            for (let i = 0; i < 8; i++) {
+              const corner = new THREE.Vector3(
+                i & 1 ? raw.max.x : raw.min.x,
+                i & 2 ? raw.max.y : raw.min.y,
+                i & 4 ? raw.max.z : raw.min.z
+              ).applyMatrix4(rs);
+              minY = Math.min(minY, corner.y);
+            }
+            if (isFinite(minY)) pos[1] -= minY;
+          }
+        }
         const inst = template.clone(true);
         inst.traverse((o) => {
           if (o.isMesh) o.material = o.material.clone();
         });
-        const m = entityBasisMatrix(...ent.pan_tilt_roll_gs);
+        const m = rs.clone();
         m.setPosition(...pos);
         inst.matrixAutoUpdate = false;
         inst.matrix.copy(m);
@@ -536,7 +653,7 @@ async function buildScene(level) {
       geo.rotateZ(-Math.PI / 2); // cone tip along +X
       const mat = new THREE.MeshBasicMaterial({ color: 0x66ccff });
       const cone = new THREE.Mesh(geo, mat);
-      const m = entityBasisMatrix(...ent.pan_tilt_roll_gs);
+      const m = rs.clone();
       m.setPosition(...pos);
       cone.matrixAutoUpdate = false;
       cone.matrix.copy(m);
@@ -544,7 +661,10 @@ async function buildScene(level) {
       pickable.push({ mesh: cone, data: ent, li });
     }
 
-    addArrow(ent.basis, pos, 45, 0xff3333);
+    bbox.expandByPoint(new THREE.Vector3(...pos));
+    anyPoint = true;
+
+    addArrow(ent.forward, pos, 45, 0xff3333);
 
     const label = makeLabelSprite(ent.name || ent.file || "?");
     label.position.set(pos[0], pos[1] + 60, pos[2]);
@@ -586,8 +706,10 @@ function selectEntity(ent, li, pos) {
     <div><b>name</b> ${ent.name || "(unnamed)"}</div>
     <div><b>file</b> ${ent.file}</div>
     <div><b>action</b> ${ent.action || "(none)"}</div>
-    <div><b>pos (x,y,z godot-space)</b> ${pos.map((v) => v.toFixed(1)).join(", ")}</div>
+    <div><b>pos (x,y,z godot-space, post feet-snap)</b> ${pos.map((v) => v.toFixed(1)).join(", ")}</div>
     <div><b>pan/tilt/roll (gs deg)</b> ${pan.toFixed(1)}, ${tilt.toFixed(1)}, ${roll.toFixed(1)}</div>
+    <div><b>mesh_yaw_deg (mdl_yaw_allowlist.json)</b> ${ent.mesh_yaw_deg}</div>
+    <div><b>feet-snapped</b> ${ent.should_feet_snap}</div>
     <div><b>flags</b> ${ent.flags}</div>
   `;
   controls.target.set(...pos);
@@ -605,7 +727,13 @@ renderer.domElement.addEventListener("click", (ev) => {
   if (hits.length) {
     const hitMesh = hits[0].object;
     const found = pickable.find((p) => p.mesh === hitMesh);
-    if (found) selectEntity(found.data, found.li, [found.data.pos[0], found.data.pos[1], found.data.pos[2]]);
+    if (found) {
+      // Use the actual rendered world position (post feet-snap), not the
+      // raw un-snapped ent.pos, so the info panel matches what's on screen.
+      const worldPos = new THREE.Vector3();
+      hitMesh.getWorldPosition(worldPos);
+      selectEntity(found.data, found.li, [worldPos.x, worldPos.y, worldPos.z]);
+    }
   }
 });
 

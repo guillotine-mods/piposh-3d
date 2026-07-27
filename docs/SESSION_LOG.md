@@ -1344,3 +1344,84 @@ across the entire asset pipeline (782 regenerated files, geometry
 unchanged, verified via check_all.ps1). Facing question deferred until
 the rendering fix is confirmed, rather than acting on a report gathered
 through a broken renderer.
+
+## 2026-07-27 — Three more real viewer bugs, all root-caused with data (Genia scale, arrow-vs-allowlist gap, no feet-snap)
+
+With meshes finally rendering (previous entry's GLB padding fix), user
+reported three things from the actual render: Genia much too big; every
+crowd character's mesh facing 180° opposite its own red arrow (and
+described the fix as "crowd turns right, Yachdal turns left"); crowd and
+Yachdal both sitting below the floor.
+
+All three traced to concrete, verifiable causes in `tools/wmb_web_viewer.py`
+— none needed guessing:
+
+1. **Genia scale**: `level.json` for Start's `Genia_mdl_005` entity has
+   `scale: [0.2, 0.2, 0.2]` (a 5x shrink) — confirmed by querying the
+   running server directly. The viewer never applied `ent.scale` to
+   anything, so every entity rendered at its raw mesh size regardless of
+   its WMB-authored scale; Genia's mesh happens to be the biggest raw MDL
+   in this batch (~573 unit max extent vs. Yachdal's ~223, per the earlier
+   gallery-script investigation) and was also the most scaled-down,
+   making the bug maximally visible on her specifically. Fixed:
+   `rs.scale(new THREE.Vector3(...ent.scale))` before placement, matching
+   Godot's `_acknex_entity_basis(...) * Basis.from_scale(scl)`.
+
+2. **Crowd mesh vs. its own arrow, 180°**: root-caused with arithmetic,
+   not guessing. The arrow was computed from raw WMB `pan/tilt/roll`
+   only — it never knew about `mdl_yaw_allowlist.json`'s per-model
+   correction (+90° Crowd, +270° Yachdal), which is baked directly into
+   the mesh's vertex data at convert time. Computed by hand what the gap
+   *should* be from this alone: for Crowd, `arrow=(1,0,0)` vs.
+   `mesh=(0,0,-1)` after the +90° bake — exactly 90°, not the reported
+   180°. That gap between predicted-90 and reported-180 was left
+   unresolved (rather than force-fit an explanation) until the actual
+   render could be re-checked — but the arrow not accounting for the
+   allowlist at all was unambiguously a real, fixable gap regardless.
+   Fixed: `_make_entity_dict()` now reads `mdl_yaw_allowlist.json` (same
+   file `convert_mdl.py` uses) and computes each entity's `forward` field
+   as the entity basis applied to the mesh's *own* yaw-corrected local
+   +X, not raw local +X — so the arrow now shows exactly what the mesh
+   should show. Verified numerically after the fix: Crowd's `forward` ≈
+   `(0,0,-1)`, Yachdal's `forward` ≈ `(0,0,1)` — exactly opposite, i.e.
+   facing each other, matching the independent crowd-centroid-bearing
+   math from two investigation rounds ago. Whether this alone resolves
+   what the user saw, or there's still a real bug beyond the
+   arrow-completeness gap, needs a fresh look now that both the mesh
+   (previous entry) and the arrow (this fix) are correct.
+
+3. **No feet-snap in the viewer**: entities were placed at their raw WED
+   origin with no floor correction at all — this tool never had any of
+   `wmb_level_loader.gd`'s `_should_feet_snap`/`_snap_mesh_feet_to_origin`
+   logic. Ported fresh: `should_feet_snap(action, stem)` (same policy,
+   same exclusion list) computed server-side per entity, and client-side
+   the loaded mesh's raw local AABB corners are transformed by the
+   entity's rotation+scale (not position) to find the true minimum Y,
+   lifting the entity so its lowest point lands on the WED origin plane —
+   same approach as Godot's version and as `tools/gallery_feet_snap.gd`
+   earlier this session, re-derived here independently a third time.
+
+Regenerated nothing this round (no MDL/WMB data changed, only the viewer's
+own rendering/placement logic) — re-extracted and `node --check`'d the
+embedded JS (syntax-valid), then started the server and queried
+`/api/level.json` directly to confirm the new `mesh_yaw_deg`/`forward`/
+`should_feet_snap` fields compute the expected numbers for Yachdal, Crowd,
+and Genia before handing back to the user, rather than shipping unverified
+again.
+
+Asked: re-run the viewer (same command) and re-check all three — does
+Genia look normal-sized now, does the crowd's mesh now agree with its own
+arrow, and are Yachdal/crowd standing on the floor instead of sunk into
+it. If the crowd-vs-Yachdal mutual-facing STILL looks wrong even with a
+now-correct arrow and mesh, that's the real signal to chase next — not
+before.
+
+Answer: (pending)
+
+Result: Three more real, independently-verified bugs found and fixed in
+the new tool (not in Godot's pipeline — this is all inside
+`wmb_web_viewer.py`, which is deliberately a separate, from-scratch code
+path). The facing question specifically has a strong mathematical
+prediction now (Crowd/Yachdal arrows exactly opposite) but still needs
+the user's actual re-render to confirm, per this file's whole standing
+rule: computed agreement is not the same as confirmed agreement.
