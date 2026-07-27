@@ -268,6 +268,7 @@ func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud
 	_p2_tv_t = 0.0
 	_p2_tv_skin = 1
 	_range_update_logged = false
+	_town_cam_range_warned = false
 	_idle_spinners.clear()
 	_range_active = false
 	_range_cam = null
@@ -2030,6 +2031,14 @@ func ensure_scripted_view() -> void:
 		_apply_shiks_cam()
 	elif _is_plane_level():
 		_apply_plane_cam(true)
+	elif _is_range_level():
+		# Range has its own CamTarget system (_update_range) — the generic
+		# "any Cam entity" fallback below would otherwise grab Range.wmb's
+		# unrelated movie-intro "Cam" entity (Cam_mdl_124) and fight with it
+		# every frame, freezing the view and blocking aim. Confirmed via
+		# [copy-cam] debug logs showing Cam_mdl_124 repeatedly overriding
+		# the CamTarget-driven camera (see docs/SESSION_LOG.md).
+		pass
 	elif _cams.size() > 0:
 		_snap_to_active_cam(true)
 	if _world_camera:
@@ -2128,7 +2137,25 @@ func _begin_town() -> void:
 	status.emit("Town — RMB cursor/look, V view, wheel zoom, click Inns/Taxi")
 
 
+var _town_cam_range_warned := false
+
+
 func _update_town_cam() -> void:
+	if _is_range_level():
+		if not _town_cam_range_warned:
+			_town_cam_range_warned = true
+			PiposhDebug.log_msg(
+				"range",
+				"_update_town_cam() WAS being called during Range — confirms "
+				+ "this was the source of the camera fight, not just "
+				+ "ensure_scripted_view()'s one-time call"
+			)
+		# Defense in depth: _process()'s elif chain should already exclude
+		# this level from ever reaching here while _range_active is true,
+		# but Range's generic "Cam" entity (the movie-intro camera, unrelated
+		# to CamTarget) must never drive the world camera regardless of how
+		# this gets called — see ensure_scripted_view() and SESSION_LOG.md.
+		return
 	var cam := _active_cam()
 	if cam == null or _world_camera == null:
 		return

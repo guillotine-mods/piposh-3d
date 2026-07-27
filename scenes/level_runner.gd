@@ -6,7 +6,10 @@ extends Node3D
 @onready var hud_title: Label = $UI/Title
 @onready var hud_hint: Label = $UI/Hint
 
-const DEBUG_LEVELS := ["Studio", "Start", "Town", "Map", "Travel", "Desert", "Mansion", "Inn", "Plane", "Plane2"]
+const DEBUG_LEVELS := [
+	"Studio", "Start", "Town", "Map", "Travel", "Desert", "Mansion", "Inn",
+	"Plane", "Plane2", "Range", "Plane3",
+]
 ## Cutscene / fixed-cam chapters — never free-player, even if a Cam exists.
 const CUTSCENE_LEVELS := [
 	"studio", "start", "town", "menu", "credits", "shiks", "plane",
@@ -17,6 +20,7 @@ var _script_cam: Camera3D
 var _game_hud: GameHud
 var _touch: TouchControls
 var _acknex_sky: AcknexSky
+var _level_select: CanvasLayer
 
 
 func _ready() -> void:
@@ -80,7 +84,7 @@ func _ready() -> void:
 
 	_game_hud.set_debug_text(
 		level,
-		"script=%s | mode=%s | F1=Menu F3=Next F10=debug"
+		"script=%s | mode=%s | F1=Menu F3=Next F4=Levels F10=debug"
 		% [
 			str(loader.last_level_data.get("script", "?")),
 			"FP" if use_fp else ("scripted" if use_scripted else "free"),
@@ -228,7 +232,72 @@ func _unhandled_input(event: InputEvent) -> void:
 			LevelRouter.goto_level(DEBUG_LEVELS[idx])
 		elif event.keycode == KEY_F10:
 			_game_hud.show_debug = not _game_hud.show_debug
-			_game_hud.set_debug_text(GameState.current_level, "F1=Menu F3=Next F10=debug")
+			_game_hud.set_debug_text(GameState.current_level, "F1=Menu F3=Next F4=Levels F10=debug")
+		elif event.keycode == KEY_F4:
+			_toggle_level_select()
+		elif event.keycode == KEY_ESCAPE and _level_select:
+			_toggle_level_select()
+
+
+func _toggle_level_select() -> void:
+	## Dev/debug level jump (F4) -- requested so any level (e.g. Range, which
+	## otherwise only loads at the end of Plane -> Plane2 -> Range) can be
+	## reached directly without playing through the levels before it.
+	if _level_select:
+		_level_select.queue_free()
+		_level_select = null
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if not _director.mouse_look \
+			else Input.MOUSE_MODE_CAPTURED
+		return
+	_level_select = CanvasLayer.new()
+	_level_select.layer = 30
+	var root_ctrl := Control.new()
+	root_ctrl.set_anchors_preset(Control.PRESET_FULL_RECT)
+	root_ctrl.mouse_filter = Control.MOUSE_FILTER_STOP
+	_level_select.add_child(root_ctrl)
+
+	var bg := ColorRect.new()
+	bg.color = Color(0.05, 0.05, 0.08, 0.85)
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	root_ctrl.add_child(bg)
+
+	var panel := PanelContainer.new()
+	panel.set_anchors_preset(Control.PRESET_CENTER)
+	panel.position = Vector2(240, 40)
+	panel.custom_minimum_size = Vector2(360, 640)
+	root_ctrl.add_child(panel)
+
+	var vbox := VBoxContainer.new()
+	panel.add_child(vbox)
+	var label := Label.new()
+	label.text = "Level select (F4 to close, click a level)"
+	label.add_theme_font_size_override("font_size", 16)
+	vbox.add_child(label)
+
+	var list := ItemList.new()
+	list.custom_minimum_size = Vector2(340, 600)
+	list.select_mode = ItemList.SELECT_SINGLE
+	vbox.add_child(list)
+
+	var names: Array[String] = []
+	var dir := DirAccess.open("res://assets/converted/levels/")
+	if dir:
+		dir.list_dir_begin()
+		var fn := dir.get_next()
+		while fn != "":
+			if fn.ends_with(".json") and not fn.ends_with("_brush.json"):
+				names.append(fn.get_basename())
+			fn = dir.get_next()
+	names.sort()
+	for n in names:
+		list.add_item(n)
+	list.item_clicked.connect(func(index: int, _at: Vector2, _button: int) -> void:
+		_toggle_level_select()
+		LevelRouter.goto_level(names[index])
+	)
+
+	add_child(_level_select)
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 
 func _on_status(msg: String) -> void:
