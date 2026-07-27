@@ -850,3 +850,119 @@ Result: Open. User's report is currently too general ("camera is off",
 "some assets ... not in the correct place or not pointing to the right
 place") to instrument without guessing. Do not add per-entity heuristics
 for this — get a specific repro first.
+
+## 2026-07-27 — Range camera fight root-caused from live debug logs; level select added; static WDL-action audit run
+
+User asked for a way to jump straight to Range (it's the last level in the
+Plane → Plane2 → Range chain) and to run three tracks in parallel: (1) the
+Range camera bug, (2) a static audit of every action wired in
+`wdl_director.gd` against real WDL source, (3) headless facing/floor-snap
+gallery scripts for batch human verification. Then pasted a real
+`[feet-snap]`/`[range]`/`[copy-cam]` console dump from an actual playtest
+run — the "debug-log-before-fix" discipline (CONTRACT.md §7) paying off
+directly: the log itself contained the answer instead of needing another
+guess-and-report round trip.
+
+**Range camera fight (found from the log, not guessed):** the dump showed
+`_update_range`'s per-frame aim/fire lines interleaved with repeating
+`[copy-cam] cam_entity=Cam_mdl_124 ...` lines — something was calling the
+*generic* scripted-camera path every frame during Range and fighting with
+`_update_range`'s own camera control. Traced `_update_town_cam()` (the
+generic-camera-follow function) and `ensure_scripted_view()` (the one-time
+setup dispatcher): `ensure_scripted_view()`'s final `elif _cams.size() > 0:
+_snap_to_active_cam(true)` fallback runs for ANY level with no dedicated
+`_is_*_level()` branch and at least one "Cam"/"Cammy"/"SCam" entity in its
+WMB — Range.wmb has exactly that (`Cam_mdl_124`, an unrelated leftover
+intro-movie camera entity), so on top of Range's own `_update_range`
+camera code, the generic fallback was ALSO grabbing and copying that
+entity's transform onto the world camera every frame via
+`_update_town_cam()`, producing the "camera not in the right place, stage
+doesn't start" symptom from earlier reports.
+
+Fix: added an explicit `elif _is_range_level(): pass` branch in
+`ensure_scripted_view()` (Range has its own `CamTarget` system, needs no
+generic snap) plus a defensive one-time-logged early return in
+`_update_town_cam()` so if anything else ever calls it during Range again,
+it's a loud log line instead of a silent fight. This is a **general risk
+class**, not just a Range-specific bug: any future custom-directed level
+that has a leftover generic "Cam" entity in its WMB (common — many levels
+have an unused editor/intro camera) will hit the same fallback unless it
+also gets an explicit `elif _is_<level>_level(): ...` branch. Worth
+grepping for this pattern if a future level reports the same "camera
+fights itself" symptom.
+
+Committed as `4e2bacd` "Fix Range camera fight; add F4 level-select
+overlay" (not yet pushed — last push was at `e170551`, per the user's
+explicit "commit and push what we have now" from the previous round; no
+new push request since).
+
+**Level select (F4):** added a debug-only overlay in
+`scenes/level_runner.gd` (`_toggle_level_select`) — scans
+`assets/converted/levels/*.json` for level names, `ItemList` + click →
+`LevelRouter.goto_level()`. Also added "Range"/"Plane3" to the existing F3
+`DEBUG_LEVELS` cycle. Pure dev-QOL, no gameplay logic touched.
+
+**Static WDL-action audit:** extracted ~90 action-like case labels from
+`wdl_director.gd`'s match statements (filtered down to 79 genuine action
+names after removing Range's internal dictionary keys like
+`"base"`/`"delay"`/`"pop"` which aren't WDL actions at all, just match-arm
+noise from an unrelated dictionary literal). Cross-referenced all 79
+against every `action X { ... }` block in `original/piposh3d/*.wdl` +
+`original/piposh3d/WDL/*.wdl`: **100% have a real matching WDL action
+definition somewhere** — no fabricated/hallucinated action names anywhere
+in the port. A byte/line-count "behavioral complexity" proxy (WDL action
+body size vs. Godot reference count) turned out unreliable: the same
+action name is reused across ~135 different per-level `.wdl` files with
+unrelated bodies each time, so "biggest body found anywhere" isn't a valid
+cross-file comparison. Fell back to one manual targeted spot-check
+instead: `action Naknik` in `Studio.wdl` (64 lines, the Genia
+dialogue-branching state machine for `DialogChoice==3`) vs.
+`wdl_director.gd`'s corresponding handler (~line 2625-2664) — a faithful,
+line-for-line-equivalent port (same WAVs, same `genia` state transitions
+0→1→2→0). Conclusion: the AFG_Card-class bugs found earlier this session
+were about wiring/behavior fidelity in specific spots, not systemic
+fabrication — a full line-by-line audit of all 79 actions isn't
+automatable with the tools available and would need to be spot-check-driven
+like this one, level by level, if deeper coverage is wanted later.
+
+**Headless galleries (batch human verification, replacing one-model-at-a-
+time `smoke_orient.gd` runs):**
+- `tools/gallery_facing.gd` — grid-lays-out many character models (`--all`
+  auto-discovers all 236 with a `.mdlanim` sidecar, paginated 36/image) or
+  an explicit list, each with a red reference arrow at its feet pointing
+  world +X (the "authored forward" convention every model is supposed to
+  match). One screenshot, many models — outliers whose facing disagrees
+  with their own arrow should be visually obvious at a glance.
+- `tools/gallery_feet_snap.gd` — for each of the 6 stems currently
+  excluded from feet-snap (B747/TV/Biplane/Biplane2/Hanger/Towerw) plus 5
+  known-good regression guards (Sfan/Curtain/StudioL/Shtomba/Cockpit),
+  renders a RAW row (as-authored, no snap) and a SNAPPED row (mirrors
+  `_snap_mesh_feet_to_origin`'s exact min-Y math, or stays raw if the real
+  `_should_feet_snap` policy would exclude it) against a floor-plane
+  reference at world Y=0. Answers "is this excluded stem legitimately
+  floating (e.g. B747 as a flying plane) or wrongly hanging below the
+  floor (the same bug shape Cockpit had)?" in one image instead of six
+  separate guesses.
+
+Both scripts do rendering (Camera3D + viewport), which is confirmed to
+hang headless in this sandbox (documented earlier this session) — they are
+written for the USER to run (`godot --headless -s res://tools/<name>.gd --
+...`), not verified by a self-run here. Static review only: cross-checked
+API calls (`OS.get_cmdline_user_args()`, `Label3D` props, viewport resize,
+`save_png`) against the working `smoke_orient.gd` pattern already in the
+repo, and confirmed every default/candidate stem actually has a matching
+`.glb` on disk (236/236 for the facing gallery's `.mdlanim` roster, 11/11
+for the feet-snap gallery's default list) before handing off.
+
+Asked: run both gallery scripts, report which models (if any) look wrong
+in each image — this replaces the six still-open "needs re-confirmation"
+rows in PLAYTEST.md (Crowd/Crowd2/Genia/Yachdal facing, Cockpit/water-
+wheel/Krupnik-hammer/TV fixes) plus the open Bus 180°-off mystery, with one
+or two screenshots instead of one-off text reports.
+
+Answer: (pending)
+
+Result: Range camera fight fixed and committed. Level select shipped.
+Static action-name audit came back clean (100% grounded). Two gallery
+scripts written, statically reviewed, handed off for the user to run —
+not yet executed or confirmed.

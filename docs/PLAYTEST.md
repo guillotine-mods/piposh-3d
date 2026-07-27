@@ -35,6 +35,15 @@ guess, a recorded measurement.
 | Intro cutscenes | BUG | Reported wrong, unconfirmed root cause. 69/135 Intro models are IDPO. Need one specific model name to test. |
 | "Other mid scenes ~90° off" | BUG | No specific model named yet. |
 
+**2026-07-27: batch verification tooling added** — `tools/gallery_facing.gd`
+(all 236 character models, or an explicit list, laid out in a grid with a
+red +X reference arrow per model) replaces testing one model at a time via
+`smoke_orient.gd`. Run with `godot --headless -s res://tools/gallery_facing.gd
+-- --all` (paginates 36/image) or with explicit stem names for a smaller
+set. Not yet run/confirmed — this is the fastest path to closing out every
+`?`/`FIX`-needs-retest row above in one or two screenshots instead of
+one-off reports.
+
 ## Camera
 
 | Item | Status | Note |
@@ -43,7 +52,7 @@ guess, a recorded measurement.
 | Shiks: camera position | OK-ish | User confirmed "works better." |
 | Shiks: camera fly motion | FIX | Was straight waypoint-to-waypoint hops ("blocky"); now a continuous Catmull-Rom spline. Needs re-test. |
 | Plane2: static camera after goal-movie, should resume walking | BUG | Confirmed the level *should* enter FP mode; bug is inside the complex goal-movie state machine. Need exact repro (F10 mode readout + trigger sequence). |
-| Range | FIX | Could fall back to free/3rd-person movement mid-game — fixed via explicit `_steal_camera()`. Needs re-test. |
+| Range | FIX | Could fall back to free/3rd-person movement mid-game — fixed via explicit `_steal_camera()`. **2026-07-27: root-caused a second, separate camera bug from a real playtest debug-log dump** — `ensure_scripted_view()`'s generic "any Cam entity" fallback was also grabbing Range's unrelated leftover intro-movie camera entity (`Cam_mdl_124`) and fighting with `_update_range` every frame via `_update_town_cam()`. Fixed with an explicit `_is_range_level()` branch + defensive guard. This fallback is a general risk for any future custom-directed level with a leftover generic "Cam" entity — see SESSION_LOG. Needs re-test (does aim/shoot/target-popup actually work now). |
 | Shiks: water wheel / turn vase rotation | FIX | Both used hardcoded Godot world-axis rotation (`rotation_degrees.z/.x +=`) instead of Acknex's own local tilt/roll semantics (`Shiks.wdl`: `my.roll += 5` / `my.tilt += 20*time; my.roll += 20*time`) — only coincidentally correct when pan=0. Added `_set_entity_tilt_roll()` and used it for both. Needs test. |
 
 ## Positioning / sinking
@@ -53,6 +62,16 @@ guess, a recorded measurement.
 | All levels: fans/curtains/light-rigs/set-dressing | FIX | `_should_feet_snap` had been inverted from opt-out to opt-in, silently un-snapping everything not on a whitelist. Restored opt-out (matches original documented behavior). Needs re-test. |
 | Shiks: camera/characters below floor | BUG | Not explained by the feet-snap fix (these were already snapped). Need `[copy-cam]`/`[feet-snap]` console logs from an actual run. |
 | Plane/Plane2: cockpit control panel too low | FIX | Identified via user screenshot: `Cockpit.MDL` (blank-action scenery near Krupnik), mesh measured to hang mostly below its own origin — was wrongly excluded from feet-snap as "attachment scenery". Removed the exclusion. Needs test. |
+
+**2026-07-27: batch verification tooling added** — `tools/gallery_feet_snap.gd`
+renders the 6 stems currently excluded from feet-snap (B747/TV/Biplane/
+Biplane2/Hanger/Towerw) plus 5 known-good regression guards (Sfan/Curtain/
+StudioL/Shtomba/Cockpit) as RAW vs. SNAPPED rows against a floor-plane
+reference, mirroring `_snap_mesh_feet_to_origin`'s exact math. Run with
+`godot --headless -s res://tools/gallery_feet_snap.gd` (no args = default
+set). Answers, per excluded stem, "legitimately floating (e.g. B747 as a
+flying plane) or wrongly hanging below floor (the Cockpit bug shape)?" — not
+yet run/confirmed.
 
 ## Clicks / interaction
 
@@ -67,8 +86,21 @@ guess, a recorded measurement.
 
 | Item | Status | Note |
 |---|---|---|
-| Range (shooting gallery) | BUG | Still not functional per second playtest: can't aim/shoot, no targets pop up. Found and fixed one real bug (a HUD skip-button that's been visible+click-blocking game-wide the whole time, never explicitly hidden anywhere — that's why "a skip button" appeared). Could not find further explanation via code re-reading; added debug logging (`_begin_range`/`_update_range`/`_range_fire` all log to console now) to pin down the actual failure point from the next report instead of guessing again. Also still wants an intro scene before it starts (`Range.wdl`'s boarding dialog was simplified out) — not built, needs a scope decision. |
+| Range (shooting gallery) | FIX | Debug logging added last round paid off: user pasted a real playtest console dump, which showed `_update_range`'s aim/fire lines interleaved with repeating `[copy-cam] cam_entity=Cam_mdl_124` spam — `ensure_scripted_view()`'s generic "any Cam entity" fallback was grabbing Range.wmb's unrelated leftover intro-movie camera and fighting with Range's own `CamTarget` system every frame via `_update_town_cam()`. Fixed with an explicit Range branch + defensive guard (see Camera section). Also added an F4 dev level-select so Range can be reached directly without replaying Plane→Plane2 first. Needs re-test: does aim/shoot/target-popup actually work now. Still wants an intro scene before it starts (`Range.wdl`'s boarding dialog was simplified out) — not built, needs a scope decision. |
 | Plane2: Krupnik hammer animation, TV animation | FIX | Read `Plane2.wdl` directly: Krupnik should continuously scrub a "Hammer" swing animation (was a single frozen pose), TV should cycle 12 skins as a flipbook effect (was never animated at all). Both implemented to match source. Needs re-test. |
+| F4 dev level-select overlay | FIX | New debug feature (not in original game): press F4 in any level to open a click-to-jump list of every converted level. Built so Range (and any other late-chain level) can be tested directly. Untested by user yet but low-risk (debug-only UI, no gameplay logic touched). |
+
+**2026-07-27: static WDL-action audit.** Cross-checked every one of the ~79
+genuine action names `wdl_director.gd` dispatches on against real
+`action X { ... }` definitions across all of `original/piposh3d/*.wdl` +
+`original/piposh3d/WDL/*.wdl`: 100% have a real matching source
+definition — no fabricated/hallucinated action names anywhere in the port.
+A targeted spot-check of one non-trivial case (`action Naknik` in
+`Studio.wdl`, the Genia dialogue-branching state machine) confirmed a
+faithful, line-for-line-equivalent port. A full line-by-line body audit of
+all 79 isn't automatable (the same action name has unrelated bodies across
+~135 different per-level `.wdl` files) — deeper coverage would need more
+manual spot-checks like this one, level by level, not a blanket script.
 
 All other levels: not yet playtested — treat `LEVELS.md` "generic/custom
 director" as pipeline-ready, not gameplay-verified, until a row exists here.
