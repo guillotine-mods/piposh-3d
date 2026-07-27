@@ -438,7 +438,7 @@ func _should_feet_snap(action: String, stem: String) -> bool:
 	if a == "window":
 		return false
 	if s in [
-		"glass", "b747", "tv", "island", "headphone",
+		"glass", "b747", "tv", "island", "headphon",
 		"biplane", "biplane2", "hanger", "towerw", "dutyfree",
 	]:
 		return false

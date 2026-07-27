@@ -966,3 +966,91 @@ Result: Range camera fight fixed and committed. Level select shipped.
 Static action-name audit came back clean (100% grounded). Two gallery
 scripts written, statically reviewed, handed off for the user to run —
 not yet executed or confirmed.
+
+## 2026-07-27 — Direct challenge: "why validate bugs at all if you hardcode/heuristic everything, positions are deterministic"
+
+User pushed back hard on `mdl_yaw_allowlist.json` (4 entries) and the
+feet-snap stem-exclusion list (~10 entries): if the original engine is
+deterministic, a correct parse shouldn't need per-model tables at all —
+fix the parsing/redistribution once, not bug-by-bug. Fair challenge,
+answered by actually investigating rather than re-asserting the existing
+CONTRACT.md wording.
+
+**Yaw allowlist — checked for a missed parsing signal, found none:**
+compared the raw IDPO header (`version`, `scale` sign, `flags`,
+`synctype`, `numskins/verts/tris`) of all 4 allowlisted models against 7
+confirmed-correct IDPO models (Ami, Sfan, Island, ShikFond, Wwheel, Bus,
+B747) — structurally identical across all 11 (`version=6`, `flags=0`,
+`synctype=0` for every one, scale sign always positive). Nothing in the
+file format flags "this mesh's forward isn't +X". Separately pulled
+Crowd's 24 individual WMB placements from `Start.json`: each carries its
+own small, plausible `angle_gs` (a loosely-clustered crowd, consistent
+with the movie-screening `Scene`/`DefineYachdel` logic in `Start.wdl`),
+not a uniform miscompensating offset — rules out a WMB-pan-reading bug
+for these specific entities. Conclusion, now recorded in CONTRACT.md #2
+rule 4: the MDL format has no field for authored-forward; it's a pure
+modeling convention, and these 4 meshes' vertex data just wasn't built to
+it (most likely non-house-authored/reused assets). Not recoverable by
+parsing more bytes. The allowlist is the correct, deterministic ceiling —
+a fixed, once-measured, per-asset correction applied uniformly wherever
+that file is used, structurally the same class of fix as the axis remap
+itself (see CONTRACT.md #2 rule 4 for the full writeup).
+
+**Feet-snap exclusion list — checked, and this one found a real bug:**
+cross-referenced every excluded stem's WDL `action` across all levels —
+no action name/pattern reliably predicts "should skip snap" (`dutyfree`,
+`hanger`, `towerw` all have blank action in every placement, same as
+`Cockpit` did before it was found to need snapping — blank action isn't a
+valid signal on its own). `B747` does check out: `action B747` in
+`Plane2.wdl` assigns `my.z` directly during the takeoff sequence — a
+runtime-flight-controlled vehicle, not a floor prop, so load-time
+floor-lift is genuinely inapplicable, not just "measured to look ok."
+
+Then measured every excluded stem's actual GLB vertical extent (min/max
+local Y), the same direct-measurement method that caught Cockpit:
+`Dutyfree` spans `[0.44, 224.93]` — its origin sits almost exactly at the
+mesh's own bottom already (unlike Cockpit's `[-165.66, 76.83]`, which
+hung mostly *below* its origin) — first stem in this list with a genuine
+measured reason to stay excluded, not just an inherited guess. The rest
+(`Glass`, `B747`, `TV`, `Island`, `Biplane`/`Biplane2`, `Hanger`,
+`Towerw`) all "span origin" in a way that doesn't cleanly separate from
+confirmed-correct snapped props like `Sfan` (`[-260.21, 106.53]`) —
+geometry alone isn't decisive here the way it was for Cockpit; this is
+exactly what `tools/gallery_feet_snap.gd` (built earlier this session)
+exists to settle visually instead of guessing further from numbers.
+
+**Found and fixed a real, concrete bug in the process**: the stem
+`"headphone"` in the exclusion list (`wmb_level_loader.gd`
+`_should_feet_snap`, and its mirror in `verify_feet_snap_policy.py`) never
+matched anything — the actual file is `Headphon.MDL` (8.3-truncated DOS
+filename, no trailing "e"), so `stem.to_lower()` is always `"headphon"`,
+never `"headphone"`. Dead entry. It happened to not matter for most
+placements because the *action*-based check (`a in [..., "headphone",
+...]`) independently excludes the 8 of 9 Plane2 placements that use
+`action = "HeadPhone"` — but one placement in `Plane2.json` uses
+`action = "A1"` instead, which slipped through both the (typo'd, dead)
+stem check and the action check, and would have been feet-snapped while
+its 8 siblings using the same model weren't — an inconsistent, silent
+per-instance bug that a screenshot likely would have shown as "one
+headphone prop floating differently from the rest." Fixed the typo
+(`"headphone"` → `"headphon"`) in both files; added a regression-guard
+test case (`action="A1", stem="Headphon"`) to `verify_feet_snap_policy.py`
+that exercises the stem path independently of the action path, so this
+exact class of typo can't silently regress again. `check_all.ps1` still
+green after the fix.
+
+Asked: run `tools/gallery_feet_snap.gd` and confirm visually whether
+Glass/B747/TV/Island/Biplane/Biplane2/Hanger/Towerw are legitimately
+excluded or (like Cockpit and now the stray Headphon instance) quietly
+wrong — geometry measurement alone wasn't decisive enough to answer this
+one without a render.
+
+Answer: (pending)
+
+Result: Both hardcoded tables checked against real data rather than
+defended by assertion. Yaw allowlist confirmed to be at the genuine
+ceiling of what parsing can recover (documented in CONTRACT.md #2 rule 4).
+Feet-snap exclusion list: one stem (Dutyfree) now has a measured
+justification, one real bug found and fixed (Headphon typo + a live
+inconsistent-instance case), the rest still need the gallery screenshot
+to close out — not further guessing.

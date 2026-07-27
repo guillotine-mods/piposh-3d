@@ -30,7 +30,7 @@ def should_feet_snap(action: str, stem: str) -> bool:
     if a == "window":
         return False
     if s in {
-        "glass", "b747", "tv", "island", "headphone", "biplane",
+        "glass", "b747", "tv", "island", "headphon", "biplane",
         "biplane2", "hanger", "towerw", "dutyfree",
     }:
         return False
@@ -45,7 +45,13 @@ def main() -> int:
     for action, stem in [
         ("Window", "Glass"),
         ("", "B747"),
-        ("HeadPhone", "HeadPhone"),
+        ("HeadPhone", "Headphon"),
+        # Real Plane2.json placement: one of 9 Headphon instances uses
+        # action "A1", not "HeadPhone" -- this instance previously slipped
+        # through both checks because the stem list had a typo ("headphone"
+        # instead of the real 8.3-truncated "Headphon"). Exercising the
+        # stem path with a non-matching action is the regression guard.
+        ("A1", "Headphon"),
         ("Land", "BiPlane2"),
         ("Cam", "Cam"),
     ]:
