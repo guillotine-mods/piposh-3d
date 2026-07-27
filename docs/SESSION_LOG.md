@@ -1222,3 +1222,67 @@ a self-test). Real, high-confidence lighting bug found and fixed
 game-wide, independent of the facing investigation. Pivoted the facing
 verification away from the debug script toward the real running game,
 since the debug tool has cost more round-trips than it's saved so far.
+
+## 2026-07-27 — New standalone web WMB viewer (tools/wmb_web_viewer.py)
+
+User asked to start over on the WMB parser with fresh, clean code, viewable
+in a browser via a local server, so they can inspect raw parsed data and
+give feedback directly — independent of Godot's editor/import/rendering
+entirely (which has been the source of most of this session's friction,
+including the confirmed fact that this session's own tool-execution
+environment has no working GPU context).
+
+Built `tools/wmb_web_viewer.py`: a from-scratch WMB entity/light/path
+parser (does not import `extract_wmb_full.py` or `gs_math.py` — written
+fresh) plus a small `http.server`-based local server serving a Three.js
+viewer (orbit controls, click-to-inspect, search box, per-entity red
+forward-arrow, toggleable labels/lights/brush). The entity rotation math
+(Conitec `ang_to_matrix` conjugated into Y-up) is implemented twice,
+independently — once in this new Python file, once fresh in the embedded
+JavaScript — specifically so two independently-written implementations
+have to agree, instead of one codebase's assumption being trusted twice.
+
+Reused, unmodified, on purpose (not re-derived): the already-built
+`{Level}_brush.glb` (wall/floor geometry, for spatial context) and the
+already-built per-model `.glb` files under `assets/converted/mdl/` —
+brush/MDL mesh *parsing* is a separate, already-proven problem (position
+extraction has a real constructive proof via `verify_transforms.py`'s
+exact distance-preservation check); this tool targets the actually-disputed
+part, entity position + angle + facing.
+
+Tested directly (this doesn't need GPU rendering — the server is pure
+Python, actual 3D rendering happens in the user's browser, so unlike the
+gallery scripts this was testable end-to-end from here): found and fixed
+one real bug before handing it off — `VIEWER_HTML.format(...)` crashed on
+every request to `/` because the embedded HTML/CSS/JS is full of literal
+`{...}` (CSS rules, JS object/template literals, the import map) that
+`.format()` tried to parse as placeholders, throwing on ones that didn't
+match a keyword arg. Switched to plain `.replace()` of `__LEVEL__`-style
+tokens. Verified after the fix: `/`, `/api/level.json`, `/brush.glb`, and
+`/mdl-glb/<name>.glb` all return correct data for both Start (75 entities,
+6 lights, 2 paths — matches `Start.json`'s 81 combined objects exactly:
+75+6=81) and Town (529 entities, matches `verify_transforms.py`'s
+`raw=529 json=529`). Every entity in both levels resolved a matching
+`.glb` (0 missing). Confirmed Yachdal's entity data via this fresh parser
+matches the existing pipeline's output exactly: pos `[0, -180, -286]`,
+pan/tilt/roll `[0,0,0]` — independent re-derivation, same numbers.
+Extracted and syntax-checked the embedded JS with `node --check` (passed;
+can't runtime-test Three.js/WebGL rendering itself from here, same GPU
+limitation as everything else — the actual visual verification is the
+user's job now, that's the point of this tool).
+
+Usage: `python tools/wmb_web_viewer.py Start` (opens a browser
+automatically; `--port`/`--no-browser` available).
+
+Asked: run it for Start, look at Yachdal specifically (search box, or find
+"Yachdal_mdl_001" in the list), and report whether the red forward-arrow
+and the loaded mesh's own visual facing agree with each other and with
+the crowd's position — and whether anything else (brush walls, other
+entities) looks visibly wrong. This is raw parsed data with no Godot-side
+material/animation/spawn-order code in between, so any facing bug seen
+here is definitely in the parser, not downstream.
+
+Answer: (pending)
+
+Result: New tool built, tested end-to-end (server + data), one real bug
+found and fixed. Ready for the user's actual visual feedback loop.
