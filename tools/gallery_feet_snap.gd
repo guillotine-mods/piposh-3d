@@ -12,11 +12,19 @@ extends SceneTree
 ## this to match (this script does not import the real one -- SceneTree
 ## scripts can't easily reuse a Node-derived class's private funcs headless).
 ##
+## `--headless` alone forces Godot's dummy/null rendering driver, which never
+## produces real pixels (Viewport.get_texture() comes back null) -- pass
+## --rendering-driver opengl3 alongside it to keep a real (offscreen)
+## rasterizer without popping up a window. If that still errors on your
+## setup, drop --headless entirely (a window briefly appears, then closes
+## itself via quit()).
+##
 ## Usage:
-##   godot --headless -s res://tools/gallery_feet_snap.gd -- <Stem1> <Stem2> ...
-##   godot --headless -s res://tools/gallery_feet_snap.gd
+##   godot --headless --rendering-driver opengl3 -s res://tools/gallery_feet_snap.gd -- <Stem1> <Stem2> ...
+##   godot --headless --rendering-driver opengl3 -s res://tools/gallery_feet_snap.gd
 ##     (default set: the 6 flagged-excluded stems + 5 known-good regression
 ##      guards, so you see both sides of the policy in one image)
+##   (fallback if the above errors)  godot -s res://tools/gallery_feet_snap.gd
 ##
 ## Excluded-from-snap policy mirrored from _should_feet_snap (stem-based part
 ## only -- action-based exclusions don't apply to a bare model preview):
@@ -128,7 +136,7 @@ func _run() -> void:
 	# above/below-floor is unambiguous in the render.
 	var floor_mesh := MeshInstance3D.new()
 	var plane := PlaneMesh.new()
-	var width: float = maxf(cell * stems.size(), cell)
+	var width: float = maxf(cell * float(stems.size()), cell)
 	plane.size = Vector2(width + cell, cell * 2.6)
 	floor_mesh.mesh = plane
 	var floor_mat := StandardMaterial3D.new()
@@ -158,13 +166,16 @@ func _run() -> void:
 
 	var center_x := width * 0.5 - cell * 0.5
 	var cam := Camera3D.new()
+	host.add_child(cam)
 	cam.current = true
 	cam.far = 20000.0
 	# Elevated 3/4 side view: vertical (Y) position relative to the floor
 	# plane is the whole point, so keep tilt shallow rather than top-down.
+	# Must add_child() before global_position/look_at() -- both require the
+	# node already inside the tree (need a parent transform to resolve
+	# "global").
 	cam.global_position = Vector3(center_x, 260.0, -width * 0.55 - 400.0)
 	cam.look_at(Vector3(center_x, 20.0, cell * 0.5), Vector3.UP)
-	host.add_child(cam)
 
 	for _i in 8:
 		await process_frame

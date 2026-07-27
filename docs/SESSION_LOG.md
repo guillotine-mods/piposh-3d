@@ -1155,3 +1155,70 @@ rather than guessed at. TurnVase visibility-reset bug found and fixed
 selection and Piposh-visibility-flag hypotheses with real data; the
 actual cause needs the live debug output, not another read of the
 source.
+
+## 2026-07-27 — gallery_facing.gd debug loop; found the real "no lighting" bug instead
+
+User sent a real original `Start.exe` screenshot (Yachdal at a podium
+facing the crowd, crowd facing him — visibly *shaded/lit*, not flat) and
+tried to run `gallery_facing.gd` for a side-by-side. The script itself had
+three separate real bugs, found one at a time across too many round trips
+(rightly called out as "a bad loop"): (1) `ceil()` in a compound float
+expression at gallery_facing.gd:130 failed static type inference — split
+into an explicit `int` step; (2) `Camera3D.global_position`/`look_at()`
+were called before `host.add_child(cam)` — both require the node already
+inside the tree to resolve a parent transform; fixed in
+`gallery_facing.gd`, `gallery_feet_snap.gd`, and `smoke_orient.gd` (same
+copy-pasted pattern in all three); (3) after those were fixed, Genia's
+model (max extent ~573 units) is ~2.5x bigger than Yachdal/Crowd/Crowd2
+(~184-231) — the script's fixed `cell = 140.0` let Genia overflow into and
+swamp the whole shot. Rewrote to measure each model's real AABB first and
+size the grid from the actual batch's max extent, not a guessed constant.
+
+Then tried running the script myself directly (user gave the Godot binary's
+full path so they wouldn't have to). Confirmed: my tool-execution
+environment does not have a working GPU/display context even though it
+shares a filesystem with the user's machine — `--headless
+--rendering-driver opengl3` still hit the dummy/null renderer
+(`Parameter "t" is null` in `dummy/storage/texture_storage.h`) and then
+hung past 60s, stopped manually. This is the same class of limitation
+documented earlier this session for headless rendering scripts in general —
+now confirmed it also applies when invoking Godot directly via the
+session's own shell tools, not just the sandboxed script-runner. Do not
+retry running Godot rendering scripts directly from here; they must be run
+by the user.
+
+At that point the user stated directly: "your parser is not working
+correctly, this is a fact... also there would be lighting as the original
+game shows." Checked the lighting claim instead of arguing the facing
+claim further — and it's real, unambiguous, unrelated to parsing:
+`scripts/engine/mdl_animator.gd`'s `_apply_material_style` and
+`scripts/engine/wmb_level_loader.gd`'s `_force_unshaded_if_needed` both
+force `SHADING_MODE_UNSHADED` on every material in the game (characters,
+props, AND all brush wall/floor geometry — `_force_unshaded_if_needed` is
+the dominant path, called on every spawned mesh in every level). Comment
+cited "match mdl-texture-editor / A5: unlit textured meshes" as the
+reasoning — introduced in `df96b0d` (2026-07-25) with no further
+explanation, predating this session, never revisited. Meanwhile
+`_spawn_light()` in the same file correctly creates a real `OmniLight3D`
+per WMB light entity — so every level already has real lights placed, they
+just had nothing that could receive them. The original screenshot directly
+contradicts the "unlit" assumption (visible directional shading on
+Yachdal/crowd). Switched both to `SHADING_MODE_PER_PIXEL`. This is a
+systemic fix (every level, every mesh), not a one-model patch — higher
+risk than the narrow facing question, but backed by direct evidence, not a
+guess, and it doesn't touch the axis-remap/facing pipeline at all, so no
+overlap with the still-open Yachdal facing investigation.
+
+Asked: play the actual Start level in the Godot editor (F5) or the built
+`.exe`, not the still-fragile gallery script, and screenshot the Yachdal/
+crowd scene now that lighting is on — a more faithful comparison than the
+synthetic debug tool, and it settles the lighting fix at the same time.
+
+Answer: (pending)
+
+Result: Gallery script's three bugs fixed (not yet confirmed working end to
+end — still blocked on the environment's headless rendering limitation for
+a self-test). Real, high-confidence lighting bug found and fixed
+game-wide, independent of the facing investigation. Pivoted the facing
+verification away from the debug script toward the real running game,
+since the debug tool has cost more round-trips than it's saved so far.

@@ -7,10 +7,18 @@ extends SceneTree
 ##
 ## Standalone -- does not touch the main game scenes or runtime scripts.
 ##
+## `--headless` alone forces Godot's dummy/null rendering driver, which never
+## produces real pixels (Viewport.get_texture() comes back null) -- pass
+## --rendering-driver opengl3 alongside it to keep a real (offscreen)
+## rasterizer without popping up a window. If that still errors on your
+## setup, drop --headless entirely (a window briefly appears, then closes
+## itself via quit()).
+##
 ## Usage:
-##   godot --headless -s res://tools/gallery_facing.gd -- <Stem1> <Stem2> ...
-##   godot --headless -s res://tools/gallery_facing.gd -- --all
-##   godot --headless -s res://tools/gallery_facing.gd -- --page 0 --page-size 36
+##   godot --headless --rendering-driver opengl3 -s res://tools/gallery_facing.gd -- <Stem1> <Stem2> ...
+##   godot --headless --rendering-driver opengl3 -s res://tools/gallery_facing.gd -- --all
+##   godot --headless --rendering-driver opengl3 -s res://tools/gallery_facing.gd -- --page 0 --page-size 36
+##   (fallback if the above errors)  godot -s res://tools/gallery_facing.gd -- Yachdal Crowd Crowd2 Genia
 ##
 ## With --all (or no args), auto-discovers every model with a .mdlanim
 ## sidecar (the "character" roster: has Walk/Stand/Talk-style animation) and
@@ -77,16 +85,21 @@ func _run() -> void:
 	host.add_child(we)
 
 	var cols := int(ceil(sqrt(float(stems.size()))))
-	var cell := 140.0
 	var loaded := 0
 	var missing: Array[String] = []
 
-	for idx in stems.size():
-		var stem: String = stems[idx]
-		var col := idx % cols
-		var row := idx / cols
-		var origin := Vector3(col * cell, 0.0, row * cell)
-
+	# Pass 1: load + instantiate everything first and measure each model's
+	# own AABB (models vary wildly in size -- e.g. Genia's max extent is
+	# ~573 units vs. Yachdal's ~223 -- a fixed cell size either crams small
+	# models into nothing or lets one big model overflow into its neighbors
+	# and swamp the whole shot, which is exactly what happened the first
+	# time this ran). Cell size is derived from the actual batch, not a
+	# guessed constant.
+	var insts: Array[Node3D] = []
+	var sizes: Array[Vector3] = []
+	var kept_stems: Array[String] = []
+	var max_extent := 1.0
+	for stem in stems:
 		var path := MDL_DIR + stem + ".glb"
 		if not ResourceLoader.exists(path):
 			missing.append(stem)
@@ -97,8 +110,26 @@ func _run() -> void:
 			continue
 		var inst: Node3D = (packed as PackedScene).instantiate()
 		host.add_child(inst)
-		inst.position = origin
+		var aabb := _mesh_aabb_local(inst, Transform3D.IDENTITY, true)
+		insts.append(inst)
+		sizes.append(aabb.size)
+		kept_stems.append(stem)
+		max_extent = maxf(max_extent, maxf(aabb.size.x, maxf(aabb.size.y, aabb.size.z)))
 		loaded += 1
+
+	if missing.size() > 0:
+		print("MISSING (no .glb, skipped): ", missing)
+
+	var cell: float = max_extent * 1.6
+
+	# Pass 2: position each model in its grid cell now that cell size is known.
+	for idx in insts.size():
+		var stem: String = kept_stems[idx]
+		var col := idx % cols
+		var row := idx / cols
+		var origin := Vector3(float(col) * cell, 0.0, float(row) * cell)
+		insts[idx].position = origin
+		var model_h: float = sizes[idx].y
 
 		# Reference arrow: a thin bar from the model's feet pointing +X, the
 		# "authored forward" direction. Compare each character's own facing
@@ -120,32 +151,35 @@ func _run() -> void:
 		label.pixel_size = 0.35
 		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 		label.no_depth_test = true
-		label.position = origin + Vector3(0.0, 90.0, 0.0)
+		label.position = origin + Vector3(0.0, model_h + 30.0, 0.0)
 		host.add_child(label)
 
-	if missing.size() > 0:
-		print("MISSING (no .glb, skipped): ", missing)
-
-	var grid_w := cols * cell
-	var grid_h := ceil(float(stems.size()) / cols) * cell
+	var grid_w: float = float(cols) * cell
+	var rows := int(ceil(float(insts.size()) / float(cols)))
+	var grid_h: float = float(rows) * cell
 	var center := Vector3(grid_w * 0.5, 0.0, grid_h * 0.5)
 
 	var cam := Camera3D.new()
+	host.add_child(cam)
 	cam.current = true
 	cam.projection = Camera3D.PROJECTION_ORTHOGONAL
 	cam.size = maxf(grid_w, grid_h) * 1.15
 	cam.far = 20000.0
 	# Straight overhead: +X reads left-to-right identically in every cell,
 	# so a wrongly-facing character's silhouette visibly disagrees with its
-	# own red reference arrow.
+	# own red reference arrow. Must add_child() before global_position/
+	# look_at() -- both require the node to already be inside the tree
+	# (need a parent transform to resolve "global").
 	cam.global_position = center + Vector3(0.0, 3000.0, 0.0)
 	cam.look_at(center, Vector3.BACK)
-	host.add_child(cam)
 
 	for _i in 8:
 		await process_frame
 	var vp := root.get_viewport()
-	vp.size = Vector2i(2000, int(2000.0 * grid_h / grid_w) if grid_w > 0 else 2000)
+	var vp_h := 2000
+	if grid_w > 0.0:
+		vp_h = int(2000.0 * grid_h / grid_w)
+	vp.size = Vector2i(2000, vp_h)
 	await process_frame
 	await process_frame
 
@@ -170,3 +204,28 @@ func _discover_character_stems() -> Array[String]:
 		fn = dir.get_next()
 	stems.sort()
 	return stems
+
+
+func _mesh_aabb_local(node: Node, parent_xf: Transform3D, skip_node_xf: bool) -> AABB:
+	## Local (untransformed-by-tree) AABB -- works before the node has a
+	## global transform, i.e. before it's positioned in the grid.
+	var xf := parent_xf
+	if node is Node3D and not skip_node_xf:
+		xf = parent_xf * (node as Node3D).transform
+	var acc := AABB()
+	var has := false
+	if node is MeshInstance3D:
+		var mi := node as MeshInstance3D
+		if mi.mesh != null:
+			acc = xf * mi.mesh.get_aabb()
+			has = true
+	for c in node.get_children():
+		var ca := _mesh_aabb_local(c, xf, false)
+		if ca.size.x <= 0.0 and ca.size.y <= 0.0 and ca.size.z <= 0.0:
+			continue
+		if not has:
+			acc = ca
+			has = true
+		else:
+			acc = acc.merge(ca)
+	return acc if has else AABB()

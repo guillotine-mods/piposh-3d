@@ -558,7 +558,17 @@ func _default_anim_clip(action: String, stem: String) -> String:
 
 
 func _force_unshaded_if_needed(node: Node, repeat_textures: bool = false) -> void:
-	# Match mdl-texture-editor / A5: unlit textured meshes, color-key cutout.
+	# Was SHADING_MODE_UNSHADED under the assumption "match mdl-texture-editor
+	# / A5: unlit textured meshes" -- that assumption is contradicted by a
+	# real original .exe screenshot (Start level, Yachdal/crowd scene):
+	# models are visibly shaded/lit, not flat-colored. This function runs on
+	# every brush wall/floor and every non-animated prop in every level, so
+	# it was the dominant reason the whole port looked flat -- WMB light
+	# entities were already being spawned as real OmniLight3D nodes
+	# (_spawn_light) but had nothing that could receive them. Switched to lit
+	# so those lights (plus the level's ambient) actually show up. Name kept
+	# for now despite no longer forcing unshaded — rename is a follow-up, not
+	# urgent. (docs/SESSION_LOG.md 2026-07-27)
 	if node is MeshInstance3D:
 		var mi := node as MeshInstance3D
 		# Imported LODs destroy seam UVs on low-poly MDL skins — stay on LOD0.
@@ -571,7 +581,7 @@ func _force_unshaded_if_needed(node: Node, repeat_textures: bool = false) -> voi
 				if mat is BaseMaterial3D:
 					# Duplicate so we don't mutate the shared imported resource.
 					var bm := (mat as BaseMaterial3D).duplicate() as BaseMaterial3D
-					bm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+					bm.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
 					# No mipmaps: they blur + darken alpha-scissor pixel skins.
 					bm.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 					bm.cull_mode = BaseMaterial3D.CULL_DISABLED

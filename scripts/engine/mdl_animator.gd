@@ -305,7 +305,15 @@ func _build_remap(mesh_verts: PackedVector3Array) -> void:
 
 
 func _apply_material_style(bm: BaseMaterial3D) -> void:
-	bm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Was SHADING_MODE_UNSHADED (commit df96b0d, undocumented) -- that makes
+	# every character/prop ignore lighting entirely, while
+	# wmb_level_loader.gd's _spawn_light() correctly creates a real
+	# OmniLight3D per WMB light entity. Those lights had zero visible effect
+	# because nothing could receive them -- confirmed by comparing an actual
+	# original .exe screenshot (visibly shaded/lit models) against the flat,
+	# unlit port. Switched to per-pixel lit shading so the level's own real
+	# lights actually do something (docs/SESSION_LOG.md 2026-07-27).
+	bm.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
 	bm.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 	bm.cull_mode = BaseMaterial3D.CULL_DISABLED
 	bm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR

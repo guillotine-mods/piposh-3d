@@ -1,8 +1,16 @@
 extends SceneTree
 ## Orientation QA for ONE model. Converts "eyeball 640 models" into "open 1 png".
 ##
+## `--headless` alone forces Godot's dummy/null rendering driver, which never
+## produces real pixels (Viewport.get_texture() comes back null) -- pass
+## --rendering-driver opengl3 alongside it to keep a real (offscreen)
+## rasterizer without popping up a window. If that still errors on your
+## setup, drop --headless entirely (a window briefly appears, then closes
+## itself via quit()).
+##
 ## Usage:
-##   godot --headless -s res://tools/smoke_orient.gd -- Ami
+##   godot --headless --rendering-driver opengl3 -s res://tools/smoke_orient.gd -- Ami
+##   (fallback if the above errors)  godot -s res://tools/smoke_orient.gd -- Ami
 ## Rebuild MDLs with `python tools/convert_mdl.py --fix-idpo --no-face-orient`,
 ## run this again, and compare user://orient_<model>.png front/back.
 ##
@@ -53,13 +61,15 @@ func _run() -> void:
 	var c := aabb.position + aabb.size * 0.5
 
 	var cam := Camera3D.new()
+	host.add_child(cam)
 	cam.current = true
 	cam.far = 12000
-	# Sit on +X (Acknex forward) looking back at the model.
+	# Sit on +X (Acknex forward) looking back at the model. Must add_child()
+	# before global_position/look_at() -- both require the node already
+	# inside the tree (need a parent transform to resolve "global").
 	var dist := maxf(aabb.size.length(), 1.0) * 1.8
 	cam.global_position = c + Vector3(dist, aabb.size.y * 0.15, 0)
 	cam.look_at(c, Vector3.UP)
-	host.add_child(cam)
 
 	for _i in 6:
 		await process_frame
