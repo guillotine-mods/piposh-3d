@@ -93,18 +93,39 @@ roll]`) mixed together, sometimes within one file. Rules:
 
 - Entities/lights/paths → JSON via `extract_wmb_full.py`. This is the reliable
   part. Object list is index **15**; entity types are **3** (old) and **7**.
-- Brush/BSP geometry (`extract_wmb_mesh.py`) is **best-effort**: it skips faces
-  it can't reconstruct from the edge/surfedge lists and returns nothing for a
-  whole level if the list layout doesn't match. Only a whitelist of levels is
-  attempted. When there's no brush mesh, the loader drops a flat placeholder
-  floor — so "the level loaded but it's an empty pad" means geometry extraction
-  failed, not that the level is broken.
+- Brush/BSP geometry (`extract_wmb_mesh.py`): the edge/surfedge face
+  reconstruction is the standard Quake/GoldSrc BSP algorithm, and it's solid
+  — verified 2026-07-28 by running `extract_brush()` against **all 134** WMB
+  files in the game (both `WMB4`, used by most entity-referenced props, and
+  `WMB5`, used by every playable level): **0 files** returned no mesh, and
+  only 2 files skip so much as a single face out of 1000+ (both <0.1%). The
+  same pass confirmed all 338 entity placements across every level that
+  reference a `.wmb` prop file have a generated `.glb` on disk. `--only`
+  defaults to a small level whitelist for a quick local run, but the actual
+  extraction algorithm is not level-specific and does not need per-level
+  whitelisting to work — pass `--all` (or run `tools/verify_corpus.py`,
+  which always checks every file) to convert/verify everything at once. If a
+  level still looks empty, check the loader's GLB resolution
+  (`_find_wmb_glb`/`_find_glb` in `wmb_level_loader.gd`) or the specific
+  file's magic bytes before assuming extraction failed — it's the far less
+  likely explanation now.
 - After axis remap, **flip winding** for right-handed Godot (fan-triangulate as
   `[base, base+k+1, base+k]`).
-- **UV caveat:** the extractor divides s/t by texture width/height assuming
-  texel-scale vectors. If textures look tiled/misscaled, that assumption is the
-  suspect. **Texture format** detection (RGB565 vs 24/32-bit) is heuristic; a
-  reddish `(160,80,80)` fill means format mis-detection, not a missing texture.
+- **UV formula:** the extractor divides the s/t texinfo dot-product by texture
+  width/height — the standard Quake/GoldSrc BSP texel-scale convention, not a
+  guess. Spot-checked real UV ranges across Studio/Start/Shiks 2026-07-28:
+  Studio and Start land in a normal tiled-texture range; Shiks has a much
+  wider outlier range that's plausibly just a large area with small tiled
+  textures (normal for this format) but hasn't been visually confirmed either
+  way — check it via `tools/wmb_web_viewer.py` before assuming a bug, and if
+  it is wrong, derive the correction from real texinfo vector magnitudes, not
+  a trial constant.
+- **Texture format:** every one of the **984** textures in the game's WMB
+  corpus has `type == 40` and decodes cleanly (verified 2026-07-28, zero hits
+  on the RGB565/24-bit/32-bit fallback branches) — the multi-format branches
+  in `_load_textures` are real code but dead for this game's actual asset
+  set. A reddish `(160,80,80)` fill would still mean decode failure if it
+  ever showed up, but there's no live evidence it does.
 
 ## WDL logic — this is why levels need per-level work
 

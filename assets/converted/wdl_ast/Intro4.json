@@ -1,0 +1,2173 @@
+{
+ "source": "Intro4.wdl",
+ "includes": [
+  "IO.wdl"
+ ],
+ "globals": [
+  {
+   "name": "video_mode",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 6.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "video_depth",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 16.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "CamView",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 1.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "Phase",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.0
+   },
+   "init_list": false
+  }
+ ],
+ "functions": {
+  "main": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "wait",
+      "ticks": true,
+      "n": {
+       "t": "num",
+       "v": 3.0
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "warn_level"
+       },
+       "value": {
+        "t": "num",
+        "v": 0.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "tex_share"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "vNoSave"
+       },
+       "value": {
+        "t": "num",
+        "v": 1.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "load_level",
+       "args": [
+        {
+         "t": "res",
+         "v": "Intro4.WMB"
+        }
+       ]
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "VoiceInit",
+       "args": []
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "Initialize",
+       "args": []
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "scene_map"
+       },
+       "value": {
+        "t": "id",
+        "name": "bmapBack6"
+       }
+      }
+     }
+    ]
+   }
+  }
+ },
+ "actions": {
+  "DefinePiposh": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "player"
+       },
+       "value": {
+        "t": "id",
+        "name": "my"
+       }
+      }
+     },
+     {
+      "t": "while",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "CamView"
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "body": {
+       "t": "block",
+       "body": [
+        {
+         "t": "wait",
+         "ticks": true,
+         "n": {
+          "t": "num",
+          "v": 1.0
+         }
+        }
+       ]
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "actor_init",
+       "args": []
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "drop_shadow",
+       "args": []
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "temp"
+        },
+        "name": "pan"
+       },
+       "value": {
+        "t": "num",
+        "v": 360.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "temp"
+        },
+        "name": "tilt"
+       },
+       "value": {
+        "t": "num",
+        "v": 180.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "temp"
+        },
+        "name": "z"
+       },
+       "value": {
+        "t": "num",
+        "v": 1000.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "result"
+       },
+       "value": {
+        "t": "call",
+        "name": "scan_path",
+        "args": [
+         {
+          "t": "field",
+          "obj": {
+           "t": "id",
+           "name": "my"
+          },
+          "name": "x"
+         },
+         {
+          "t": "id",
+          "name": "temp"
+         }
+        ]
+       }
+      }
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "result"
+       },
+       "r": {
+        "t": "num",
+        "v": 0.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "my"
+           },
+           "name": "_MOVEMODE"
+          },
+          "value": {
+           "t": "num",
+           "v": 0.0
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "ent_waypoint",
+       "args": [
+        {
+         "t": "field",
+         "obj": {
+          "t": "id",
+          "name": "my"
+         },
+         "name": "_TARGET_X"
+        },
+        {
+         "t": "num",
+         "v": 1.0
+        }
+       ]
+      }
+     },
+     {
+      "t": "while",
+      "cond": {
+       "t": "binop",
+       "op": ">",
+       "l": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "my"
+        },
+        "name": "_MOVEMODE"
+       },
+       "r": {
+        "t": "num",
+        "v": 0.0
+       }
+      },
+      "body": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "temp"
+           },
+           "name": "x"
+          },
+          "value": {
+           "t": "binop",
+           "op": "-",
+           "l": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "MY"
+            },
+            "name": "_TARGET_X"
+           },
+           "r": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "MY"
+            },
+            "name": "X"
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "temp"
+           },
+           "name": "y"
+          },
+          "value": {
+           "t": "binop",
+           "op": "-",
+           "l": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "MY"
+            },
+            "name": "_TARGET_Y"
+           },
+           "r": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "MY"
+            },
+            "name": "Y"
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "temp"
+           },
+           "name": "z"
+          },
+          "value": {
+           "t": "num",
+           "v": 0.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "result"
+          },
+          "value": {
+           "t": "call",
+           "name": "vec_to_angle",
+           "args": [
+            {
+             "t": "id",
+             "name": "my_angle"
+            },
+            {
+             "t": "id",
+             "name": "temp"
+            }
+           ]
+          }
+         }
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "<",
+          "l": {
+           "t": "id",
+           "name": "result"
+          },
+          "r": {
+           "t": "num",
+           "v": 25.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "ent_nextpoint",
+             "args": [
+              {
+               "t": "field",
+               "obj": {
+                "t": "id",
+                "name": "my"
+               },
+               "name": "_TARGET_X"
+              }
+             ]
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "my"
+              },
+              "name": "skill3"
+             },
+             "value": {
+              "t": "binop",
+              "op": "+",
+              "l": {
+               "t": "field",
+               "obj": {
+                "t": "id",
+                "name": "my"
+               },
+               "name": "skill3"
+              },
+              "r": {
+               "t": "num",
+               "v": 1.0
+              }
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "force"
+          },
+          "value": {
+           "t": "num",
+           "v": 2.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "actor_turnto",
+          "args": [
+           {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "my_angle"
+            },
+            "name": "PAN"
+           }
+          ]
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "force"
+          },
+          "value": {
+           "t": "num",
+           "v": 11.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "actor_move",
+          "args": []
+         }
+        },
+        {
+         "t": "wait",
+         "ticks": true,
+         "n": {
+          "t": "num",
+          "v": 1.0
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "Cam": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "my"
+        },
+        "name": "invisible"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "my"
+        },
+        "name": "passable"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "sPlay",
+       "args": [
+        {
+         "t": "str",
+         "v": "PIP143.WAV"
+        }
+       ]
+      }
+     },
+     {
+      "t": "while",
+      "cond": {
+       "t": "num",
+       "v": 1.0
+      },
+      "body": {
+       "t": "block",
+       "body": [
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "id",
+           "name": "CamView"
+          },
+          "r": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "my"
+           },
+           "name": "skill1"
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "camera"
+              },
+              "name": "x"
+             },
+             "value": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "my"
+              },
+              "name": "x"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "camera"
+              },
+              "name": "y"
+             },
+             "value": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "my"
+              },
+              "name": "y"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "camera"
+              },
+              "name": "z"
+             },
+             "value": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "my"
+              },
+              "name": "z"
+             }
+            }
+           },
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": "==",
+             "l": {
+              "t": "id",
+              "name": "CamView"
+             },
+             "r": {
+              "t": "num",
+              "v": 1.0
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "if",
+               "cond": {
+                "t": "binop",
+                "op": "==",
+                "l": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "my"
+                 },
+                 "name": "skill10"
+                },
+                "r": {
+                 "t": "num",
+                 "v": 0.0
+                }
+               },
+               "then": {
+                "t": "block",
+                "body": [
+                 {
+                  "t": "while",
+                  "cond": {
+                   "t": "binop",
+                   "op": "<",
+                   "l": {
+                    "t": "call",
+                    "name": "GetPosition",
+                    "args": [
+                     {
+                      "t": "id",
+                      "name": "Voice"
+                     }
+                    ]
+                   },
+                   "r": {
+                    "t": "num",
+                    "v": 1000000.0
+                   }
+                  },
+                  "body": {
+                   "t": "block",
+                   "body": [
+                    {
+                     "t": "wait",
+                     "ticks": true,
+                     "n": {
+                      "t": "num",
+                      "v": 1.0
+                     }
+                    }
+                   ]
+                  }
+                 }
+                ]
+               },
+               "else": null
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "id",
+                 "name": "Phase"
+                },
+                "value": {
+                 "t": "num",
+                 "v": 1.0
+                }
+               }
+              },
+              {
+               "t": "if",
+               "cond": {
+                "t": "binop",
+                "op": "<",
+                "l": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "my"
+                 },
+                 "name": "skill11"
+                },
+                "r": {
+                 "t": "num",
+                 "v": 90.0
+                }
+               },
+               "then": {
+                "t": "block",
+                "body": [
+                 {
+                  "t": "if",
+                  "cond": {
+                   "t": "binop",
+                   "op": "==",
+                   "l": {
+                    "t": "field",
+                    "obj": {
+                     "t": "id",
+                     "name": "my"
+                    },
+                    "name": "skill10"
+                   },
+                   "r": {
+                    "t": "num",
+                    "v": 0.0
+                   }
+                  },
+                  "then": {
+                   "t": "block",
+                   "body": [
+                    {
+                     "t": "expr_stmt",
+                     "expr": {
+                      "t": "assign",
+                      "op": "=",
+                      "target": {
+                       "t": "field",
+                       "obj": {
+                        "t": "id",
+                        "name": "my"
+                       },
+                       "name": "skill10"
+                      },
+                      "value": {
+                       "t": "num",
+                       "v": 1.0
+                      }
+                     }
+                    },
+                    {
+                     "t": "expr_stmt",
+                     "expr": {
+                      "t": "call",
+                      "name": "play_entsound",
+                      "args": [
+                       {
+                        "t": "id",
+                        "name": "my"
+                       },
+                       {
+                        "t": "id",
+                        "name": "liftoff"
+                       },
+                       {
+                        "t": "num",
+                        "v": 100.0
+                       }
+                      ]
+                     }
+                    }
+                   ]
+                  },
+                  "else": null
+                 },
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "assign",
+                   "op": "=",
+                   "target": {
+                    "t": "field",
+                    "obj": {
+                     "t": "id",
+                     "name": "my"
+                    },
+                    "name": "pan"
+                   },
+                   "value": {
+                    "t": "binop",
+                    "op": "-",
+                    "l": {
+                     "t": "field",
+                     "obj": {
+                      "t": "id",
+                      "name": "my"
+                     },
+                     "name": "pan"
+                    },
+                    "r": {
+                     "t": "binop",
+                     "op": "*",
+                     "l": {
+                      "t": "num",
+                      "v": 2.0
+                     },
+                     "r": {
+                      "t": "id",
+                      "name": "time"
+                     }
+                    }
+                   }
+                  }
+                 }
+                ]
+               },
+               "else": {
+                "t": "block",
+                "body": [
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "assign",
+                   "op": "=",
+                   "target": {
+                    "t": "id",
+                    "name": "CamView"
+                   },
+                   "value": {
+                    "t": "num",
+                    "v": 2.0
+                   }
+                  }
+                 }
+                ]
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "my"
+                 },
+                 "name": "skill11"
+                },
+                "value": {
+                 "t": "binop",
+                 "op": "+",
+                 "l": {
+                  "t": "field",
+                  "obj": {
+                   "t": "id",
+                   "name": "my"
+                  },
+                  "name": "skill11"
+                 },
+                 "r": {
+                  "t": "binop",
+                  "op": "*",
+                  "l": {
+                   "t": "num",
+                   "v": 2.0
+                  },
+                  "r": {
+                   "t": "id",
+                   "name": "time"
+                  }
+                 }
+                }
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "camera"
+                 },
+                 "name": "pan"
+                },
+                "value": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "my"
+                 },
+                 "name": "pan"
+                }
+               }
+              }
+             ]
+            },
+            "else": null
+           },
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": "==",
+             "l": {
+              "t": "id",
+              "name": "CamView"
+             },
+             "r": {
+              "t": "num",
+              "v": 2.0
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "if",
+               "cond": {
+                "t": "binop",
+                "op": "==",
+                "l": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "my"
+                 },
+                 "name": "skill12"
+                },
+                "r": {
+                 "t": "num",
+                 "v": 0.0
+                }
+               },
+               "then": {
+                "t": "block",
+                "body": [
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "call",
+                   "name": "sPlay",
+                   "args": [
+                    {
+                     "t": "str",
+                     "v": "KRZ001.WAV"
+                    }
+                   ]
+                  }
+                 },
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "assign",
+                   "op": "=",
+                   "target": {
+                    "t": "field",
+                    "obj": {
+                     "t": "id",
+                     "name": "my"
+                    },
+                    "name": "skill12"
+                   },
+                   "value": {
+                    "t": "num",
+                    "v": 1.0
+                   }
+                  }
+                 }
+                ]
+               },
+               "else": null
+              },
+              {
+               "t": "if",
+               "cond": {
+                "t": "binop",
+                "op": "&&",
+                "l": {
+                 "t": "binop",
+                 "op": "==",
+                 "l": {
+                  "t": "field",
+                  "obj": {
+                   "t": "id",
+                   "name": "my"
+                  },
+                  "name": "skill12"
+                 },
+                 "r": {
+                  "t": "num",
+                  "v": 1.0
+                 }
+                },
+                "r": {
+                 "t": "binop",
+                 "op": ">=",
+                 "l": {
+                  "t": "call",
+                  "name": "GetPosition",
+                  "args": [
+                   {
+                    "t": "id",
+                    "name": "Voice"
+                   }
+                  ]
+                 },
+                 "r": {
+                  "t": "num",
+                  "v": 1000000.0
+                 }
+                }
+               },
+               "then": {
+                "t": "block",
+                "body": [
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "call",
+                   "name": "sPlay",
+                   "args": [
+                    {
+                     "t": "str",
+                     "v": "PIP144.WAV"
+                    }
+                   ]
+                  }
+                 },
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "assign",
+                   "op": "=",
+                   "target": {
+                    "t": "field",
+                    "obj": {
+                     "t": "id",
+                     "name": "my"
+                    },
+                    "name": "skill12"
+                   },
+                   "value": {
+                    "t": "num",
+                    "v": 2.0
+                   }
+                  }
+                 }
+                ]
+               },
+               "else": null
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "call",
+                "name": "vec_set",
+                "args": [
+                 {
+                  "t": "id",
+                  "name": "temp"
+                 },
+                 {
+                  "t": "field",
+                  "obj": {
+                   "t": "id",
+                   "name": "player"
+                  },
+                  "name": "x"
+                 }
+                ]
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "call",
+                "name": "vec_sub",
+                "args": [
+                 {
+                  "t": "id",
+                  "name": "temp"
+                 },
+                 {
+                  "t": "field",
+                  "obj": {
+                   "t": "id",
+                   "name": "camera"
+                  },
+                  "name": "x"
+                 }
+                ]
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "call",
+                "name": "vec_to_angle",
+                "args": [
+                 {
+                  "t": "field",
+                  "obj": {
+                   "t": "id",
+                   "name": "camera"
+                  },
+                  "name": "pan"
+                 },
+                 {
+                  "t": "id",
+                  "name": "temp"
+                 }
+                ]
+               }
+              }
+             ]
+            },
+            "else": null
+           },
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": "&&",
+             "l": {
+              "t": "binop",
+              "op": "==",
+              "l": {
+               "t": "field",
+               "obj": {
+                "t": "id",
+                "name": "my"
+               },
+               "name": "skill12"
+              },
+              "r": {
+               "t": "num",
+               "v": 2.0
+              }
+             },
+             "r": {
+              "t": "binop",
+              "op": ">=",
+              "l": {
+               "t": "call",
+               "name": "GetPosition",
+               "args": [
+                {
+                 "t": "id",
+                 "name": "Voice"
+                }
+               ]
+              },
+              "r": {
+               "t": "num",
+               "v": 1000000.0
+              }
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "id",
+                 "name": "Flag_First_Volcano"
+                },
+                "value": {
+                 "t": "num",
+                 "v": 1.0
+                }
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "call",
+                "name": "WriteGameData",
+                "args": [
+                 {
+                  "t": "num",
+                  "v": 0.0
+                 }
+                ]
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "call",
+                "name": "Run",
+                "args": [
+                 {
+                  "t": "str",
+                  "v": "Dutyfree.exe"
+                 }
+                ]
+               }
+              }
+             ]
+            },
+            "else": null
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "wait",
+         "ticks": true,
+         "n": {
+          "t": "num",
+          "v": 1.0
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "Wind": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "my"
+        },
+        "name": "skill1"
+       },
+       "value": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "my"
+        },
+        "name": "pan"
+       }
+      }
+     },
+     {
+      "t": "while",
+      "cond": {
+       "t": "num",
+       "v": 1.0
+      },
+      "body": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "my"
+           },
+           "name": "pan"
+          },
+          "value": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "my"
+           },
+           "name": "skill1"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "my"
+           },
+           "name": "pan"
+          },
+          "value": {
+           "t": "binop",
+           "op": "+",
+           "l": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "my"
+            },
+            "name": "pan"
+           },
+           "r": {
+            "t": "binop",
+            "op": "*",
+            "l": {
+             "t": "binop",
+             "op": "-",
+             "l": {
+              "t": "call",
+              "name": "random",
+              "args": [
+               {
+                "t": "num",
+                "v": 3.0
+               }
+              ]
+             },
+             "r": {
+              "t": "num",
+              "v": 1.0
+             }
+            },
+            "r": {
+             "t": "num",
+             "v": 10.0
+            }
+           }
+          }
+         }
+        },
+        {
+         "t": "wait",
+         "ticks": true,
+         "n": {
+          "t": "num",
+          "v": 1.0
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "Sit": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "while",
+      "cond": {
+       "t": "num",
+       "v": 1.0
+      },
+      "body": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "ent_frame",
+          "args": [
+           {
+            "t": "str",
+            "v": "Sit"
+           },
+           {
+            "t": "num",
+            "v": 0.0
+           }
+          ]
+         }
+        },
+        {
+         "t": "wait",
+         "ticks": true,
+         "n": {
+          "t": "num",
+          "v": 1.0
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "Clean": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "while",
+      "cond": {
+       "t": "num",
+       "v": 1.0
+      },
+      "body": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "ent_cycle",
+          "args": [
+           {
+            "t": "str",
+            "v": "Clean"
+           },
+           {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "my"
+            },
+            "name": "skill1"
+           }
+          ]
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "my"
+           },
+           "name": "skill1"
+          },
+          "value": {
+           "t": "binop",
+           "op": "+",
+           "l": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "my"
+            },
+            "name": "skill1"
+           },
+           "r": {
+            "t": "num",
+            "v": 5.0
+           }
+          }
+         }
+        },
+        {
+         "t": "wait",
+         "ticks": true,
+         "n": {
+          "t": "num",
+          "v": 1.0
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "Pip": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "while",
+      "cond": {
+       "t": "num",
+       "v": 1.0
+      },
+      "body": {
+       "t": "block",
+       "body": [
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "id",
+           "name": "Phase"
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "my"
+              },
+              "name": "skill11"
+             },
+             "value": {
+              "t": "binop",
+              "op": "+",
+              "l": {
+               "t": "field",
+               "obj": {
+                "t": "id",
+                "name": "my"
+               },
+               "name": "skill11"
+              },
+              "r": {
+               "t": "binop",
+               "op": "*",
+               "l": {
+                "t": "num",
+                "v": 1.0
+               },
+               "r": {
+                "t": "id",
+                "name": "time"
+               }
+              }
+             }
+            }
+           },
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": ">",
+             "l": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "my"
+              },
+              "name": "skill11"
+             },
+             "r": {
+              "t": "num",
+              "v": 1.5
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "my"
+                 },
+                 "name": "skin"
+                },
+                "value": {
+                 "t": "binop",
+                 "op": "+",
+                 "l": {
+                  "t": "call",
+                  "name": "int",
+                  "args": [
+                   {
+                    "t": "call",
+                    "name": "random",
+                    "args": [
+                     {
+                      "t": "num",
+                      "v": 8.0
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 "r": {
+                  "t": "num",
+                  "v": 1.0
+                 }
+                }
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "my"
+                 },
+                 "name": "skill11"
+                },
+                "value": {
+                 "t": "num",
+                 "v": 0.0
+                }
+               }
+              }
+             ]
+            },
+            "else": null
+           },
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": "==",
+             "l": {
+              "t": "call",
+              "name": "int",
+              "args": [
+               {
+                "t": "call",
+                "name": "random",
+                "args": [
+                 {
+                  "t": "num",
+                  "v": 30.0
+                 }
+                ]
+               }
+              ]
+             },
+             "r": {
+              "t": "num",
+              "v": 15.0
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "call",
+                "name": "ent_frame",
+                "args": [
+                 {
+                  "t": "str",
+                  "v": "Talk"
+                 },
+                 {
+                  "t": "binop",
+                  "op": "*",
+                  "l": {
+                   "t": "call",
+                   "name": "int",
+                   "args": [
+                    {
+                     "t": "call",
+                     "name": "random",
+                     "args": [
+                      {
+                       "t": "num",
+                       "v": 8.0
+                      }
+                     ]
+                    }
+                   ]
+                  },
+                  "r": {
+                   "t": "num",
+                   "v": 14.0
+                  }
+                 }
+                ]
+               }
+              }
+             ]
+            },
+            "else": null
+           }
+          ]
+         },
+         "else": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "ent_frame",
+             "args": [
+              {
+               "t": "str",
+               "v": "Stand"
+              },
+              {
+               "t": "num",
+               "v": 0.0
+              }
+             ]
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "my"
+              },
+              "name": "skin"
+             },
+             "value": {
+              "t": "num",
+              "v": 1.0
+             }
+            }
+           }
+          ]
+         }
+        },
+        {
+         "t": "wait",
+         "ticks": true,
+         "n": {
+          "t": "num",
+          "v": 1.0
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "Land": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "while",
+      "cond": {
+       "t": "num",
+       "v": 1.0
+      },
+      "body": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "ent_cycle",
+          "args": [
+           {
+            "t": "str",
+            "v": "Fly"
+           },
+           {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "my"
+            },
+            "name": "skill1"
+           }
+          ]
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "my"
+           },
+           "name": "skill1"
+          },
+          "value": {
+           "t": "binop",
+           "op": "+",
+           "l": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "my"
+            },
+            "name": "skill1"
+           },
+           "r": {
+            "t": "binop",
+            "op": "*",
+            "l": {
+             "t": "num",
+             "v": 5.0
+            },
+            "r": {
+             "t": "id",
+             "name": "time"
+            }
+           }
+          }
+         }
+        },
+        {
+         "t": "wait",
+         "ticks": true,
+         "n": {
+          "t": "num",
+          "v": 1.0
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "Fly": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "while",
+      "cond": {
+       "t": "num",
+       "v": 1.0
+      },
+      "body": {
+       "t": "block",
+       "body": [
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "id",
+           "name": "Phase"
+          },
+          "r": {
+           "t": "num",
+           "v": 1.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "my"
+              },
+              "name": "x"
+             },
+             "value": {
+              "t": "binop",
+              "op": "+",
+              "l": {
+               "t": "field",
+               "obj": {
+                "t": "id",
+                "name": "my"
+               },
+               "name": "x"
+              },
+              "r": {
+               "t": "binop",
+               "op": "*",
+               "l": {
+                "t": "num",
+                "v": 80.0
+               },
+               "r": {
+                "t": "id",
+                "name": "time"
+               }
+              }
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "my"
+              },
+              "name": "z"
+             },
+             "value": {
+              "t": "binop",
+              "op": "+",
+              "l": {
+               "t": "field",
+               "obj": {
+                "t": "id",
+                "name": "my"
+               },
+               "name": "z"
+              },
+              "r": {
+               "t": "binop",
+               "op": "*",
+               "l": {
+                "t": "num",
+                "v": 20.0
+               },
+               "r": {
+                "t": "id",
+                "name": "time"
+               }
+              }
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "wait",
+         "ticks": true,
+         "n": {
+          "t": "num",
+          "v": 1.0
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  }
+ },
+ "sounds": {
+  "Liftoff": "SFX052.WAV"
+ },
+ "bmaps": {},
+ "skip_count": 0,
+ "skipped": []
+}

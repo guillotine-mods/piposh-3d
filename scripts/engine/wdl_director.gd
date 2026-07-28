@@ -28,6 +28,17 @@ var scene := 0
 var dance := 1
 var genia := 0
 var _level_script := ""
+var _wdl_interp: WdlInterpreter  # generic AST-driven runtime, see _try_begin_interpreted_level()
+## 2026-07-28: user explicitly requested switching the previously
+## hand-ported chapters (Studio/Start/Shiks/Plane/Plane2/Town/Range) over to
+## the generic WdlInterpreter too, ahead of the originally-planned order
+## (prove the interpreter on never-ported levels + a Shiks parity check
+## first -- see docs/CONTRACT.md §4.1). Flagged here as a single-point,
+## easily-revertible switch rather than deleting the hand-ported functions:
+## none of that code was removed, only bypassed. Flip back to false to
+## restore the hand-ported chapters immediately if the interpreter
+## regresses behavior that took many playtest rounds to get right.
+const HAND_PORTS_ENABLED := false
 var _start_active := false
 var _scene_timer := 0.0
 var _scene_hold := false
@@ -67,6 +78,14 @@ var _turn_vase: Node3D
 var _weasel: Node3D
 var _bus: Node3D
 var _water_wheel: Node3D
+## Shiks.wdl `Photo` state machine (action Piposh3, DialogIndex 2/Choice 2):
+## 0=idle, 1=morph to photo pose + spawn the Photos prop, 2=posing (Talk2),
+## 3=morph back. Driven by _photo_watch during the PIP020.WAV line only —
+## see docs/SESSION_LOG.md 2026-07-28.
+var _photo := 0
+var _photo_watch := false
+var _photo_skill1 := 0.0
+var _photos_prop: Node3D
 var _water_wheel_roll := 0.0
 var _turn_vase_tilt := 0.0
 var _turn_vase_roll := 0.0
@@ -193,6 +212,15 @@ func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud
 	_water_wheel_roll = 0.0
 	_turn_vase_tilt = 0.0
 	_turn_vase_roll = 0.0
+	if _wdl_interp and is_instance_valid(_wdl_interp):
+		_wdl_interp.queue_free()
+	_wdl_interp = null
+	_photo = 0
+	_photo_watch = false
+	_photo_skill1 = 0.0
+	if _photos_prop and is_instance_valid(_photos_prop):
+		_photos_prop.queue_free()
+	_photos_prop = null
 	_pipis.clear()
 	talking = 0
 	scene = 0
@@ -579,19 +607,19 @@ func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud
 		)
 	)
 
-	if _is_start_level():
+	if HAND_PORTS_ENABLED and _is_start_level():
 		_begin_start_sequence()
-	elif _is_studio_level():
+	elif HAND_PORTS_ENABLED and _is_studio_level():
 		_begin_studio_sequence()
-	elif _is_town_level():
+	elif HAND_PORTS_ENABLED and _is_town_level():
 		_begin_town()
-	elif _is_shiks_level():
+	elif HAND_PORTS_ENABLED and _is_shiks_level():
 		_begin_shiks()
-	elif _is_plane_level():
+	elif HAND_PORTS_ENABLED and _is_plane_level():
 		_begin_plane()
-	elif _is_plane2_level():
+	elif HAND_PORTS_ENABLED and _is_plane2_level():
 		_begin_plane2()
-	elif _is_range_level():
+	elif HAND_PORTS_ENABLED and _is_range_level():
 		_begin_range()
 	elif fp:
 		# Generic FP (Inn/Mansion/…): LevelRunner owns the camera.
@@ -600,6 +628,8 @@ func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud
 		_wire_generic_run_clickables()
 		_wire_first_person_clickables()
 		status.emit("%s — first person" % str(_loader.level_name))
+	elif scripted_camera and _try_begin_interpreted_level():
+		pass  # driven entirely by WdlInterpreter now
 	elif scripted_camera:
 		_begin_generic_level()
 	else:
@@ -607,18 +637,27 @@ func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud
 
 
 func _process(delta: float) -> void:
-	if _is_start_level() and _start_active:
+	if HAND_PORTS_ENABLED and _is_start_level() and _start_active:
 		_update_start(delta)
-	elif _is_studio_level():
+	elif HAND_PORTS_ENABLED and _is_studio_level():
 		_update_studio(delta)
-	elif _is_shiks_level() and _shiks_active:
+	elif HAND_PORTS_ENABLED and _is_shiks_level() and _shiks_active:
 		_update_shiks(delta)
-	elif _is_plane_level() and _plane_active:
+	elif HAND_PORTS_ENABLED and _is_plane_level() and _plane_active:
 		_update_plane(delta)
-	elif _is_plane2_level() and _plane2_active:
+	elif HAND_PORTS_ENABLED and _is_plane2_level() and _plane2_active:
 		_update_plane2(delta)
-	elif _is_range_level() and _range_active:
+	elif HAND_PORTS_ENABLED and _is_range_level() and _range_active:
 		_update_range(delta)
+	elif _wdl_interp != null:
+		# Interpreted level (see _try_begin_interpreted_level()): the
+		# script's own coroutines drive camera.x/y/z/pan/tilt/roll directly
+		# every tick. _update_town_cam()'s generic "snap to nearest Cam
+		# entity" fallback must not also run here -- same camera-fight bug
+		# class already found and fixed for Range (see docs/SESSION_LOG.md
+		# 2026-07-27), just a different generic function catching a new
+		# scripted_camera=true level with no dedicated branch.
+		pass
 	elif scripted_camera:
 		_update_town_cam()
 	_update_patrols(delta)
@@ -1265,6 +1304,42 @@ func _update_idle_spinners(delta: float) -> void:
 				n.set_meta("pan", pan2)
 
 
+func _try_begin_interpreted_level() -> bool:
+	## Generic AST-driven runtime (WdlInterpreter, added 2026-07-28) — reads
+	## the level's actual .wdl (via tools/parse_wdl.py's JSON AST) and
+	## executes it directly, instead of _begin_generic_level()'s bare
+	## camera/click fallback with zero scripted behavior. See
+	## docs/CONTRACT.md for the parity-test rule this went through before
+	## being wired in here. Any hand-ported level above in this if/elif
+	## chain (Studio/Start/Shiks/Plane/Plane2/Town/Range) never reaches
+	## this — they're untouched.
+	var stems: Array[String] = [_level_script.get_basename(), str(_loader.level_name)]
+	var found := ""
+	for s in stems:
+		var path := "res://assets/converted/wdl_ast/%s.json" % s
+		if ResourceLoader.exists(path) or FileAccess.file_exists(path):
+			found = s
+			break
+	if found == "":
+		return false
+	var interp := WdlInterpreter.new()
+	interp.name = "WdlInterpreter"
+	add_child(interp)
+	if not interp.setup(found, _loader, _world_camera):
+		interp.queue_free()
+		return false
+	_wdl_interp = interp
+	scripted_camera = true
+	mouse_look = true
+	_apply_mouse_mode()
+	view_index = 1
+	_snap_to_active_cam(true)
+	_wire_generic_run_clickables()
+	_wdl_interp.begin_level()
+	status.emit("%s — interpreted WDL" % str(_loader.level_name))
+	return true
+
+
 func _begin_generic_level() -> void:
 	## Uniform fallback: any level with Cam/paths works without a custom chapter.
 	## Transitions come from levels.json Run list + clickable entity actions.
@@ -1743,7 +1818,33 @@ func _update_shiks_actors(delta: float) -> void:
 	# visible=true inside the talking==11 branch below with no reset.
 	if _turn_vase:
 		_turn_vase.visible = talking == 11
-	if talking == 1 and _piposh3:
+	if _photo_watch and _photo == 0 and AudioBus.get_voice_progress() > 0.7:
+		_photo = 1
+	if _photo_watch and _photo != 0 and _photo != 3 and AudioBus.get_voice_progress() > 0.9:
+		_photo = 3
+	if talking == 1 and _photo != 0 and _piposh3:
+		# Shiks.wdl action Piposh3: Photo overrides the normal Talk() call
+		# while it runs (1=morph to pose + spawn Photos prop, 2=hold pose
+		# with mouth-skin talk, 3=morph back to normal).
+		if _photo == 1:
+			_morph(_piposh3, "PipPhoto")
+			_spawn_photos_prop()
+			_photo = 2
+			_photo_skill1 = 0.0
+		elif _photo == 2:
+			_anim_talk_skins(_piposh3, true)
+			_photo_skill1 += 5.0 * delta
+			_anim_frame(_photos_prop, "Photo", fmod(_photo_skill1, 100.0))
+		elif _photo == 3:
+			_morph(_piposh3, "Piposh")
+			_anim_talk_skins(_piposh3, false)
+			if _photos_prop and is_instance_valid(_photos_prop):
+				_photos_prop.queue_free()
+			_photos_prop = null
+			_photo = 0
+		if _shik_x:
+			_anim_blink(_shik_x)
+	elif talking == 1 and _piposh3:
 		_anim_talk(_piposh3)
 		if _shik_x:
 			_anim_blink(_shik_x)
@@ -1859,7 +1960,19 @@ func _run_shiks_choice(choice: int) -> void:
 					_vase.visible = false
 				await _line("PIP019.WAV", 1, _piposh3)
 				await _line("SHK012.WAV", 2, _shik_x)
+				_photo_watch = true
 				await _line("PIP020.WAV", 1, _piposh3)
+				_photo_watch = false
+				if _photo != 0:
+					# Safety net: line ended before voice progress crossed the
+					# 90% morph-back threshold (e.g. very short tail) — don't
+					# leave Piposh3 stuck as PipPhoto or the prop dangling.
+					_morph(_piposh3, "Piposh")
+					_anim_talk_skins(_piposh3, false)
+					if _photos_prop and is_instance_valid(_photos_prop):
+						_photos_prop.queue_free()
+					_photos_prop = null
+					_photo = 0
 				await _line("SHK015.WAV", 2, _shik_x)
 				talking = 12
 				await _line("PIP024.WAV", 12, _piposh3)
@@ -2095,6 +2208,16 @@ func _play_start_voice() -> void:
 func ensure_scripted_view() -> void:
 	## Called by LevelRunner so the first frame isn't a free-player / origin view.
 	scripted_camera = true
+	if not HAND_PORTS_ENABLED:
+		# Interpreted levels set their own camera.* from the script's own
+		# coroutines (see _try_begin_interpreted_level()/WdlInterpreter) —
+		# this one-time snap only matters for the hand-ported chapters,
+		# currently disabled (see HAND_PORTS_ENABLED).
+		if _cams.size() > 0 and _wdl_interp == null:
+			_snap_to_active_cam(true)
+		if _world_camera:
+			_world_camera.current = true
+		return
 	if _is_studio_level():
 		_snap_studio_cam()
 	elif _is_start_level() and _look_at_me != null:
@@ -2884,6 +3007,52 @@ func _line(wav: String, who: int, actor: Node3D) -> void:
 			_anim_blink(actor)
 	if not skipped:
 		await get_tree().create_timer(0.05).timeout
+
+
+## Acknex `morph(<File.mdl>, entity)` — see MdlAnimator.morph_to(). Entities
+## that never get an MdlAnimator at spawn (e.g. no .mdlanim/.skins and a
+## static single-surface mesh) have nothing to morph; such a call is a no-op
+## here exactly like it would be a silent do-nothing in the original engine
+## if the entity had no animator either.
+func _morph(node: Node3D, stem: String) -> bool:
+	if node == null or not is_instance_valid(node):
+		return false
+	var anim := node.get_node_or_null("MdlAnimator") as MdlAnimator
+	if anim == null:
+		return false
+	return anim.morph_to(stem)
+
+
+## Shiks.wdl action Photos: `create(<Photos.mdl>, my.x, Photos)` then the new
+## entity copies `you.x/y/z/pan/scale` once at spawn. `you` isn't assigned
+## anywhere in Shiks.wdl (a built-in/shared-header binding this port can't
+## trace) — approximated with Piposh3's own transform, the actual subject of
+## the photo, since the prop is purely decorative (a camera-flash/photo
+## overlay). Flagged here rather than guessed silently.
+func _spawn_photos_prop() -> void:
+	if _piposh3 == null or not is_instance_valid(_piposh3):
+		return
+	if _photos_prop and is_instance_valid(_photos_prop):
+		_photos_prop.queue_free()
+	var path := "res://assets/converted/mdl/Photos.glb"
+	if not ResourceLoader.exists(path):
+		return
+	var packed := load(path)
+	if not (packed is PackedScene):
+		return
+	var prop := (packed as PackedScene).instantiate() as Node3D
+	if prop == null:
+		return
+	var parent := _piposh3.get_parent()
+	if parent == null:
+		return
+	parent.add_child(prop)
+	prop.global_transform = _piposh3.global_transform
+	var anim := MdlAnimator.new()
+	anim.name = "MdlAnimator"
+	prop.add_child(anim)
+	anim.setup_from_stem("Photos", prop)
+	_photos_prop = prop
 
 
 func _anim_cycle(node: Node3D, clip: String) -> void:

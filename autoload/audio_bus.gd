@@ -40,6 +40,19 @@ func is_voice_playing() -> bool:
 	return _voice_busy and _player.playing
 
 
+## Acknex `GetPosition(Voice)` is a 0..1,000,000 fraction of the clip played
+## so far (not milliseconds — WDL scripts gate mid-line events with e.g.
+## `GetPosition(Voice) > 700000` for "70% through this line"). Returns the
+## same fraction as 0..1.
+func get_voice_progress() -> float:
+	if not is_voice_playing() or _player.stream == null:
+		return 0.0
+	var stream_len := _player.stream.get_length()
+	if stream_len <= 0.0:
+		return 0.0
+	return clampf(_player.get_playback_position() / stream_len, 0.0, 1.0)
+
+
 func play_music(name: String, volume_db: float = -6.0) -> void:
 	var stream := _load_stream(name)
 	if stream == null:

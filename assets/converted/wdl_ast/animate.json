@@ -1,0 +1,6678 @@
+{
+ "source": "animate.wdl",
+ "includes": [],
+ "globals": [
+  {
+   "name": "anim_attack_ticks",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 16.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "anim_stand_ticks",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 16.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "anim_jump_ticks",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 6.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "anim_duck_ticks",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 8.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "anim_walk_dist",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 1.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "anim_run_dist",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 1.5
+   },
+   "init_list": false
+  },
+  {
+   "name": "anim_crawl_dist",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.8
+   },
+   "init_list": false
+  },
+  {
+   "name": "anim_wade_dist",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.8
+   },
+   "init_list": false
+  },
+  {
+   "name": "anim_swim_dist",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 1.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "walk_or_run",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 12.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "anim_stand_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "stand"
+   },
+   "init_list": false
+  },
+  {
+   "name": "anim_walk_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "walk"
+   },
+   "init_list": false
+  },
+  {
+   "name": "anim_run_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "run"
+   },
+   "init_list": false
+  },
+  {
+   "name": "anim_duck_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "duck"
+   },
+   "init_list": false
+  },
+  {
+   "name": "anim_swim_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "swim"
+   },
+   "init_list": false
+  },
+  {
+   "name": "anim_dive_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "dive"
+   },
+   "init_list": false
+  },
+  {
+   "name": "anim_jump_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "jump"
+   },
+   "init_list": false
+  },
+  {
+   "name": "anim_crawl_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "crawl"
+   },
+   "init_list": false
+  },
+  {
+   "name": "anim_wade_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "walk"
+   },
+   "init_list": false
+  },
+  {
+   "name": "anim_default_death_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "death"
+   },
+   "init_list": false
+  },
+  {
+   "name": "anim_default_attack_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "attack"
+   },
+   "init_list": false
+  },
+  {
+   "name": "anim_attack_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "anim_default_attack_str"
+   },
+   "init_list": false
+  },
+  {
+   "name": "anim_death_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "anim_default_death_str"
+   },
+   "init_list": false
+  },
+  {
+   "name": "anim_str",
+   "kind": "string",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "pStr_old_anim",
+   "kind": "string",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "pStr_cur_anim",
+   "kind": "string",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "anim_stillness_threshold",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.025
+   },
+   "init_list": false
+  }
+ ],
+ "functions": {
+  "anim_airborne": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": ">",
+       "l": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "_POWER"
+       },
+       "r": {
+        "t": "num",
+        "v": 0.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "+=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "_ANIMDIST"
+          },
+          "value": {
+           "t": "binop",
+           "op": "*",
+           "l": {
+            "t": "id",
+            "name": "TIME"
+           },
+           "r": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "MY"
+            },
+            "name": "_POWER"
+           }
+          }
+         }
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": ">",
+          "l": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "_ANIMDIST"
+          },
+          "r": {
+           "t": "id",
+           "name": "anim_stand_ticks"
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "-=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "_ANIMDIST"
+             },
+             "value": {
+              "t": "id",
+              "name": "anim_stand_ticks"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "temp"
+          },
+          "value": {
+           "t": "binop",
+           "op": "/",
+           "l": {
+            "t": "binop",
+            "op": "*",
+            "l": {
+             "t": "num",
+             "v": 100.0
+            },
+            "r": {
+             "t": "field",
+             "obj": {
+              "t": "id",
+              "name": "MY"
+             },
+             "name": "_ANIMDIST"
+            }
+           },
+           "r": {
+            "t": "id",
+            "name": "anim_stand_ticks"
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "ent_cycle",
+          "args": [
+           {
+            "t": "id",
+            "name": "anim_stand_str"
+           },
+           {
+            "t": "id",
+            "name": "temp"
+           }
+          ]
+         }
+        },
+        {
+         "t": "return",
+         "value": null
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "return",
+      "value": null
+     }
+    ]
+   }
+  },
+  "anim_init": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "vec_scale",
+       "args": [
+        {
+         "t": "field",
+         "obj": {
+          "t": "id",
+          "name": "MY"
+         },
+         "name": "SCALE_X"
+        },
+        {
+         "t": "id",
+         "name": "actor_scale"
+        }
+       ]
+      }
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "<",
+       "l": {
+        "t": "call",
+        "name": "int",
+        "args": [
+         {
+          "t": "field",
+          "obj": {
+           "t": "id",
+           "name": "MY"
+          },
+          "name": "_WALKFRAMES"
+         }
+        ]
+       },
+       "r": {
+        "t": "num",
+        "v": 0.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "return",
+         "value": null
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "temp"
+       },
+       "value": {
+        "t": "binop",
+        "op": "*",
+        "l": {
+         "t": "call",
+         "name": "frc",
+         "args": [
+          {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "_WALKFRAMES"
+          }
+         ]
+        },
+        "r": {
+         "t": "num",
+         "v": 1000.0
+        }
+       }
+      }
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "!=",
+       "l": {
+        "t": "id",
+        "name": "temp"
+       },
+       "r": {
+        "t": "num",
+        "v": 0.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "_WALKFRAMES"
+          },
+          "value": {
+           "t": "call",
+           "name": "int",
+           "args": [
+            {
+             "t": "field",
+             "obj": {
+              "t": "id",
+              "name": "MY"
+             },
+             "name": "_WALKFRAMES"
+            }
+           ]
+          }
+         }
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "_WALKFRAMES"
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "_WALKFRAMES"
+             },
+             "value": {
+              "t": "num",
+              "v": 13.0
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "_WALKDIST"
+          },
+          "value": {
+           "t": "binop",
+           "op": "/",
+           "l": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "MY"
+            },
+            "name": "_WALKFRAMES"
+           },
+           "r": {
+            "t": "id",
+            "name": "temp"
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "temp"
+          },
+          "value": {
+           "t": "binop",
+           "op": "*",
+           "l": {
+            "t": "call",
+            "name": "frc",
+            "args": [
+             {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "_RUNFRAMES"
+             }
+            ]
+           },
+           "r": {
+            "t": "num",
+            "v": 1000.0
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "_RUNFRAMES"
+          },
+          "value": {
+           "t": "call",
+           "name": "int",
+           "args": [
+            {
+             "t": "field",
+             "obj": {
+              "t": "id",
+              "name": "MY"
+             },
+             "name": "_RUNFRAMES"
+            }
+           ]
+          }
+         }
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "_RUNFRAMES"
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "_RUNFRAMES"
+             },
+             "value": {
+              "t": "num",
+              "v": 5.0
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "_RUNDIST"
+          },
+          "value": {
+           "t": "binop",
+           "op": "/",
+           "l": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "MY"
+            },
+            "name": "_RUNFRAMES"
+           },
+           "r": {
+            "t": "id",
+            "name": "temp"
+           }
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     }
+    ]
+   }
+  },
+  "actor_anim": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "<",
+       "l": {
+        "t": "call",
+        "name": "int",
+        "args": [
+         {
+          "t": "field",
+          "obj": {
+           "t": "id",
+           "name": "MY"
+          },
+          "name": "_WALKFRAMES"
+         }
+        ]
+       },
+       "r": {
+        "t": "num",
+        "v": 0.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "actor_adv_anim",
+          "args": []
+         }
+        },
+        {
+         "t": "return",
+         "value": null
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": ">",
+       "l": {
+        "t": "call",
+        "name": "frc",
+        "args": [
+         {
+          "t": "field",
+          "obj": {
+           "t": "id",
+           "name": "MY"
+          },
+          "name": "_WALKFRAMES"
+         }
+        ]
+       },
+       "r": {
+        "t": "num",
+        "v": 0.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "actor_anim_old_style_anim",
+          "args": []
+         }
+        },
+        {
+         "t": "return",
+         "value": null
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "&&",
+       "l": {
+        "t": "binop",
+        "op": "==",
+        "l": {
+         "t": "id",
+         "name": "ME"
+        },
+        "r": {
+         "t": "id",
+         "name": "PLAYER"
+        }
+       },
+       "r": {
+        "t": "binop",
+        "op": "!=",
+        "l": {
+         "t": "field",
+         "obj": {
+          "t": "id",
+          "name": "MY"
+         },
+         "name": "_FIREMODE"
+        },
+        "r": {
+         "t": "num",
+         "v": 0.0
+        }
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "temp"
+          },
+          "value": {
+           "t": "binop",
+           "op": "/",
+           "l": {
+            "t": "binop",
+            "op": "*",
+            "l": {
+             "t": "num",
+             "v": 100.0
+            },
+            "r": {
+             "t": "field",
+             "obj": {
+              "t": "id",
+              "name": "MY"
+             },
+             "name": "_ANIMDIST"
+            }
+           },
+           "r": {
+            "t": "id",
+            "name": "anim_attack_ticks"
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "ent_frame",
+          "args": [
+           {
+            "t": "id",
+            "name": "anim_attack_str"
+           },
+           {
+            "t": "id",
+            "name": "temp"
+           }
+          ]
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "+=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "_ANIMDIST"
+          },
+          "value": {
+           "t": "id",
+           "name": "TIME"
+          }
+         }
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": ">",
+          "l": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "_ANIMDIST"
+          },
+          "r": {
+           "t": "id",
+           "name": "anim_attack_ticks"
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "_ANIMDIST"
+             },
+             "value": {
+              "t": "num",
+              "v": 0.0
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "_FIREMODE"
+             },
+             "value": {
+              "t": "num",
+              "v": 0.0
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "return",
+         "value": null
+        }
+       ]
+      },
+      "else": {
+       "t": "block",
+       "body": [
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "_MOVEMODE"
+          },
+          "r": {
+           "t": "id",
+           "name": "_MODE_JUMPING"
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "id",
+              "name": "temp"
+             },
+             "value": {
+              "t": "binop",
+              "op": "/",
+              "l": {
+               "t": "binop",
+               "op": "*",
+               "l": {
+                "t": "num",
+                "v": 100.0
+               },
+               "r": {
+                "t": "field",
+                "obj": {
+                 "t": "id",
+                 "name": "MY"
+                },
+                "name": "_ANIMDIST"
+               }
+              },
+              "r": {
+               "t": "id",
+               "name": "anim_jump_ticks"
+              }
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "ent_frame",
+             "args": [
+              {
+               "t": "id",
+               "name": "anim_jump_str"
+              },
+              {
+               "t": "id",
+               "name": "temp"
+              }
+             ]
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "+=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "_ANIMDIST"
+             },
+             "value": {
+              "t": "id",
+              "name": "TIME"
+             }
+            }
+           },
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": ">",
+             "l": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "_ANIMDIST"
+             },
+             "r": {
+              "t": "id",
+              "name": "anim_jump_ticks"
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "_ANIMDIST"
+                },
+                "value": {
+                 "t": "num",
+                 "v": 0.0
+                }
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "_MOVEMODE"
+                },
+                "value": {
+                 "t": "id",
+                 "name": "_MODE_WALKING"
+                }
+               }
+              }
+             ]
+            },
+            "else": null
+           },
+           {
+            "t": "return",
+            "value": null
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "_MOVEMODE"
+          },
+          "r": {
+           "t": "id",
+           "name": "_MODE_DUCKING"
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": ">=",
+             "l": {
+              "t": "id",
+              "name": "my_dist"
+             },
+             "r": {
+              "t": "binop",
+              "op": "*",
+              "l": {
+               "t": "binop",
+               "op": "*",
+               "l": {
+                "t": "id",
+                "name": "walk_or_run"
+               },
+               "r": {
+                "t": "id",
+                "name": "TIME"
+               }
+              },
+              "r": {
+               "t": "id",
+               "name": "movement_scale"
+              }
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "_MOVEMODE"
+                },
+                "value": {
+                 "t": "id",
+                 "name": "_MODE_WALKING"
+                }
+               }
+              }
+             ]
+            },
+            "else": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "id",
+                 "name": "temp"
+                },
+                "value": {
+                 "t": "binop",
+                 "op": "/",
+                 "l": {
+                  "t": "binop",
+                  "op": "*",
+                  "l": {
+                   "t": "num",
+                   "v": 100.0
+                  },
+                  "r": {
+                   "t": "field",
+                   "obj": {
+                    "t": "id",
+                    "name": "MY"
+                   },
+                   "name": "_ANIMDIST"
+                  }
+                 },
+                 "r": {
+                  "t": "id",
+                  "name": "anim_duck_ticks"
+                 }
+                }
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "call",
+                "name": "ent_frame",
+                "args": [
+                 {
+                  "t": "id",
+                  "name": "anim_duck_str"
+                 },
+                 {
+                  "t": "id",
+                  "name": "temp"
+                 }
+                ]
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "+=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "_ANIMDIST"
+                },
+                "value": {
+                 "t": "id",
+                 "name": "TIME"
+                }
+               }
+              },
+              {
+               "t": "if",
+               "cond": {
+                "t": "binop",
+                "op": ">",
+                "l": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "_ANIMDIST"
+                },
+                "r": {
+                 "t": "id",
+                 "name": "anim_duck_ticks"
+                }
+               },
+               "then": {
+                "t": "block",
+                "body": [
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "assign",
+                   "op": "=",
+                   "target": {
+                    "t": "field",
+                    "obj": {
+                     "t": "id",
+                     "name": "MY"
+                    },
+                    "name": "_ANIMDIST"
+                   },
+                   "value": {
+                    "t": "num",
+                    "v": 0.0
+                   }
+                  }
+                 },
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "assign",
+                   "op": "=",
+                   "target": {
+                    "t": "field",
+                    "obj": {
+                     "t": "id",
+                     "name": "MY"
+                    },
+                    "name": "_MOVEMODE"
+                   },
+                   "value": {
+                    "t": "id",
+                    "name": "_MODE_CRAWLING"
+                   }
+                  }
+                 }
+                ]
+               },
+               "else": null
+              },
+              {
+               "t": "return",
+               "value": null
+              }
+             ]
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "_MOVEMODE"
+          },
+          "r": {
+           "t": "id",
+           "name": "_MODE_CRAWLING"
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": ">=",
+             "l": {
+              "t": "id",
+              "name": "my_dist"
+             },
+             "r": {
+              "t": "binop",
+              "op": "*",
+              "l": {
+               "t": "binop",
+               "op": "*",
+               "l": {
+                "t": "id",
+                "name": "walk_or_run"
+               },
+               "r": {
+                "t": "id",
+                "name": "TIME"
+               }
+              },
+              "r": {
+               "t": "id",
+               "name": "movement_scale"
+              }
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "_MOVEMODE"
+                },
+                "value": {
+                 "t": "id",
+                 "name": "_MODE_WALKING"
+                }
+               }
+              }
+             ]
+            },
+            "else": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "id",
+                 "name": "covered_dist"
+                },
+                "value": {
+                 "t": "binop",
+                 "op": "+",
+                 "l": {
+                  "t": "field",
+                  "obj": {
+                   "t": "id",
+                   "name": "MY"
+                  },
+                  "name": "_WALKDIST"
+                 },
+                 "r": {
+                  "t": "binop",
+                  "op": "/",
+                  "l": {
+                   "t": "id",
+                   "name": "my_dist"
+                  },
+                  "r": {
+                   "t": "binop",
+                   "op": "-",
+                   "l": {
+                    "t": "field",
+                    "obj": {
+                     "t": "id",
+                     "name": "MY"
+                    },
+                    "name": "MAX_X"
+                   },
+                   "r": {
+                    "t": "field",
+                    "obj": {
+                     "t": "id",
+                     "name": "MY"
+                    },
+                    "name": "MIN_X"
+                   }
+                  }
+                 }
+                }
+               }
+              },
+              {
+               "t": "while",
+               "cond": {
+                "t": "binop",
+                "op": ">",
+                "l": {
+                 "t": "id",
+                 "name": "covered_dist"
+                },
+                "r": {
+                 "t": "id",
+                 "name": "anim_crawl_dist"
+                }
+               },
+               "body": {
+                "t": "block",
+                "body": [
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "assign",
+                   "op": "-=",
+                   "target": {
+                    "t": "id",
+                    "name": "covered_dist"
+                   },
+                   "value": {
+                    "t": "id",
+                    "name": "anim_crawl_dist"
+                   }
+                  }
+                 }
+                ]
+               }
+              },
+              {
+               "t": "if",
+               "cond": {
+                "t": "binop",
+                "op": "<",
+                "l": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "force"
+                 },
+                 "name": "X"
+                },
+                "r": {
+                 "t": "num",
+                 "v": 0.0
+                }
+               },
+               "then": {
+                "t": "block",
+                "body": [
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "assign",
+                   "op": "=",
+                   "target": {
+                    "t": "id",
+                    "name": "temp"
+                   },
+                   "value": {
+                    "t": "binop",
+                    "op": "-",
+                    "l": {
+                     "t": "num",
+                     "v": 100.0
+                    },
+                    "r": {
+                     "t": "id",
+                     "name": "temp"
+                    }
+                   }
+                  }
+                 }
+                ]
+               },
+               "else": null
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "id",
+                 "name": "temp"
+                },
+                "value": {
+                 "t": "binop",
+                 "op": "/",
+                 "l": {
+                  "t": "binop",
+                  "op": "*",
+                  "l": {
+                   "t": "num",
+                   "v": 100.0
+                  },
+                  "r": {
+                   "t": "id",
+                   "name": "covered_dist"
+                  }
+                 },
+                 "r": {
+                  "t": "id",
+                  "name": "anim_crawl_dist"
+                 }
+                }
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "call",
+                "name": "ent_cycle",
+                "args": [
+                 {
+                  "t": "id",
+                  "name": "anim_crawl_str"
+                 },
+                 {
+                  "t": "id",
+                  "name": "temp"
+                 }
+                ]
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "_WALKDIST"
+                },
+                "value": {
+                 "t": "id",
+                 "name": "covered_dist"
+                }
+               }
+              },
+              {
+               "t": "return",
+               "value": null
+              }
+             ]
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "_MOVEMODE"
+          },
+          "r": {
+           "t": "id",
+           "name": "_MODE_SWIMMING"
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "id",
+              "name": "covered_dist"
+             },
+             "value": {
+              "t": "binop",
+              "op": "+",
+              "l": {
+               "t": "field",
+               "obj": {
+                "t": "id",
+                "name": "MY"
+               },
+               "name": "_WALKDIST"
+              },
+              "r": {
+               "t": "binop",
+               "op": "/",
+               "l": {
+                "t": "id",
+                "name": "my_dist"
+               },
+               "r": {
+                "t": "binop",
+                "op": "-",
+                "l": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "MAX_X"
+                },
+                "r": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "MIN_X"
+                }
+               }
+              }
+             }
+            }
+           },
+           {
+            "t": "while",
+            "cond": {
+             "t": "binop",
+             "op": ">",
+             "l": {
+              "t": "id",
+              "name": "covered_dist"
+             },
+             "r": {
+              "t": "id",
+              "name": "anim_swim_dist"
+             }
+            },
+            "body": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "-=",
+                "target": {
+                 "t": "id",
+                 "name": "covered_dist"
+                },
+                "value": {
+                 "t": "id",
+                 "name": "anim_swim_dist"
+                }
+               }
+              }
+             ]
+            }
+           },
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": "<",
+             "l": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "force"
+              },
+              "name": "X"
+             },
+             "r": {
+              "t": "num",
+              "v": 0.0
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "id",
+                 "name": "temp"
+                },
+                "value": {
+                 "t": "binop",
+                 "op": "-",
+                 "l": {
+                  "t": "num",
+                  "v": 100.0
+                 },
+                 "r": {
+                  "t": "id",
+                  "name": "temp"
+                 }
+                }
+               }
+              }
+             ]
+            },
+            "else": null
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "id",
+              "name": "temp"
+             },
+             "value": {
+              "t": "binop",
+              "op": "/",
+              "l": {
+               "t": "binop",
+               "op": "*",
+               "l": {
+                "t": "num",
+                "v": 100.0
+               },
+               "r": {
+                "t": "id",
+                "name": "covered_dist"
+               }
+              },
+              "r": {
+               "t": "id",
+               "name": "anim_swim_dist"
+              }
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "ent_cycle",
+             "args": [
+              {
+               "t": "id",
+               "name": "anim_swim_str"
+              },
+              {
+               "t": "id",
+               "name": "temp"
+              }
+             ]
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "_WALKDIST"
+             },
+             "value": {
+              "t": "id",
+              "name": "covered_dist"
+             }
+            }
+           },
+           {
+            "t": "return",
+            "value": null
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "_MOVEMODE"
+          },
+          "r": {
+           "t": "id",
+           "name": "_MODE_WADING"
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "id",
+              "name": "covered_dist"
+             },
+             "value": {
+              "t": "binop",
+              "op": "+",
+              "l": {
+               "t": "field",
+               "obj": {
+                "t": "id",
+                "name": "MY"
+               },
+               "name": "_WALKDIST"
+              },
+              "r": {
+               "t": "binop",
+               "op": "/",
+               "l": {
+                "t": "id",
+                "name": "my_dist"
+               },
+               "r": {
+                "t": "binop",
+                "op": "-",
+                "l": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "MAX_X"
+                },
+                "r": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "MIN_X"
+                }
+               }
+              }
+             }
+            }
+           },
+           {
+            "t": "while",
+            "cond": {
+             "t": "binop",
+             "op": ">",
+             "l": {
+              "t": "id",
+              "name": "covered_dist"
+             },
+             "r": {
+              "t": "id",
+              "name": "anim_wade_dist"
+             }
+            },
+            "body": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "-=",
+                "target": {
+                 "t": "id",
+                 "name": "covered_dist"
+                },
+                "value": {
+                 "t": "id",
+                 "name": "anim_wade_dist"
+                }
+               }
+              }
+             ]
+            }
+           },
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": "<",
+             "l": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "force"
+              },
+              "name": "X"
+             },
+             "r": {
+              "t": "num",
+              "v": 0.0
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "id",
+                 "name": "temp"
+                },
+                "value": {
+                 "t": "binop",
+                 "op": "-",
+                 "l": {
+                  "t": "num",
+                  "v": 100.0
+                 },
+                 "r": {
+                  "t": "id",
+                  "name": "temp"
+                 }
+                }
+               }
+              }
+             ]
+            },
+            "else": null
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "id",
+              "name": "temp"
+             },
+             "value": {
+              "t": "binop",
+              "op": "/",
+              "l": {
+               "t": "binop",
+               "op": "*",
+               "l": {
+                "t": "num",
+                "v": 100.0
+               },
+               "r": {
+                "t": "id",
+                "name": "covered_dist"
+               }
+              },
+              "r": {
+               "t": "id",
+               "name": "anim_wade_dist"
+              }
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "ent_cycle",
+             "args": [
+              {
+               "t": "id",
+               "name": "anim_wade_str"
+              },
+              {
+               "t": "id",
+               "name": "temp"
+              }
+             ]
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "_WALKDIST"
+             },
+             "value": {
+              "t": "id",
+              "name": "covered_dist"
+             }
+            }
+           },
+           {
+            "t": "return",
+            "value": null
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "||",
+          "l": {
+           "t": "binop",
+           "op": "<",
+           "l": {
+            "t": "id",
+            "name": "my_dist"
+           },
+           "r": {
+            "t": "num",
+            "v": 0.01
+           }
+          },
+          "r": {
+           "t": "binop",
+           "op": "==",
+           "l": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "MY"
+            },
+            "name": "_MOVEMODE"
+           },
+           "r": {
+            "t": "id",
+            "name": "_MODE_STILL"
+           }
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "+=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "_ANIMDIST"
+             },
+             "value": {
+              "t": "id",
+              "name": "TIME"
+             }
+            }
+           },
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": ">",
+             "l": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "_ANIMDIST"
+             },
+             "r": {
+              "t": "id",
+              "name": "anim_stand_ticks"
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "-=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "_ANIMDIST"
+                },
+                "value": {
+                 "t": "id",
+                 "name": "anim_stand_ticks"
+                }
+               }
+              }
+             ]
+            },
+            "else": null
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "id",
+              "name": "temp"
+             },
+             "value": {
+              "t": "binop",
+              "op": "/",
+              "l": {
+               "t": "binop",
+               "op": "*",
+               "l": {
+                "t": "num",
+                "v": 100.0
+               },
+               "r": {
+                "t": "field",
+                "obj": {
+                 "t": "id",
+                 "name": "MY"
+                },
+                "name": "_ANIMDIST"
+               }
+              },
+              "r": {
+               "t": "id",
+               "name": "anim_stand_ticks"
+              }
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "ent_cycle",
+             "args": [
+              {
+               "t": "id",
+               "name": "anim_stand_str"
+              },
+              {
+               "t": "id",
+               "name": "temp"
+              }
+             ]
+            }
+           },
+           {
+            "t": "return",
+            "value": null
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "_MOVEMODE"
+          },
+          "r": {
+           "t": "id",
+           "name": "_MODE_WALKING"
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "id",
+              "name": "covered_dist"
+             },
+             "value": {
+              "t": "binop",
+              "op": "+",
+              "l": {
+               "t": "field",
+               "obj": {
+                "t": "id",
+                "name": "MY"
+               },
+               "name": "_WALKDIST"
+              },
+              "r": {
+               "t": "binop",
+               "op": "/",
+               "l": {
+                "t": "id",
+                "name": "my_dist"
+               },
+               "r": {
+                "t": "binop",
+                "op": "-",
+                "l": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "MAX_X"
+                },
+                "r": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "MIN_X"
+                }
+               }
+              }
+             }
+            }
+           },
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": "<",
+             "l": {
+              "t": "id",
+              "name": "my_dist"
+             },
+             "r": {
+              "t": "binop",
+              "op": "*",
+              "l": {
+               "t": "binop",
+               "op": "*",
+               "l": {
+                "t": "id",
+                "name": "walk_or_run"
+               },
+               "r": {
+                "t": "id",
+                "name": "TIME"
+               }
+              },
+              "r": {
+               "t": "id",
+               "name": "movement_scale"
+              }
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "id",
+                 "name": "anim_dist"
+                },
+                "value": {
+                 "t": "id",
+                 "name": "anim_walk_dist"
+                }
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "id",
+                 "name": "anim_str"
+                },
+                "value": {
+                 "t": "id",
+                 "name": "anim_walk_str"
+                }
+               }
+              }
+             ]
+            },
+            "else": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "id",
+                 "name": "anim_dist"
+                },
+                "value": {
+                 "t": "id",
+                 "name": "anim_run_dist"
+                }
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "id",
+                 "name": "anim_str"
+                },
+                "value": {
+                 "t": "id",
+                 "name": "anim_run_str"
+                }
+               }
+              }
+             ]
+            }
+           },
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": ">",
+             "l": {
+              "t": "id",
+              "name": "covered_dist"
+             },
+             "r": {
+              "t": "id",
+              "name": "anim_dist"
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "-=",
+                "target": {
+                 "t": "id",
+                 "name": "covered_dist"
+                },
+                "value": {
+                 "t": "id",
+                 "name": "anim_dist"
+                }
+               }
+              }
+             ]
+            },
+            "else": null
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "id",
+              "name": "temp"
+             },
+             "value": {
+              "t": "binop",
+              "op": "/",
+              "l": {
+               "t": "binop",
+               "op": "*",
+               "l": {
+                "t": "num",
+                "v": 100.0
+               },
+               "r": {
+                "t": "id",
+                "name": "covered_dist"
+               }
+              },
+              "r": {
+               "t": "id",
+               "name": "anim_dist"
+              }
+             }
+            }
+           },
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": "<",
+             "l": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "force"
+              },
+              "name": "X"
+             },
+             "r": {
+              "t": "num",
+              "v": 0.0
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "id",
+                 "name": "temp"
+                },
+                "value": {
+                 "t": "binop",
+                 "op": "-",
+                 "l": {
+                  "t": "num",
+                  "v": 100.0
+                 },
+                 "r": {
+                  "t": "id",
+                  "name": "temp"
+                 }
+                }
+               }
+              }
+             ]
+            },
+            "else": null
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "ent_cycle",
+             "args": [
+              {
+               "t": "id",
+               "name": "anim_str"
+              },
+              {
+               "t": "id",
+               "name": "temp"
+              }
+             ]
+            }
+           },
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": "<",
+             "l": {
+              "t": "id",
+              "name": "covered_dist"
+             },
+             "r": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "_WALKDIST"
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "call",
+                "name": "_play_walksound",
+                "args": []
+               }
+              }
+             ]
+            },
+            "else": null
+           },
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": "&&",
+             "l": {
+              "t": "binop",
+              "op": ">",
+              "l": {
+               "t": "id",
+               "name": "covered_dist"
+              },
+              "r": {
+               "t": "binop",
+               "op": "*",
+               "l": {
+                "t": "id",
+                "name": "anim_dist"
+               },
+               "r": {
+                "t": "num",
+                "v": 0.5
+               }
+              }
+             },
+             "r": {
+              "t": "binop",
+              "op": "<",
+              "l": {
+               "t": "field",
+               "obj": {
+                "t": "id",
+                "name": "MY"
+               },
+               "name": "_WALKDIST"
+              },
+              "r": {
+               "t": "binop",
+               "op": "*",
+               "l": {
+                "t": "id",
+                "name": "anim_dist"
+               },
+               "r": {
+                "t": "num",
+                "v": 0.5
+               }
+              }
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "call",
+                "name": "_play_walksound",
+                "args": []
+               }
+              }
+             ]
+            },
+            "else": null
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "_WALKDIST"
+             },
+             "value": {
+              "t": "id",
+              "name": "covered_dist"
+             }
+            }
+           },
+           {
+            "t": "return",
+            "value": null
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "return",
+         "value": null
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "actor_anim_old_style_anim": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "_MOVEMODE"
+       },
+       "r": {
+        "t": "id",
+        "name": "_MODE_WALKING"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "||",
+          "l": {
+           "t": "binop",
+           "op": "<=",
+           "l": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "MY"
+            },
+            "name": "_RUNFRAMES"
+           },
+           "r": {
+            "t": "num",
+            "v": 0.0
+           }
+          },
+          "r": {
+           "t": "binop",
+           "op": "<",
+           "l": {
+            "t": "id",
+            "name": "my_dist"
+           },
+           "r": {
+            "t": "binop",
+            "op": "*",
+            "l": {
+             "t": "binop",
+             "op": "*",
+             "l": {
+              "t": "id",
+              "name": "walk_or_run"
+             },
+             "r": {
+              "t": "id",
+              "name": "TIME"
+             }
+            },
+            "r": {
+             "t": "id",
+             "name": "movement_scale"
+            }
+           }
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": "<",
+             "l": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "FRAME"
+             },
+             "r": {
+              "t": "num",
+              "v": 2.0
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "FRAME"
+                },
+                "value": {
+                 "t": "num",
+                 "v": 2.0
+                }
+               }
+              }
+             ]
+            },
+            "else": null
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "+=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "FRAME"
+             },
+             "value": {
+              "t": "binop",
+              "op": "*",
+              "l": {
+               "t": "field",
+               "obj": {
+                "t": "id",
+                "name": "MY"
+               },
+               "name": "_WALKDIST"
+              },
+              "r": {
+               "t": "id",
+               "name": "my_dist"
+              }
+             }
+            }
+           },
+           {
+            "t": "while",
+            "cond": {
+             "t": "binop",
+             "op": ">=",
+             "l": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "FRAME"
+             },
+             "r": {
+              "t": "binop",
+              "op": "+",
+              "l": {
+               "t": "num",
+               "v": 2.0
+              },
+              "r": {
+               "t": "field",
+               "obj": {
+                "t": "id",
+                "name": "MY"
+               },
+               "name": "_WALKFRAMES"
+              }
+             }
+            },
+            "body": {
+             "t": "block",
+             "body": [
+              {
+               "t": "if",
+               "cond": {
+                "t": "binop",
+                "op": "==",
+                "l": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "__SOUND"
+                },
+                "r": {
+                 "t": "bool",
+                 "v": true
+                }
+               },
+               "then": {
+                "t": "block",
+                "body": [
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "call",
+                   "name": "_play_walksound",
+                   "args": []
+                  }
+                 },
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "assign",
+                   "op": "=",
+                   "target": {
+                    "t": "field",
+                    "obj": {
+                     "t": "id",
+                     "name": "MY"
+                    },
+                    "name": "__SOUND"
+                   },
+                   "value": {
+                    "t": "bool",
+                    "v": false
+                   }
+                  }
+                 }
+                ]
+               },
+               "else": null
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "-=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "FRAME"
+                },
+                "value": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "_WALKFRAMES"
+                }
+               }
+              }
+             ]
+            }
+           },
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": ">",
+             "l": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "FRAME"
+             },
+             "r": {
+              "t": "binop",
+              "op": "+",
+              "l": {
+               "t": "num",
+               "v": 1.0
+              },
+              "r": {
+               "t": "binop",
+               "op": "*",
+               "l": {
+                "t": "field",
+                "obj": {
+                 "t": "id",
+                 "name": "MY"
+                },
+                "name": "_WALKFRAMES"
+               },
+               "r": {
+                "t": "num",
+                "v": 0.5
+               }
+              }
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "if",
+               "cond": {
+                "t": "binop",
+                "op": "==",
+                "l": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "__SOUND"
+                },
+                "r": {
+                 "t": "bool",
+                 "v": false
+                }
+               },
+               "then": {
+                "t": "block",
+                "body": [
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "call",
+                   "name": "_play_walksound",
+                   "args": []
+                  }
+                 },
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "assign",
+                   "op": "=",
+                   "target": {
+                    "t": "field",
+                    "obj": {
+                     "t": "id",
+                     "name": "MY"
+                    },
+                    "name": "__SOUND"
+                   },
+                   "value": {
+                    "t": "bool",
+                    "v": true
+                   }
+                  }
+                 }
+                ]
+               },
+               "else": null
+              }
+             ]
+            },
+            "else": null
+           },
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": ">",
+             "l": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "FRAME"
+             },
+             "r": {
+              "t": "binop",
+              "op": "+",
+              "l": {
+               "t": "num",
+               "v": 1.0
+              },
+              "r": {
+               "t": "field",
+               "obj": {
+                "t": "id",
+                "name": "MY"
+               },
+               "name": "_WALKFRAMES"
+              }
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "NEXT_FRAME"
+                },
+                "value": {
+                 "t": "num",
+                 "v": 2.0
+                }
+               }
+              }
+             ]
+            },
+            "else": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "NEXT_FRAME"
+                },
+                "value": {
+                 "t": "num",
+                 "v": 0.0
+                }
+               }
+              }
+             ]
+            }
+           },
+           {
+            "t": "return",
+            "value": null
+           }
+          ]
+         },
+         "else": {
+          "t": "block",
+          "body": [
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": "<",
+             "l": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "FRAME"
+             },
+             "r": {
+              "t": "binop",
+              "op": "+",
+              "l": {
+               "t": "num",
+               "v": 2.0
+              },
+              "r": {
+               "t": "field",
+               "obj": {
+                "t": "id",
+                "name": "MY"
+               },
+               "name": "_WALKFRAMES"
+              }
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "FRAME"
+                },
+                "value": {
+                 "t": "binop",
+                 "op": "+",
+                 "l": {
+                  "t": "num",
+                  "v": 2.0
+                 },
+                 "r": {
+                  "t": "field",
+                  "obj": {
+                   "t": "id",
+                   "name": "MY"
+                  },
+                  "name": "_WALKFRAMES"
+                 }
+                }
+               }
+              }
+             ]
+            },
+            "else": null
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "+=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "FRAME"
+             },
+             "value": {
+              "t": "binop",
+              "op": "*",
+              "l": {
+               "t": "field",
+               "obj": {
+                "t": "id",
+                "name": "MY"
+               },
+               "name": "_RUNDIST"
+              },
+              "r": {
+               "t": "id",
+               "name": "my_dist"
+              }
+             }
+            }
+           },
+           {
+            "t": "while",
+            "cond": {
+             "t": "binop",
+             "op": ">=",
+             "l": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "FRAME"
+             },
+             "r": {
+              "t": "binop",
+              "op": "+",
+              "l": {
+               "t": "binop",
+               "op": "+",
+               "l": {
+                "t": "num",
+                "v": 2.0
+               },
+               "r": {
+                "t": "field",
+                "obj": {
+                 "t": "id",
+                 "name": "MY"
+                },
+                "name": "_WALKFRAMES"
+               }
+              },
+              "r": {
+               "t": "field",
+               "obj": {
+                "t": "id",
+                "name": "MY"
+               },
+               "name": "_RUNFRAMES"
+              }
+             }
+            },
+            "body": {
+             "t": "block",
+             "body": [
+              {
+               "t": "if",
+               "cond": {
+                "t": "binop",
+                "op": "==",
+                "l": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "__SOUND"
+                },
+                "r": {
+                 "t": "bool",
+                 "v": true
+                }
+               },
+               "then": {
+                "t": "block",
+                "body": [
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "call",
+                   "name": "_play_walksound",
+                   "args": []
+                  }
+                 },
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "assign",
+                   "op": "=",
+                   "target": {
+                    "t": "field",
+                    "obj": {
+                     "t": "id",
+                     "name": "MY"
+                    },
+                    "name": "__SOUND"
+                   },
+                   "value": {
+                    "t": "bool",
+                    "v": false
+                   }
+                  }
+                 }
+                ]
+               },
+               "else": null
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "-=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "FRAME"
+                },
+                "value": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "_RUNFRAMES"
+                }
+               }
+              }
+             ]
+            }
+           },
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": ">",
+             "l": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "FRAME"
+             },
+             "r": {
+              "t": "binop",
+              "op": "+",
+              "l": {
+               "t": "binop",
+               "op": "+",
+               "l": {
+                "t": "num",
+                "v": 1.0
+               },
+               "r": {
+                "t": "field",
+                "obj": {
+                 "t": "id",
+                 "name": "MY"
+                },
+                "name": "_WALKFRAMES"
+               }
+              },
+              "r": {
+               "t": "binop",
+               "op": "*",
+               "l": {
+                "t": "field",
+                "obj": {
+                 "t": "id",
+                 "name": "MY"
+                },
+                "name": "_RUNFRAMES"
+               },
+               "r": {
+                "t": "num",
+                "v": 0.5
+               }
+              }
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "if",
+               "cond": {
+                "t": "binop",
+                "op": "==",
+                "l": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "__SOUND"
+                },
+                "r": {
+                 "t": "bool",
+                 "v": false
+                }
+               },
+               "then": {
+                "t": "block",
+                "body": [
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "call",
+                   "name": "_play_walksound",
+                   "args": []
+                  }
+                 },
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "assign",
+                   "op": "=",
+                   "target": {
+                    "t": "field",
+                    "obj": {
+                     "t": "id",
+                     "name": "MY"
+                    },
+                    "name": "__SOUND"
+                   },
+                   "value": {
+                    "t": "bool",
+                    "v": true
+                   }
+                  }
+                 }
+                ]
+               },
+               "else": null
+              }
+             ]
+            },
+            "else": null
+           },
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": ">",
+             "l": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "FRAME"
+             },
+             "r": {
+              "t": "binop",
+              "op": "+",
+              "l": {
+               "t": "binop",
+               "op": "+",
+               "l": {
+                "t": "num",
+                "v": 1.0
+               },
+               "r": {
+                "t": "field",
+                "obj": {
+                 "t": "id",
+                 "name": "MY"
+                },
+                "name": "_WALKFRAMES"
+               }
+              },
+              "r": {
+               "t": "field",
+               "obj": {
+                "t": "id",
+                "name": "MY"
+               },
+               "name": "_RUNFRAMES"
+              }
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "NEXT_FRAME"
+                },
+                "value": {
+                 "t": "binop",
+                 "op": "+",
+                 "l": {
+                  "t": "num",
+                  "v": 2.0
+                 },
+                 "r": {
+                  "t": "field",
+                  "obj": {
+                   "t": "id",
+                   "name": "MY"
+                  },
+                  "name": "_WALKFRAMES"
+                 }
+                }
+               }
+              }
+             ]
+            },
+            "else": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "NEXT_FRAME"
+                },
+                "value": {
+                 "t": "num",
+                 "v": 0.0
+                }
+               }
+              }
+             ]
+            }
+           },
+           {
+            "t": "return",
+            "value": null
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "else": null
+     }
+    ]
+   }
+  },
+  "move_shadow": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "flare"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "transparent"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "passable"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "oriented"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "ambient"
+       },
+       "value": {
+        "t": "unop",
+        "op": "-",
+        "expr": {
+         "t": "num",
+         "v": 100.0
+        }
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "unlit"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "scale_x"
+       },
+       "value": {
+        "t": "binop",
+        "op": "/",
+        "l": {
+         "t": "binop",
+         "op": "-",
+         "l": {
+          "t": "field",
+          "obj": {
+           "t": "id",
+           "name": "YOU"
+          },
+          "name": "MAX_X"
+         },
+         "r": {
+          "t": "field",
+          "obj": {
+           "t": "id",
+           "name": "YOU"
+          },
+          "name": "MIN_X"
+         }
+        },
+        "r": {
+         "t": "binop",
+         "op": "-",
+         "l": {
+          "t": "field",
+          "obj": {
+           "t": "id",
+           "name": "MY"
+          },
+          "name": "MAX_X"
+         },
+         "r": {
+          "t": "field",
+          "obj": {
+           "t": "id",
+           "name": "MY"
+          },
+          "name": "MIN_X"
+         }
+        }
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "scale_y"
+       },
+       "value": {
+        "t": "binop",
+        "op": "*",
+        "l": {
+         "t": "field",
+         "obj": {
+          "t": "id",
+          "name": "MY"
+         },
+         "name": "scale_x"
+        },
+        "r": {
+         "t": "num",
+         "v": 0.8
+        }
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "scale_z"
+       },
+       "value": {
+        "t": "num",
+        "v": 1.0
+       }
+      }
+     },
+     {
+      "t": "while",
+      "cond": {
+       "t": "binop",
+       "op": "!=",
+       "l": {
+        "t": "id",
+        "name": "YOU"
+       },
+       "r": {
+        "t": "null"
+       }
+      },
+      "body": {
+       "t": "block",
+       "body": [
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "||",
+          "l": {
+           "t": "binop",
+           "op": "||",
+           "l": {
+            "t": "binop",
+            "op": "==",
+            "l": {
+             "t": "field",
+             "obj": {
+              "t": "id",
+              "name": "YOU"
+             },
+             "name": "invisible"
+            },
+            "r": {
+             "t": "bool",
+             "v": true
+            }
+           },
+           "r": {
+            "t": "binop",
+            "op": "==",
+            "l": {
+             "t": "field",
+             "obj": {
+              "t": "id",
+              "name": "YOU"
+             },
+             "name": "_MOVEMODE"
+            },
+            "r": {
+             "t": "id",
+             "name": "_MODE_SWIMMING"
+            }
+           }
+          },
+          "r": {
+           "t": "binop",
+           "op": "==",
+           "l": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "YOU"
+            },
+            "name": "_MOVEMODE"
+           },
+           "r": {
+            "t": "id",
+            "name": "_MODE_WADING"
+           }
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "invisible"
+             },
+             "value": {
+              "t": "bool",
+              "v": true
+             }
+            }
+           }
+          ]
+         },
+         "else": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "invisible"
+             },
+             "value": {
+              "t": "bool",
+              "v": false
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "id",
+              "name": "temp_ent"
+             },
+             "value": {
+              "t": "id",
+              "name": "YOU"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "id",
+              "name": "trace_mode"
+             },
+             "value": {
+              "t": "binop",
+              "op": "+",
+              "l": {
+               "t": "binop",
+               "op": "+",
+               "l": {
+                "t": "binop",
+                "op": "+",
+                "l": {
+                 "t": "id",
+                 "name": "IGNORE_PASSENTS"
+                },
+                "r": {
+                 "t": "id",
+                 "name": "IGNORE_ME"
+                }
+               },
+               "r": {
+                "t": "id",
+                "name": "IGNORE_YOU"
+               }
+              },
+              "r": {
+               "t": "id",
+               "name": "IGNORE_MODELS"
+              }
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "vec_set",
+             "args": [
+              {
+               "t": "id",
+               "name": "vecFrom"
+              },
+              {
+               "t": "field",
+               "obj": {
+                "t": "id",
+                "name": "YOU"
+               },
+               "name": "X"
+              }
+             ]
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "vec_set",
+             "args": [
+              {
+               "t": "id",
+               "name": "vecTo"
+              },
+              {
+               "t": "id",
+               "name": "vecFrom"
+              }
+             ]
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "-=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "vecTo"
+              },
+              "name": "Z"
+             },
+             "value": {
+              "t": "num",
+              "v": 500.0
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "id",
+              "name": "result"
+             },
+             "value": {
+              "t": "call",
+              "name": "trace",
+              "args": [
+               {
+                "t": "id",
+                "name": "vecFrom"
+               },
+               {
+                "t": "id",
+                "name": "vecTo"
+               }
+              ]
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "id",
+              "name": "YOU"
+             },
+             "value": {
+              "t": "id",
+              "name": "temp_ent"
+             }
+            }
+           },
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": ">",
+             "l": {
+              "t": "id",
+              "name": "result"
+             },
+             "r": {
+              "t": "num",
+              "v": 0.0
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "z"
+                },
+                "value": {
+                 "t": "binop",
+                 "op": "+",
+                 "l": {
+                  "t": "binop",
+                  "op": "-",
+                  "l": {
+                   "t": "field",
+                   "obj": {
+                    "t": "id",
+                    "name": "YOU"
+                   },
+                   "name": "z"
+                  },
+                  "r": {
+                   "t": "id",
+                   "name": "RESULT"
+                  }
+                 },
+                 "r": {
+                  "t": "num",
+                  "v": 2.0
+                 }
+                }
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "x"
+                },
+                "value": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "YOU"
+                 },
+                 "name": "x"
+                }
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "y"
+                },
+                "value": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "YOU"
+                 },
+                 "name": "y"
+                }
+               }
+              },
+              {
+               "t": "if",
+               "cond": {
+                "t": "binop",
+                "op": "||",
+                "l": {
+                 "t": "binop",
+                 "op": "!=",
+                 "l": {
+                  "t": "field",
+                  "obj": {
+                   "t": "id",
+                   "name": "NORMAL"
+                  },
+                  "name": "x"
+                 },
+                 "r": {
+                  "t": "num",
+                  "v": 0.0
+                 }
+                },
+                "r": {
+                 "t": "binop",
+                 "op": "!=",
+                 "l": {
+                  "t": "field",
+                  "obj": {
+                   "t": "id",
+                   "name": "NORMAL"
+                  },
+                  "name": "y"
+                 },
+                 "r": {
+                  "t": "num",
+                  "v": 0.0
+                 }
+                }
+               },
+               "then": {
+                "t": "block",
+                "body": [
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "assign",
+                   "op": "=",
+                   "target": {
+                    "t": "field",
+                    "obj": {
+                     "t": "id",
+                     "name": "MY"
+                    },
+                    "name": "PAN"
+                   },
+                   "value": {
+                    "t": "num",
+                    "v": 0.0
+                   }
+                  }
+                 },
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "assign",
+                   "op": "=",
+                   "target": {
+                    "t": "field",
+                    "obj": {
+                     "t": "id",
+                     "name": "MY"
+                    },
+                    "name": "tilt"
+                   },
+                   "value": {
+                    "t": "unop",
+                    "op": "-",
+                    "expr": {
+                     "t": "call",
+                     "name": "asin",
+                     "args": [
+                      {
+                       "t": "field",
+                       "obj": {
+                        "t": "id",
+                        "name": "NORMAL"
+                       },
+                       "name": "x"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "assign",
+                   "op": "=",
+                   "target": {
+                    "t": "field",
+                    "obj": {
+                     "t": "id",
+                     "name": "MY"
+                    },
+                    "name": "roll"
+                   },
+                   "value": {
+                    "t": "unop",
+                    "op": "-",
+                    "expr": {
+                     "t": "call",
+                     "name": "asin",
+                     "args": [
+                      {
+                       "t": "field",
+                       "obj": {
+                        "t": "id",
+                        "name": "NORMAL"
+                       },
+                       "name": "y"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "assign",
+                   "op": "=",
+                   "target": {
+                    "t": "field",
+                    "obj": {
+                     "t": "id",
+                     "name": "temp"
+                    },
+                    "name": "pan"
+                   },
+                   "value": {
+                    "t": "field",
+                    "obj": {
+                     "t": "id",
+                     "name": "YOU"
+                    },
+                    "name": "PAN"
+                   }
+                  }
+                 },
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "assign",
+                   "op": "=",
+                   "target": {
+                    "t": "field",
+                    "obj": {
+                     "t": "id",
+                     "name": "temp"
+                    },
+                    "name": "tilt"
+                   },
+                   "value": {
+                    "t": "num",
+                    "v": 90.0
+                   }
+                  }
+                 },
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "assign",
+                   "op": "=",
+                   "target": {
+                    "t": "field",
+                    "obj": {
+                     "t": "id",
+                     "name": "temp"
+                    },
+                    "name": "roll"
+                   },
+                   "value": {
+                    "t": "num",
+                    "v": 0.0
+                   }
+                  }
+                 },
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "call",
+                   "name": "rotate",
+                   "args": [
+                    {
+                     "t": "id",
+                     "name": "my"
+                    },
+                    {
+                     "t": "id",
+                     "name": "temp"
+                    },
+                    {
+                     "t": "id",
+                     "name": "nullvector"
+                    }
+                   ]
+                  }
+                 }
+                ]
+               },
+               "else": {
+                "t": "block",
+                "body": [
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "assign",
+                   "op": "=",
+                   "target": {
+                    "t": "field",
+                    "obj": {
+                     "t": "id",
+                     "name": "MY"
+                    },
+                    "name": "pan"
+                   },
+                   "value": {
+                    "t": "field",
+                    "obj": {
+                     "t": "id",
+                     "name": "YOU"
+                    },
+                    "name": "pan"
+                   }
+                  }
+                 },
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "assign",
+                   "op": "=",
+                   "target": {
+                    "t": "field",
+                    "obj": {
+                     "t": "id",
+                     "name": "MY"
+                    },
+                    "name": "tilt"
+                   },
+                   "value": {
+                    "t": "num",
+                    "v": 90.0
+                   }
+                  }
+                 },
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "assign",
+                   "op": "=",
+                   "target": {
+                    "t": "field",
+                    "obj": {
+                     "t": "id",
+                     "name": "MY"
+                    },
+                    "name": "roll"
+                   },
+                   "value": {
+                    "t": "num",
+                    "v": 0.0
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             ]
+            },
+            "else": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "INVISIBLE"
+                },
+                "value": {
+                 "t": "bool",
+                 "v": true
+                }
+               }
+              }
+             ]
+            }
+           }
+          ]
+         }
+        },
+        {
+         "t": "wait",
+         "ticks": true,
+         "n": {
+          "t": "num",
+          "v": 1.0
+         }
+        }
+       ]
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "remove",
+       "args": [
+        {
+         "t": "id",
+         "name": "ME"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "attach_entity": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "my"
+        },
+        "name": "passable"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "while",
+      "cond": {
+       "t": "id",
+       "name": "you"
+      },
+      "body": {
+       "t": "block",
+       "body": [
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "your"
+           },
+           "name": "shadow"
+          },
+          "r": {
+           "t": "bool",
+           "v": true
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "my"
+              },
+              "name": "shadow"
+             },
+             "value": {
+              "t": "bool",
+              "v": true
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "&&",
+          "l": {
+           "t": "binop",
+           "op": "==",
+           "l": {
+            "t": "id",
+            "name": "you"
+           },
+           "r": {
+            "t": "id",
+            "name": "player"
+           }
+          },
+          "r": {
+           "t": "binop",
+           "op": "==",
+           "l": {
+            "t": "id",
+            "name": "person_3rd"
+           },
+           "r": {
+            "t": "num",
+            "v": 0.0
+           }
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "my"
+              },
+              "name": "invisible"
+             },
+             "value": {
+              "t": "bool",
+              "v": true
+             }
+            }
+           }
+          ]
+         },
+         "else": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "my"
+              },
+              "name": "invisible"
+             },
+             "value": {
+              "t": "bool",
+              "v": false
+             }
+            }
+           }
+          ]
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "vec_set",
+          "args": [
+           {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "my"
+            },
+            "name": "x"
+           },
+           {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "you"
+            },
+            "name": "x"
+           }
+          ]
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "vec_set",
+          "args": [
+           {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "my"
+            },
+            "name": "pan"
+           },
+           {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "you"
+            },
+            "name": "pan"
+           }
+          ]
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "my"
+           },
+           "name": "frame"
+          },
+          "value": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "you"
+           },
+           "name": "frame"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "my"
+           },
+           "name": "next_frame"
+          },
+          "value": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "you"
+           },
+           "name": "next_frame"
+          }
+         }
+        },
+        {
+         "t": "wait",
+         "ticks": true,
+         "n": {
+          "t": "num",
+          "v": 1.0
+         }
+        }
+       ]
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "remove",
+       "args": [
+        {
+         "t": "id",
+         "name": "my"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "actor_anim_transition2": {
+   "params": [
+    "str_anim_source",
+    "str_anim_target",
+    "trans_ticks"
+   ],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "local_decl",
+      "decls": [
+       {
+        "name": "perBlend_total",
+        "kind": "var",
+        "array_size": null,
+        "init": null,
+        "init_list": false
+       }
+      ]
+     },
+     {
+      "t": "local_decl",
+      "decls": [
+       {
+        "name": "perBlend_inc",
+        "kind": "var",
+        "array_size": null,
+        "init": null,
+        "init_list": false
+       }
+      ]
+     },
+     {
+      "t": "local_decl",
+      "decls": [
+       {
+        "name": "source_frame_percent",
+        "kind": "var",
+        "array_size": null,
+        "init": null,
+        "init_list": false
+       }
+      ]
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "source_frame_percent"
+       },
+       "value": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "my"
+        },
+        "name": "_ANIMDIST"
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "my"
+        },
+        "name": "_ANIMDIST"
+       },
+       "value": {
+        "t": "unop",
+        "op": "-",
+        "expr": {
+         "t": "num",
+         "v": 1.0
+        }
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "perBlend_total"
+       },
+       "value": {
+        "t": "num",
+        "v": 0.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "perBlend_inc"
+       },
+       "value": {
+        "t": "binop",
+        "op": "/",
+        "l": {
+         "t": "num",
+         "v": 100.0
+        },
+        "r": {
+         "t": "id",
+         "name": "trans_ticks"
+        }
+       }
+      }
+     },
+     {
+      "t": "while",
+      "cond": {
+       "t": "binop",
+       "op": "<",
+       "l": {
+        "t": "id",
+        "name": "perBlend_total"
+       },
+       "r": {
+        "t": "num",
+        "v": 100.0
+       }
+      },
+      "body": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "ent_cycle",
+          "args": [
+           {
+            "t": "id",
+            "name": "str_anim_source"
+           },
+           {
+            "t": "id",
+            "name": "source_frame_percent"
+           }
+          ]
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "ent_blend",
+          "args": [
+           {
+            "t": "id",
+            "name": "str_anim_target"
+           },
+           {
+            "t": "num",
+            "v": 0.0
+           },
+           {
+            "t": "id",
+            "name": "perBlend_total"
+           }
+          ]
+         }
+        },
+        {
+         "t": "wait",
+         "ticks": true,
+         "n": {
+          "t": "num",
+          "v": 1.0
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "+=",
+          "target": {
+           "t": "id",
+           "name": "perBlend_total"
+          },
+          "value": {
+           "t": "call",
+           "name": "max",
+           "args": [
+            {
+             "t": "num",
+             "v": 0.001
+            },
+            {
+             "t": "binop",
+             "op": "*",
+             "l": {
+              "t": "id",
+              "name": "perBlend_inc"
+             },
+             "r": {
+              "t": "id",
+              "name": "TIME"
+             }
+            }
+           ]
+          }
+         }
+        }
+       ]
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "my"
+        },
+        "name": "_ANIMDIST"
+       },
+       "value": {
+        "t": "num",
+        "v": 0.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "ent_cycle",
+       "args": [
+        {
+         "t": "id",
+         "name": "str_anim_target"
+        },
+        {
+         "t": "field",
+         "obj": {
+          "t": "id",
+          "name": "my"
+         },
+         "name": "_ANIMDIST"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "actor_adv_anim2": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "local_decl",
+      "decls": [
+       {
+        "name": "cur_anim_mode",
+        "kind": "var",
+        "array_size": null,
+        "init": null,
+        "init_list": false
+       }
+      ]
+     },
+     {
+      "t": "local_decl",
+      "decls": [
+       {
+        "name": "old_anim_mode",
+        "kind": "var",
+        "array_size": null,
+        "init": null,
+        "init_list": false
+       }
+      ]
+     },
+     {
+      "t": "local_decl",
+      "decls": [
+       {
+        "name": "anim_cycle_val",
+        "kind": "var",
+        "array_size": null,
+        "init": null,
+        "init_list": false
+       }
+      ]
+     },
+     {
+      "t": "local_decl",
+      "decls": [
+       {
+        "name": "anim_percent",
+        "kind": "var",
+        "array_size": null,
+        "init": null,
+        "init_list": false
+       }
+      ]
+     },
+     {
+      "t": "local_decl",
+      "decls": [
+       {
+        "name": "qOnceOnly",
+        "kind": "var",
+        "array_size": null,
+        "init": null,
+        "init_list": false
+       }
+      ]
+     },
+     {
+      "t": "while",
+      "cond": {
+       "t": "binop",
+       "op": "!=",
+       "l": {
+        "t": "id",
+        "name": "my"
+       },
+       "r": {
+        "t": "null"
+       }
+      },
+      "body": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "proc_late",
+          "args": []
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "cur_anim_mode"
+          },
+          "value": {
+           "t": "call",
+           "name": "_actor_adv_anim2_get_mode",
+           "args": [
+            {
+             "t": "id",
+             "name": "cur_anim_mode"
+            }
+           ]
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "qOnceOnly"
+          },
+          "value": {
+           "t": "id",
+           "name": "temp"
+          }
+         }
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "id",
+           "name": "cur_anim_mode"
+          },
+          "r": {
+           "t": "id",
+           "name": "_ANIM_MODE_NONE"
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "wait",
+            "ticks": true,
+            "n": {
+             "t": "num",
+             "v": 1.0
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "id",
+             "name": "continue"
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "!=",
+          "l": {
+           "t": "id",
+           "name": "cur_anim_mode"
+          },
+          "r": {
+           "t": "id",
+           "name": "old_anim_mode"
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "_actor_adv_anim2_get_string",
+             "args": [
+              {
+               "t": "id",
+               "name": "old_anim_mode"
+              }
+             ]
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "id",
+              "name": "pStr_old_anim"
+             },
+             "value": {
+              "t": "id",
+              "name": "pStr_cur_anim"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "id",
+              "name": "anim_cycle_val"
+             },
+             "value": {
+              "t": "call",
+              "name": "_actor_adv_anim2_get_string",
+              "args": [
+               {
+                "t": "id",
+                "name": "cur_anim_mode"
+               }
+              ]
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "_ANIMDIST"
+             },
+             "value": {
+              "t": "id",
+              "name": "anim_percent"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "actor_anim_transition2",
+             "args": [
+              {
+               "t": "id",
+               "name": "pStr_old_anim"
+              },
+              {
+               "t": "id",
+               "name": "pStr_cur_anim"
+              },
+              {
+               "t": "num",
+               "v": 2.0
+              }
+             ]
+            }
+           },
+           {
+            "t": "while",
+            "cond": {
+             "t": "binop",
+             "op": "==",
+             "l": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "my"
+              },
+              "name": "_ANIMDIST"
+             },
+             "r": {
+              "t": "unop",
+              "op": "-",
+              "expr": {
+               "t": "num",
+               "v": 1.0
+              }
+             }
+            },
+            "body": {
+             "t": "block",
+             "body": [
+              {
+               "t": "wait",
+               "ticks": true,
+               "n": {
+                "t": "num",
+                "v": 1.0
+               }
+              }
+             ]
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "old_anim_mode"
+          },
+          "value": {
+           "t": "id",
+           "name": "cur_anim_mode"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "anim_cycle_val"
+          },
+          "value": {
+           "t": "call",
+           "name": "_actor_adv_anim2_get_string",
+           "args": [
+            {
+             "t": "id",
+             "name": "cur_anim_mode"
+            }
+           ]
+          }
+         }
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "<",
+          "l": {
+           "t": "id",
+           "name": "anim_cycle_val"
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "+=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "my"
+              },
+              "name": "_ANIMDIST"
+             },
+             "value": {
+              "t": "id",
+              "name": "time"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "id",
+              "name": "anim_cycle_val"
+             },
+             "value": {
+              "t": "unop",
+              "op": "-",
+              "expr": {
+               "t": "id",
+               "name": "anim_cycle_val"
+              }
+             }
+            }
+           }
+          ]
+         },
+         "else": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "+=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "my"
+              },
+              "name": "_ANIMDIST"
+             },
+             "value": {
+              "t": "binop",
+              "op": "/",
+              "l": {
+               "t": "field",
+               "obj": {
+                "t": "id",
+                "name": "MY"
+               },
+               "name": "_WALKDIST"
+              },
+              "r": {
+               "t": "binop",
+               "op": "-",
+               "l": {
+                "t": "field",
+                "obj": {
+                 "t": "id",
+                 "name": "MY"
+                },
+                "name": "MAX_X"
+               },
+               "r": {
+                "t": "field",
+                "obj": {
+                 "t": "id",
+                 "name": "MY"
+                },
+                "name": "MIN_X"
+               }
+              }
+             }
+            }
+           }
+          ]
+         }
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": ">=",
+          "l": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "_ANIMDIST"
+          },
+          "r": {
+           "t": "id",
+           "name": "anim_cycle_val"
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": ">",
+             "l": {
+              "t": "id",
+              "name": "qOnceOnly"
+             },
+             "r": {
+              "t": "num",
+              "v": 0.0
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "my"
+                 },
+                 "name": "_ANIMDIST"
+                },
+                "value": {
+                 "t": "unop",
+                 "op": "-",
+                 "expr": {
+                  "t": "num",
+                  "v": 99.0
+                 }
+                }
+               }
+              },
+              {
+               "t": "wait",
+               "ticks": true,
+               "n": {
+                "t": "num",
+                "v": 1.0
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "id",
+                "name": "continue"
+               }
+              }
+             ]
+            },
+            "else": null
+           },
+           {
+            "t": "while",
+            "cond": {
+             "t": "binop",
+             "op": ">",
+             "l": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "_ANIMDIST"
+             },
+             "r": {
+              "t": "id",
+              "name": "anim_cycle_val"
+             }
+            },
+            "body": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "-=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "MY"
+                 },
+                 "name": "_ANIMDIST"
+                },
+                "value": {
+                 "t": "id",
+                 "name": "anim_cycle_val"
+                }
+               }
+              }
+             ]
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "while",
+         "cond": {
+          "t": "binop",
+          "op": "<",
+          "l": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "_ANIMDIST"
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "body": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "+=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MY"
+              },
+              "name": "_ANIMDIST"
+             },
+             "value": {
+              "t": "id",
+              "name": "anim_cycle_val"
+             }
+            }
+           }
+          ]
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "anim_percent"
+          },
+          "value": {
+           "t": "binop",
+           "op": "/",
+           "l": {
+            "t": "binop",
+            "op": "*",
+            "l": {
+             "t": "num",
+             "v": 100.0
+            },
+            "r": {
+             "t": "field",
+             "obj": {
+              "t": "id",
+              "name": "MY"
+             },
+             "name": "_ANIMDIST"
+            }
+           },
+           "r": {
+            "t": "id",
+            "name": "anim_cycle_val"
+           }
+          }
+         }
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": ">",
+          "l": {
+           "t": "id",
+           "name": "qOnceOnly"
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "ent_frame",
+             "args": [
+              {
+               "t": "id",
+               "name": "pStr_cur_anim"
+              },
+              {
+               "t": "id",
+               "name": "anim_percent"
+              }
+             ]
+            }
+           }
+          ]
+         },
+         "else": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "ent_cycle",
+             "args": [
+              {
+               "t": "id",
+               "name": "pStr_cur_anim"
+              },
+              {
+               "t": "id",
+               "name": "anim_percent"
+              }
+             ]
+            }
+           }
+          ]
+         }
+        },
+        {
+         "t": "wait",
+         "ticks": true,
+         "n": {
+          "t": "num",
+          "v": 1.0
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "actor_anim_transition": {
+   "params": [
+    "str_anim_target",
+    "trans_ticks"
+   ],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "local_decl",
+      "decls": [
+       {
+        "name": "target_movemode",
+        "kind": "var",
+        "array_size": null,
+        "init": null,
+        "init_list": false
+       }
+      ]
+     },
+     {
+      "t": "local_decl",
+      "decls": [
+       {
+        "name": "start_frame",
+        "kind": "var",
+        "array_size": null,
+        "init": null,
+        "init_list": false
+       }
+      ]
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "target_movemode"
+       },
+       "value": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "_MOVEMODE"
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "_MOVEMODE"
+       },
+       "value": {
+        "t": "id",
+        "name": "_MODE_TRANSITION"
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "start_frame"
+       },
+       "value": {
+        "t": "call",
+        "name": "int",
+        "args": [
+         {
+          "t": "field",
+          "obj": {
+           "t": "id",
+           "name": "MY"
+          },
+          "name": "frame"
+         }
+        ]
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "my"
+        },
+        "name": "frame"
+       },
+       "value": {
+        "t": "id",
+        "name": "start_frame"
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "my"
+        },
+        "name": "next_frame"
+       },
+       "value": {
+        "t": "call",
+        "name": "ent_frame",
+        "args": [
+         {
+          "t": "id",
+          "name": "str_anim_target"
+         },
+         {
+          "t": "num",
+          "v": 0.0
+         }
+        ]
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "my"
+        },
+        "name": "_ANIMDIST"
+       },
+       "value": {
+        "t": "num",
+        "v": 0.0
+       }
+      }
+     },
+     {
+      "t": "while",
+      "cond": {
+       "t": "binop",
+       "op": "<",
+       "l": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "my"
+        },
+        "name": "_ANIMDIST"
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "body": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "+=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "my"
+           },
+           "name": "frame"
+          },
+          "value": {
+           "t": "binop",
+           "op": "/",
+           "l": {
+            "t": "id",
+            "name": "time"
+           },
+           "r": {
+            "t": "id",
+            "name": "trans_ticks"
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "+=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "my"
+           },
+           "name": "_ANIMDIST"
+          },
+          "value": {
+           "t": "binop",
+           "op": "/",
+           "l": {
+            "t": "id",
+            "name": "time"
+           },
+           "r": {
+            "t": "id",
+            "name": "trans_ticks"
+           }
+          }
+         }
+        },
+        {
+         "t": "wait",
+         "ticks": true,
+         "n": {
+          "t": "num",
+          "v": 1.0
+         }
+        }
+       ]
+      }
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": ">",
+       "l": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "my"
+        },
+        "name": "frame"
+       },
+       "r": {
+        "t": "binop",
+        "op": "+",
+        "l": {
+         "t": "id",
+         "name": "start_frame"
+        },
+        "r": {
+         "t": "num",
+         "v": 1.0
+        }
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "ent_frame",
+          "args": [
+           {
+            "t": "id",
+            "name": "str_anim_target"
+           },
+           {
+            "t": "num",
+            "v": 0.0
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "my"
+        },
+        "name": "_ANIMDIST"
+       },
+       "value": {
+        "t": "num",
+        "v": 0.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "my"
+        },
+        "name": "_MOVEMODE"
+       },
+       "value": {
+        "t": "id",
+        "name": "target_movemode"
+       }
+      }
+     }
+    ]
+   }
+  },
+  "player_shake": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": ">",
+       "l": {
+        "t": "call",
+        "name": "random",
+        "args": [
+         {
+          "t": "num",
+          "v": 1.0
+         }
+        ]
+       },
+       "r": {
+        "t": "num",
+        "v": 0.5
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "+=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "ROLL"
+          },
+          "value": {
+           "t": "num",
+           "v": 8.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "+=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "TILT"
+          },
+          "value": {
+           "t": "num",
+           "v": 8.0
+          }
+         }
+        },
+        {
+         "t": "wait",
+         "ticks": false,
+         "n": {
+          "t": "num",
+          "v": 2.0
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "-=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "TILT"
+          },
+          "value": {
+           "t": "num",
+           "v": 5.0
+          }
+         }
+        },
+        {
+         "t": "wait",
+         "ticks": false,
+         "n": {
+          "t": "num",
+          "v": 2.0
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "-=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "ROLL"
+          },
+          "value": {
+           "t": "num",
+           "v": 8.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "-=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "TILT"
+          },
+          "value": {
+           "t": "num",
+           "v": 3.0
+          }
+         }
+        }
+       ]
+      },
+      "else": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "-=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "ROLL"
+          },
+          "value": {
+           "t": "num",
+           "v": 8.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "+=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "TILT"
+          },
+          "value": {
+           "t": "num",
+           "v": 8.0
+          }
+         }
+        },
+        {
+         "t": "wait",
+         "ticks": false,
+         "n": {
+          "t": "num",
+          "v": 2.0
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "-=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "TILT"
+          },
+          "value": {
+           "t": "num",
+           "v": 5.0
+          }
+         }
+        },
+        {
+         "t": "wait",
+         "ticks": false,
+         "n": {
+          "t": "num",
+          "v": 2.0
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "+=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "ROLL"
+          },
+          "value": {
+           "t": "num",
+           "v": 8.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "-=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "TILT"
+          },
+          "value": {
+           "t": "num",
+           "v": 3.0
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  }
+ },
+ "actions": {
+  "drop_shadow": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "IFDEF",
+       "args": [
+        {
+         "t": "id",
+         "name": "CAPS_FLARE"
+        }
+       ]
+      }
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": ">=",
+       "l": {
+        "t": "id",
+        "name": "VIDEO_DEPTH"
+       },
+       "r": {
+        "t": "num",
+        "v": 16.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "create",
+          "args": [
+           {
+            "t": "id",
+            "name": "SHADOWSPRITE"
+           },
+           {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "MY"
+            },
+            "name": "POS"
+           },
+           {
+            "t": "id",
+            "name": "move_shadow"
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "else": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "create",
+          "args": [
+           {
+            "t": "id",
+            "name": "SHADOWFLAT"
+           },
+           {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "MY"
+            },
+            "name": "POS"
+           },
+           {
+            "t": "id",
+            "name": "move_shadow"
+           }
+          ]
+         }
+        }
+       ]
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "id",
+       "name": "IFELSE"
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "create",
+       "args": [
+        {
+         "t": "id",
+         "name": "SHADOWFLAT"
+        },
+        {
+         "t": "field",
+         "obj": {
+          "t": "id",
+          "name": "MY"
+         },
+         "name": "POS"
+        },
+        {
+         "t": "id",
+         "name": "move_shadow"
+        }
+       ]
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "id",
+       "name": "ENDIF"
+      }
+     }
+    ]
+   }
+  }
+ },
+ "sounds": {},
+ "bmaps": {},
+ "skip_count": 29,
+ "skipped": [
+  "line 186: unexpected token '<' ('<')",
+  "line 188: stray '}' at top level (skipped)",
+  "line 197: stray '}' at top level (skipped)",
+  "line 205: stray '}' at top level (skipped)",
+  "line 214: stray '}' at top level (skipped)",
+  "line 222: stray '}' at top level (skipped)",
+  "line 230: stray '}' at top level (skipped)",
+  "line 237: stray '}' at top level (skipped)",
+  "line 245: stray '}' at top level (skipped)",
+  "line 253: stray '}' at top level (skipped)",
+  "line 261: stray '}' at top level (skipped)",
+  "line 269: stray '}' at top level (skipped)",
+  "line 345: unexpected token '<' ('<')",
+  "line 354: stray '}' at top level (skipped)",
+  "line 357: stray '}' at top level (skipped)",
+  "line 364: stray '}' at top level (skipped)",
+  "line 369: stray '}' at top level (skipped)",
+  "line 382: stray '}' at top level (skipped)",
+  "line 386: stray '}' at top level (skipped)",
+  "line 392: stray '}' at top level (skipped)"
+ ]
+}

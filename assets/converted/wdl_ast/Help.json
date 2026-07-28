@@ -1,0 +1,4945 @@
+{
+ "source": "Help.wdl",
+ "includes": [],
+ "globals": [],
+ "functions": {
+  "CloseHelp": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "pHelp"
+        },
+        "name": "visible"
+       },
+       "value": {
+        "t": "bool",
+        "v": false
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "tHelp"
+        },
+        "name": "visible"
+       },
+       "value": {
+        "t": "bool",
+        "v": false
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "freeze_mode"
+       },
+       "value": {
+        "t": "num",
+        "v": 0.0
+       }
+      }
+     }
+    ]
+   }
+  },
+  "SetHelp": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "local_decl",
+      "decls": [
+       {
+        "name": "HasHelp",
+        "kind": "var",
+        "array_size": null,
+        "init": {
+         "t": "num",
+         "v": 0.0
+        },
+        "init_list": false
+       }
+      ]
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "call",
+        "name": "str_cmpi",
+        "args": [
+         {
+          "t": "id",
+          "name": "app_name"
+         },
+         {
+          "t": "str",
+          "v": "asyact1"
+         }
+        ]
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 0.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                               XJPCFUME VJBL EOJNK\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 1.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                      VJB WFVL TFDHL YJJNFPM UFQJQ"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 2.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "               LITCAE TBU VA AFRML VNM LP XJPCFUME\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 3.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "VJBL ONKJELF SAMGFQ VFHAE VA VFMTL XJKTD AFRML FON"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 4.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                          XJPCFUME\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 5.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                              EJAT VJFFG ENUM - f1"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 6.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                 JTFINBNJAE SJV VA TCFOF HVFQ - f2"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 7.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "     THA VHSL TUQAMF DJB SJGHM EVAU [QH TTHUM - f3"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 8.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "       WMRP LP XJRQH VFONL JDK EG USM LP FRHL -  u\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 9.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "   XJTHA XJRQH LP XJRQH LJPQEL FKTIRV XJTSMEM SLHB"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "HasHelp"
+          },
+          "value": {
+           "t": "num",
+           "v": 1.0
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "call",
+        "name": "str_cmpi",
+        "args": [
+         {
+          "t": "id",
+          "name": "app_name"
+         },
+         {
+          "t": "str",
+          "v": "asyact2"
+         }
+        ]
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 0.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                              XJPCFUME VJBB UFQJHE\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 1.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                               LITCAE TBU VA FCJUE\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 2.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                              EJAT VJFFG ENUM - f1"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 3.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                 JTFINBNJAE SJV VA TCFOF HVFQ - f2"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 4.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "      THA VHSL TUQAMF DJB SJGHM EVAU [QH TTHUM- f3\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 5.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "               TBKP LU JNMJE TFVQKE LP ERJHL VTGPB"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 6.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                  XJPCFUME XP FTBD\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 7.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                     LFLRL JGHL XJTUQAM - home,end"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "HasHelp"
+          },
+          "value": {
+           "t": "num",
+           "v": 1.0
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "call",
+        "name": "str_cmpi",
+        "args": [
+         {
+          "t": "id",
+          "name": "app_name"
+         },
+         {
+          "t": "str",
+          "v": "asyact3"
+         }
+        ]
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 0.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                           XJPCFUME VJBB XFTJH BRM\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 1.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "               ETGHB XJPCFUME LK VA OJNKEL - ETIME"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 2.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                FRHL ,XJAVB XLFKU PCTB .XELU XJAVL"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 3.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "              .XFTJHE BRM LFIJBL TJSE LP TFVQKE LP\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 4.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                  XJSUN ZJLHM - f1"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 5.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "               ETFJ VDLSM-YFBUHMB OQA TFVQK - ctrl\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 6.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": " YVFA TFCOLF HFVQL JDK TBKPE XP XJAVE VFVLD LP [HL\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 7.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                        IJ'R OJNKEL WL TUQAM - tab"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "HasHelp"
+          },
+          "value": {
+           "t": "num",
+           "v": 1.0
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "call",
+        "name": "str_cmpi",
+        "args": [
+         {
+          "t": "id",
+          "name": "app_name"
+         },
+         {
+          "t": "str",
+          "v": "cardgame"
+         }
+        ]
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 0.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                      TSFQ-GFQGFQ\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 1.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "    XJQLSE LP [HL GAF XJQLSE VSFLHL ELJBHE LP [HL"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 2.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "         BUHMEF ELJBHE LP BFU GAF TFMUL ERFT EVAU"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 3.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                 VTMU ALU FLA XFSMB XJQLS WL SLHJ\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 4.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": " 4 VSGHB EFBC JKE ZLSE :CFO FVFAM BSFP TDOB XJQLS"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 5.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "   XJQLSE LK WTP VLQKE :ENFU CFOM BSFP TDOB XJQLS"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 6.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "4 VSGHB TVFJB WFMNE ZLSE :CFO FVFAM XLFK :XLU TDP"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 7.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "              XELU XJKTPE VLQKE :TQOM FVFAM XJQLS"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 8.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                XJQLSE WTP TFBJH :CFO FVFAM XJQLS"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 9.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "              XKTP VTOHE :XJDDFB VJIBJI EMEB JQLS"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 10.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": " VFJIBJIE VFMEBE TQOMB EARFVE VLQKE ,XJNFQ YJA XA\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 11.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "    WFQEJ AFE VJIBJI EMEB LU DHA ZLS ZFOB TAUN XA"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 12.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                       DHFJM ZLSL\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 13.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "       DJOQM AFE FLU OFKB ESUME LK VA EVFU JGH XA"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 14.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": " XEJVFOFK VA FNSFTJ XJTHVME LKU WJTR AFE HRNL JDK\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 15.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                       IJ'R OJNKEL WL TUQAM - tab"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "HasHelp"
+          },
+          "value": {
+           "t": "num",
+           "v": 1.0
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "call",
+        "name": "str_cmpi",
+        "args": [
+         {
+          "t": "id",
+          "name": "app_name"
+         },
+         {
+          "t": "str",
+          "v": "desert"
+         }
+        ]
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 0.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                     PFNISB EPJON\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 1.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "            .VFQLFH VFJNFKMF XJUSFMF XJLJIM TEGJE"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 2.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "    FDPJ LA PJCJ UFQJQU DP TBKPE VTGPB PFOJL WUME\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 3.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                      IJ'R OJNKEL WL TUQAM  - tab"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "HasHelp"
+          },
+          "value": {
+           "t": "num",
+           "v": 1.0
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "call",
+        "name": "str_cmpi",
+        "args": [
+         {
+          "t": "id",
+          "name": "app_name"
+         },
+         {
+          "t": "str",
+          "v": "fight"
+         }
+        ]
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 0.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                XJLABJNS VFUUFCVE\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 1.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                       ETJVOL - z"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 2.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                       EIJPBL - x"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 3.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                 VBBFOM EIJPB - c"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 4.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                        EJOAT - v\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 5.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                   .XVFA HSJ UFQJQF XJRQH LP FTBP"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 6.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "            XVFA WJLUEL VNM LP XJUSME DHA LP FRHL\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 7.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                      IJ'R OJNKEL WL TUQAM  - tab"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "HasHelp"
+          },
+          "value": {
+           "t": "num",
+           "v": 1.0
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "call",
+        "name": "str_cmpi",
+        "args": [
+         {
+          "t": "id",
+          "name": "app_name"
+         },
+         {
+          "t": "str",
+          "v": "final"
+         }
+        ]
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 0.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                           SIOFBLB LU ELJFB EMJHL\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 1.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "             .ZFTPMF SJN'RFFS XJNKFOE JNU VA FLOH"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 2.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "   LDHJU VFNMDGJEE VA FLRN .XJLJJHE VFJTJM FTEGJE"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 3.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "        VFTJL XJSJOQM XLFK GA JK WOB TBFP SIOFBLB\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 4.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                        XJMFOHME VA XJNKFOL FOTJE\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 5.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                EJJTJ JLAMU TFVQK\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 6.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "             VJBHE JTFHAM ST LPFQ .ZQFKVM EIML [H\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 7.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                       IJ'R OJNKEL WL TUQAM - tab"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "HasHelp"
+          },
+          "value": {
+           "t": "num",
+           "v": 1.0
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "call",
+        "name": "str_cmpi",
+        "args": [
+         {
+          "t": "id",
+          "name": "app_name"
+         },
+         {
+          "t": "str",
+          "v": "golf"
+         }
+        ]
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 0.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                      XJUJUS ZLFC\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 1.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                     OJNKEL XKJLP"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 2.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                    XFMJOSMEM VFKM VFHQB TFDKE VA"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 3.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                  FPBS JLAMUE TFVQKE VTGPB .ELPML"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 4.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "            .EVMRFP VA EABE ERJHLBF EKME YFFJK VA\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 5.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                         EJATE VDFSN VA ENUM - f1"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 6.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                            TFDKE YKJE PJBRM - f2"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 7.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                   ELA ZJLHM - f3\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 8.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                              ZJLHM JLAMUE TFVQKE"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 9.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "               .EKM LU BRML EKME YFFJK LU BRM YJB\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 10.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                              XPQ LK .HFTB FBUHVE"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 11.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "            .FNVUE YFFJKEF EMRFPE HFT LU LJLR UJU\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 12.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                           :VFLSM\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 13.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "   BTSVEL JDK ELHVEB UMVUE ,ESGH EKM - 1 TQOM LSM"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 14.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "BTSVM EVAUK UMVUE ,VJVUS VJNFNJB EKM - 2 TQOM LSM"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 15.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "  LFHE VJLFLVB EVAUK UMVUE ,EULH EKM - 3 TQOM LSM\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 16.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                       IJ'R OJNKEL WL TUQAM - tab"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "HasHelp"
+          },
+          "value": {
+           "t": "num",
+           "v": 1.0
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "call",
+        "name": "str_cmpi",
+        "args": [
+         {
+          "t": "id",
+          "name": "app_name"
+         },
+         {
+          "t": "str",
+          "v": "hitufo"
+         }
+        ]
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 0.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                            u.f.o\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 1.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                   VFKM VVL ETIME"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 2.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "               SJTBMF UDH JNCQA ZLS OTQE .XJNRFHL\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 3.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                            VTGPB"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 4.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "           DBLB XJTGJJHE VA FKE XJNFOKLAEF XJRJHE"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "HasHelp"
+          },
+          "value": {
+           "t": "num",
+           "v": 1.0
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "call",
+        "name": "str_cmpi",
+        "args": [
+         {
+          "t": "id",
+          "name": "app_name"
+         },
+         {
+          "t": "str",
+          "v": "inshrine"
+         }
+        ]
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 0.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                       EMDAL VHVM\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 1.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                      AFRML XKJLP"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 2.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "               HVQJ DHA .XEJLP [FHLLF XJTFVQK JNU"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 3.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "               TUCE VA LJPQJ DHAF VJGKTME VLDE VA"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 4.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                   AL BFUH YKL IAL IAL ELPV EBALE"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 5.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "              EGE XFSMB SJNSJQ VFUPLF XVO EMEMVEL\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 6.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                XJBRJJM TUA DP VFSVFUM VFJLPME LK"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 7.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "               TFVQKB ELPML FPJBRJU XJRJHE JNU VA\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 8.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                             EJAT VJFFG ENUM - f1"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 9.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                     ERJT - shift"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 10.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "              [FQSJ UFQJQF EG USM LP ERJHL - home"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 11.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                     EIML LKVOM UFQJQ - page-down"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 12.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                    ELPML LKVOM UFQJQ -   page-up\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 13.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                       IJ'R OJNKEL WL TUQAM - tab"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "HasHelp"
+          },
+          "value": {
+           "t": "num",
+           "v": 1.0
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "call",
+        "name": "str_cmpi",
+        "args": [
+         {
+          "t": "id",
+          "name": "app_name"
+         },
+         {
+          "t": "str",
+          "v": "mine"
+         }
+        ]
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 0.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                    ETKMB VJNFTSE\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 1.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "              LFLOME ZFO DP FDTUF XJLFUKMM FTEGJE\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 2.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                             EJAT VJFFG ENUM - f1"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 3.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                       IJ'R OJNKEL WL TUQAM - tab"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "HasHelp"
+          },
+          "value": {
+           "t": "num",
+           "v": 1.0
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "call",
+        "name": "str_cmpi",
+        "args": [
+         {
+          "t": "id",
+          "name": "app_name"
+         },
+         {
+          "t": "str",
+          "v": "mount"
+         }
+        ]
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 0.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                TEE UAT LU VOJJIE\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 1.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                             EJAT VJFFG ENUM - f1"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 2.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "            ELSEL FVFA TJGHMF LNAQE VA XJLPM - f2\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 3.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "         XJTFJ TBKPE LU JLAMU TFVQK FA - spacebar"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 4.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                      VVJJBVM EKTB VRRQ TCUM -  b"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 5.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "     VQQFPVM EKTBU JTHA YFLHE VA EATMF XJLPM -  v\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 6.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                       IJ'R OJNKEL WL TUQAM - tab"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "HasHelp"
+          },
+          "value": {
+           "t": "num",
+           "v": 1.0
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "call",
+        "name": "str_cmpi",
+        "args": [
+         {
+          "t": "id",
+          "name": "app_name"
+         },
+         {
+          "t": "str",
+          "v": "race"
+         }
+        ]
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 0.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                               XJUJUS VBJKT [FTJM\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 1.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "       EUFLU XNUJ .YFUAT XFSML [FTJMB PJCEL XKJLP"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 2.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "              LNAQBU ELPMLM VJFGB FTGPJE .XJBFBJO"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 3.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "             .XJTUCE LK WTD TFBPL XJKJTR !BL FMJU"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 4.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                 OTBTB PFOJL YVJN\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 5.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                               VJFGE VA ENUM - f1"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 6.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                BJBOM LNAQE VA XJLPEL VNM LP - f2\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 7.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "          EVFA DJTFM EIML [H VFTJEM ELPM ELPML [H\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 8.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                       IJ'R OJNKEL WL TUQAM - tab"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "HasHelp"
+          },
+          "value": {
+           "t": "num",
+           "v": 1.0
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "call",
+        "name": "str_cmpi",
+        "args": [
+         {
+          "t": "id",
+          "name": "app_name"
+         },
+         {
+          "t": "str",
+          "v": "range"
+         }
+        ]
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 0.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                     OFIMB XJQIFH\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 1.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                       XJUNA VFHQU EMK LOHL ETIME"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 2.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "             OME VA ST FMJTU VFHQL FA...PUQM XJQH\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 3.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "          FTJ JLAMUE TFVQKE VTGPBF TBKPE XP FNFFK"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "HasHelp"
+          },
+          "value": {
+           "t": "num",
+           "v": 1.0
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "call",
+        "name": "str_cmpi",
+        "args": [
+         {
+          "t": "id",
+          "name": "app_name"
+         },
+         {
+          "t": "str",
+          "v": "shooter"
+         }
+        ]
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 0.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                VFQMFQB EJTJ ERSM\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 1.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                      XJLBSM TJFFAB YSGB XJTFJ XA"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 2.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                JA EQRJTE LP VHN YSGUK .HFK OFNFB"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 3.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "             EQMFQE XP SJHTEL ST FNMM TVQJEL TUQA\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 4.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                           EQMFQ ETFJ JLAMU TFVQK\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 5.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                       IJ'R OJNKEL WL TUQAM - tab"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "HasHelp"
+          },
+          "value": {
+           "t": "num",
+           "v": 1.0
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "call",
+        "name": "str_cmpi",
+        "args": [
+         {
+          "t": "id",
+          "name": "app_name"
+         },
+         {
+          "t": "str",
+          "v": "town"
+         }
+        ]
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 0.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                           JIJOGFQGFQ ELFDCE TJPE\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 1.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                         ENBJM LK"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 2.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "              EJRSATINJA FB VFUPL YVJN [HB YMFOME\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 3.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                    TJPB THA BFHTM IBML TJBPM - v"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 4.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                  XJPBU LU TCAM WFVM EHJDB VPJMUL"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 5.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "           XEJLA XJBFTS XVAUK E'RHNF ELRS LP FRHL\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 6.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "            VQSUME XFGB XJILFU ETFHA [HF EMJDS [H"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "HasHelp"
+          },
+          "value": {
+           "t": "num",
+           "v": 1.0
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "call",
+        "name": "str_cmpi",
+        "args": [
+         {
+          "t": "id",
+          "name": "app_name"
+         },
+         {
+          "t": "str",
+          "v": "ziggy"
+         }
+        ]
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 0.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                           DMJM VLVB IOJITSE JCJG\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 1.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "               .XJBJJFA LU XJJFOM TQOM LOHL ETIME"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 2.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                 J\"P ST VFRQFSU VF'CNJN LOHL YVJN"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 3.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "            EKM J\"P ST EKM VFNVFNU VF'CNJN ,ERJQS\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 4.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "           ERJQS J\"P ST ILMJEL YVJN E'CNJN JBKFKM\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 5.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                        ZFTCA - z"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 6.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                        EIJPB - x"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 7.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                        ERJQS - c"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "HasHelp"
+          },
+          "value": {
+           "t": "num",
+           "v": 1.0
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "!=",
+       "l": {
+        "t": "id",
+        "name": "HasHelp"
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 0.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                     XJJLLK XJUSM\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 1.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                     EIML LKVOM UFQJQ - page-down"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 2.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                    ELPML LKVOM UFQJQ -   page-up\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 3.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                         [FTL JDKB FUMVUE - shift"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 4.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                  XJBLUEM SLHB [FQSJ UFQJQ - home\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 5.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                             FRHL"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 6.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "            CJREL VNM LP TBKPE LU JNMJE TFVQKE LP"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 7.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "              XJTBD LP [FHLL FLKFV FVTGPB YMOE VA\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 8.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                      VTGPB - < >"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 9.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "               DRE LP VKLL LKFJ UFQJQ FLA XJTFVQK\n"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "index",
+           "obj": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "tHelp"
+            },
+            "name": "string"
+           },
+           "idx": {
+            "t": "num",
+            "v": 10.0
+           }
+          },
+          "value": {
+           "t": "str",
+           "v": "                                        pause - p"
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "tHelp"
+        },
+        "name": "visible"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "pHelp"
+        },
+        "name": "visible"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     }
+    ]
+   }
+  }
+ },
+ "actions": {},
+ "sounds": {},
+ "bmaps": {
+  "bHlp1": "Help1a.pcx",
+  "bHlp2": "Help1b.pcx",
+  "bHelp": "Help2.pcx"
+ },
+ "skip_count": 0,
+ "skipped": []
+}

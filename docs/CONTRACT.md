@@ -87,6 +87,20 @@ rule 3 below.
    scoped to 4 files instead of all 375. Don't try a geometry/UV heuristic
    to replace this table — that was already tried twice and both attempts
    regressed previously-correct models (rule 3's history).
+
+   **Bus (reported 180° off, unresolved as of 2026-07-28):** checked
+   whether the same bearing-consistency method that independently confirmed
+   Yachdal/Crowd/Crowd2 could resolve it — it can't. Bus has only 3
+   placements (`Menu`, `Shiks`, `golf`), each in an unrelated scene, all
+   with `angle_gs` pan `== 0`, so there's no varying bearing to cross-check
+   against a shared landmark the way Crowd's placements around Yachdal
+   worked. `action Bus` (`Shiks.wdl`) only plays a sound and nudges `my.y`
+   during one specific cutscene trigger — no directional signal either.
+   This is a genuine ceiling, not an unfinished investigation: a parked
+   bus's correct facing isn't recoverable from any data this format or the
+   WDL source encodes. Needs one human-confirmed measurement (screenshot or
+   `tools/wmb_web_viewer.py`) before it can go in the allowlist — do not
+   guess a value to fill this row.
 5. **GLB container: JSON chunk pads with SPACE (`0x20`), BIN chunk pads
    with NUL (`0x00`) — never the same padding byte for both.** Both
    `convert_mdl.py write_glb()` and `extract_wmb_mesh.py
@@ -113,25 +127,35 @@ rule 3 below.
    origin) for everything, since WED origin is a floor/attachment reference
    and MDL geometry commonly hangs below it. **Off** only for cameras, wall
    cards (`AFG`, `ShikNote`), `window`-action glass, and a short
-   measured-exception stem list (`glass`, `b747`, `tv`, `island`,
-   `headphone`, `biplane`, `biplane2`, `hanger`, `towerw`, `dutyfree`) —
-   see `_should_feet_snap` in `wmb_level_loader.gd`. **`Cockpit` is NOT in
-   that list** — it was there until 2026-07-27, found wrong by direct
-   measurement (GLB local Y spans -165.66..+76.83, hangs mostly *below*
-   origin, same shape as every other floor prop) and removed; do not
-   re-add it without a fresh measurement. Checked whether the remaining
-   stem list could instead be derived from data (2026-07-27): cross-
-   referenced every excluded stem's WDL `action` across all levels — no
-   action name or pattern reliably predicts "should skip snap" (several,
-   like `dutyfree`/`hanger`/`towerw`, have **no action at all**, same as
-   `Cockpit` had before it was found to need snapping — a blank action is
-   not a valid signal). `B747` does have a real, checkable reason: its own
-   `action B747` in `Plane2.wdl` assigns `my.z` directly during flight — a
-   runtime-controlled vehicle, not a floor prop, so a load-time floor-lift
-   doesn't apply to it at all. Where no such reason is found, treat the
-   entry as an unverified carry-over, not a confirmed rule — re-measure
-   before trusting it, same as Cockpit needed. Never default-snap
-   everything off (the opposite regression, already hit once).
+   measured-exception stem list — see `_should_feet_snap` in
+   `wmb_level_loader.gd`. Never default-snap everything off (the opposite
+   regression, already hit once).
+
+   **2026-07-28: every remaining stem re-measured, not carried over.**
+   `tools/verify_corpus.py`'s feet-snap audit computes, for every excluded
+   stem: the fraction of its GLB's local-Y AABB that hangs below the WED
+   origin, and whether any real WDL `action` body used on its placements
+   ever assigns `my.x`/`my.y`/`my.z` at runtime (grepped across every
+   `original/piposh3d/**/*.wdl`, not guessed from the action's name). Run it
+   to get current numbers; results as of this pass:
+
+   | stem | below-origin | moves at runtime | verdict |
+   |---|---|---|---|
+   | `tv` | 55.4% | no | **removed from exclusion** — same bug shape as Cockpit (68.3%): no WDL action ever touches its position, so it needs the default floor-lift like everything else. |
+   | `hanger` | 43.0% | no | **removed** — no `action Hanger` anywhere; placements sit within 0–3 units of the level `floor_y` in 3 of 4 placements. |
+   | `towerw` | 32.9% | no | **removed** — no `action TowerW`; placements consistently 6–29 units of `floor_y`. |
+   | `glass` | 6.6% | no | kept — mesh already sits almost exactly at its own origin (Dutyfree-shaped, not Cockpit-shaped). |
+   | `dutyfree` | 0.0% | no | kept — origin already at the mesh's own bottom. |
+   | `b747` | 53.2% | **yes** | kept — `action B747` (`Plane2.wdl`) assigns `my.z` directly during takeoff; a runtime-controlled vehicle, a load-time floor-lift doesn't apply. |
+   | `island` | 18.8% | **yes** | kept — `action Land` (`Plane3.wdl`) assigns `my.y`/`my.z` at runtime (descends, then slides); also sits ~387 units below `floor_y` in both Plane3 and Town. |
+   | `biplane`, `biplane2` | 48.7% | **yes** | kept — `action Fly` (`Intro4.wdl`) does `my.x += ..; my.z += ..`; same class as `b747`. |
+   | `headphon` | 46.3% | no | kept — action-based checks (`headphone`/`A1` on this stem) already cover its placements; unresolved whether the stem-list entry is still needed on its own, low priority. |
+
+   `Cockpit` (found 2026-07-27, GLB local Y -165.66..+76.83, 68.3% below
+   origin) and now `tv`/`hanger`/`towerw` are the confirmed instances of
+   this exact bug shape — a blank/no-op WDL action is *not* a valid signal
+   that a stem should be excluded; only "does it move at runtime" or a
+   direct AABB measurement is.
 6. **Flags:** apply at spawn — `INVISIBLE` (bit0) hides meshes; `PASSABLE`-class
    bits skip prop collision.
 7. **First person:** WMB `player_walk*` / `player_stand` / `player_fly` →
@@ -149,8 +173,58 @@ Prefer **data-driven** behaviour from WMB actions + `levels.json` + `wdl_meta.js
 - click actions / `Run("X.exe")` → `LevelRouter.goto_level`
 - `scene_map` → horizon cylinder
 
-Custom director chapters (Start/Studio/Shiks/Plane/Plane2) are **overlays** on
-this generic runtime, not a separate transform system.
+Custom director chapters (Start/Studio/Shiks/Plane/Plane2/Town/Range) are
+**overlays** on this generic runtime, not a separate transform system —
+each is a human hand-translation of that level's real `.wdl`, written once
+this project's previous approach (before 2026-07-28) and left untouched.
+
+### 4.1. Generic WDL interpreter (2026-07-28) — for every level without a hand-ported chapter
+
+Hand-porting each level was explicitly rejected as "hardcoded fixes per
+stage" that doesn't scale — 15 "Intro" levels (Intro2–Intro16) had zero
+ported behavior at all before this. The fix is a real interpreter, not more
+hand-porting:
+
+- `tools/parse_wdl.py` — lexer + recursive-descent parser, WDL source text
+  → JSON AST (`assets/converted/wdl_ast/{Level}.json`). Grammar coverage is
+  measured against the whole corpus (`tools/verify_wdl_parse.py`), not
+  assumed — see that file's `KNOWN_SKIPS` for the handful of files with any
+  residual gap (all confirmed-unused Conitec SDK template scripts, not
+  `include`d by any real level; see docs/SESSION_LOG.md 2026-07-28 for how
+  that was checked, not guessed). No real `switch`/`case` control flow
+  exists anywhere in the corpus (every "switch" hit is a `bmap` resource
+  name or prose) — confirmed before deciding not to implement it, not
+  assumed absent.
+- `scripts/engine/wdl_interpreter.gd` (`WdlInterpreter`) — tree-walking
+  runtime. Each `action`/`main()` becomes an independent fire-and-forget
+  GDScript coroutine (`await get_tree().process_frame` on
+  `wait()`/`waitt()`, mirroring Acknex's own per-tick cooperative
+  scheduling and this codebase's existing `_line()` await pattern).
+  Builtins are bridged to already-verified engine code where one exists
+  (`ent_frame`/`ent_cycle`/`Talk`/`Blink`/`morph` → `MdlAnimator`;
+  `sPlay`/`snd_playing` → `AudioBus`; `Run`/`load_level` →
+  `LevelRouter`), not reimplemented. An unbridged builtin logs once
+  (`[wdl] unbridged: X`) and no-ops rather than crashing or guessing —
+  check the console for these before assuming a level "doesn't work",
+  since it names the exact missing piece.
+- Entry point: `wdl_director.gd::_try_begin_interpreted_level()`, tried
+  right before the old bare `_begin_generic_level()` fallback — a level
+  above it in the `_is_X_level()` chain (an existing hand-ported chapter)
+  never reaches this and is untouched.
+- **Verification rule for this mechanism specifically**: because an
+  interpreter bug can affect every level driven through it at once (unlike
+  a single hand-ported level bug), don't trust it on new, never-verified
+  content without also checking it reproduces a level that's *already*
+  confirmed correct by a human (e.g. replay Shiks's real `.wdl` through the
+  interpreter and compare against the existing hand-ported behavior) before
+  extending its builtin coverage further — same "external ground truth,
+  not a self-referential check" standard as rule 3 in §2.
+- **Known gaps, not silently faked**: `VECTOR`-typed by-reference builtins
+  (`vec_set`/`vec_sub`/`vec_to_angle`) are no-ops (real support needs
+  reference-semantics variables, not built yet); the `actor_*`/`ent_waypoint`/
+  `scan_path` NPC path-following library and `DoDialog` UI are unbridged.
+  Extend `_register_builtins()` in `wdl_interpreter.gd` as real playtests
+  surface what's actually needed — don't pre-build the long tail blind.
 
 ## 5. Talk / audio
 

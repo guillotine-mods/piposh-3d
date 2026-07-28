@@ -37,7 +37,28 @@ var aliases := {
 }
 
 
+var _last_switch_ms := -100000
+
+
 func goto_level(level_name: String) -> void:
+	# Re-entrancy guard: levels were observed loading twice back-to-back —
+	# confirmed on both an interpreted level (Intro2) and a hand-ported one
+	# (Plane: "WmbLevelLoader: Plane spawned=23..." and "[plane] begin:"
+	# each printed twice with byte-identical data), so this is a general
+	# double-invocation of goto_level(), not anything specific to the new
+	# interpreter. A same-frame-only guard (the first attempt at this fix)
+	# did not fully catch it, meaning the two calls can land a few frames
+	# apart (e.g. a click's press/release each independently reaching the
+	# handler) -- a short real-time cooldown is more robust than a single
+	# process_frame flag. No legitimate `Run()`/`Load_level()` transition in
+	# any real WDL script happens within a fraction of a second of the
+	# previous one, so this cannot suppress a real transition.
+	var now := Time.get_ticks_msec()
+	if now - _last_switch_ms < 500:
+		push_warning("[level_router] dropped duplicate goto_level(%s) %dms after the previous switch" % [level_name, now - _last_switch_ms])
+		return
+	_last_switch_ms = now
+
 	var key := level_name.replace(".exe", "").replace(".EXE", "").strip_edges()
 	if key.ends_with(".wdl") or key.ends_with(".WDL"):
 		key = key.get_basename()

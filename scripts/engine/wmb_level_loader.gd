@@ -437,9 +437,20 @@ func _should_feet_snap(action: String, stem: String) -> bool:
 		return false
 	if a == "window":
 		return false
+	# Every remaining stem exclusion below is a measured verdict (GLB local-Y
+	# AABB vs. WED origin + a grep of the entity's real WDL `action` body for
+	# runtime position control), not a carried-over guess — see
+	# docs/CONTRACT.md §3.5 for the full method and numbers. "tv", "hanger",
+	# and "towerw" used to be in this list too; measurement showed the same
+	# bug shape as Cockpit (mesh hangs mostly below its own origin, no WDL
+	# action ever moves them) and they were removed 2026-07-28.
 	if s in [
-		"glass", "b747", "tv", "island", "headphon",
-		"biplane", "biplane2", "hanger", "towerw", "dutyfree",
+		"glass",   # 6.7% of mesh below origin (Dutyfree-shaped) — already sits at its own floor.
+		"b747",    # `action B747` (Plane2.wdl) assigns my.z directly during takeoff — runtime vehicle, not a floor prop.
+		"island",  # `action Land` (Plane3.wdl) assigns my.y/my.z at runtime (descends, then slides) — a runtime-animated prop, not a floor prop; also sits ~387 units below floor_y in both Plane3 and Town.
+		"headphon",
+		"biplane", "biplane2",  # `action Fly` (Intro4.wdl) does my.x += .. ; my.z += .. — a real runtime-moving vehicle, same class as b747.
+		"dutyfree",  # mesh spans [0.44, 224.93] local Y — origin already sits at the mesh's own bottom.
 	]:
 		return false
 	# "cockpit" was excluded here on the assumption it's fixed attachment

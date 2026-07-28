@@ -1,0 +1,1601 @@
+{
+ "source": "movement.wdl",
+ "includes": [
+  "move.wdl",
+  "camera.wdl",
+  "animate.wdl",
+  "input.wdl"
+ ],
+ "globals": [
+  {
+   "name": "movement_scale",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 1.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "actor_scale",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 1.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "gnd_fric",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.5
+   },
+   "init_list": false
+  },
+  {
+   "name": "air_fric",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.03
+   },
+   "init_list": false
+  },
+  {
+   "name": "water_fric",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.75
+   },
+   "init_list": false
+  },
+  {
+   "name": "ang_fric",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.6
+   },
+   "init_list": false
+  },
+  {
+   "name": "gravity",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 6.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "elasticity",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.1
+   },
+   "init_list": false
+  },
+  {
+   "name": "slopefac",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 2.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "strength",
+   "kind": "var",
+   "array_size": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init": [
+    {
+     "t": "num",
+     "v": 5.0
+    },
+    {
+     "t": "num",
+     "v": 4.0
+    },
+    {
+     "t": "num",
+     "v": 75.0
+    }
+   ],
+   "init_list": true
+  },
+  {
+   "name": "astrength",
+   "kind": "var",
+   "array_size": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init": [
+    {
+     "t": "num",
+     "v": 7.0
+    },
+    {
+     "t": "num",
+     "v": 5.0
+    },
+    {
+     "t": "num",
+     "v": 2.0
+    }
+   ],
+   "init_list": true
+  },
+  {
+   "name": "jump_height",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 50.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "fall_time",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 6.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "duck_height",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 25.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "power_max",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 1.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "on_passable_",
+   "kind": "var",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "in_passable_",
+   "kind": "var",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "in_solid_",
+   "kind": "var",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "force",
+   "kind": "var",
+   "array_size": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "absforce",
+   "kind": "var",
+   "array_size": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "aforce",
+   "kind": "var",
+   "array_size": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "abspeed",
+   "kind": "var",
+   "array_size": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init": [
+    {
+     "t": "num",
+     "v": 0.0
+    },
+    {
+     "t": "num",
+     "v": 0.0
+    },
+    {
+     "t": "num",
+     "v": 0.0
+    }
+   ],
+   "init_list": true
+  },
+  {
+   "name": "dist",
+   "kind": "var",
+   "array_size": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "absdist",
+   "kind": "var",
+   "array_size": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "person_3rd",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "eye_height_up",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.8
+   },
+   "init_list": false
+  },
+  {
+   "name": "eye_height_swim",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.7
+   },
+   "init_list": false
+  },
+  {
+   "name": "eye_height_duck",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.8
+   },
+   "init_list": false
+  },
+  {
+   "name": "client_moving",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "p",
+   "kind": "var",
+   "array_size": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "friction",
+   "kind": "var",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "limit",
+   "kind": "var",
+   "array_size": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "covered_dist",
+   "kind": "var",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "anim_dist",
+   "kind": "var",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "head_angle",
+   "kind": "var",
+   "array_size": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init": [
+    {
+     "t": "num",
+     "v": 0.0
+    },
+    {
+     "t": "num",
+     "v": 0.0
+    },
+    {
+     "t": "num",
+     "v": 0.0
+    }
+   ],
+   "init_list": true
+  },
+  {
+   "name": "headwave",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "walkwave",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "my_dist",
+   "kind": "var",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "player_dist",
+   "kind": "var",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "scan_sector",
+   "kind": "var",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "my_height",
+   "kind": "var",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "my_height_passable",
+   "kind": "var",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "my_floornormal",
+   "kind": "var",
+   "array_size": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "my_floorspeed",
+   "kind": "var",
+   "array_size": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "temp_cdist",
+   "kind": "var",
+   "array_size": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init": [
+    {
+     "t": "num",
+     "v": 120.0
+    },
+    {
+     "t": "num",
+     "v": 0.0
+    },
+    {
+     "t": "num",
+     "v": 0.0
+    }
+   ],
+   "init_list": true
+  },
+  {
+   "name": "vecFrom",
+   "kind": "var",
+   "array_size": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "vecTo",
+   "kind": "var",
+   "array_size": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "temp2",
+   "kind": "var",
+   "array_size": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "player",
+   "kind": "entity",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "temp_ent",
+   "kind": "entity",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "q_anim_trans_use",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.0
+   },
+   "init_list": false
+  }
+ ],
+ "functions": {
+  "actor_anim_transition": {
+   "params": [
+    "str_anim_target",
+    "trans_ticks"
+   ],
+   "body": {
+    "t": "block",
+    "body": []
+   }
+  },
+  "player_tip": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "_MOVEMODE"
+       },
+       "value": {
+        "t": "num",
+        "v": 0.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "eye_height_up"
+        },
+        "name": "Z"
+       },
+       "value": {
+        "t": "id",
+        "name": "eye_height_up"
+       }
+      }
+     },
+     {
+      "t": "while",
+      "cond": {
+       "t": "binop",
+       "op": "<",
+       "l": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "ROLL"
+       },
+       "r": {
+        "t": "num",
+        "v": 80.0
+       }
+      },
+      "body": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "+=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "ROLL"
+          },
+          "value": {
+           "t": "binop",
+           "op": "*",
+           "l": {
+            "t": "num",
+            "v": 8.0
+           },
+           "r": {
+            "t": "id",
+            "name": "TIME"
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "+=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "TILT"
+          },
+          "value": {
+           "t": "binop",
+           "op": "*",
+           "l": {
+            "t": "num",
+            "v": 2.0
+           },
+           "r": {
+            "t": "id",
+            "name": "TIME"
+           }
+          }
+         }
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": ">",
+          "l": {
+           "t": "id",
+           "name": "eye_height_up"
+          },
+          "r": {
+           "t": "num",
+           "v": 0.15
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "-=",
+             "target": {
+              "t": "id",
+              "name": "eye_height_up"
+             },
+             "value": {
+              "t": "binop",
+              "op": "*",
+              "l": {
+               "t": "num",
+               "v": 0.1
+              },
+              "r": {
+               "t": "id",
+               "name": "TIME"
+              }
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "id",
+           "name": "client_moving"
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "move_view",
+             "args": []
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "wait",
+         "ticks": true,
+         "n": {
+          "t": "num",
+          "v": 1.0
+         }
+        }
+       ]
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "ROLL"
+       },
+       "value": {
+        "t": "num",
+        "v": 80.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "TILT"
+       },
+       "value": {
+        "t": "num",
+        "v": 20.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "eye_height_up"
+       },
+       "value": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "eye_height_up"
+        },
+        "name": "Z"
+       }
+      }
+     }
+    ]
+   }
+  },
+  "_setback": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "EVENT_TYPE"
+       },
+       "r": {
+        "t": "id",
+        "name": "EVENT_BLOCK"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "ENABLE_BLOCK"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "EVENT_TYPE"
+       },
+       "r": {
+        "t": "id",
+        "name": "EVENT_ENTITY"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "ENABLE_ENTITY"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "EVENT_TYPE"
+       },
+       "r": {
+        "t": "id",
+        "name": "EVENT_STUCK"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "ENABLE_STUCK"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "EVENT_TYPE"
+       },
+       "r": {
+        "t": "id",
+        "name": "EVENT_PUSH"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "ENABLE_PUSH"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "EVENT_TYPE"
+       },
+       "r": {
+        "t": "id",
+        "name": "EVENT_IMPACT"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "ENABLE_IMPACT"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "EVENT_TYPE"
+       },
+       "r": {
+        "t": "id",
+        "name": "EVENT_DETECT"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "ENABLE_DETECT"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "EVENT_TYPE"
+       },
+       "r": {
+        "t": "id",
+        "name": "EVENT_SCAN"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "ENABLE_SCAN"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "EVENT_TYPE"
+       },
+       "r": {
+        "t": "id",
+        "name": "EVENT_SHOOT"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "ENABLE_SHOOT"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "EVENT_TYPE"
+       },
+       "r": {
+        "t": "id",
+        "name": "EVENT_TRIGGER"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "ENABLE_TRIGGER"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "EVENT_TYPE"
+       },
+       "r": {
+        "t": "id",
+        "name": "EVENT_TOUCH"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "ENABLE_TOUCH"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "EVENT_TYPE"
+       },
+       "r": {
+        "t": "id",
+        "name": "EVENT_RELEASE"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "ENABLE_RELEASE"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "EVENT_TYPE"
+       },
+       "r": {
+        "t": "id",
+        "name": "EVENT_CLICK"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "ENABLE_CLICK"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     }
+    ]
+   }
+  },
+  "_beep": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "id",
+       "name": "BEEP"
+      }
+     }
+    ]
+   }
+  },
+  "_play_walksound": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "&&",
+       "l": {
+        "t": "binop",
+        "op": "==",
+        "l": {
+         "t": "id",
+         "name": "ME"
+        },
+        "r": {
+         "t": "id",
+         "name": "player"
+        }
+       },
+       "r": {
+        "t": "binop",
+        "op": "==",
+        "l": {
+         "t": "id",
+         "name": "person_3rd"
+        },
+        "r": {
+         "t": "num",
+         "v": 0.0
+        }
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "return",
+         "value": null
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "_WALKSOUND"
+       },
+       "r": {
+        "t": "id",
+        "name": "_SOUND_WALKER"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "play_entsound",
+          "args": [
+           {
+            "t": "id",
+            "name": "ME"
+           },
+           {
+            "t": "id",
+            "name": "thud"
+           },
+           {
+            "t": "num",
+            "v": 60.0
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "_WALKSOUND"
+       },
+       "r": {
+        "t": "id",
+        "name": "_SOUND_ROBOT"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "play_entsound",
+          "args": [
+           {
+            "t": "id",
+            "name": "ME"
+           },
+           {
+            "t": "id",
+            "name": "robo_thud"
+           },
+           {
+            "t": "num",
+            "v": 60.0
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "else": null
+     }
+    ]
+   }
+  },
+  "_test_arrow": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "PASSABLE"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "alpha"
+       },
+       "value": {
+        "t": "num",
+        "v": 25.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "transparent"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "SCALE_X"
+       },
+       "value": {
+        "t": "num",
+        "v": 0.45
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "SCALE_Y"
+       },
+       "value": {
+        "t": "num",
+        "v": 0.45
+       }
+      }
+     },
+     {
+      "t": "wait",
+      "ticks": false,
+      "n": {
+       "t": "num",
+       "v": 32.0
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "remove",
+       "args": [
+        {
+         "t": "id",
+         "name": "ME"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  }
+ },
+ "actions": {},
+ "sounds": {
+  "thud": "tap.wav",
+  "robo_thud": "tap.wav",
+  "splash": "splash.wav",
+  "beep_sound": "beep.wav"
+ },
+ "bmaps": {},
+ "skip_count": 1,
+ "skipped": [
+  "line 328: expected a name, got '*' ('*')"
+ ]
+}

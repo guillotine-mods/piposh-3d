@@ -1,0 +1,6826 @@
+{
+ "source": "Map.wdl",
+ "includes": [
+  "IO.wdl"
+ ],
+ "globals": [
+  {
+   "name": "video_mode",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 6.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "video_depth",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 16.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "Say",
+   "kind": "var",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "SND",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "LastLev",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "SkipMovie",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.0
+   },
+   "init_list": false
+  }
+ ],
+ "functions": {
+  "CheckLastLev": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "&&",
+       "l": {
+        "t": "binop",
+        "op": "&&",
+        "l": {
+         "t": "binop",
+         "op": "&&",
+         "l": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "index",
+           "obj": {
+            "t": "id",
+            "name": "Asylum"
+           },
+           "idx": {
+            "t": "num",
+            "v": 2.0
+           }
+          },
+          "r": {
+           "t": "num",
+           "v": 1.0
+          }
+         },
+         "r": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "index",
+           "obj": {
+            "t": "id",
+            "name": "Olympic"
+           },
+           "idx": {
+            "t": "num",
+            "v": 3.0
+           }
+          },
+          "r": {
+           "t": "num",
+           "v": 1.0
+          }
+         }
+        },
+        "r": {
+         "t": "binop",
+         "op": "==",
+         "l": {
+          "t": "index",
+          "obj": {
+           "t": "id",
+           "name": "Village"
+          },
+          "idx": {
+           "t": "num",
+           "v": 4.0
+          }
+         },
+         "r": {
+          "t": "num",
+          "v": 1.0
+         }
+        }
+       },
+       "r": {
+        "t": "binop",
+        "op": "==",
+        "l": {
+         "t": "index",
+         "obj": {
+          "t": "id",
+          "name": "Volcano"
+         },
+         "idx": {
+          "t": "num",
+          "v": 4.0
+         }
+        },
+        "r": {
+         "t": "num",
+         "v": 1.0
+        }
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "LastLev"
+          },
+          "value": {
+           "t": "num",
+           "v": 1.0
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     }
+    ]
+   }
+  },
+  "ShowLaw": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "pLaw"
+        },
+        "name": "visible"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "pLaw"
+        },
+        "name": "alpha"
+       },
+       "value": {
+        "t": "num",
+        "v": 100.0
+       }
+      }
+     },
+     {
+      "t": "wait",
+      "ticks": false,
+      "n": {
+       "t": "num",
+       "v": 120.0
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "pLaw"
+        },
+        "name": "transparent"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "while",
+      "cond": {
+       "t": "binop",
+       "op": ">",
+       "l": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "pLaw"
+        },
+        "name": "alpha"
+       },
+       "r": {
+        "t": "num",
+        "v": 3.0
+       }
+      },
+      "body": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "pLaw"
+           },
+           "name": "alpha"
+          },
+          "value": {
+           "t": "binop",
+           "op": "-",
+           "l": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "pLaw"
+            },
+            "name": "alpha"
+           },
+           "r": {
+            "t": "binop",
+            "op": "*",
+            "l": {
+             "t": "num",
+             "v": 3.0
+            },
+            "r": {
+             "t": "id",
+             "name": "time"
+            }
+           }
+          }
+         }
+        },
+        {
+         "t": "wait",
+         "ticks": true,
+         "n": {
+          "t": "num",
+          "v": 1.0
+         }
+        }
+       ]
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "pLaw"
+        },
+        "name": "alpha"
+       },
+       "value": {
+        "t": "num",
+        "v": 0.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "pLaw"
+        },
+        "name": "visible"
+       },
+       "value": {
+        "t": "bool",
+        "v": false
+       }
+      }
+     }
+    ]
+   }
+  },
+  "ShowLastLev": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "pLastLev"
+        },
+        "name": "visible"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "pLastLev"
+        },
+        "name": "alpha"
+       },
+       "value": {
+        "t": "num",
+        "v": 100.0
+       }
+      }
+     },
+     {
+      "t": "wait",
+      "ticks": false,
+      "n": {
+       "t": "num",
+       "v": 60.0
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "pLastLev"
+        },
+        "name": "transparent"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "while",
+      "cond": {
+       "t": "binop",
+       "op": ">",
+       "l": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "pLastLev"
+        },
+        "name": "alpha"
+       },
+       "r": {
+        "t": "num",
+        "v": 3.0
+       }
+      },
+      "body": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "pLastLev"
+           },
+           "name": "alpha"
+          },
+          "value": {
+           "t": "binop",
+           "op": "-",
+           "l": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "pLastLev"
+            },
+            "name": "alpha"
+           },
+           "r": {
+            "t": "binop",
+            "op": "*",
+            "l": {
+             "t": "num",
+             "v": 3.0
+            },
+            "r": {
+             "t": "id",
+             "name": "time"
+            }
+           }
+          }
+         }
+        },
+        {
+         "t": "wait",
+         "ticks": true,
+         "n": {
+          "t": "num",
+          "v": 1.0
+         }
+        }
+       ]
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "pLastLev"
+        },
+        "name": "alpha"
+       },
+       "value": {
+        "t": "num",
+        "v": 0.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "pLastLev"
+        },
+        "name": "visible"
+       },
+       "value": {
+        "t": "bool",
+        "v": false
+       }
+      }
+     }
+    ]
+   }
+  },
+  "Goto1": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "LocationGo",
+       "args": [
+        {
+         "t": "id",
+         "name": "_Town"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "Goto2": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "!=",
+       "l": {
+        "t": "index",
+        "obj": {
+         "t": "id",
+         "name": "Olympic"
+        },
+        "idx": {
+         "t": "num",
+         "v": 3.0
+        }
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "id",
+           "name": "HasID"
+          },
+          "r": {
+           "t": "num",
+           "v": 1.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "LocationGo",
+             "args": [
+              {
+               "t": "id",
+               "name": "_Olympic"
+              }
+             ]
+            }
+           }
+          ]
+         },
+         "else": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "ShowLaw",
+             "args": []
+            }
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "else": null
+     }
+    ]
+   }
+  },
+  "Goto3": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "!=",
+       "l": {
+        "t": "index",
+        "obj": {
+         "t": "id",
+         "name": "Asylum"
+        },
+        "idx": {
+         "t": "num",
+         "v": 2.0
+        }
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "id",
+           "name": "HasID"
+          },
+          "r": {
+           "t": "num",
+           "v": 1.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "LocationGo",
+             "args": [
+              {
+               "t": "id",
+               "name": "_Asylum"
+              }
+             ]
+            }
+           }
+          ]
+         },
+         "else": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "ShowLaw",
+             "args": []
+            }
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "else": null
+     }
+    ]
+   }
+  },
+  "Goto4": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "!=",
+       "l": {
+        "t": "index",
+        "obj": {
+         "t": "id",
+         "name": "Village"
+        },
+        "idx": {
+         "t": "num",
+         "v": 4.0
+        }
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "id",
+           "name": "HasID"
+          },
+          "r": {
+           "t": "num",
+           "v": 1.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "LocationGo",
+             "args": [
+              {
+               "t": "id",
+               "name": "_Village"
+              }
+             ]
+            }
+           }
+          ]
+         },
+         "else": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "ShowLaw",
+             "args": []
+            }
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "else": null
+     }
+    ]
+   }
+  },
+  "Goto5": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "!=",
+       "l": {
+        "t": "index",
+        "obj": {
+         "t": "id",
+         "name": "Volcano"
+        },
+        "idx": {
+         "t": "num",
+         "v": 4.0
+        }
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "id",
+           "name": "HasID"
+          },
+          "r": {
+           "t": "num",
+           "v": 1.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "LocationGo",
+             "args": [
+              {
+               "t": "id",
+               "name": "_Volcano"
+              }
+             ]
+            }
+           }
+          ]
+         },
+         "else": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "ShowLaw",
+             "args": []
+            }
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "else": null
+     }
+    ]
+   }
+  },
+  "Goto6": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "CheckLastLev",
+       "args": []
+      }
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "LastLev"
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "LocationGo",
+          "args": [
+           {
+            "t": "id",
+            "name": "_Mansion"
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "else": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "ShowLastLev",
+          "args": []
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "Show1": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "SetLocations",
+       "args": [
+        {
+         "t": "id",
+         "name": "_Town"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "Show2": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "SetLocations",
+       "args": [
+        {
+         "t": "id",
+         "name": "_Olympic"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "Show3": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "SetLocations",
+       "args": [
+        {
+         "t": "id",
+         "name": "_Asylum"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "Show4": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "SetLocations",
+       "args": [
+        {
+         "t": "id",
+         "name": "_Village"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "Show5": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "SetLocations",
+       "args": [
+        {
+         "t": "id",
+         "name": "_Volcano"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "Show6": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "SetLocations",
+       "args": [
+        {
+         "t": "id",
+         "name": "_Mansion"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "LocationGo": {
+   "params": [
+    "ID"
+   ],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "!=",
+       "l": {
+        "t": "id",
+        "name": "HasID"
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "Run",
+          "args": [
+           {
+            "t": "str",
+            "v": "Town.exe"
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "else": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "filehandle"
+          },
+          "value": {
+           "t": "call",
+           "name": "file_open_write",
+           "args": [
+            {
+             "t": "str",
+             "v": "Arrive.dat"
+            }
+           ]
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "file_asc_write",
+          "args": [
+           {
+            "t": "id",
+            "name": "filehandle"
+           },
+           {
+            "t": "id",
+            "name": "ID"
+           }
+          ]
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "file_close",
+          "args": [
+           {
+            "t": "id",
+            "name": "filehandle"
+           }
+          ]
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "Run",
+          "args": [
+           {
+            "t": "str",
+            "v": "Desert.exe"
+           }
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "SetLocations": {
+   "params": [
+    "ID"
+   ],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "x1"
+        },
+        "name": "visible"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "x2"
+        },
+        "name": "visible"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "x3"
+        },
+        "name": "visible"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "x4"
+        },
+        "name": "visible"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "x5"
+        },
+        "name": "visible"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "d1"
+        },
+        "name": "visible"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "d2"
+        },
+        "name": "visible"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "d3"
+        },
+        "name": "visible"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "d4"
+        },
+        "name": "visible"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "d5"
+        },
+        "name": "visible"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "ID"
+       },
+       "r": {
+        "t": "id",
+        "name": "_ASYLUM"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x1"
+           },
+           "name": "bmap"
+          },
+          "value": {
+           "t": "id",
+           "name": "asy1"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x2"
+           },
+           "name": "bmap"
+          },
+          "value": {
+           "t": "id",
+           "name": "asy2"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x3"
+           },
+           "name": "bmap"
+          },
+          "value": {
+           "t": "id",
+           "name": "asy3"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x4"
+           },
+           "name": "visible"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x5"
+           },
+           "name": "visible"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "index",
+           "obj": {
+            "t": "id",
+            "name": "Asylum"
+           },
+           "idx": {
+            "t": "num",
+            "v": 2.0
+           }
+          },
+          "r": {
+           "t": "num",
+           "v": 1.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d1"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d2"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d3"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "index",
+           "obj": {
+            "t": "id",
+            "name": "Asylum"
+           },
+           "idx": {
+            "t": "num",
+            "v": 2.0
+           }
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d1"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d2"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d3"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "none"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "index",
+           "obj": {
+            "t": "id",
+            "name": "Asylum"
+           },
+           "idx": {
+            "t": "num",
+            "v": 1.0
+           }
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d1"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d2"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "none"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d3"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "index",
+           "obj": {
+            "t": "id",
+            "name": "Asylum"
+           },
+           "idx": {
+            "t": "num",
+            "v": 0.0
+           }
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d1"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "none"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d2"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d3"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "d4"
+           },
+           "name": "visible"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "d5"
+           },
+           "name": "visible"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "ID"
+       },
+       "r": {
+        "t": "id",
+        "name": "_MANSION"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x1"
+           },
+           "name": "bmap"
+          },
+          "value": {
+           "t": "id",
+           "name": "man1"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x2"
+           },
+           "name": "bmap"
+          },
+          "value": {
+           "t": "id",
+           "name": "man2"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x3"
+           },
+           "name": "bmap"
+          },
+          "value": {
+           "t": "id",
+           "name": "man3"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x4"
+           },
+           "name": "visible"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x5"
+           },
+           "name": "visible"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "index",
+           "obj": {
+            "t": "id",
+            "name": "Mansion"
+           },
+           "idx": {
+            "t": "num",
+            "v": 2.0
+           }
+          },
+          "r": {
+           "t": "num",
+           "v": 1.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d1"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d2"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d3"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "index",
+           "obj": {
+            "t": "id",
+            "name": "Mansion"
+           },
+           "idx": {
+            "t": "num",
+            "v": 2.0
+           }
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d1"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d2"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d3"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "none"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "index",
+           "obj": {
+            "t": "id",
+            "name": "Mansion"
+           },
+           "idx": {
+            "t": "num",
+            "v": 1.0
+           }
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d1"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d2"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "none"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d3"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "index",
+           "obj": {
+            "t": "id",
+            "name": "Mansion"
+           },
+           "idx": {
+            "t": "num",
+            "v": 0.0
+           }
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d1"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "none"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d2"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d3"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "d4"
+           },
+           "name": "visible"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "d5"
+           },
+           "name": "visible"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "ID"
+       },
+       "r": {
+        "t": "id",
+        "name": "_OLYMPIC"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x1"
+           },
+           "name": "bmap"
+          },
+          "value": {
+           "t": "id",
+           "name": "oly1"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x2"
+           },
+           "name": "bmap"
+          },
+          "value": {
+           "t": "id",
+           "name": "oly2"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x3"
+           },
+           "name": "bmap"
+          },
+          "value": {
+           "t": "id",
+           "name": "oly3"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x4"
+           },
+           "name": "bmap"
+          },
+          "value": {
+           "t": "id",
+           "name": "oly4"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x5"
+           },
+           "name": "visible"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "index",
+           "obj": {
+            "t": "id",
+            "name": "Olympic"
+           },
+           "idx": {
+            "t": "num",
+            "v": 3.0
+           }
+          },
+          "r": {
+           "t": "num",
+           "v": 1.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d1"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d2"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d3"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d4"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "index",
+           "obj": {
+            "t": "id",
+            "name": "Olympic"
+           },
+           "idx": {
+            "t": "num",
+            "v": 3.0
+           }
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d1"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d2"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d3"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d4"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "none"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "index",
+           "obj": {
+            "t": "id",
+            "name": "Olympic"
+           },
+           "idx": {
+            "t": "num",
+            "v": 2.0
+           }
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d1"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d2"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d3"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "none"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d4"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "index",
+           "obj": {
+            "t": "id",
+            "name": "Olympic"
+           },
+           "idx": {
+            "t": "num",
+            "v": 1.0
+           }
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d1"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d2"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "none"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d3"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d4"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "index",
+           "obj": {
+            "t": "id",
+            "name": "Olympic"
+           },
+           "idx": {
+            "t": "num",
+            "v": 0.0
+           }
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d1"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "none"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d2"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d3"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d4"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "d5"
+           },
+           "name": "visible"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "ID"
+       },
+       "r": {
+        "t": "id",
+        "name": "_TOWN"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x1"
+           },
+           "name": "bmap"
+          },
+          "value": {
+           "t": "id",
+           "name": "town"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x2"
+           },
+           "name": "visible"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x3"
+           },
+           "name": "visible"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x4"
+           },
+           "name": "visible"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x5"
+           },
+           "name": "visible"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "d1"
+           },
+           "name": "bmap"
+          },
+          "value": {
+           "t": "id",
+           "name": "none"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "d2"
+           },
+           "name": "visible"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "d3"
+           },
+           "name": "visible"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "d4"
+           },
+           "name": "visible"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "d5"
+           },
+           "name": "visible"
+          },
+          "value": {
+           "t": "bool",
+           "v": false
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "ID"
+       },
+       "r": {
+        "t": "id",
+        "name": "_VOLCANO"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x1"
+           },
+           "name": "bmap"
+          },
+          "value": {
+           "t": "id",
+           "name": "vol1"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x2"
+           },
+           "name": "bmap"
+          },
+          "value": {
+           "t": "id",
+           "name": "vol2"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x3"
+           },
+           "name": "bmap"
+          },
+          "value": {
+           "t": "id",
+           "name": "vol3"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x4"
+           },
+           "name": "bmap"
+          },
+          "value": {
+           "t": "id",
+           "name": "vol4"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x5"
+           },
+           "name": "bmap"
+          },
+          "value": {
+           "t": "id",
+           "name": "vol5"
+          }
+         }
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "index",
+           "obj": {
+            "t": "id",
+            "name": "Volcano"
+           },
+           "idx": {
+            "t": "num",
+            "v": 4.0
+           }
+          },
+          "r": {
+           "t": "num",
+           "v": 1.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d1"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d2"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d3"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d4"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d5"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "index",
+           "obj": {
+            "t": "id",
+            "name": "Volcano"
+           },
+           "idx": {
+            "t": "num",
+            "v": 4.0
+           }
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d1"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d2"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d3"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d4"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d5"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "none"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "index",
+           "obj": {
+            "t": "id",
+            "name": "Volcano"
+           },
+           "idx": {
+            "t": "num",
+            "v": 3.0
+           }
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d1"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d2"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d3"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d4"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "none"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d5"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "index",
+           "obj": {
+            "t": "id",
+            "name": "Volcano"
+           },
+           "idx": {
+            "t": "num",
+            "v": 2.0
+           }
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d1"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d2"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d3"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "none"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d4"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d5"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "index",
+           "obj": {
+            "t": "id",
+            "name": "Volcano"
+           },
+           "idx": {
+            "t": "num",
+            "v": 1.0
+           }
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d1"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d2"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "none"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d3"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d4"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d5"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "index",
+           "obj": {
+            "t": "id",
+            "name": "Volcano"
+           },
+           "idx": {
+            "t": "num",
+            "v": 0.0
+           }
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d1"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "none"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d2"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d3"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d4"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d5"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "ID"
+       },
+       "r": {
+        "t": "id",
+        "name": "_VILLAGE"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x1"
+           },
+           "name": "bmap"
+          },
+          "value": {
+           "t": "id",
+           "name": "vil1"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x2"
+           },
+           "name": "bmap"
+          },
+          "value": {
+           "t": "id",
+           "name": "vil2"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x3"
+           },
+           "name": "bmap"
+          },
+          "value": {
+           "t": "id",
+           "name": "vil3"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x4"
+           },
+           "name": "bmap"
+          },
+          "value": {
+           "t": "id",
+           "name": "vil4"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "x5"
+           },
+           "name": "bmap"
+          },
+          "value": {
+           "t": "id",
+           "name": "vil5"
+          }
+         }
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "index",
+           "obj": {
+            "t": "id",
+            "name": "Village"
+           },
+           "idx": {
+            "t": "num",
+            "v": 4.0
+           }
+          },
+          "r": {
+           "t": "num",
+           "v": 1.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d1"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d2"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d3"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d4"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d5"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "index",
+           "obj": {
+            "t": "id",
+            "name": "Village"
+           },
+           "idx": {
+            "t": "num",
+            "v": 4.0
+           }
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d1"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d2"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d3"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d4"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d5"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "none"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "index",
+           "obj": {
+            "t": "id",
+            "name": "Village"
+           },
+           "idx": {
+            "t": "num",
+            "v": 3.0
+           }
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d1"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d2"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d3"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d4"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "none"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d5"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "index",
+           "obj": {
+            "t": "id",
+            "name": "Village"
+           },
+           "idx": {
+            "t": "num",
+            "v": 2.0
+           }
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d1"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d2"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d3"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "none"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d4"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d5"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "index",
+           "obj": {
+            "t": "id",
+            "name": "Village"
+           },
+           "idx": {
+            "t": "num",
+            "v": 1.0
+           }
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d1"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "done"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d2"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "none"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d3"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d4"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d5"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "index",
+           "obj": {
+            "t": "id",
+            "name": "Village"
+           },
+           "idx": {
+            "t": "num",
+            "v": 0.0
+           }
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d1"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "none"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d2"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d3"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d4"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "d5"
+              },
+              "name": "bmap"
+             },
+             "value": {
+              "t": "id",
+              "name": "nota"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        }
+       ]
+      },
+      "else": null
+     }
+    ]
+   }
+  },
+  "main": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "wait",
+      "ticks": true,
+      "n": {
+       "t": "num",
+       "v": 3.0
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "warn_level"
+       },
+       "value": {
+        "t": "num",
+        "v": 0.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "tex_share"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "vNoMap"
+       },
+       "value": {
+        "t": "num",
+        "v": 1.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "Say"
+       },
+       "value": {
+        "t": "call",
+        "name": "int",
+        "args": [
+         {
+          "t": "call",
+          "name": "random",
+          "args": [
+           {
+            "t": "num",
+            "v": 7.0
+           }
+          ]
+         }
+        ]
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "load_level",
+       "args": [
+        {
+         "t": "res",
+         "v": "Map.WMB"
+        }
+       ]
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "VoiceInit",
+       "args": []
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "Initialize",
+       "args": []
+      }
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "HasID"
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "entPhotoID"
+           },
+           "name": "skin"
+          },
+          "value": {
+           "t": "id",
+           "name": "varPhotoID"
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     }
+    ]
+   }
+  },
+  "EndLogo": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "SkipMovie"
+       },
+       "value": {
+        "t": "num",
+        "v": 1.0
+       }
+      }
+     }
+    ]
+   }
+  }
+ },
+ "actions": {
+  "Dummy": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "while",
+      "cond": {
+       "t": "num",
+       "v": 1.0
+      },
+      "body": {
+       "t": "block",
+       "body": [
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "pMap"
+           },
+           "name": "visible"
+          },
+          "r": {
+           "t": "bool",
+           "v": true
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "BuildVase",
+             "args": []
+            }
+           },
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": "==",
+             "l": {
+              "t": "id",
+              "name": "HasID"
+             },
+             "r": {
+              "t": "num",
+              "v": 1.0
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "entPhotoID"
+                 },
+                 "name": "visible"
+                },
+                "value": {
+                 "t": "bool",
+                 "v": true
+                }
+               }
+              }
+             ]
+            },
+            "else": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "entPhotoID"
+                 },
+                 "name": "visible"
+                },
+                "value": {
+                 "t": "bool",
+                 "v": false
+                }
+               }
+              }
+             ]
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "entPhotoID"
+              },
+              "name": "pan"
+             },
+             "value": {
+              "t": "binop",
+              "op": "+",
+              "l": {
+               "t": "field",
+               "obj": {
+                "t": "id",
+                "name": "entPhotoID"
+               },
+               "name": "pan"
+              },
+              "r": {
+               "t": "binop",
+               "op": "*",
+               "l": {
+                "t": "num",
+                "v": 2.0
+               },
+               "r": {
+                "t": "id",
+                "name": "time"
+               }
+              }
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "entPhotoID"
+              },
+              "name": "tilt"
+             },
+             "value": {
+              "t": "binop",
+              "op": "-",
+              "l": {
+               "t": "field",
+               "obj": {
+                "t": "id",
+                "name": "entPhotoID"
+               },
+               "name": "tilt"
+              },
+              "r": {
+               "t": "binop",
+               "op": "*",
+               "l": {
+                "t": "num",
+                "v": 2.0
+               },
+               "r": {
+                "t": "id",
+                "name": "time"
+               }
+              }
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "entPhotoID"
+              },
+              "name": "roll"
+             },
+             "value": {
+              "t": "binop",
+              "op": "-",
+              "l": {
+               "t": "field",
+               "obj": {
+                "t": "id",
+                "name": "entPhotoID"
+               },
+               "name": "roll"
+              },
+              "r": {
+               "t": "binop",
+               "op": "*",
+               "l": {
+                "t": "num",
+                "v": 2.0
+               },
+               "r": {
+                "t": "id",
+                "name": "time"
+               }
+              }
+             }
+            }
+           },
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": "==",
+             "l": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "entSaveLoadMenu"
+              },
+              "name": "visible"
+             },
+             "r": {
+              "t": "bool",
+              "v": false
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "entVaseMenu1"
+                 },
+                 "name": "pan"
+                },
+                "value": {
+                 "t": "binop",
+                 "op": "-",
+                 "l": {
+                  "t": "field",
+                  "obj": {
+                   "t": "id",
+                   "name": "entVaseMenu1"
+                  },
+                  "name": "pan"
+                 },
+                 "r": {
+                  "t": "binop",
+                  "op": "*",
+                  "l": {
+                   "t": "num",
+                   "v": 2.0
+                  },
+                  "r": {
+                   "t": "id",
+                   "name": "time"
+                  }
+                 }
+                }
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "entVaseMenu1"
+                 },
+                 "name": "tilt"
+                },
+                "value": {
+                 "t": "binop",
+                 "op": "+",
+                 "l": {
+                  "t": "field",
+                  "obj": {
+                   "t": "id",
+                   "name": "entVaseMenu1"
+                  },
+                  "name": "tilt"
+                 },
+                 "r": {
+                  "t": "binop",
+                  "op": "*",
+                  "l": {
+                   "t": "num",
+                   "v": 2.0
+                  },
+                  "r": {
+                   "t": "id",
+                   "name": "time"
+                  }
+                 }
+                }
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "entVaseMenu1"
+                 },
+                 "name": "roll"
+                },
+                "value": {
+                 "t": "binop",
+                 "op": "+",
+                 "l": {
+                  "t": "field",
+                  "obj": {
+                   "t": "id",
+                   "name": "entVaseMenu1"
+                  },
+                  "name": "roll"
+                 },
+                 "r": {
+                  "t": "binop",
+                  "op": "*",
+                  "l": {
+                   "t": "num",
+                   "v": 2.0
+                  },
+                  "r": {
+                   "t": "id",
+                   "name": "time"
+                  }
+                 }
+                }
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "entVaseMenu2"
+                 },
+                 "name": "pan"
+                },
+                "value": {
+                 "t": "binop",
+                 "op": "-",
+                 "l": {
+                  "t": "field",
+                  "obj": {
+                   "t": "id",
+                   "name": "entVaseMenu2"
+                  },
+                  "name": "pan"
+                 },
+                 "r": {
+                  "t": "binop",
+                  "op": "*",
+                  "l": {
+                   "t": "num",
+                   "v": 2.0
+                  },
+                  "r": {
+                   "t": "id",
+                   "name": "time"
+                  }
+                 }
+                }
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "entVaseMenu2"
+                 },
+                 "name": "tilt"
+                },
+                "value": {
+                 "t": "binop",
+                 "op": "+",
+                 "l": {
+                  "t": "field",
+                  "obj": {
+                   "t": "id",
+                   "name": "entVaseMenu2"
+                  },
+                  "name": "tilt"
+                 },
+                 "r": {
+                  "t": "binop",
+                  "op": "*",
+                  "l": {
+                   "t": "num",
+                   "v": 2.0
+                  },
+                  "r": {
+                   "t": "id",
+                   "name": "time"
+                  }
+                 }
+                }
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "entVaseMenu2"
+                 },
+                 "name": "roll"
+                },
+                "value": {
+                 "t": "binop",
+                 "op": "+",
+                 "l": {
+                  "t": "field",
+                  "obj": {
+                   "t": "id",
+                   "name": "entVaseMenu2"
+                  },
+                  "name": "roll"
+                 },
+                 "r": {
+                  "t": "binop",
+                  "op": "*",
+                  "l": {
+                   "t": "num",
+                   "v": 2.0
+                  },
+                  "r": {
+                   "t": "id",
+                   "name": "time"
+                  }
+                 }
+                }
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "entVaseMenu3"
+                 },
+                 "name": "pan"
+                },
+                "value": {
+                 "t": "binop",
+                 "op": "-",
+                 "l": {
+                  "t": "field",
+                  "obj": {
+                   "t": "id",
+                   "name": "entVaseMenu3"
+                  },
+                  "name": "pan"
+                 },
+                 "r": {
+                  "t": "binop",
+                  "op": "*",
+                  "l": {
+                   "t": "num",
+                   "v": 2.0
+                  },
+                  "r": {
+                   "t": "id",
+                   "name": "time"
+                  }
+                 }
+                }
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "entVaseMenu3"
+                 },
+                 "name": "tilt"
+                },
+                "value": {
+                 "t": "binop",
+                 "op": "+",
+                 "l": {
+                  "t": "field",
+                  "obj": {
+                   "t": "id",
+                   "name": "entVaseMenu3"
+                  },
+                  "name": "tilt"
+                 },
+                 "r": {
+                  "t": "binop",
+                  "op": "*",
+                  "l": {
+                   "t": "num",
+                   "v": 2.0
+                  },
+                  "r": {
+                   "t": "id",
+                   "name": "time"
+                  }
+                 }
+                }
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "entVaseMenu3"
+                 },
+                 "name": "roll"
+                },
+                "value": {
+                 "t": "binop",
+                 "op": "+",
+                 "l": {
+                  "t": "field",
+                  "obj": {
+                   "t": "id",
+                   "name": "entVaseMenu3"
+                  },
+                  "name": "roll"
+                 },
+                 "r": {
+                  "t": "binop",
+                  "op": "*",
+                  "l": {
+                   "t": "num",
+                   "v": 2.0
+                  },
+                  "r": {
+                   "t": "id",
+                   "name": "time"
+                  }
+                 }
+                }
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "entVaseMenu4"
+                 },
+                 "name": "pan"
+                },
+                "value": {
+                 "t": "binop",
+                 "op": "-",
+                 "l": {
+                  "t": "field",
+                  "obj": {
+                   "t": "id",
+                   "name": "entVaseMenu4"
+                  },
+                  "name": "pan"
+                 },
+                 "r": {
+                  "t": "binop",
+                  "op": "*",
+                  "l": {
+                   "t": "num",
+                   "v": 2.0
+                  },
+                  "r": {
+                   "t": "id",
+                   "name": "time"
+                  }
+                 }
+                }
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "entVaseMenu4"
+                 },
+                 "name": "tilt"
+                },
+                "value": {
+                 "t": "binop",
+                 "op": "+",
+                 "l": {
+                  "t": "field",
+                  "obj": {
+                   "t": "id",
+                   "name": "entVaseMenu4"
+                  },
+                  "name": "tilt"
+                 },
+                 "r": {
+                  "t": "binop",
+                  "op": "*",
+                  "l": {
+                   "t": "num",
+                   "v": 2.0
+                  },
+                  "r": {
+                   "t": "id",
+                   "name": "time"
+                  }
+                 }
+                }
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "entVaseMenu4"
+                 },
+                 "name": "roll"
+                },
+                "value": {
+                 "t": "binop",
+                 "op": "+",
+                 "l": {
+                  "t": "field",
+                  "obj": {
+                   "t": "id",
+                   "name": "entVaseMenu4"
+                  },
+                  "name": "roll"
+                 },
+                 "r": {
+                  "t": "binop",
+                  "op": "*",
+                  "l": {
+                   "t": "num",
+                   "v": 2.0
+                  },
+                  "r": {
+                   "t": "id",
+                   "name": "time"
+                  }
+                 }
+                }
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "entVaseMenu5"
+                 },
+                 "name": "pan"
+                },
+                "value": {
+                 "t": "binop",
+                 "op": "-",
+                 "l": {
+                  "t": "field",
+                  "obj": {
+                   "t": "id",
+                   "name": "entVaseMenu5"
+                  },
+                  "name": "pan"
+                 },
+                 "r": {
+                  "t": "binop",
+                  "op": "*",
+                  "l": {
+                   "t": "num",
+                   "v": 2.0
+                  },
+                  "r": {
+                   "t": "id",
+                   "name": "time"
+                  }
+                 }
+                }
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "entVaseMenu5"
+                 },
+                 "name": "tilt"
+                },
+                "value": {
+                 "t": "binop",
+                 "op": "+",
+                 "l": {
+                  "t": "field",
+                  "obj": {
+                   "t": "id",
+                   "name": "entVaseMenu5"
+                  },
+                  "name": "tilt"
+                 },
+                 "r": {
+                  "t": "binop",
+                  "op": "*",
+                  "l": {
+                   "t": "num",
+                   "v": 2.0
+                  },
+                  "r": {
+                   "t": "id",
+                   "name": "time"
+                  }
+                 }
+                }
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "entVaseMenu5"
+                 },
+                 "name": "roll"
+                },
+                "value": {
+                 "t": "binop",
+                 "op": "+",
+                 "l": {
+                  "t": "field",
+                  "obj": {
+                   "t": "id",
+                   "name": "entVaseMenu5"
+                  },
+                  "name": "roll"
+                 },
+                 "r": {
+                  "t": "binop",
+                  "op": "*",
+                  "l": {
+                   "t": "num",
+                   "v": 2.0
+                  },
+                  "r": {
+                   "t": "id",
+                   "name": "time"
+                  }
+                 }
+                }
+               }
+              }
+             ]
+            },
+            "else": null
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "wait",
+         "ticks": true,
+         "n": {
+          "t": "num",
+          "v": 1.0
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "Piposh": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "wait",
+      "ticks": false,
+      "n": {
+       "t": "num",
+       "v": 16.0
+      }
+     },
+     {
+      "t": "while",
+      "cond": {
+       "t": "num",
+       "v": 1.0
+      },
+      "body": {
+       "t": "block",
+       "body": [
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "call",
+           "name": "snd_playing",
+           "args": [
+            {
+             "t": "id",
+             "name": "SND"
+            }
+           ]
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "play_sound",
+             "args": [
+              {
+               "t": "id",
+               "name": "Ambient"
+              },
+              {
+               "t": "num",
+               "v": 10.0
+              }
+             ]
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "id",
+              "name": "SND"
+             },
+             "value": {
+              "t": "id",
+              "name": "result"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "my"
+           },
+           "name": "skill1"
+          },
+          "value": {
+           "t": "binop",
+           "op": "+",
+           "l": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "my"
+            },
+            "name": "skill1"
+           },
+           "r": {
+            "t": "binop",
+            "op": "*",
+            "l": {
+             "t": "num",
+             "v": 5.0
+            },
+            "r": {
+             "t": "id",
+             "name": "time"
+            }
+           }
+          }
+         }
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "&&",
+          "l": {
+           "t": "binop",
+           "op": ">",
+           "l": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "my"
+            },
+            "name": "skill1"
+           },
+           "r": {
+            "t": "num",
+            "v": 40.0
+           }
+          },
+          "r": {
+           "t": "binop",
+           "op": "==",
+           "l": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "my"
+            },
+            "name": "skill39"
+           },
+           "r": {
+            "t": "num",
+            "v": 0.0
+           }
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "my"
+              },
+              "name": "skill39"
+             },
+             "value": {
+              "t": "num",
+              "v": 1.0
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "play_sound",
+             "args": [
+              {
+               "t": "id",
+               "name": "MapOpen"
+              },
+              {
+               "t": "num",
+               "v": 100.0
+              }
+             ]
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "ent_frame",
+          "args": [
+           {
+            "t": "str",
+            "v": "stand"
+           },
+           {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "my"
+            },
+            "name": "skill1"
+           }
+          ]
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "Say"
+          },
+          "value": {
+           "t": "call",
+           "name": "int",
+           "args": [
+            {
+             "t": "call",
+             "name": "random",
+             "args": [
+              {
+               "t": "num",
+               "v": 7.0
+              }
+             ]
+            }
+           ]
+          }
+         }
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "&&",
+          "l": {
+           "t": "binop",
+           "op": ">=",
+           "l": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "my"
+            },
+            "name": "skill1"
+           },
+           "r": {
+            "t": "num",
+            "v": 100.0
+           }
+          },
+          "r": {
+           "t": "binop",
+           "op": "==",
+           "l": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "my"
+            },
+            "name": "skill40"
+           },
+           "r": {
+            "t": "num",
+            "v": 0.0
+           }
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": "==",
+             "l": {
+              "t": "id",
+              "name": "varNewMap"
+             },
+             "r": {
+              "t": "num",
+              "v": 1.0
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "if",
+               "cond": {
+                "t": "binop",
+                "op": "==",
+                "l": {
+                 "t": "id",
+                 "name": "Say"
+                },
+                "r": {
+                 "t": "num",
+                 "v": 0.0
+                }
+               },
+               "then": {
+                "t": "block",
+                "body": [
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "call",
+                   "name": "sPlay",
+                   "args": [
+                    {
+                     "t": "str",
+                     "v": "MAP001.WAV"
+                    }
+                   ]
+                  }
+                 }
+                ]
+               },
+               "else": null
+              },
+              {
+               "t": "if",
+               "cond": {
+                "t": "binop",
+                "op": "==",
+                "l": {
+                 "t": "id",
+                 "name": "Say"
+                },
+                "r": {
+                 "t": "num",
+                 "v": 1.0
+                }
+               },
+               "then": {
+                "t": "block",
+                "body": [
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "call",
+                   "name": "sPlay",
+                   "args": [
+                    {
+                     "t": "str",
+                     "v": "MAP002.WAV"
+                    }
+                   ]
+                  }
+                 }
+                ]
+               },
+               "else": null
+              },
+              {
+               "t": "if",
+               "cond": {
+                "t": "binop",
+                "op": "==",
+                "l": {
+                 "t": "id",
+                 "name": "Say"
+                },
+                "r": {
+                 "t": "num",
+                 "v": 2.0
+                }
+               },
+               "then": {
+                "t": "block",
+                "body": [
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "call",
+                   "name": "sPlay",
+                   "args": [
+                    {
+                     "t": "str",
+                     "v": "MAP003.WAV"
+                    }
+                   ]
+                  }
+                 }
+                ]
+               },
+               "else": null
+              },
+              {
+               "t": "if",
+               "cond": {
+                "t": "binop",
+                "op": "==",
+                "l": {
+                 "t": "id",
+                 "name": "Say"
+                },
+                "r": {
+                 "t": "num",
+                 "v": 3.0
+                }
+               },
+               "then": {
+                "t": "block",
+                "body": [
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "call",
+                   "name": "sPlay",
+                   "args": [
+                    {
+                     "t": "str",
+                     "v": "MAP004.WAV"
+                    }
+                   ]
+                  }
+                 }
+                ]
+               },
+               "else": null
+              },
+              {
+               "t": "if",
+               "cond": {
+                "t": "binop",
+                "op": "==",
+                "l": {
+                 "t": "id",
+                 "name": "Say"
+                },
+                "r": {
+                 "t": "num",
+                 "v": 4.0
+                }
+               },
+               "then": {
+                "t": "block",
+                "body": [
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "call",
+                   "name": "sPlay",
+                   "args": [
+                    {
+                     "t": "str",
+                     "v": "MAP005.WAV"
+                    }
+                   ]
+                  }
+                 }
+                ]
+               },
+               "else": null
+              },
+              {
+               "t": "if",
+               "cond": {
+                "t": "binop",
+                "op": "==",
+                "l": {
+                 "t": "id",
+                 "name": "Say"
+                },
+                "r": {
+                 "t": "num",
+                 "v": 5.0
+                }
+               },
+               "then": {
+                "t": "block",
+                "body": [
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "call",
+                   "name": "sPlay",
+                   "args": [
+                    {
+                     "t": "str",
+                     "v": "MAP006.WAV"
+                    }
+                   ]
+                  }
+                 }
+                ]
+               },
+               "else": null
+              },
+              {
+               "t": "if",
+               "cond": {
+                "t": "binop",
+                "op": "==",
+                "l": {
+                 "t": "id",
+                 "name": "Say"
+                },
+                "r": {
+                 "t": "num",
+                 "v": 6.0
+                }
+               },
+               "then": {
+                "t": "block",
+                "body": [
+                 {
+                  "t": "expr_stmt",
+                  "expr": {
+                   "t": "call",
+                   "name": "sPlay",
+                   "args": [
+                    {
+                     "t": "str",
+                     "v": "MAP007.WAV"
+                    }
+                   ]
+                  }
+                 }
+                ]
+               },
+               "else": null
+              }
+             ]
+            },
+            "else": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "call",
+                "name": "sPlay",
+                "args": [
+                 {
+                  "t": "str",
+                  "v": "PIP074.WAV"
+                 }
+                ]
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "id",
+                 "name": "varNewMap"
+                },
+                "value": {
+                 "t": "num",
+                 "v": 1.0
+                }
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "call",
+                "name": "WriteGameData",
+                "args": [
+                 {
+                  "t": "num",
+                  "v": 0.0
+                 }
+                ]
+               }
+              }
+             ]
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "pmap"
+              },
+              "name": "visible"
+             },
+             "value": {
+              "t": "bool",
+              "v": true
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "pnl"
+              },
+              "name": "visible"
+             },
+             "value": {
+              "t": "bool",
+              "v": true
+             }
+            }
+           },
+           {
+            "t": "wait",
+            "ticks": true,
+            "n": {
+             "t": "num",
+             "v": 1.0
+            }
+           },
+           {
+            "t": "if",
+            "cond": {
+             "t": "binop",
+             "op": "==",
+             "l": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "my"
+              },
+              "name": "skill35"
+             },
+             "r": {
+              "t": "num",
+              "v": 0.0
+             }
+            },
+            "then": {
+             "t": "block",
+             "body": [
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "call",
+                "name": "play_moviefile",
+                "args": [
+                 {
+                  "t": "str",
+                  "v": "MOV\\Map.avi"
+                 }
+                ]
+               }
+              },
+              {
+               "t": "expr_stmt",
+               "expr": {
+                "t": "assign",
+                "op": "=",
+                "target": {
+                 "t": "field",
+                 "obj": {
+                  "t": "id",
+                  "name": "my"
+                 },
+                 "name": "skill35"
+                },
+                "value": {
+                 "t": "num",
+                 "v": 1.0
+                }
+               }
+              }
+             ]
+            },
+            "else": null
+           },
+           {
+            "t": "while",
+            "cond": {
+             "t": "binop",
+             "op": "&&",
+             "l": {
+              "t": "binop",
+              "op": "!=",
+              "l": {
+               "t": "id",
+               "name": "SkipMovie"
+              },
+              "r": {
+               "t": "num",
+               "v": 1.0
+              }
+             },
+             "r": {
+              "t": "binop",
+              "op": "!=",
+              "l": {
+               "t": "id",
+               "name": "movie_frame"
+              },
+              "r": {
+               "t": "num",
+               "v": 0.0
+              }
+             }
+            },
+            "body": {
+             "t": "block",
+             "body": [
+              {
+               "t": "wait",
+               "ticks": true,
+               "n": {
+                "t": "num",
+                "v": 1.0
+               }
+              }
+             ]
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "my"
+              },
+              "name": "skill40"
+             },
+             "value": {
+              "t": "num",
+              "v": 1.0
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "id",
+             "name": "stop_movie"
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "wait",
+         "ticks": true,
+         "n": {
+          "t": "num",
+          "v": 1.0
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  }
+ },
+ "sounds": {
+  "MapOpen": "SFX056.WAV",
+  "Ambient": "SFX057.WAV"
+ },
+ "bmaps": {
+  "NotA": "icn_nota.pcx",
+  "done": "icn_done.pcx",
+  "none": "icn_none.pcx",
+  "asy1": "icn_asy1.pcx",
+  "asy2": "icn_asy2.pcx",
+  "asy3": "icn_asy3.pcx",
+  "man1": "icn_man1.pcx",
+  "man2": "icn_man2.pcx",
+  "man3": "icn_man3.pcx",
+  "oly1": "icn_oly1.pcx",
+  "oly2": "icn_oly2.pcx",
+  "oly3": "icn_oly3.pcx",
+  "oly4": "icn_oly4.pcx",
+  "town": "icn_town.pcx",
+  "vol1": "icn_vol1.pcx",
+  "vol2": "icn_vol2.pcx",
+  "vol3": "icn_vol3.pcx",
+  "vol4": "icn_vol4.pcx",
+  "vol5": "icn_vol5.pcx",
+  "vil1": "icn_vil1.pcx",
+  "vil2": "icn_vil2.pcx",
+  "vil3": "icn_vil3.pcx",
+  "vil4": "icn_vil4.pcx",
+  "vil5": "icn_vil5.pcx",
+  "mappnl": "mappnl.pcx",
+  "bLaw": "Law.pcx",
+  "Map": "Map.pcx",
+  "ba1": "city.pcx",
+  "ba2": "cityh.pcx",
+  "bb1": "stad.pcx",
+  "bb2": "stadh.pcx",
+  "bc1": "crazy.pcx",
+  "bc2": "crazyh.pcx",
+  "bd1": "vil.pcx",
+  "bd2": "vilh.pcx",
+  "be1": "mount.pcx",
+  "be2": "mounth.pcx",
+  "bf1": "manor.pcx",
+  "bf2": "manorh.pcx",
+  "bLastLev": "LastLev.pcx"
+ },
+ "skip_count": 0,
+ "skipped": []
+}

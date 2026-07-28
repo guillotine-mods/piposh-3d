@@ -1,0 +1,1567 @@
+{
+ "source": "mission.wdl",
+ "includes": [
+  "movement.wdl",
+  "messages.wdl",
+  "menu.wdl",
+  "particle.wdl",
+  "doors.wdl",
+  "actors.wdl",
+  "weapons.wdl",
+  "war.wdl",
+  "debug.wdl"
+ ],
+ "globals": [
+  {
+   "name": "mission_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "IHRE MISSION - DEN MACGUFFIN SUCHEN!\nHINWEIS - EIN MACGUFFIN SIEHT AUS WIE\nEIN UEBERDIMENSIONALER LAMPENSCHIRM."
+   },
+   "init_list": false
+  },
+  {
+   "name": "mission_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "YOUR MISSION - GET THE MACGUFFIN!\nHINT - A MACGUFFIN LOOKS LIKE\nA GIANT LAMPSHADE."
+   },
+   "init_list": false
+  },
+  {
+   "name": "need_key1_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "BITTE CD-ROM EINLEGEN"
+   },
+   "init_list": false
+  },
+  {
+   "name": "got_key1_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "CD-ROM GEFUNDEN"
+   },
+   "init_list": false
+  },
+  {
+   "name": "ok_cd",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "TORSPERRE DEAKTIVIERT"
+   },
+   "init_list": false
+  },
+  {
+   "name": "need_key2_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "TORPROGRAMM LAEUFT NICHT!"
+   },
+   "init_list": false
+  },
+  {
+   "name": "got_key3_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "MACGUFFIN GEFUNDEN!!\nJETZT AB NACH HAUSE"
+   },
+   "init_list": false
+  },
+  {
+   "name": "final_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "DANKE, DASS SIE MISSION\nGESPIELT HABEN..."
+   },
+   "init_list": false
+  },
+  {
+   "name": "need_key1_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "PLEASE INSERT CD-ROM"
+   },
+   "init_list": false
+  },
+  {
+   "name": "got_key1_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "FOUND A CD-ROM"
+   },
+   "init_list": false
+  },
+  {
+   "name": "ok_cd",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "DOOR LOCK DEACTIVATED"
+   },
+   "init_list": false
+  },
+  {
+   "name": "need_key2_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "DOOR SOFTWARE NOT RUNNING!"
+   },
+   "init_list": false
+  },
+  {
+   "name": "got_key3_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "GOT MACGUFFIN!!\nNOW OUT OF HERE..."
+   },
+   "init_list": false
+  },
+  {
+   "name": "final_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "THANK YOU FOR PLAYING MISSION..."
+   },
+   "init_list": false
+  },
+  {
+   "name": "anim_swim_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "swimming"
+   },
+   "init_list": false
+  },
+  {
+   "name": "anim_jump_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "jumpinwater"
+   },
+   "init_list": false
+  },
+  {
+   "name": "anim_stand_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "normal"
+   },
+   "init_list": false
+  },
+  {
+   "name": "anim_wade_str",
+   "kind": "string",
+   "array_size": null,
+   "init": {
+    "t": "str",
+    "v": "walk"
+   },
+   "init_list": false
+  },
+  {
+   "name": "jump_height",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 200.0
+   },
+   "init_list": false
+  }
+ ],
+ "functions": {},
+ "actions": {
+  "swingdoor": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "BRANCH",
+       "args": [
+        {
+         "t": "id",
+         "name": "door"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "klappe": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "BRANCH",
+       "args": [
+        {
+         "t": "id",
+         "name": "lid"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "init_med": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "__ROTATE"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "BRANCH",
+       "args": [
+        {
+         "t": "id",
+         "name": "medipac"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "ammo": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "__ROTATE"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "_AMMOTYPE"
+       },
+       "value": {
+        "t": "num",
+        "v": 1.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "BRANCH",
+       "args": [
+        {
+         "t": "id",
+         "name": "ammopac"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "init_ammo1": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "__ROTATE"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "_AMMOTYPE"
+       },
+       "value": {
+        "t": "num",
+        "v": 1.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "BRANCH",
+       "args": [
+        {
+         "t": "id",
+         "name": "ammopac"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "init_ammo2": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "__ROTATE"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "_AMMOTYPE"
+       },
+       "value": {
+        "t": "num",
+        "v": 2.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "BRANCH",
+       "args": [
+        {
+         "t": "id",
+         "name": "ammopac"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "init_cd": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "__ROTATE"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "_KEYTYPE"
+       },
+       "value": {
+        "t": "num",
+        "v": 1.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "BRANCH",
+       "args": [
+        {
+         "t": "id",
+         "name": "key"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "init_cdschalt": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "_KEYTYPE"
+       },
+       "value": {
+        "t": "num",
+        "v": 1.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "CALL",
+       "args": [
+        {
+         "t": "id",
+         "name": "elevator"
+        }
+       ]
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "EVENT"
+       },
+       "value": {
+        "t": "id",
+        "name": "cdschalt"
+       }
+      }
+     }
+    ]
+   }
+  },
+  "cdschalt": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "SKILL17"
+       },
+       "r": {
+        "t": "num",
+        "v": 1.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "id",
+          "name": "END"
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "CALL",
+       "args": [
+        {
+         "t": "id",
+         "name": "elevator_event"
+        }
+       ]
+      }
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "__MOVING"
+       },
+       "r": {
+        "t": "bool",
+        "v": true
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "SKILL17"
+          },
+          "value": {
+           "t": "num",
+           "v": 1.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "key2"
+          },
+          "value": {
+           "t": "num",
+           "v": 1.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "msg"
+           },
+           "name": "STRING"
+          },
+          "value": {
+           "t": "id",
+           "name": "ok_cd"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "CALL",
+          "args": [
+           {
+            "t": "id",
+            "name": "show_message"
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "else": null
+     }
+    ]
+   }
+  },
+  "big_tor_norm": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "_PAUSE"
+       },
+       "value": {
+        "t": "num",
+        "v": 80.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "BRANCH",
+       "args": [
+        {
+         "t": "id",
+         "name": "gate"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "big_tor": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "_PAUSE"
+       },
+       "value": {
+        "t": "num",
+        "v": 80.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "_KEYTYPE"
+       },
+       "value": {
+        "t": "num",
+        "v": 2.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "BRANCH",
+       "args": [
+        {
+         "t": "id",
+         "name": "gate"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "init_crisstoff": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "__ROTATE"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "_KEYTYPE"
+       },
+       "value": {
+        "t": "num",
+        "v": 3.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "BRANCH",
+       "args": [
+        {
+         "t": "id",
+         "name": "key"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "init_endlift": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "CALL",
+       "args": [
+        {
+         "t": "id",
+         "name": "elevator"
+        }
+       ]
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "EVENT"
+       },
+       "value": {
+        "t": "id",
+        "name": "endlift_operate"
+       }
+      }
+     }
+    ]
+   }
+  },
+  "endlift_operate": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "CALL",
+       "args": [
+        {
+         "t": "id",
+         "name": "elevator_event"
+        }
+       ]
+      }
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "id",
+       "name": "key3"
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "wait",
+         "ticks": false,
+         "n": null
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "num",
+          "v": 32.0
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "msg"
+           },
+           "name": "STRING"
+          },
+          "value": {
+           "t": "id",
+           "name": "final_str"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "CALL",
+          "args": [
+           {
+            "t": "id",
+            "name": "show_message"
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "else": null
+     }
+    ]
+   }
+  },
+  "main": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "splashscreen"
+        },
+        "name": "VISIBLE"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "wait",
+      "ticks": true,
+      "n": null
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "num",
+       "v": 2.0
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "LOAD_LEVEL",
+       "args": [
+        {
+         "t": "res",
+         "v": "mission.wmb"
+        }
+       ]
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "CALL",
+       "args": [
+        {
+         "t": "id",
+         "name": "load_status"
+        }
+       ]
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "IFNDEF",
+       "args": [
+        {
+         "t": "id",
+         "name": "test"
+        }
+       ]
+      }
+     },
+     {
+      "t": "wait",
+      "ticks": false,
+      "n": null
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "num",
+       "v": 8.0
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "id",
+       "name": "ENDIF"
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "splashscreen"
+        },
+        "name": "VISIBLE"
+       },
+       "value": {
+        "t": "bool",
+        "v": false
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "CALL",
+       "args": [
+        {
+         "t": "id",
+         "name": "show_panels"
+        }
+       ]
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "CALL",
+       "args": [
+        {
+         "t": "id",
+         "name": "init_sky"
+        }
+       ]
+      }
+     },
+     {
+      "t": "wait",
+      "ticks": true,
+      "n": null
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "num",
+       "v": 1.0
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "msg"
+        },
+        "name": "STRING"
+       },
+       "value": {
+        "t": "id",
+        "name": "mission_str"
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "CALL",
+       "args": [
+        {
+         "t": "id",
+         "name": "show_message"
+        }
+       ]
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "IFDEF",
+       "args": [
+        {
+         "t": "id",
+         "name": "test"
+        }
+       ]
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "mouseview"
+       },
+       "value": {
+        "t": "num",
+        "v": 0.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "CALL",
+       "args": [
+        {
+         "t": "id",
+         "name": "set_debug"
+        }
+       ]
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "id",
+       "name": "ENDIF"
+      }
+     }
+    ]
+   }
+  },
+  "player_prog": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "NARROW"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "FAT"
+       },
+       "value": {
+        "t": "bool",
+        "v": false
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "TRIGGER_RANGE"
+       },
+       "value": {
+        "t": "num",
+        "v": 5.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "_MOVEMODE"
+       },
+       "value": {
+        "t": "id",
+        "name": "_MODE_WALKING"
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "_FORCE"
+       },
+       "value": {
+        "t": "num",
+        "v": 0.75
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "_BANKING"
+       },
+       "value": {
+        "t": "unop",
+        "op": "-",
+        "expr": {
+         "t": "num",
+         "v": 0.1
+        }
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "__STRAFE"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "__BOB"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "__TRIGGER"
+       },
+       "value": {
+        "t": "bool",
+        "v": true
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "CALL",
+       "args": [
+        {
+         "t": "id",
+         "name": "player_walk"
+        }
+       ]
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "CALL",
+       "args": [
+        {
+         "t": "id",
+         "name": "player_fight"
+        }
+       ]
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "CALL",
+       "args": [
+        {
+         "t": "id",
+         "name": "drop_shadow"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "init_sky": {
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "SKY_SPEED"
+        },
+        "name": "X"
+       },
+       "value": {
+        "t": "num",
+        "v": 1.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "SKY_SPEED"
+        },
+        "name": "Y"
+       },
+       "value": {
+        "t": "num",
+        "v": 1.5
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "CLOUD_SPEED"
+        },
+        "name": "X"
+       },
+       "value": {
+        "t": "num",
+        "v": 3.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "CLOUD_SPEED"
+        },
+        "name": "Y"
+       },
+       "value": {
+        "t": "num",
+        "v": 4.5
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "SKY_SCALE"
+       },
+       "value": {
+        "t": "num",
+        "v": 0.4
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "SKY_CURVE"
+       },
+       "value": {
+        "t": "num",
+        "v": 1.0
+       }
+      }
+     }
+    ]
+   }
+  }
+ },
+ "sounds": {
+  "msg_sound": "msg.wav"
+ },
+ "bmaps": {
+  "splashmap": "splash.pcx"
+ },
+ "skip_count": 0,
+ "skipped": []
+}

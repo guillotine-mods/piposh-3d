@@ -29,14 +29,19 @@ def should_feet_snap(action: str, stem: str) -> bool:
         return False
     if a == "window":
         return False
+    # Measured verdicts (GLB local-Y AABB vs. WED origin + WDL action body
+    # grep for runtime position control) — see docs/CONTRACT.md §3.5.
+    # "tv"/"hanger"/"towerw" used to be here too; removed 2026-07-28 after
+    # measurement showed the same below-origin bug shape as Cockpit.
     if s in {
-        "glass", "b747", "tv", "island", "headphon", "biplane",
-        "biplane2", "hanger", "towerw", "dutyfree",
+        "glass", "b747", "island", "headphon", "biplane",
+        "biplane2", "dutyfree",
     }:
         return False
     if a in {"headphone", "land", "wind", "ent_rotate", "item_pickup"}:
         return False
     return True
+
 
 
 def main() -> int:
@@ -77,6 +82,12 @@ def main() -> int:
         ("", "StudioL"),
         ("", "Shtomba"),
         ("", "Cockpit"),
+        # 2026-07-28: measured the same below-origin bug shape as Cockpit
+        # (55%/43%/33% of mesh hangs below the WED origin, no WDL action
+        # ever moves them) — must snap like every other floor prop now.
+        ("", "TV"),
+        ("", "Hanger"),
+        ("", "TowerW"),
     ]:
         if not should_feet_snap(action, stem):
             print(f"FAIL set-dressing prop not snapped (regression): {action}/{stem}")

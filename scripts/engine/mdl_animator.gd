@@ -93,6 +93,120 @@ func setup_from_stem(stem: String, host: Node) -> bool:
 	return true
 
 
+## Acknex `morph(<File.mdl>, entity)` — swaps this entity to a different
+## MDL's mesh/animation/skin set at runtime, in place (same node, same
+## transform/collision), then resumable back via a second morph_to() call.
+## Previously entirely unimplemented — see docs/SESSION_LOG.md 2026-07-28.
+func morph_to(stem: String) -> bool:
+	if _mesh_instance == null:
+		return false
+	var glb := _resolve_glb(stem)
+	if glb == "":
+		return false
+	var packed: Resource = load(glb)
+	if not (packed is PackedScene):
+		return false
+	var temp: Node = (packed as PackedScene).instantiate()
+	var src := _find_mesh(temp)
+	if src == null or not (src.mesh is ArrayMesh) or (src.mesh as ArrayMesh).get_surface_count() < 1:
+		temp.queue_free()
+		return false
+	var am := src.mesh as ArrayMesh
+	_base_arrays = am.surface_get_arrays(0)
+	var src_mat := src.get_active_material(0)
+	if src_mat == null:
+		src_mat = am.surface_get_material(0)
+	temp.queue_free()
+
+	_clips.clear()
+	_remap = PackedInt32Array()
+	_skin_textures.clear()
+	_anim_verts = 0
+	_frame_count = 0
+	_positions = PackedFloat32Array()
+	_current_clip = ""
+	_playing = false
+	_acknex_talk = false
+	_acknex_blink = false
+	_talk_skins = false
+
+	var vert_arr: Variant = _base_arrays[Mesh.ARRAY_VERTEX]
+	_mesh_verts = (vert_arr as PackedVector3Array).size() if vert_arr is PackedVector3Array else 0
+	_bind_stem(stem, src_mat, vert_arr)
+	return true
+
+
+## Shared tail of setup_from_stem() / morph_to(): load skins/.mdlanim for
+## `stem`, build the vertex remap against whatever mesh is currently in
+## `_base_arrays`, apply material style, and start an idle pose/clip.
+func _bind_stem(stem: String, src_mat: Material, vert_arr: Variant) -> void:
+	_load_skins(stem)
+	var path := _resolve_anim(stem)
+	var has_anim := path != "" and FileAccess.file_exists(path) and _load_anim(path)
+	if has_anim and _mesh_verts > 0 and _anim_verts > 0:
+		_build_remap(vert_arr as PackedVector3Array)
+	elif has_anim and _mesh_verts != _anim_verts:
+		push_warning(
+			"MdlAnimator: %s mesh verts %d != anim %d — skipping morph"
+			% [stem, _mesh_verts, _anim_verts]
+		)
+		has_anim = false
+
+	if src_mat is BaseMaterial3D:
+		_material = (src_mat as BaseMaterial3D).duplicate()
+	else:
+		_material = StandardMaterial3D.new()
+	_apply_material_style(_material)
+	_mesh_instance.set_surface_override_material(0, _material)
+	_mesh_instance.lod_bias = 128.0
+	if _skin_textures.size() > 0:
+		set_skin(0)
+
+	if has_anim and _remap.size() == _mesh_verts and _mesh_verts > 0:
+		# Restore bind pose through remap before any clip (fixes import reorder).
+		_set_blended_frame(0, 0, 0.0)
+	else:
+		# Static single-frame model (no .mdlanim, or a verts mismatch): show
+		# the bind-pose mesh directly instead of leaving the OLD mesh/clips
+		# on screen from before this call.
+		var arrays: Array = _base_arrays.duplicate()
+		var m := ArrayMesh.new()
+		m.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+		_mesh_instance.mesh = m
+		_mesh_instance.set_surface_override_material(0, _material)
+
+	var idle := autoplay_clip if _clips.has(autoplay_clip) else ""
+	if idle == "" and _clips.has("Stand"):
+		idle = "Stand"
+	if idle != "":
+		var low := idle.to_lower()
+		if low in ["stand", "closed", "speech"] or low.begins_with("stand"):
+			play_frame(idle, 0.0)
+		else:
+			play_cycle(idle, 0.0)
+	elif _clips.has("Frame"):
+		play_cycle("Frame", 0.0)
+
+
+func _resolve_glb(stem: String) -> String:
+	var cands: Array[String] = [stem, stem.to_lower()]
+	for s in cands:
+		var direct := "res://assets/converted/mdl/%s.glb" % s
+		if FileAccess.file_exists(direct):
+			return direct
+	var dir := DirAccess.open("res://assets/converted/mdl/")
+	if dir == null:
+		return ""
+	var want := stem.to_lower() + ".glb"
+	dir.list_dir_begin()
+	var fn := dir.get_next()
+	while fn != "":
+		if fn.to_lower() == want:
+			return "res://assets/converted/mdl/" + fn
+		fn = dir.get_next()
+	return ""
+
+
 func play_cycle(clip: String, percent: float = 0.0) -> void:
 	var key := _resolve_clip(clip)
 	if key == "":

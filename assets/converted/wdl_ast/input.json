@@ -1,0 +1,2093 @@
+{
+ "source": "input.wdl",
+ "includes": [],
+ "globals": [
+  {
+   "name": "indicator",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "mouseview",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 1.0
+   },
+   "init_list": false
+  }
+ ],
+ "functions": {
+  "_player_intentions": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "aforce"
+        },
+        "name": "PAN"
+       },
+       "value": {
+        "t": "binop",
+        "op": "*",
+        "l": {
+         "t": "unop",
+         "op": "-",
+         "expr": {
+          "t": "field",
+          "obj": {
+           "t": "id",
+           "name": "astrength"
+          },
+          "name": "PAN"
+         }
+        },
+        "r": {
+         "t": "binop",
+         "op": "+",
+         "l": {
+          "t": "field",
+          "obj": {
+           "t": "id",
+           "name": "KEY_FORCE"
+          },
+          "name": "X"
+         },
+         "r": {
+          "t": "field",
+          "obj": {
+           "t": "id",
+           "name": "JOY_FORCE"
+          },
+          "name": "X"
+         }
+        }
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "aforce"
+        },
+        "name": "TILT"
+       },
+       "value": {
+        "t": "binop",
+        "op": "*",
+        "l": {
+         "t": "field",
+         "obj": {
+          "t": "id",
+          "name": "astrength"
+         },
+         "name": "TILT"
+        },
+        "r": {
+         "t": "binop",
+         "op": "-",
+         "l": {
+          "t": "id",
+          "name": "KEY_PGUP"
+         },
+         "r": {
+          "t": "id",
+          "name": "KEY_PGDN"
+         }
+        }
+       }
+      }
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "MOUSE_MODE"
+       },
+       "r": {
+        "t": "num",
+        "v": 0.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "+=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "aforce"
+           },
+           "name": "PAN"
+          },
+          "value": {
+           "t": "binop",
+           "op": "*",
+           "l": {
+            "t": "binop",
+            "op": "*",
+            "l": {
+             "t": "binop",
+             "op": "*",
+             "l": {
+              "t": "unop",
+              "op": "-",
+              "expr": {
+               "t": "field",
+               "obj": {
+                "t": "id",
+                "name": "astrength"
+               },
+               "name": "PAN"
+              }
+             },
+             "r": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MOUSE_FORCE"
+              },
+              "name": "X"
+             }
+            },
+            "r": {
+             "t": "id",
+             "name": "mouseview"
+            }
+           },
+           "r": {
+            "t": "binop",
+            "op": "+",
+            "l": {
+             "t": "num",
+             "v": 1.0
+            },
+            "r": {
+             "t": "id",
+             "name": "KEY_SHIFT"
+            }
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "+=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "aforce"
+           },
+           "name": "TILT"
+          },
+          "value": {
+           "t": "binop",
+           "op": "*",
+           "l": {
+            "t": "binop",
+            "op": "*",
+            "l": {
+             "t": "binop",
+             "op": "*",
+             "l": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "astrength"
+              },
+              "name": "TILT"
+             },
+             "r": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "MOUSE_FORCE"
+              },
+              "name": "Y"
+             }
+            },
+            "r": {
+             "t": "id",
+             "name": "mouseview"
+            }
+           },
+           "r": {
+            "t": "binop",
+            "op": "+",
+            "l": {
+             "t": "num",
+             "v": 1.0
+            },
+            "r": {
+             "t": "id",
+             "name": "KEY_SHIFT"
+            }
+           }
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "aforce"
+        },
+        "name": "ROLL"
+       },
+       "value": {
+        "t": "num",
+        "v": 0.0
+       }
+      }
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "!=",
+       "l": {
+        "t": "id",
+        "name": "KEY_ALT"
+       },
+       "r": {
+        "t": "num",
+        "v": 0.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "aforce"
+           },
+           "name": "ROLL"
+          },
+          "value": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "aforce"
+           },
+           "name": "PAN"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "aforce"
+           },
+           "name": "PAN"
+          },
+          "value": {
+           "t": "num",
+           "v": 0.0
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "limit"
+        },
+        "name": "PAN"
+       },
+       "value": {
+        "t": "binop",
+        "op": "*",
+        "l": {
+         "t": "num",
+         "v": 2.0
+        },
+        "r": {
+         "t": "field",
+         "obj": {
+          "t": "id",
+          "name": "astrength"
+         },
+         "name": "PAN"
+        }
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "limit"
+        },
+        "name": "TILT"
+       },
+       "value": {
+        "t": "binop",
+        "op": "*",
+        "l": {
+         "t": "num",
+         "v": 2.0
+        },
+        "r": {
+         "t": "field",
+         "obj": {
+          "t": "id",
+          "name": "astrength"
+         },
+         "name": "TILT"
+        }
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "limit"
+        },
+        "name": "ROLL"
+       },
+       "value": {
+        "t": "binop",
+        "op": "*",
+        "l": {
+         "t": "num",
+         "v": 2.0
+        },
+        "r": {
+         "t": "field",
+         "obj": {
+          "t": "id",
+          "name": "astrength"
+         },
+         "name": "ROLL"
+        }
+       }
+      }
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": ">",
+       "l": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "aforce"
+        },
+        "name": "PAN"
+       },
+       "r": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "limit"
+        },
+        "name": "PAN"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "aforce"
+           },
+           "name": "PAN"
+          },
+          "value": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "limit"
+           },
+           "name": "PAN"
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "<",
+       "l": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "aforce"
+        },
+        "name": "PAN"
+       },
+       "r": {
+        "t": "unop",
+        "op": "-",
+        "expr": {
+         "t": "field",
+         "obj": {
+          "t": "id",
+          "name": "limit"
+         },
+         "name": "PAN"
+        }
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "aforce"
+           },
+           "name": "PAN"
+          },
+          "value": {
+           "t": "unop",
+           "op": "-",
+           "expr": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "limit"
+            },
+            "name": "PAN"
+           }
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": ">",
+       "l": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "aforce"
+        },
+        "name": "TILT"
+       },
+       "r": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "limit"
+        },
+        "name": "TILT"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "aforce"
+           },
+           "name": "TILT"
+          },
+          "value": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "limit"
+           },
+           "name": "TILT"
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "<",
+       "l": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "aforce"
+        },
+        "name": "TILT"
+       },
+       "r": {
+        "t": "unop",
+        "op": "-",
+        "expr": {
+         "t": "field",
+         "obj": {
+          "t": "id",
+          "name": "limit"
+         },
+         "name": "TILT"
+        }
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "aforce"
+           },
+           "name": "TILT"
+          },
+          "value": {
+           "t": "unop",
+           "op": "-",
+           "expr": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "limit"
+            },
+            "name": "TILT"
+           }
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": ">",
+       "l": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "aforce"
+        },
+        "name": "ROLL"
+       },
+       "r": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "limit"
+        },
+        "name": "ROLL"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "aforce"
+           },
+           "name": "ROLL"
+          },
+          "value": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "limit"
+           },
+           "name": "ROLL"
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "<",
+       "l": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "aforce"
+        },
+        "name": "ROLL"
+       },
+       "r": {
+        "t": "unop",
+        "op": "-",
+        "expr": {
+         "t": "field",
+         "obj": {
+          "t": "id",
+          "name": "limit"
+         },
+         "name": "ROLL"
+        }
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "aforce"
+           },
+           "name": "ROLL"
+          },
+          "value": {
+           "t": "unop",
+           "op": "-",
+           "expr": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "limit"
+            },
+            "name": "ROLL"
+           }
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "force"
+        },
+        "name": "X"
+       },
+       "value": {
+        "t": "binop",
+        "op": "*",
+        "l": {
+         "t": "field",
+         "obj": {
+          "t": "id",
+          "name": "strength"
+         },
+         "name": "X"
+        },
+        "r": {
+         "t": "binop",
+         "op": "+",
+         "l": {
+          "t": "field",
+          "obj": {
+           "t": "id",
+           "name": "KEY_FORCE"
+          },
+          "name": "Y"
+         },
+         "r": {
+          "t": "field",
+          "obj": {
+           "t": "id",
+           "name": "JOY_FORCE"
+          },
+          "name": "Y"
+         }
+        }
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "force"
+        },
+        "name": "Y"
+       },
+       "value": {
+        "t": "binop",
+        "op": "*",
+        "l": {
+         "t": "field",
+         "obj": {
+          "t": "id",
+          "name": "strength"
+         },
+         "name": "Y"
+        },
+        "r": {
+         "t": "binop",
+         "op": "-",
+         "l": {
+          "t": "id",
+          "name": "KEY_COMMA"
+         },
+         "r": {
+          "t": "id",
+          "name": "KEY_PERIOD"
+         }
+        }
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "force"
+        },
+        "name": "Z"
+       },
+       "value": {
+        "t": "binop",
+        "op": "*",
+        "l": {
+         "t": "field",
+         "obj": {
+          "t": "id",
+          "name": "strength"
+         },
+         "name": "Z"
+        },
+        "r": {
+         "t": "binop",
+         "op": "-",
+         "l": {
+          "t": "id",
+          "name": "KEY_HOME"
+         },
+         "r": {
+          "t": "id",
+          "name": "KEY_END"
+         }
+        }
+       }
+      }
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "MOUSE_MODE"
+       },
+       "r": {
+        "t": "num",
+        "v": 0.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "+=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "force"
+           },
+           "name": "X"
+          },
+          "value": {
+           "t": "binop",
+           "op": "*",
+           "l": {
+            "t": "binop",
+            "op": "*",
+            "l": {
+             "t": "field",
+             "obj": {
+              "t": "id",
+              "name": "strength"
+             },
+             "name": "X"
+            },
+            "r": {
+             "t": "id",
+             "name": "MOUSE_RIGHT"
+            }
+           },
+           "r": {
+            "t": "id",
+            "name": "mouseview"
+           }
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "limit"
+        },
+        "name": "X"
+       },
+       "value": {
+        "t": "binop",
+        "op": "*",
+        "l": {
+         "t": "num",
+         "v": 2.0
+        },
+        "r": {
+         "t": "field",
+         "obj": {
+          "t": "id",
+          "name": "strength"
+         },
+         "name": "X"
+        }
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "limit"
+        },
+        "name": "Y"
+       },
+       "value": {
+        "t": "binop",
+        "op": "*",
+        "l": {
+         "t": "num",
+         "v": 2.0
+        },
+        "r": {
+         "t": "field",
+         "obj": {
+          "t": "id",
+          "name": "strength"
+         },
+         "name": "Y"
+        }
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "limit"
+        },
+        "name": "Z"
+       },
+       "value": {
+        "t": "binop",
+        "op": "*",
+        "l": {
+         "t": "num",
+         "v": 2.0
+        },
+        "r": {
+         "t": "field",
+         "obj": {
+          "t": "id",
+          "name": "strength"
+         },
+         "name": "Z"
+        }
+       }
+      }
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": ">",
+       "l": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "force"
+        },
+        "name": "X"
+       },
+       "r": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "limit"
+        },
+        "name": "X"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "force"
+           },
+           "name": "X"
+          },
+          "value": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "limit"
+           },
+           "name": "X"
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "<",
+       "l": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "force"
+        },
+        "name": "X"
+       },
+       "r": {
+        "t": "unop",
+        "op": "-",
+        "expr": {
+         "t": "field",
+         "obj": {
+          "t": "id",
+          "name": "limit"
+         },
+         "name": "X"
+        }
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "force"
+           },
+           "name": "X"
+          },
+          "value": {
+           "t": "unop",
+           "op": "-",
+           "expr": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "limit"
+            },
+            "name": "X"
+           }
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": ">",
+       "l": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "force"
+        },
+        "name": "Y"
+       },
+       "r": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "limit"
+        },
+        "name": "Y"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "force"
+           },
+           "name": "Y"
+          },
+          "value": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "limit"
+           },
+           "name": "Y"
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "<",
+       "l": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "force"
+        },
+        "name": "Y"
+       },
+       "r": {
+        "t": "unop",
+        "op": "-",
+        "expr": {
+         "t": "field",
+         "obj": {
+          "t": "id",
+          "name": "limit"
+         },
+         "name": "Y"
+        }
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "force"
+           },
+           "name": "Y"
+          },
+          "value": {
+           "t": "unop",
+           "op": "-",
+           "expr": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "limit"
+            },
+            "name": "Y"
+           }
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": ">",
+       "l": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "force"
+        },
+        "name": "Z"
+       },
+       "r": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "limit"
+        },
+        "name": "Z"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "force"
+           },
+           "name": "Z"
+          },
+          "value": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "limit"
+           },
+           "name": "Z"
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "<",
+       "l": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "force"
+        },
+        "name": "Z"
+       },
+       "r": {
+        "t": "unop",
+        "op": "-",
+        "expr": {
+         "t": "field",
+         "obj": {
+          "t": "id",
+          "name": "limit"
+         },
+         "name": "Z"
+        }
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "force"
+           },
+           "name": "Z"
+          },
+          "value": {
+           "t": "unop",
+           "op": "-",
+           "expr": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "limit"
+            },
+            "name": "Z"
+           }
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     }
+    ]
+   }
+  },
+  "handle": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "!=",
+       "l": {
+        "t": "id",
+        "name": "player"
+       },
+       "r": {
+        "t": "null"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_POS"
+           },
+           "name": "X"
+          },
+          "value": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "player"
+           },
+           "name": "X"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_POS"
+           },
+           "name": "Y"
+          },
+          "value": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "player"
+           },
+           "name": "Y"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_POS"
+           },
+           "name": "Z"
+          },
+          "value": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "player"
+           },
+           "name": "Z"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_ANGLE"
+           },
+           "name": "PAN"
+          },
+          "value": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "player"
+           },
+           "name": "PAN"
+          }
+         }
+        }
+       ]
+      },
+      "else": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_POS"
+           },
+           "name": "X"
+          },
+          "value": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "CAMERA"
+           },
+           "name": "X"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_POS"
+           },
+           "name": "Y"
+          },
+          "value": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "CAMERA"
+           },
+           "name": "Y"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_POS"
+           },
+           "name": "Z"
+          },
+          "value": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "CAMERA"
+           },
+           "name": "Z"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_ANGLE"
+           },
+           "name": "PAN"
+          },
+          "value": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "CAMERA"
+           },
+           "name": "PAN"
+          }
+         }
+        }
+       ]
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY_ANGLE"
+        },
+        "name": "TILT"
+       },
+       "value": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "CAMERA"
+        },
+        "name": "TILT"
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "scan_handle",
+       "args": []
+      }
+     }
+    ]
+   }
+  },
+  "scan_handle": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "temp"
+        },
+        "name": "PAN"
+       },
+       "value": {
+        "t": "num",
+        "v": 120.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "temp"
+        },
+        "name": "TILT"
+       },
+       "value": {
+        "t": "num",
+        "v": 180.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "temp"
+        },
+        "name": "Z"
+       },
+       "value": {
+        "t": "num",
+        "v": 200.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "indicator"
+       },
+       "value": {
+        "t": "id",
+        "name": "_HANDLE"
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "scan",
+       "args": [
+        {
+         "t": "id",
+         "name": "MY_POS"
+        },
+        {
+         "t": "id",
+         "name": "MY_ANGLE"
+        },
+        {
+         "t": "id",
+         "name": "temp"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "perform_handle": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "while",
+      "cond": {
+       "t": "num",
+       "v": 1.0
+      },
+      "body": {
+       "t": "block",
+       "body": [
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": "==",
+          "l": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY"
+           },
+           "name": "_SIGNAL"
+          },
+          "r": {
+           "t": "id",
+           "name": "_HANDLE"
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "my"
+              },
+              "name": "_SIGNAL"
+             },
+             "value": {
+              "t": "num",
+              "v": 0.0
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "vec_set",
+             "args": [
+              {
+               "t": "id",
+               "name": "my_pos"
+              },
+              {
+               "t": "field",
+               "obj": {
+                "t": "id",
+                "name": "my"
+               },
+               "name": "x"
+              }
+             ]
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "vec_set",
+             "args": [
+              {
+               "t": "id",
+               "name": "my_angle"
+              },
+              {
+               "t": "field",
+               "obj": {
+                "t": "id",
+                "name": "my"
+               },
+               "name": "pan"
+              }
+             ]
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "scan_handle",
+             "args": []
+            }
+           }
+          ]
+         },
+         "else": null
+        },
+        {
+         "t": "wait",
+         "ticks": true,
+         "n": {
+          "t": "num",
+          "v": 1.0
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "send_handle": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "!=",
+       "l": {
+        "t": "id",
+        "name": "player"
+       },
+       "r": {
+        "t": "null"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "player"
+           },
+           "name": "_SIGNAL"
+          },
+          "value": {
+           "t": "id",
+           "name": "_HANDLE"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "send",
+          "args": [
+           {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "player"
+            },
+            "name": "_SIGNAL"
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "else": null
+     }
+    ]
+   }
+  },
+  "mouse_to_level": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "vecFrom"
+        },
+        "name": "X"
+       },
+       "value": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MOUSE_POS"
+        },
+        "name": "X"
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "vecFrom"
+        },
+        "name": "Y"
+       },
+       "value": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MOUSE_POS"
+        },
+        "name": "Y"
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "vecFrom"
+        },
+        "name": "Z"
+       },
+       "value": {
+        "t": "num",
+        "v": 10.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "vec_set",
+       "args": [
+        {
+         "t": "id",
+         "name": "vecTo"
+        },
+        {
+         "t": "id",
+         "name": "vecFrom"
+        }
+       ]
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "vec_for_screen",
+       "args": [
+        {
+         "t": "id",
+         "name": "vecFrom"
+        },
+        {
+         "t": "id",
+         "name": "CAMERA"
+        }
+       ]
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "vecTo"
+        },
+        "name": "Z"
+       },
+       "value": {
+        "t": "num",
+        "v": 5000.0
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "vec_for_screen",
+       "args": [
+        {
+         "t": "id",
+         "name": "vecTo"
+        },
+        {
+         "t": "id",
+         "name": "CAMERA"
+        }
+       ]
+      }
+     },
+     {
+      "t": "return",
+      "value": {
+       "t": "call",
+       "name": "trace",
+       "args": [
+        {
+         "t": "id",
+         "name": "vecFrom"
+        },
+        {
+         "t": "id",
+         "name": "vecTo"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  }
+ },
+ "actions": {},
+ "sounds": {},
+ "bmaps": {},
+ "skip_count": 0,
+ "skipped": []
+}

@@ -16,10 +16,13 @@ function Invoke-Step([string]$Title, [scriptblock]$Block) {
     }
 }
 
+Invoke-Step "parse_wdl" { python tools/parse_wdl.py }
+Invoke-Step "verify_wdl_parse" { python tools/verify_wdl_parse.py }
 Invoke-Step "extract_wdl_meta" { python tools/extract_wdl_meta.py }
 Invoke-Step "verify_mdl_facing" { python tools/verify_mdl_facing.py }
 Invoke-Step "verify_entity_basis" { python tools/verify_entity_basis.py }
 Invoke-Step "verify_feet_snap_policy" { python tools/verify_feet_snap_policy.py }
+Invoke-Step "verify_corpus" { python tools/verify_corpus.py }
 Invoke-Step "verify_level_pack --spine" { python tools/verify_level_pack.py --spine }
 Invoke-Step "build_level_board" { python tools/build_level_board.py }
 

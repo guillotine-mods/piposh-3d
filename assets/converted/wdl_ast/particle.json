@@ -1,0 +1,3656 @@
+{
+ "source": "particle.wdl",
+ "includes": [],
+ "globals": [
+  {
+   "name": "scatter_color",
+   "kind": "var",
+   "array_size": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init": [
+    {
+     "t": "num",
+     "v": 250.0
+    },
+    {
+     "t": "num",
+     "v": 250.0
+    },
+    {
+     "t": "num",
+     "v": 250.0
+    }
+   ],
+   "init_list": true
+  },
+  {
+   "name": "scatter_range",
+   "kind": "var",
+   "array_size": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init": [
+    {
+     "t": "unop",
+     "op": "-",
+     "expr": {
+      "t": "num",
+      "v": 100.0
+     }
+    },
+    {
+     "t": "unop",
+     "op": "-",
+     "expr": {
+      "t": "num",
+      "v": 245.0
+     }
+    },
+    {
+     "t": "unop",
+     "op": "-",
+     "expr": {
+      "t": "num",
+      "v": 245.0
+     }
+    }
+   ],
+   "init_list": true
+  },
+  {
+   "name": "scatter_lifetime",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 50.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "scatter_size",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 100.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "scatter_gravity",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.25
+   },
+   "init_list": false
+  },
+  {
+   "name": "scatter_spread",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 6.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "particle_pos",
+   "kind": "var",
+   "array_size": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "particle_speed",
+   "kind": "var",
+   "array_size": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "scatter_speed",
+   "kind": "var",
+   "array_size": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init": [
+    {
+     "t": "num",
+     "v": 0.0
+    },
+    {
+     "t": "num",
+     "v": 0.0
+    },
+    {
+     "t": "num",
+     "v": 0.0
+    }
+   ],
+   "init_list": true
+  },
+  {
+   "name": "fade_lifetime",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 8.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "fade_color",
+   "kind": "var",
+   "array_size": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init": [
+    {
+     "t": "num",
+     "v": 255.0
+    },
+    {
+     "t": "num",
+     "v": 200.0
+    },
+    {
+     "t": "num",
+     "v": 0.0
+    }
+   ],
+   "init_list": true
+  },
+  {
+   "name": "fade_targetcolor",
+   "kind": "var",
+   "array_size": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init": [
+    {
+     "t": "num",
+     "v": 128.0
+    },
+    {
+     "t": "num",
+     "v": 128.0
+    },
+    {
+     "t": "num",
+     "v": 128.0
+    }
+   ],
+   "init_list": true
+  },
+  {
+   "name": "tumble_lifetime",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 8.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "shot_lifetime",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 32.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "shot_speed",
+   "kind": "var",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "rain_mode",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "rain_pos",
+   "kind": "var",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "rain_rate",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 20.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "rain_counter",
+   "kind": "var",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "p2",
+   "kind": "var",
+   "array_size": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init": null,
+   "init_list": false
+  }
+ ],
+ "functions": {
+  "particle_fade": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "MY_AGE"
+       },
+       "r": {
+        "t": "num",
+        "v": 0.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "MY_SIZE"
+          },
+          "value": {
+           "t": "num",
+           "v": 100.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_SPEED"
+           },
+           "name": "X"
+          },
+          "value": {
+           "t": "binop",
+           "op": "-",
+           "l": {
+            "t": "call",
+            "name": "RANDOM",
+            "args": [
+             {
+              "t": "num",
+              "v": 2.0
+             }
+            ]
+           },
+           "r": {
+            "t": "num",
+            "v": 1.0
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_SPEED"
+           },
+           "name": "Y"
+          },
+          "value": {
+           "t": "binop",
+           "op": "-",
+           "l": {
+            "t": "call",
+            "name": "RANDOM",
+            "args": [
+             {
+              "t": "num",
+              "v": 2.0
+             }
+            ]
+           },
+           "r": {
+            "t": "num",
+            "v": 1.0
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_SPEED"
+           },
+           "name": "Z"
+          },
+          "value": {
+           "t": "binop",
+           "op": "-",
+           "l": {
+            "t": "call",
+            "name": "RANDOM",
+            "args": [
+             {
+              "t": "num",
+              "v": 2.0
+             }
+            ]
+           },
+           "r": {
+            "t": "num",
+            "v": 1.0
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "RED"
+          },
+          "value": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "fade_color"
+           },
+           "name": "RED"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "GREEN"
+          },
+          "value": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "fade_color"
+           },
+           "name": "GREEN"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "BLUE"
+          },
+          "value": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "fade_color"
+           },
+           "name": "BLUE"
+          }
+         }
+        }
+       ]
+      },
+      "else": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "+=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "RED"
+          },
+          "value": {
+           "t": "binop",
+           "op": "*",
+           "l": {
+            "t": "binop",
+            "op": "-",
+            "l": {
+             "t": "field",
+             "obj": {
+              "t": "id",
+              "name": "fade_targetcolor"
+             },
+             "name": "RED"
+            },
+            "r": {
+             "t": "field",
+             "obj": {
+              "t": "id",
+              "name": "MY_COLOR"
+             },
+             "name": "RED"
+            }
+           },
+           "r": {
+            "t": "num",
+            "v": 0.2
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "+=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "GREEN"
+          },
+          "value": {
+           "t": "binop",
+           "op": "*",
+           "l": {
+            "t": "binop",
+            "op": "-",
+            "l": {
+             "t": "field",
+             "obj": {
+              "t": "id",
+              "name": "fade_targetcolor"
+             },
+             "name": "GREEN"
+            },
+            "r": {
+             "t": "field",
+             "obj": {
+              "t": "id",
+              "name": "MY_COLOR"
+             },
+             "name": "GREEN"
+            }
+           },
+           "r": {
+            "t": "num",
+            "v": 0.2
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "+=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "BLUE"
+          },
+          "value": {
+           "t": "binop",
+           "op": "*",
+           "l": {
+            "t": "binop",
+            "op": "-",
+            "l": {
+             "t": "field",
+             "obj": {
+              "t": "id",
+              "name": "fade_targetcolor"
+             },
+             "name": "BLUE"
+            },
+            "r": {
+             "t": "field",
+             "obj": {
+              "t": "id",
+              "name": "MY_COLOR"
+             },
+             "name": "BLUE"
+            }
+           },
+           "r": {
+            "t": "num",
+            "v": 0.2
+           }
+          }
+         }
+        },
+        {
+         "t": "if",
+         "cond": {
+          "t": "binop",
+          "op": ">",
+          "l": {
+           "t": "id",
+           "name": "MY_AGE"
+          },
+          "r": {
+           "t": "id",
+           "name": "fade_lifetime"
+          }
+         },
+         "then": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "id",
+              "name": "MY_ACTION"
+             },
+             "value": {
+              "t": "null"
+             }
+            }
+           }
+          ]
+         },
+         "else": null
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "particle_tumble": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "MY_AGE"
+       },
+       "r": {
+        "t": "num",
+        "v": 0.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_SPEED"
+           },
+           "name": "X"
+          },
+          "value": {
+           "t": "binop",
+           "op": "-",
+           "l": {
+            "t": "call",
+            "name": "RANDOM",
+            "args": [
+             {
+              "t": "num",
+              "v": 0.3
+             }
+            ]
+           },
+           "r": {
+            "t": "num",
+            "v": 0.15
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_SPEED"
+           },
+           "name": "Y"
+          },
+          "value": {
+           "t": "binop",
+           "op": "-",
+           "l": {
+            "t": "call",
+            "name": "RANDOM",
+            "args": [
+             {
+              "t": "num",
+              "v": 0.3
+             }
+            ]
+           },
+           "r": {
+            "t": "num",
+            "v": 0.15
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_SPEED"
+           },
+           "name": "Z"
+          },
+          "value": {
+           "t": "binop",
+           "op": "-",
+           "l": {
+            "t": "call",
+            "name": "RANDOM",
+            "args": [
+             {
+              "t": "num",
+              "v": 0.3
+             }
+            ]
+           },
+           "r": {
+            "t": "num",
+            "v": 0.15
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "MY_SIZE"
+          },
+          "value": {
+           "t": "num",
+           "v": 30.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "RED"
+          },
+          "value": {
+           "t": "binop",
+           "op": "*",
+           "l": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "scatter_color"
+            },
+            "name": "RED"
+           },
+           "r": {
+            "t": "num",
+            "v": 0.75
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "GREEN"
+          },
+          "value": {
+           "t": "binop",
+           "op": "*",
+           "l": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "scatter_color"
+            },
+            "name": "GREEN"
+           },
+           "r": {
+            "t": "num",
+            "v": 0.3
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "BLUE"
+          },
+          "value": {
+           "t": "binop",
+           "op": "*",
+           "l": {
+            "t": "field",
+            "obj": {
+             "t": "id",
+             "name": "scatter_color"
+            },
+            "name": "BLUE"
+           },
+           "r": {
+            "t": "num",
+            "v": 0.3
+           }
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": ">",
+       "l": {
+        "t": "id",
+        "name": "MY_AGE"
+       },
+       "r": {
+        "t": "id",
+        "name": "tumble_lifetime"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "MY_ACTION"
+          },
+          "value": {
+           "t": "null"
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     }
+    ]
+   }
+  },
+  "particle_scatter": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "MY_AGE"
+       },
+       "r": {
+        "t": "num",
+        "v": 0.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_SPEED"
+           },
+           "name": "X"
+          },
+          "value": {
+           "t": "binop",
+           "op": "-",
+           "l": {
+            "t": "binop",
+            "op": "+",
+            "l": {
+             "t": "field",
+             "obj": {
+              "t": "id",
+              "name": "scatter_speed"
+             },
+             "name": "X"
+            },
+            "r": {
+             "t": "call",
+             "name": "RANDOM",
+             "args": [
+              {
+               "t": "id",
+               "name": "scatter_spread"
+              }
+             ]
+            }
+           },
+           "r": {
+            "t": "binop",
+            "op": "/",
+            "l": {
+             "t": "id",
+             "name": "scatter_spread"
+            },
+            "r": {
+             "t": "num",
+             "v": 2.0
+            }
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_SPEED"
+           },
+           "name": "Y"
+          },
+          "value": {
+           "t": "binop",
+           "op": "-",
+           "l": {
+            "t": "binop",
+            "op": "+",
+            "l": {
+             "t": "field",
+             "obj": {
+              "t": "id",
+              "name": "scatter_speed"
+             },
+             "name": "Y"
+            },
+            "r": {
+             "t": "call",
+             "name": "RANDOM",
+             "args": [
+              {
+               "t": "id",
+               "name": "scatter_spread"
+              }
+             ]
+            }
+           },
+           "r": {
+            "t": "binop",
+            "op": "/",
+            "l": {
+             "t": "id",
+             "name": "scatter_spread"
+            },
+            "r": {
+             "t": "num",
+             "v": 2.0
+            }
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_SPEED"
+           },
+           "name": "Z"
+          },
+          "value": {
+           "t": "binop",
+           "op": "-",
+           "l": {
+            "t": "binop",
+            "op": "+",
+            "l": {
+             "t": "field",
+             "obj": {
+              "t": "id",
+              "name": "scatter_speed"
+             },
+             "name": "Z"
+            },
+            "r": {
+             "t": "call",
+             "name": "RANDOM",
+             "args": [
+              {
+               "t": "id",
+               "name": "scatter_spread"
+              }
+             ]
+            }
+           },
+           "r": {
+            "t": "binop",
+            "op": "/",
+            "l": {
+             "t": "id",
+             "name": "scatter_spread"
+            },
+            "r": {
+             "t": "num",
+             "v": 2.0
+            }
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "MY_SIZE"
+          },
+          "value": {
+           "t": "id",
+           "name": "scatter_size"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "RED"
+          },
+          "value": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "scatter_color"
+           },
+           "name": "RED"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "GREEN"
+          },
+          "value": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "scatter_color"
+           },
+           "name": "GREEN"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "BLUE"
+          },
+          "value": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "scatter_color"
+           },
+           "name": "BLUE"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "MY_MAP"
+          },
+          "value": {
+           "t": "id",
+           "name": "scatter_map"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "MY_FLARE"
+          },
+          "value": {
+           "t": "bool",
+           "v": true
+          }
+         }
+        },
+        {
+         "t": "return",
+         "value": null
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "-=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY_SPEED"
+        },
+        "name": "Z"
+       },
+       "value": {
+        "t": "id",
+        "name": "scatter_gravity"
+       }
+      }
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": ">=",
+       "l": {
+        "t": "id",
+        "name": "MY_AGE"
+       },
+       "r": {
+        "t": "id",
+        "name": "scatter_lifetime"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "MY_ACTION"
+          },
+          "value": {
+           "t": "null"
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     }
+    ]
+   }
+  },
+  "particle_traces": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "particle_scatter",
+       "args": []
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "emit",
+       "args": [
+        {
+         "t": "num",
+         "v": 1.0
+        },
+        {
+         "t": "id",
+         "name": "MY_POS"
+        },
+        {
+         "t": "id",
+         "name": "particle_tumble"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "particle_range": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "particle_scatter",
+       "args": []
+      }
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": ">",
+       "l": {
+        "t": "id",
+        "name": "MY_AGE"
+       },
+       "r": {
+        "t": "num",
+        "v": 0.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "+=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "RED"
+          },
+          "value": {
+           "t": "binop",
+           "op": "/",
+           "l": {
+            "t": "binop",
+            "op": "*",
+            "l": {
+             "t": "field",
+             "obj": {
+              "t": "id",
+              "name": "scatter_range"
+             },
+             "name": "RED"
+            },
+            "r": {
+             "t": "id",
+             "name": "MY_AGE"
+            }
+           },
+           "r": {
+            "t": "id",
+            "name": "scatter_lifetime"
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "+=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "GREEN"
+          },
+          "value": {
+           "t": "binop",
+           "op": "/",
+           "l": {
+            "t": "binop",
+            "op": "*",
+            "l": {
+             "t": "field",
+             "obj": {
+              "t": "id",
+              "name": "scatter_range"
+             },
+             "name": "GREEN"
+            },
+            "r": {
+             "t": "id",
+             "name": "MY_AGE"
+            }
+           },
+           "r": {
+            "t": "id",
+            "name": "scatter_lifetime"
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "+=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "BLUE"
+          },
+          "value": {
+           "t": "binop",
+           "op": "/",
+           "l": {
+            "t": "binop",
+            "op": "*",
+            "l": {
+             "t": "field",
+             "obj": {
+              "t": "id",
+              "name": "scatter_range"
+             },
+             "name": "BLUE"
+            },
+            "r": {
+             "t": "id",
+             "name": "MY_AGE"
+            }
+           },
+           "r": {
+            "t": "id",
+            "name": "scatter_lifetime"
+           }
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     }
+    ]
+   }
+  },
+  "particle_sphere": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "particle_scatter",
+       "args": []
+      }
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "MY_AGE"
+       },
+       "r": {
+        "t": "num",
+        "v": 0.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "vec_normalize",
+          "args": [
+           {
+            "t": "id",
+            "name": "MY_SPEED"
+           },
+           {
+            "t": "id",
+            "name": "scatter_spread"
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "else": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "+=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "RED"
+          },
+          "value": {
+           "t": "binop",
+           "op": "/",
+           "l": {
+            "t": "binop",
+            "op": "*",
+            "l": {
+             "t": "field",
+             "obj": {
+              "t": "id",
+              "name": "scatter_range"
+             },
+             "name": "RED"
+            },
+            "r": {
+             "t": "id",
+             "name": "MY_AGE"
+            }
+           },
+           "r": {
+            "t": "id",
+            "name": "scatter_lifetime"
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "+=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "GREEN"
+          },
+          "value": {
+           "t": "binop",
+           "op": "/",
+           "l": {
+            "t": "binop",
+            "op": "*",
+            "l": {
+             "t": "field",
+             "obj": {
+              "t": "id",
+              "name": "scatter_range"
+             },
+             "name": "GREEN"
+            },
+            "r": {
+             "t": "id",
+             "name": "MY_AGE"
+            }
+           },
+           "r": {
+            "t": "id",
+            "name": "scatter_lifetime"
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "+=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "BLUE"
+          },
+          "value": {
+           "t": "binop",
+           "op": "/",
+           "l": {
+            "t": "binop",
+            "op": "*",
+            "l": {
+             "t": "field",
+             "obj": {
+              "t": "id",
+              "name": "scatter_range"
+             },
+             "name": "BLUE"
+            },
+            "r": {
+             "t": "id",
+             "name": "MY_AGE"
+            }
+           },
+           "r": {
+            "t": "id",
+            "name": "scatter_lifetime"
+           }
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "scatter_init": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "vec_set",
+       "args": [
+        {
+         "t": "id",
+         "name": "particle_pos"
+        },
+        {
+         "t": "field",
+         "obj": {
+          "t": "id",
+          "name": "MY"
+         },
+         "name": "X"
+        }
+       ]
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "vec_set",
+       "args": [
+        {
+         "t": "id",
+         "name": "scatter_speed"
+        },
+        {
+         "t": "id",
+         "name": "NULLVECTOR"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "particle_shot": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "MY_AGE"
+       },
+       "r": {
+        "t": "num",
+        "v": 0.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_SPEED"
+           },
+           "name": "X"
+          },
+          "value": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "shot_speed"
+           },
+           "name": "X"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_SPEED"
+           },
+           "name": "Y"
+          },
+          "value": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "shot_speed"
+           },
+           "name": "Y"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_SPEED"
+           },
+           "name": "Z"
+          },
+          "value": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "shot_speed"
+           },
+           "name": "Z"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "MY_SIZE"
+          },
+          "value": {
+           "t": "num",
+           "v": 100.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "RED"
+          },
+          "value": {
+           "t": "num",
+           "v": 255.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "GREEN"
+          },
+          "value": {
+           "t": "num",
+           "v": 0.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "BLUE"
+          },
+          "value": {
+           "t": "num",
+           "v": 200.0
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": ">",
+       "l": {
+        "t": "id",
+        "name": "MY_AGE"
+       },
+       "r": {
+        "t": "id",
+        "name": "shot_lifetime"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "MY_ACTION"
+          },
+          "value": {
+           "t": "null"
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     }
+    ]
+   }
+  },
+  "snowfall": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "player"
+       },
+       "r": {
+        "t": "null"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "id",
+          "name": "END"
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "rain_mode"
+       },
+       "value": {
+        "t": "num",
+        "v": 1.0
+       }
+      }
+     },
+     {
+      "t": "while",
+      "cond": {
+       "t": "binop",
+       "op": ">",
+       "l": {
+        "t": "id",
+        "name": "rain_mode"
+       },
+       "r": {
+        "t": "num",
+        "v": 0.0
+       }
+      },
+      "body": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "rain_pos"
+           },
+           "name": "Z"
+          },
+          "value": {
+           "t": "binop",
+           "op": "+",
+           "l": {
+            "t": "binop",
+            "op": "+",
+            "l": {
+             "t": "field",
+             "obj": {
+              "t": "id",
+              "name": "player"
+             },
+             "name": "Z"
+            },
+            "r": {
+             "t": "field",
+             "obj": {
+              "t": "id",
+              "name": "player"
+             },
+             "name": "MAX_Z"
+            }
+           },
+           "r": {
+            "t": "num",
+            "v": 50.0
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "rain_counter"
+          },
+          "value": {
+           "t": "binop",
+           "op": "*",
+           "l": {
+            "t": "id",
+            "name": "rain_rate"
+           },
+           "r": {
+            "t": "id",
+            "name": "TIME"
+           }
+          }
+         }
+        },
+        {
+         "t": "while",
+         "cond": {
+          "t": "binop",
+          "op": ">",
+          "l": {
+           "t": "id",
+           "name": "rain_counter"
+          },
+          "r": {
+           "t": "num",
+           "v": 0.0
+          }
+         },
+         "body": {
+          "t": "block",
+          "body": [
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "rain_pos"
+              },
+              "name": "X"
+             },
+             "value": {
+              "t": "binop",
+              "op": "-",
+              "l": {
+               "t": "binop",
+               "op": "+",
+               "l": {
+                "t": "field",
+                "obj": {
+                 "t": "id",
+                 "name": "player"
+                },
+                "name": "X"
+               },
+               "r": {
+                "t": "call",
+                "name": "RANDOM",
+                "args": [
+                 {
+                  "t": "num",
+                  "v": 500.0
+                 }
+                ]
+               }
+              },
+              "r": {
+               "t": "num",
+               "v": 250.0
+              }
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "=",
+             "target": {
+              "t": "field",
+              "obj": {
+               "t": "id",
+               "name": "rain_pos"
+              },
+              "name": "Y"
+             },
+             "value": {
+              "t": "binop",
+              "op": "-",
+              "l": {
+               "t": "binop",
+               "op": "+",
+               "l": {
+                "t": "field",
+                "obj": {
+                 "t": "id",
+                 "name": "player"
+                },
+                "name": "Y"
+               },
+               "r": {
+                "t": "call",
+                "name": "RANDOM",
+                "args": [
+                 {
+                  "t": "num",
+                  "v": 500.0
+                 }
+                ]
+               }
+              },
+              "r": {
+               "t": "num",
+               "v": 250.0
+              }
+             }
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "call",
+             "name": "emit",
+             "args": [
+              {
+               "t": "num",
+               "v": 1.0
+              },
+              {
+               "t": "id",
+               "name": "rain_pos"
+              },
+              {
+               "t": "id",
+               "name": "particle_rain"
+              }
+             ]
+            }
+           },
+           {
+            "t": "expr_stmt",
+            "expr": {
+             "t": "assign",
+             "op": "-=",
+             "target": {
+              "t": "id",
+              "name": "rain_counter"
+             },
+             "value": {
+              "t": "num",
+              "v": 1.0
+             }
+            }
+           }
+          ]
+         }
+        },
+        {
+         "t": "wait",
+         "ticks": true,
+         "n": {
+          "t": "num",
+          "v": 1.0
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "particle_rain": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "MY_AGE"
+       },
+       "r": {
+        "t": "num",
+        "v": 0.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_SPEED"
+           },
+           "name": "X"
+          },
+          "value": {
+           "t": "num",
+           "v": 0.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_SPEED"
+           },
+           "name": "Y"
+          },
+          "value": {
+           "t": "num",
+           "v": 0.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_SPEED"
+           },
+           "name": "Z"
+          },
+          "value": {
+           "t": "unop",
+           "op": "-",
+           "expr": {
+            "t": "num",
+            "v": 2.0
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "MY_SIZE"
+          },
+          "value": {
+           "t": "num",
+           "v": 100.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "RED"
+          },
+          "value": {
+           "t": "num",
+           "v": 255.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "GREEN"
+          },
+          "value": {
+           "t": "num",
+           "v": 255.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "BLUE"
+          },
+          "value": {
+           "t": "num",
+           "v": 255.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "id",
+          "name": "END"
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "||",
+       "l": {
+        "t": "binop",
+        "op": "==",
+        "l": {
+         "t": "id",
+         "name": "player"
+        },
+        "r": {
+         "t": "null"
+        }
+       },
+       "r": {
+        "t": "binop",
+        "op": "<",
+        "l": {
+         "t": "field",
+         "obj": {
+          "t": "id",
+          "name": "MY_POS"
+         },
+         "name": "Z"
+        },
+        "r": {
+         "t": "binop",
+         "op": "-",
+         "l": {
+          "t": "field",
+          "obj": {
+           "t": "id",
+           "name": "player"
+          },
+          "name": "Z"
+         },
+         "r": {
+          "t": "num",
+          "v": 100.0
+         }
+        }
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "MY_ACTION"
+          },
+          "value": {
+           "t": "null"
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     }
+    ]
+   }
+  },
+  "particle_smoke": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "MY_AGE"
+       },
+       "r": {
+        "t": "num",
+        "v": 0.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_SPEED"
+           },
+           "name": "X"
+          },
+          "value": {
+           "t": "binop",
+           "op": "-",
+           "l": {
+            "t": "call",
+            "name": "random",
+            "args": [
+             {
+              "t": "num",
+              "v": 1.0
+             }
+            ]
+           },
+           "r": {
+            "t": "num",
+            "v": 0.5
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_SPEED"
+           },
+           "name": "Y"
+          },
+          "value": {
+           "t": "binop",
+           "op": "-",
+           "l": {
+            "t": "call",
+            "name": "random",
+            "args": [
+             {
+              "t": "num",
+              "v": 2.0
+             }
+            ]
+           },
+           "r": {
+            "t": "num",
+            "v": 1.0
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_SPEED"
+           },
+           "name": "Z"
+          },
+          "value": {
+           "t": "binop",
+           "op": "+",
+           "l": {
+            "t": "call",
+            "name": "random",
+            "args": [
+             {
+              "t": "num",
+              "v": 1.0
+             }
+            ]
+           },
+           "r": {
+            "t": "num",
+            "v": 1.0
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "MY_SIZE"
+          },
+          "value": {
+           "t": "binop",
+           "op": "+",
+           "l": {
+            "t": "call",
+            "name": "random",
+            "args": [
+             {
+              "t": "num",
+              "v": 25.0
+             }
+            ]
+           },
+           "r": {
+            "t": "num",
+            "v": 25.0
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "MY_MAP"
+          },
+          "value": {
+           "t": "id",
+           "name": "smoke_map"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "MY_FLARE"
+          },
+          "value": {
+           "t": "bool",
+           "v": true
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "RED"
+          },
+          "value": {
+           "t": "num",
+           "v": 245.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "GREEN"
+          },
+          "value": {
+           "t": "num",
+           "v": 200.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "BLUE"
+          },
+          "value": {
+           "t": "num",
+           "v": 80.0
+          }
+         }
+        },
+        {
+         "t": "return",
+         "value": null
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "<",
+       "l": {
+        "t": "id",
+        "name": "MY_SIZE"
+       },
+       "r": {
+        "t": "num",
+        "v": 800.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "+=",
+          "target": {
+           "t": "id",
+           "name": "MY_SIZE"
+          },
+          "value": {
+           "t": "binop",
+           "op": "*",
+           "l": {
+            "t": "binop",
+            "op": "*",
+            "l": {
+             "t": "binop",
+             "op": "-",
+             "l": {
+              "t": "num",
+              "v": 1000.0
+             },
+             "r": {
+              "t": "id",
+              "name": "MY_SIZE"
+             }
+            },
+            "r": {
+             "t": "num",
+             "v": 0.1
+            }
+           },
+           "r": {
+            "t": "id",
+            "name": "TIME"
+           }
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": ">=",
+       "l": {
+        "t": "id",
+        "name": "MY_AGE"
+       },
+       "r": {
+        "t": "num",
+        "v": 35.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "MY_ACTION"
+          },
+          "value": {
+           "t": "null"
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     }
+    ]
+   }
+  },
+  "particle_fadeout": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "MY_AGE"
+       },
+       "r": {
+        "t": "num",
+        "v": 0.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_SPEED"
+           },
+           "name": "x"
+          },
+          "value": {
+           "t": "binop",
+           "op": "-",
+           "l": {
+            "t": "call",
+            "name": "random",
+            "args": [
+             {
+              "t": "num",
+              "v": 0.3
+             }
+            ]
+           },
+           "r": {
+            "t": "num",
+            "v": 0.15
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_SPEED"
+           },
+           "name": "y"
+          },
+          "value": {
+           "t": "binop",
+           "op": "-",
+           "l": {
+            "t": "call",
+            "name": "random",
+            "args": [
+             {
+              "t": "num",
+              "v": 0.3
+             }
+            ]
+           },
+           "r": {
+            "t": "num",
+            "v": 0.15
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_SPEED"
+           },
+           "name": "z"
+          },
+          "value": {
+           "t": "binop",
+           "op": "-",
+           "l": {
+            "t": "call",
+            "name": "random",
+            "args": [
+             {
+              "t": "num",
+              "v": 0.3
+             }
+            ]
+           },
+           "r": {
+            "t": "num",
+            "v": 0.15
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "MY_SIZE"
+          },
+          "value": {
+           "t": "num",
+           "v": 150.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "red"
+          },
+          "value": {
+           "t": "num",
+           "v": 150.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "green"
+          },
+          "value": {
+           "t": "num",
+           "v": 150.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "blue"
+          },
+          "value": {
+           "t": "num",
+           "v": 150.0
+          }
+         }
+        },
+        {
+         "t": "return",
+         "value": null
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "+=",
+       "target": {
+        "t": "id",
+        "name": "MY_SIZE"
+       },
+       "value": {
+        "t": "binop",
+        "op": "*",
+        "l": {
+         "t": "num",
+         "v": 30.0
+        },
+        "r": {
+         "t": "id",
+         "name": "TIME"
+        }
+       }
+      }
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": ">",
+       "l": {
+        "t": "id",
+        "name": "MY_AGE"
+       },
+       "r": {
+        "t": "binop",
+        "op": "+",
+        "l": {
+         "t": "num",
+         "v": 2.0
+        },
+        "r": {
+         "t": "call",
+         "name": "random",
+         "args": [
+          {
+           "t": "num",
+           "v": 2.0
+          }
+         ]
+        }
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "MY_TRANSPARENT"
+          },
+          "value": {
+           "t": "bool",
+           "v": true
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": ">",
+       "l": {
+        "t": "id",
+        "name": "MY_AGE"
+       },
+       "r": {
+        "t": "binop",
+        "op": "+",
+        "l": {
+         "t": "num",
+         "v": 4.0
+        },
+        "r": {
+         "t": "call",
+         "name": "random",
+         "args": [
+          {
+           "t": "num",
+           "v": 2.0
+          }
+         ]
+        }
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "MY_ACTION"
+          },
+          "value": {
+           "t": "null"
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     }
+    ]
+   }
+  },
+  "particle_line": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "vec_sub",
+       "args": [
+        {
+         "t": "id",
+         "name": "p2"
+        },
+        {
+         "t": "id",
+         "name": "p"
+        }
+       ]
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "temp"
+       },
+       "value": {
+        "t": "call",
+        "name": "vec_length",
+        "args": [
+         {
+          "t": "id",
+          "name": "p2"
+         }
+        ]
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "p2"
+        },
+        "name": "x"
+       },
+       "value": {
+        "t": "binop",
+        "op": "/",
+        "l": {
+         "t": "binop",
+         "op": "*",
+         "l": {
+          "t": "field",
+          "obj": {
+           "t": "id",
+           "name": "p2"
+          },
+          "name": "x"
+         },
+         "r": {
+          "t": "num",
+          "v": 16.0
+         }
+        },
+        "r": {
+         "t": "id",
+         "name": "temp"
+        }
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "p2"
+        },
+        "name": "y"
+       },
+       "value": {
+        "t": "binop",
+        "op": "/",
+        "l": {
+         "t": "binop",
+         "op": "*",
+         "l": {
+          "t": "field",
+          "obj": {
+           "t": "id",
+           "name": "p2"
+          },
+          "name": "y"
+         },
+         "r": {
+          "t": "num",
+          "v": 16.0
+         }
+        },
+        "r": {
+         "t": "id",
+         "name": "temp"
+        }
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "p2"
+        },
+        "name": "z"
+       },
+       "value": {
+        "t": "binop",
+        "op": "/",
+        "l": {
+         "t": "binop",
+         "op": "*",
+         "l": {
+          "t": "field",
+          "obj": {
+           "t": "id",
+           "name": "p2"
+          },
+          "name": "z"
+         },
+         "r": {
+          "t": "num",
+          "v": 16.0
+         }
+        },
+        "r": {
+         "t": "id",
+         "name": "temp"
+        }
+       }
+      }
+     },
+     {
+      "t": "while",
+      "cond": {
+       "t": "binop",
+       "op": ">",
+       "l": {
+        "t": "id",
+        "name": "temp"
+       },
+       "r": {
+        "t": "num",
+        "v": 0.0
+       }
+      },
+      "body": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "emit",
+          "args": [
+           {
+            "t": "num",
+            "v": 1.0
+           },
+           {
+            "t": "id",
+            "name": "p"
+           },
+           {
+            "t": "id",
+            "name": "particle_fadeout"
+           }
+          ]
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "call",
+          "name": "vec_add",
+          "args": [
+           {
+            "t": "id",
+            "name": "p"
+           },
+           {
+            "t": "id",
+            "name": "p2"
+           }
+          ]
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "-=",
+          "target": {
+           "t": "id",
+           "name": "temp"
+          },
+          "value": {
+           "t": "num",
+           "v": 16.0
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "particle_gunBrass": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "==",
+       "l": {
+        "t": "id",
+        "name": "MY_AGE"
+       },
+       "r": {
+        "t": "num",
+        "v": 0.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_SPEED"
+           },
+           "name": "X"
+          },
+          "value": {
+           "t": "binop",
+           "op": "-",
+           "l": {
+            "t": "call",
+            "name": "random",
+            "args": [
+             {
+              "t": "num",
+              "v": 6.0
+             }
+            ]
+           },
+           "r": {
+            "t": "num",
+            "v": 6.0
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_SPEED"
+           },
+           "name": "Y"
+          },
+          "value": {
+           "t": "binop",
+           "op": "-",
+           "l": {
+            "t": "call",
+            "name": "random",
+            "args": [
+             {
+              "t": "num",
+              "v": 6.0
+             }
+            ]
+           },
+           "r": {
+            "t": "num",
+            "v": 6.0
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_SPEED"
+           },
+           "name": "Z"
+          },
+          "value": {
+           "t": "binop",
+           "op": "+",
+           "l": {
+            "t": "call",
+            "name": "random",
+            "args": [
+             {
+              "t": "num",
+              "v": 3.0
+             }
+            ]
+           },
+           "r": {
+            "t": "num",
+            "v": 8.0
+           }
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "MY_SIZE"
+          },
+          "value": {
+           "t": "num",
+           "v": 150.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "MY_MAP"
+          },
+          "value": {
+           "t": "id",
+           "name": "gbrass_map"
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "RED"
+          },
+          "value": {
+           "t": "num",
+           "v": 245.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "GREEN"
+          },
+          "value": {
+           "t": "num",
+           "v": 200.0
+          }
+         }
+        },
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_COLOR"
+           },
+           "name": "BLUE"
+          },
+          "value": {
+           "t": "num",
+           "v": 80.0
+          }
+         }
+        },
+        {
+         "t": "return",
+         "value": null
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": ">",
+       "l": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY_SPEED"
+        },
+        "name": "Z"
+       },
+       "r": {
+        "t": "unop",
+        "op": "-",
+        "expr": {
+         "t": "num",
+         "v": 16.0
+        }
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "-=",
+          "target": {
+           "t": "field",
+           "obj": {
+            "t": "id",
+            "name": "MY_SPEED"
+           },
+           "name": "Z"
+          },
+          "value": {
+           "t": "binop",
+           "op": "*",
+           "l": {
+            "t": "num",
+            "v": 2.0
+           },
+           "r": {
+            "t": "id",
+            "name": "TIME"
+           }
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": ">=",
+       "l": {
+        "t": "id",
+        "name": "MY_AGE"
+       },
+       "r": {
+        "t": "num",
+        "v": 35.0
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "MY_ACTION"
+          },
+          "value": {
+           "t": "null"
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     }
+    ]
+   }
+  }
+ },
+ "actions": {},
+ "sounds": {},
+ "bmaps": {
+  "spark_map": "particle.pcx",
+  "smoke_map": "blitz.pcx",
+  "gbrass_map": "gbrass.pcx"
+ },
+ "skip_count": 2,
+ "skipped": [
+  "line 21: stray '}' at top level (skipped)",
+  "line 26: expected a name, got '*' ('*')"
+ ]
+}
