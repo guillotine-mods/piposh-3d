@@ -240,6 +240,7 @@ func exec_stmt(stmt: Dictionary, my: Node3D) -> Variant:
 			return null
 		"while":
 			var guard := 0
+			var who := my.name if (my != null and is_instance_valid(my)) else "main"
 			while _truthy(_eval(stmt.get("cond"), my)):
 				var sig = await exec_stmt(stmt.get("body"), my)
 				if sig is BreakSignal:
@@ -247,6 +248,17 @@ func exec_stmt(stmt: Dictionary, my: Node3D) -> Variant:
 				if sig is ReturnSignal:
 					return sig
 				guard += 1
+				if guard == 512:
+					# Diagnostic for the 2026-07-29 "visible but static" report:
+					# a while-loop body that never itself hits a real `wait()`
+					# (e.g. it only calls a user function that was *supposed*
+					# to wait() internally -- _exec_block_sync can't actually
+					# suspend, see its own docstring) spins hundreds of times
+					# per frame instead of once per tick, which reads as the
+					# whole game freezing even though it's technically still
+					# running. Logged once per offending loop, not every
+					# iteration, so this can't itself flood the console.
+					_warn_once("while-loop spinning without wait() -- entity=%s" % who)
 				if guard % 4096 == 0:
 					await get_tree().process_frame  # runaway-loop safety valve
 			return null
