@@ -1709,3 +1709,32 @@ hitch — needs the user to check whether it's better.
 
 Result: `check_all.ps1` green. Committing and pushing this and the prior
 entry's work per explicit user request.
+
+## 2026-07-29 — "Game is really slow and getting stuck": measured the actual cause instead of guessing at the AST-cache fix again
+
+User reported severe slowdown right after the AST-cache fix + hand-port
+switch went out. Before assuming the cache fix was wrong, checked what else
+changed recently that could scale badly: the transitive-include fix
+(previous entry) means every level now merges its entire shared-library
+tree through `IO.wdl`. Measured it directly instead of guessing at the
+size: **~325 global variables** now merge into a single level's
+`_globals` (Shiks 325, Start 322, Intro2 334 — versus 11-21 before that
+fix).
+
+`_get_var`/`_set_var`/`_call()` each had a case-insensitive fallback that
+scanned every key with `.to_lower()` comparisons when the exact-case name
+didn't match — fine at 11-21 entries, a real O(n) cost at ~325, and this is
+the single hottest path in the whole interpreter (every bare identifier
+read/write and every function call, for every entity's action coroutine,
+every frame). With dozens of simultaneously-running coroutines (Start alone
+starts 66), this compounds directly into visible slowdown/stutter.
+
+Fixed by adding `_globals_lower` / `_functions_lower` indexes (lowercase
+name -> canonical name), built incrementally at every insertion point and
+kept in sync on removal (function-call parameter shadowing erases entries
+in `_call_user_function`), turning the fallback into an O(1) dictionary
+lookup. `check_all.ps1` green.
+
+Result: A measured, quantified fix (not a guess) for a real complexity
+regression this session's own include fix introduced. Not confirmed against
+the actual reported slowdown yet — needs the user to retest.

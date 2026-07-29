@@ -15,7 +15,9 @@ class_name WdlInterpreter
 const AST_DIR := "res://assets/converted/wdl_ast/"
 
 var _globals: Dictionary = {}
+var _globals_lower: Dictionary = {}  # lowercase name -> canonical name, kept in sync with _globals -- see _index_global()
 var _functions: Dictionary = {}
+var _functions_lower: Dictionary = {}  # same O(1)-fallback idea as _globals_lower, for _call()
 var _actions: Dictionary = {}
 var _sounds: Dictionary = {}
 var _loader: WmbLevelLoader
@@ -124,6 +126,7 @@ func _merge_ast(ast: Dictionary, _ctx: Dictionary) -> void:
 	for fname in ast.get("functions", {}):
 		if not _functions.has(fname):
 			_functions[fname] = ast["functions"][fname]
+			_functions_lower[String(fname).to_lower()] = fname
 	for aname in ast.get("actions", {}):
 		if not _actions.has(aname):
 			_actions[aname] = ast["actions"][aname]
@@ -131,6 +134,7 @@ func _merge_ast(ast: Dictionary, _ctx: Dictionary) -> void:
 		var name: String = decl.get("name", "")
 		if name != "" and not _globals.has(name):
 			_globals[name] = {"kind": decl.get("kind", "var"), "init": decl.get("init"), "value": null}
+			_index_global(name)
 	for k in ast.get("sounds", {}):
 		if not _sounds.has(k):
 			_sounds[k] = ast["sounds"][k]
@@ -221,7 +225,9 @@ func exec_stmt(stmt: Dictionary, my: Node3D) -> Variant:
 		"local_decl":
 			for decl in stmt.get("decls", []):
 				var v = _eval_init(decl.get("init"), my, decl.get("kind", "var"))
-				_globals[decl.get("name")] = {"kind": decl.get("kind", "var"), "init": null, "value": v}
+				var dname: String = decl.get("name")
+				_globals[dname] = {"kind": decl.get("kind", "var"), "init": null, "value": v}
+				_index_global(dname)
 			return null
 		"expr_stmt":
 			_eval(stmt.get("expr", {}), my)
@@ -421,21 +427,40 @@ func _get_var(name: String, my: Node3D) -> Variant:
 		return 0.0
 	if _globals.has(name):
 		return _globals[name].get("value")
-	for k in _globals:
-		if k.to_lower() == low:
-			return _globals[k].get("value")
+	var canonical = _globals_lower.get(low)
+	if canonical != null and _globals.has(canonical):
+		return _globals[canonical].get("value")
 	return 0.0
 
 
 func _set_var(name: String, value: Variant, my: Node3D) -> void:
 	if not _globals.has(name):
-		for k in _globals:
-			if k.to_lower() == name.to_lower():
-				name = k
-				break
+		var canonical = _globals_lower.get(name.to_lower())
+		if canonical != null and _globals.has(canonical):
+			name = canonical
 	if not _globals.has(name):
 		_globals[name] = {"kind": "var", "init": null, "value": null}
+		_index_global(name)
 	_globals[name]["value"] = value
+
+
+## `_get_var`/`_set_var` are the single hottest path in the whole
+## interpreter -- every bare identifier read/write in every expression, for
+## every entity's action coroutine, every frame. Recursive `include`s (added
+## 2026-07-28) mean `_globals` can now hold several hundred entries (every
+## level pulls in IO.wdl's entire ~13-file shared-library tree), so the
+## previous "scan every key doing .to_lower()" case-insensitive fallback
+## went from a small linear scan to a real per-frame, per-entity O(n)
+## bottleneck -- confirmed as the likely cause of a severe slowdown reported
+## right after that include fix landed. This index makes the fallback O(1).
+func _index_global(name: String) -> void:
+	_globals_lower[name.to_lower()] = name
+
+
+func _deindex_global(name: String) -> void:
+	var low := name.to_lower()
+	if _globals_lower.get(low) == name:
+		_globals_lower.erase(low)
 
 
 func _resolve_entity(obj: Variant, my: Node3D) -> Node3D:
@@ -687,9 +712,9 @@ func _call(name: String, arg_exprs: Array, my: Node3D) -> Variant:
 	# calls yet; real usage here is almost entirely simple helpers).
 	if _functions.has(name):
 		return _call_user_function(name, arg_exprs, my)
-	for k in _functions:
-		if k.to_lower() == low:
-			return _call_user_function(k, arg_exprs, my)
+	var canonical_fn = _functions_lower.get(low)
+	if canonical_fn != null and _functions.has(canonical_fn):
+		return _call_user_function(canonical_fn, arg_exprs, my)
 	if _builtins.has(low):
 		var args: Array = []
 		for a in arg_exprs:
@@ -714,11 +739,15 @@ func _call_user_function(fname: String, arg_exprs: Array, my: Node3D) -> Variant
 		var pname: String = params[i]
 		saved[pname] = _globals.get(pname)
 		var v = _eval(arg_exprs[i], my) if i < arg_exprs.size() else 0.0
+		var had_key := _globals.has(pname)
 		_globals[pname] = {"kind": "var", "init": null, "value": v}
+		if not had_key:
+			_index_global(pname)
 	var sig = _exec_block_sync(fn.get("body", {}), my)
 	for pname in saved:
 		if saved[pname] == null:
 			_globals.erase(pname)
+			_deindex_global(pname)
 		else:
 			_globals[pname] = saved[pname]
 	return sig.value if sig is ReturnSignal else null
@@ -748,7 +777,9 @@ func _exec_stmt_sync(stmt: Dictionary, my: Node3D) -> Variant:
 		"local_decl":
 			for decl in stmt.get("decls", []):
 				var v = _eval_init(decl.get("init"), my, decl.get("kind", "var"))
-				_globals[decl.get("name")] = {"kind": decl.get("kind", "var"), "init": null, "value": v}
+				var dname: String = decl.get("name")
+				_globals[dname] = {"kind": decl.get("kind", "var"), "init": null, "value": v}
+				_index_global(dname)
 			return null
 		"if":
 			if _truthy(_eval(stmt.get("cond"), my)):
