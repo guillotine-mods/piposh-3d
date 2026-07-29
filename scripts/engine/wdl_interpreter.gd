@@ -240,7 +240,7 @@ func exec_stmt(stmt: Dictionary, my: Node3D) -> Variant:
 			return null
 		"while":
 			var guard := 0
-			var who := my.name if (my != null and is_instance_valid(my)) else "main"
+			var who: String = str(my.name) if (my != null and is_instance_valid(my)) else "main"
 			while _truthy(_eval(stmt.get("cond"), my)):
 				var sig = await exec_stmt(stmt.get("body"), my)
 				if sig is BreakSignal:
