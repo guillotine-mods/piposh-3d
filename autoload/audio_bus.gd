@@ -11,6 +11,9 @@ var _player: AudioStreamPlayer
 var _music: AudioStreamPlayer
 var _index: Dictionary = {}  # lower filename / stem -> res path
 var _voice_busy := false
+## True once the current/most-recent line has finished (naturally or via
+## stop/skip). Starts true (nothing played yet). See get_voice_progress().
+var _voice_finished := true
 
 
 func _ready() -> void:
@@ -28,9 +31,11 @@ func play_sfx(name: String, volume_db: float = 0.0) -> void:
 	var stream := _load_stream(name)
 	if stream == null:
 		_voice_busy = false
+		_voice_finished = true
 		sfx_finished.emit()
 		return
 	_voice_busy = true
+	_voice_finished = false
 	_player.stream = stream
 	_player.volume_db = volume_db
 	_player.play()
@@ -42,9 +47,23 @@ func is_voice_playing() -> bool:
 
 ## Acknex `GetPosition(Voice)` is a 0..1,000,000 fraction of the clip played
 ## so far (not milliseconds — WDL scripts gate mid-line events with e.g.
-## `GetPosition(Voice) > 700000` for "70% through this line"). Returns the
-## same fraction as 0..1.
+## `GetPosition(Voice) > 700000` for "70% through this line", and every
+## dialogue coroutine in the game waits on `while (GetPosition(Voice) <
+## 1000000) { wait(1); }` to know a line finished). Returns the same
+## fraction as 0..1.
+##
+## MUST report "done" (1.0) once the line has finished, not 0.0 -- a first
+## version of this returned 0.0 whenever nothing is *currently* playing,
+## which includes the instant a clip finishes naturally (is_voice_playing()
+## flips false right when the `finished` signal fires). That made every
+## `while (GetPosition(Voice) < 1000000)` loop in the game permanently
+## unable to exit after its first line -- confirmed as the cause of a
+## "no audio at all, space doesn't skip" report (docs/SESSION_LOG.md
+## 2026-07-29): every dialogue-driving coroutine got stuck forever on the
+## very first line it played.
 func get_voice_progress() -> float:
+	if _voice_finished:
+		return 1.0
 	if not is_voice_playing() or _player.stream == null:
 		return 0.0
 	var stream_len := _player.stream.get_length()
@@ -82,10 +101,12 @@ func _enable_loop(stream: AudioStream) -> void:
 func stop_sfx() -> void:
 	_player.stop()
 	_voice_busy = false
+	_voice_finished = true  # explicit stop/skip counts as "line done" too
 
 
 func _on_sfx_finished() -> void:
 	_voice_busy = false
+	_voice_finished = true
 	sfx_finished.emit()
 
 

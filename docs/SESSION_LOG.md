@@ -1738,3 +1738,36 @@ lookup. `check_all.ps1` green.
 Result: A measured, quantified fix (not a guess) for a real complexity
 regression this session's own include fix introduced. Not confirmed against
 the actual reported slowdown yet — needs the user to retest.
+
+## 2026-07-29 — "No audio, space doesn't skip": a real bug in this session's own GetPosition(Voice) port
+
+User reported no audio at all and Space no longer skipping. Traced instead
+of guessing: `AudioBus.get_voice_progress()` (added 2026-07-28 for the
+`GetPosition(Voice)` idiom) returned 0.0 whenever nothing is *currently*
+playing -- which includes the exact instant a clip finishes naturally
+(`is_voice_playing()` flips false the moment the `finished` signal fires).
+Since `while (GetPosition(Voice) < 1000000) { wait(1); }` is the standard
+pattern nearly every dialogue-driving action in the game uses to wait for a
+line to finish, this meant **every such loop could never exit** -- it
+either read "still playing" or snapped straight back to "hasn't started"
+the instant the line ended, never "done". Every dialogue coroutine got
+permanently stuck on the very first line it played, which explains both
+symptoms: no further sPlay calls are ever reached (silence after the first
+line), and pressing Space (which calls `AudioBus.stop_sfx()`) didn't help
+because stopping the clip also just reads as "not currently playing" =
+0.0, not "finished".
+
+Fixed with an explicit `_voice_finished` flag: false while a line is
+actively playing, set true by natural completion (`_on_sfx_finished`) *and*
+by an explicit stop/skip (`stop_sfx()`), checked first in
+`get_voice_progress()` so "finished" always reads as 1.0 regardless of why
+it finished. This also makes existing Space-skip wiring
+(`_on_skip_line_pressed` -> `AudioBus.stop_sfx()`, the one branch of that
+function not gated behind now-disabled hand-port state) correctly unstick
+the interpreter's own wait loop, without needing new skip-specific code in
+the interpreter itself.
+
+Result: `check_all.ps1` green. This was a real regression in code added
+this session (not present before 2026-07-28), found by reading what the
+report implied rather than re-guessing at the interpreter itself. Needs a
+playtest to confirm.
