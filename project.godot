@@ -24,7 +24,7 @@ config/icon="res://icon.svg"
 
 GameState="*res://autoload/game_state.gd"
 LevelRouter="*res://autoload/level_router.gd"
-AudioBus="*res://autoload/audio_bus.gd"
+AudioChannels="*res://autoload/audio_channels.gd"
 PiposhDebug="*res://autoload/piposh_debug.gd"
 
 [display]
@@ -74,6 +74,6 @@ pause_menu={
 
 [rendering]
 
-textures/vram_compression/import_etc2_astc=true
 textures/canvas_textures/default_texture_filter=0
+textures/vram_compression/import_etc2_astc=true
 anti_aliasing/quality/msaa_3d=1

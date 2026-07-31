@@ -1,0 +1,79 @@
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  asset-integrity:
+    name: Asset integrity (clean-clone safe)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Runs against committed assets/converted/**/*.glb only -- no
+      # dependency on the gitignored original/ dump, so these are real
+      # required gates on every clone. See PORTING_MANUAL.md Phase 0.
+      - name: Strict-glTF parse (every committed .glb)
+        run: python tools/verify_gltf_strict.py
+
+      # Expected to fail today (all 784 GLBs lack vertex normals -- see
+      # PORTING_MANUAL.md §3.3a). This becomes a required gate once Phase 2
+      # (normal recovery from the WMB plane list / MDL vertex data) lands --
+      # drop continue-on-error then.
+      - name: Vertex normals status (non-blocking until Phase 2)
+        continue-on-error: true
+        run: python tools/verify_normals.py
+
+  source-verified-checks:
+    name: Source-dump checks (skipped without original/)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # tools/verify_transforms.py, validate_levels.py, verify_corpus.py and
+      # verify_wdl_parse.py all read the raw game dump under original/,
+      # which is gitignored and not fetchable here (PORTING_MANUAL.md §3.7,
+      # P0: "the repo cannot be rebuilt from a clone"). Rather than faking a
+      # pass, this job checks for the dump and explicitly reports a skip
+      # when it's absent -- an honest gap, not a green checkmark that means
+      # nothing. Runs for real on any machine (e.g. self-hosted) that has
+      # original/piposh3d/ checked out alongside the repo.
+      - name: Check for original/ dump
+        id: dump
+        run: |
+          if [ -d original/piposh3d ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::original/ dump not present in this environment -- skipping source-verified checks. This is a known gap (PORTING_MANUAL.md §3.7), closed in Phase 8, not a passing result."
+          fi
+
+      - name: Install pipeline dependencies
+        if: steps.dump.outputs.present == 'true'
+        run: pip install pillow numpy
+
+      - name: verify_transforms.py
+        if: steps.dump.outputs.present == 'true'
+        run: python tools/verify_transforms.py
+
+      - name: validate_levels.py
+        if: steps.dump.outputs.present == 'true'
+        run: python tools/validate_levels.py
+
+      - name: verify_corpus.py
+        if: steps.dump.outputs.present == 'true'
+        run: python tools/verify_corpus.py
+
+      - name: verify_wdl_parse.py
+        if: steps.dump.outputs.present == 'true'
+        run: python tools/verify_wdl_parse.py

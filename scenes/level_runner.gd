@@ -22,9 +22,32 @@ var _touch: TouchControls
 var _acknex_sky: AcknexSky
 var _level_select: CanvasLayer
 
+## Set once at setup(); used by _process()'s per-frame camera-authority
+## arbitration. Only fp-mode levels need this: scripted/free modes already
+## have a single, unambiguous camera owner decided once at setup with no
+## per-frame contention.
+var _use_fp := false
+var _player_cam: Camera3D
+var _camera_authority := CameraAuthority.new()
+
 
 func _ready() -> void:
-	AudioBus.rebuild_index()
+	# Level load (WMB/GLB parsing, entity spawn, every action coroutine
+	# starting) is a heavy synchronous block below -- nothing renders while
+	# it runs, which reads as "the game froze" rather than "it's loading"
+	# (reported live, 2026-07-31: "stages are first 'stuck' and then
+	# play"). A real progress bar would need the load itself made async,
+	# which is a much bigger change; this is the minimal fix for the
+	# actual complaint -- show *something* before the freeze starts, so it
+	# reads as a loading screen instead of a hang. Two `await process_frame`
+	# calls force Godot to actually paint this overlay before the heavy
+	# synchronous work below begins: one frame to process the newly added
+	# node into the tree, another to render it.
+	var loading := _show_loading_screen()
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	AudioChannels.rebuild_index()
 	_ensure_environment()
 	_acknex_sky = AcknexSky.new()
 	_acknex_sky.name = "AcknexSky"
@@ -72,6 +95,10 @@ func _ready() -> void:
 	# Plane2.wdl Vview=1 → move_view_1st. Any WMB with player_walk* wins over cams.
 	var use_fp := loader.has_first_person() and not _is_cutscene(level)
 	var use_scripted := (not use_fp) and (_director.scripted_camera or _is_cutscene(level))
+	_use_fp = use_fp
+	_player_cam = player.get_node_or_null("Camera3D") as Camera3D
+	if use_fp:
+		_camera_authority.configure(_player_cam, _script_cam, _director.get("_wdl_interp"))
 
 	if use_fp:
 		_enable_first_person()
@@ -93,9 +120,41 @@ func _ready() -> void:
 	if not ok:
 		_game_hud.set_status("MISSING JSON")
 
+	loading.queue_free()
+
+
+func _show_loading_screen() -> CanvasLayer:
+	var layer := CanvasLayer.new()
+	layer.name = "LoadingScreen"
+	layer.layer = 40  # above GameHud (20) and the level-select menu (30).
+	var bg := ColorRect.new()
+	bg.color = Color(0.05, 0.05, 0.07, 1.0)
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	layer.add_child(bg)
+	var label := Label.new()
+	label.text = "Loading..."
+	label.add_theme_font_size_override("font_size", 28)
+	label.set_anchors_preset(Control.PRESET_CENTER)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	bg.add_child(label)
+	add_child(layer)
+	return layer
+
 
 func _is_cutscene(level: String) -> bool:
 	return level.to_lower() in CUTSCENE_LEVELS
+
+
+## Per-frame camera-authority arbitration for fp-mode levels: real Acknex
+## has one camera, so a script writing camera.x/y/z (a Cam-entity-driven
+## shot during a click interaction, e.g. WDL/Afgan.wdl's pattern) always
+## affects what the player sees. Delegated to CameraAuthority (see
+## docs/CONTRACT.md §4.1.1); fixed-camera-mode levels never call update().
+func _process(_delta: float) -> void:
+	if not _use_fp:
+		return
+	_camera_authority.update()
 
 
 func _entity_mesh_aabb(root: Node3D) -> AABB:

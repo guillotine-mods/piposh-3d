@@ -1,9 +1,9 @@
 {
-  "_comment": "Extra yaw (degrees) baked onto a specific model's authored facing, applied after the standard handedness-correct remap (docs/CONTRACT.md #2). Every row here must be a human-confirmed measurement -- never a guess or a heuristic's output. Keep this short. Crowd/Crowd2/Genia corrected 2026-07-28 from 90 to 270 -- the original 90 was measured under a broken/incomplete viewer in an earlier session and was exactly 180 degrees backwards; re-measured with tools/wmb_web_viewer.py once it actually rendered meshes correctly, confirmed by direct user observation. See docs/SESSION_LOG.md.",
+  "_comment": "Extra yaw (degrees) baked onto a specific model's authored facing, applied after the standard handedness-correct remap (docs/CONTRACT.md #2). Every row here must be a human-confirmed measurement -- never a guess or a heuristic's output. Keep this short. 2026-07-31: Yachdal/Crowd/Crowd2 corrected from 270 to 0, confirmed by direct in-game user observation (270 was 90 degrees off in the same rotational direction for all three; a static front/back render couldn't distinguish '90 off' from 'correct' or from the other 90-off candidate, only real gameplay could). Genia NOT changed -- not reported as wrong, still at 270, unverified against this same left/right blind spot; treat as suspect if a future report calls her facing wrong too. See docs/SESSION_LOG.md for the full back-and-forth (270 -> 90 -> 180 -> 0) and why each intermediate guess was wrong.",
   "extra_yaw_deg": {
-    "Crowd": 270.0,
-    "Crowd2": 270.0,
-    "Yachdal": 270.0,
+    "Crowd": 0.0,
+    "Crowd2": 0.0,
+    "Yachdal": 0.0,
     "Genia": 270.0
   }
 }

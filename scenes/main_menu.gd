@@ -16,7 +16,7 @@ var _show_idx := 1
 
 func _ready() -> void:
 	_ensure_environment()
-	AudioBus.rebuild_index()
+	AudioChannels.rebuild_index()
 
 	# mainmsg is the death/retry panel in WDL — keep faint, not a full takeover
 	var art := "res://assets/converted/gfx/mainmsg.png"
@@ -43,7 +43,7 @@ func _ready() -> void:
 	_script_cam.current = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
-	AudioBus.play_music("SNG032.WAV", -8.0)
+	AudioChannels.play_music("SNG032.WAV", -8.0)
 	panel.visible = true
 	hud.text = "Menu — New Game → Studio | click ShowMov (bottom-right) | Esc quits look"
 
@@ -161,7 +161,7 @@ func _on_entity_triggered(action: String, _skills: Array, node: Node3D) -> void:
 		elif "exit" in file:
 			get_tree().quit()
 		elif "cred" in file:
-			AudioBus.stop_music()
+			AudioChannels.stop_music()
 			LevelRouter.goto_level("Credits")
 		else:
 			_new_game()
@@ -169,14 +169,14 @@ func _on_entity_triggered(action: String, _skills: Array, node: Node3D) -> void:
 
 func _new_game() -> void:
 	GameState.reset_new_game()
-	AudioBus.stop_music()
-	AudioBus.play_sfx("MenuNew.wav")
+	AudioChannels.stop_music()
+	AudioChannels.play_sfx("MenuNew.wav")
 	await get_tree().create_timer(0.35).timeout
 	LevelRouter.goto_level("Studio")
 
 
 func _show_load() -> void:
-	AudioBus.play_sfx("MenuLoad.wav")
+	AudioChannels.play_sfx("MenuLoad.wav")
 	panel.visible = true
 
 
@@ -192,7 +192,7 @@ func _on_load1_pressed() -> void:
 
 
 func _on_credits_pressed() -> void:
-	AudioBus.stop_music()
+	AudioChannels.stop_music()
 	LevelRouter.goto_level("Credits")
 
 

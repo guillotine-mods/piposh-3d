@@ -360,6 +360,17 @@ func _dialog_lines(index: int) -> Array[String]:
 
 
 func _update_crawl(delta: float) -> void:
+	# Clamp: the first _process() after setup_*_subtitles() lands right
+	# after a whole level's worth of synchronous boot work (WMB/GLB load,
+	# every entity's action coroutine starting) -- Godot's delta for that
+	# frame is the REAL elapsed wall-clock time, which can be large enough
+	# that this animation (an 8-units/real-tick crawl, tuned for a normal
+	# ~16ms frame) skips most or all of the way to its end state in a
+	# single step, so the subtitle is never actually seen on screen even
+	# though every node property (visible/texture/position) ends up
+	# "correct" by the next frame -- a headless property check can't catch
+	# this, only an eyes-on-the-real-window report can.
+	delta = minf(delta, 1.0 / 30.0)
 	var stop_x := -310.0 if _subtitle_kind == "studio" else -200.0
 	if _ovr_x > stop_x:
 		_ovr_x -= 8.0 * delta * 16.0  # ~time units → seconds

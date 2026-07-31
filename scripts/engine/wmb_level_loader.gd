@@ -377,8 +377,20 @@ func _spawn_entity(obj: Dictionary) -> bool:
 	else:
 		_add_marker(root, action, is_wmb)
 
-	# Camera placeholders should not render Cam.MDL blobs.
-	if _is_camera_action(action) or stem.to_lower() == "cam" or flag_invisible:
+	# Camera placeholders should not render Cam.MDL blobs. `action Dummy`
+	# is the same shape of problem: a corpus-wide convention (checked every
+	# `action Dummy` definition across the original .wdl corpus -- AsyAct1,
+	# AsyAct3, Credits, Dutyfree, HitUFO, Inn, Intro2, MOI, Shiks, Studio)
+	# for a pure logic/sound-position marker, never a real gameplay visual
+	# -- AsyAct3's own copy even explicitly does `my.invisible = on;`
+	# itself. `Dummy.MDL`'s real (small, roughly spherical, unremarkable)
+	# geometry was apparently unobtrusive enough in the original low-res
+	# game to go unnoticed; in this port it renders as a plainly visible
+	# stray sphere. Reported live in Studio (2026-07-31): "black balls...
+	# shouldn't appear visually or at all... don't know how it reached the
+	# Ami level" -- it's not level-specific, `action Dummy` is used the
+	# same way everywhere.
+	if _is_camera_action(action) or stem.to_lower() == "cam" or flag_invisible or action.to_lower() == "dummy":
 		_hide_meshes(root)
 
 	if _is_trigger_action(action) or (is_wmb and action.to_lower().contains("door")):
@@ -528,6 +540,15 @@ func _mount_wall_card(root: Node3D, stem: String) -> void:
 		else:
 			mat.albedo_color = Color(0.85, 0.75, 0.45)
 		mi.material_override = mat
+		# The quad is centered on the entity's raw WED origin, which isn't
+		# guaranteed to be the poster's own intended visual center (this
+		# whole quad is a hand-placed replacement for a brush the original
+		# extraction couldn't render sensibly -- see above -- not a
+		# measured position). Reported live as sitting visibly low
+		# (2026-07-31); nudged up by a fixed fraction of the quad's own
+		# height rather than a raw unit guess. Unconfirmed pending
+		# playtest -- adjust or revert if still off.
+		mi.position.y += quad.size.y * 0.12
 		# Quad faces +Z; WED pan orients the card (flatten authored tilt/roll).
 		var pan := float(root.get_meta("pan", 180.0))
 		root.transform = Transform3D(_acknex_entity_basis(pan, 0.0, 0.0), root.position)

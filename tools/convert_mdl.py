@@ -63,13 +63,21 @@ def _dilate_alpha(rgba: np.ndarray) -> np.ndarray:
 
 
 def _rgb565_to_rgba(data: bytes, w: int, h: int) -> Image.Image:
+    """RGB565 skin, fully opaque -- see _apply_quake_palette's comment for
+    why treating a specific "empty-looking" color as a transparency
+    sentinel is wrong for 3D character skins in this corpus. RGB565 has no
+    alpha channel at all; a raw value of exactly 0 decodes to pure black
+    (0,0,0), a real, common shading color (hair, pupils, outlines), not a
+    reserved marker -- confirmed the actual root cause of Yachdal's
+    "transparent head" report (his skins are all RGB565, group=2, never
+    even reach the palette-indexed path this function's sibling handles).
+    """
     arr = np.frombuffer(data, dtype="<u2").reshape(h, w)
     r = ((arr >> 11) & 0x1F) * 255 // 31
     g = ((arr >> 5) & 0x3F) * 255 // 63
     b = (arr & 0x1F) * 255 // 31
-    a = np.where(arr == 0, 0, 255).astype(np.uint8)
+    a = np.full((h, w), 255, dtype=np.uint8)
     rgba = np.dstack([r.astype(np.uint8), g.astype(np.uint8), b.astype(np.uint8), a])
-    rgba = _dilate_alpha(rgba)
     return Image.fromarray(rgba, "RGBA")
 
 
@@ -421,14 +429,29 @@ def _game_palette():
 
 
 def _apply_quake_palette(data: bytes, w: int, h: int) -> Image.Image:
-    """Map 8-bit indexed skin through the game palette (index 0 transparent)."""
+    """Map 8-bit indexed skin through the real game palette -- fully opaque.
+
+    Index 0 in this game's palette (`GFX/palette.pcx`) is plain black
+    ([0,0,0], the start of an ordinary grayscale ramp used for real shading
+    -- see docs/SESSION_LOG.md 2026-07-31), not a reserved colorkey sentinel
+    the way some other engines use a specific palette slot for 2D sprite
+    transparency. Treating it as transparent here punched real holes in
+    3D character skins wherever the artist used that grayscale ramp for
+    normal dark shading (eyebrows, pupils, hairlines) -- confirmed via a
+    real playtest report ("heads are transparent") and a direct render
+    showing background geometry visible through a character's own eye
+    sockets. 3D model skins in this corpus are always fully opaque; only
+    `_palette_skin`'s degraded no-real-palette fallback (where there is no
+    actual color data to trust, just a raw index-as-grayscale guess) still
+    treats index 0 as transparent, since that's a genuinely different,
+    much rarer situation.
+    """
     idx = np.frombuffer(data, dtype=np.uint8).reshape(h, w)
     pal = _game_palette()
     if pal is not None:
         rgb = pal[idx]
-        a = np.where(idx == 0, 0, 255).astype(np.uint8)
+        a = np.full((h, w), 255, dtype=np.uint8)
         rgba = np.dstack([rgb[..., 0], rgb[..., 1], rgb[..., 2], a])
-        rgba = _dilate_alpha(rgba)
         return Image.fromarray(rgba, "RGBA")
     return _palette_skin(data, w, h)
 

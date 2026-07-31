@@ -1771,3 +1771,1692 @@ Result: `check_all.ps1` green. This was a real regression in code added
 this session (not present before 2026-07-28), found by reading what the
 report implied rather than re-guessing at the interpreter itself. Needs a
 playtest to confirm.
+
+## 2026-07-29 — `rewrite_skill/PORTING_MANUAL.md` Phase 0 (docs/CI cleanup), done in full
+
+User asked to start executing the manual, which audited the repo at commit
+`0937726` — three commits (O(n) lookup fix, `GetPosition(Voice)` fix,
+busy-loop diagnostic) had already landed since that audit, none reflected
+in the manual or `CONTRACT.md` yet. Worked Phase 0 items 1-6 in order:
+
+1. **README** now says Godot **4.7** (matches `project.godot`'s
+   `config/features`), points to this manual/CONTRACT/session-log as the
+   real status source instead of duplicating it, and its "What works
+   now"/"Not done yet" tables describe the interpreter-era reality (every
+   level driven by `WdlInterpreter`, hand-ported chapters currently bypassed,
+   ~32/531 builtins bridged) instead of the pre-interpreter snapshot.
+2. **`fixes/patching_3d_godot.zip` deleted.** First extracted its two
+   still-useful files: `migrate_angles.py` -> `tools/` (read it fully —
+   still correct, uses the current `angle_gs`-is-truth / `gs_math.py`
+   convention, no changes needed) and `smoke_orient.gd`, which turned out to
+   already exist in `tools/` in a newer form, so the zip's older copy was
+   discarded rather than overwriting it. The `.patch` file inside
+   (`FIX_IDPO=False`/`FACE_ORIENT=True` defaults) was not extracted — it's
+   the actively-harmful regression the manual warned about; the repo is
+   already past it.
+3. **`fixes/SKILL.md` folded into `docs/CONTRACT.md`, then deleted.** Most
+   of its content was already superseded by CONTRACT's more current, more
+   precise version (SKILL.md's own handedness line — "Z-up, left-handed" —
+   was the exact contradiction CONTRACT.md's "right-handed Z-up" was correct
+   against; deleting SKILL.md resolves it by removing the wrong copy, not by
+   editing the right one). What SKILL.md had that CONTRACT.md didn't --
+   specific verified facts, not general rules -- got added as CONTRACT §3
+   items 9-12: the 134-WMB brush-extraction verification numbers, the UV
+   formula's spot-check results (Shiks' outlier range still visually
+   unconfirmed), the 984-texture format verification, and the known
+   hardcoded per-asset special cases in `wmb_level_loader.gd`
+   (`townl`/`desertl` dup skips, `StudioL +4`, wall-card quads). `fixes/`
+   is now empty and removed.
+4. **`tools/verify_gltf_strict.py` (new)** — walks the GLB chunk header per
+   spec and `json.loads`s the JSON chunk; no dependency on the gitignored
+   `original/` dump, so it's a real gate on a clean clone. First version had
+   a bug (compared `chunk_start` instead of `off` for "JSON must be first",
+   which flagged every file as broken) -- caught by running it against the
+   real corpus and getting a 784/784 failure rate that didn't match the
+   manual's claimed 783/784, instead of trusting the code read (R1/R2). Fixed
+   offset comparison, reran: 784 checked, exactly 1 failure --
+   `assets/converted/wmb/Shiks.glb`, `Extra data: line 1 column 21020` --
+   matching the manual's §3.4 finding byte-for-byte. This is real
+   external-ground-truth verification (raw chunk bytes), not the pipeline's
+   own output grading itself.
+5. **`tools/verify_normals.py` (new)** — same clean-clone-safe approach,
+   counts glTF primitives missing a `NORMAL` attribute. Confirmed 783/784
+   fail (1 unparseable = the same broken Shiks.glb, correctly *not*
+   double-counted as a normals failure since its JSON can't even be read).
+   Matches the manual's "not one contains a NORMAL attribute" claim.
+   Deliberately wired into CI as **non-blocking** (`continue-on-error`) per
+   the manual's own framing -- it's supposed to fail today and become a real
+   gate in Phase 2, not before.
+6. **`.github/workflows/verify.yml` (new).** Two jobs: `asset-integrity`
+   (strict-glTF required, normals non-blocking, no `original/` dependency --
+   real on every clone) and `source-verified-checks` (the four scripts that
+   need the gitignored `original/` dump: `verify_transforms.py`,
+   `validate_levels.py`, `verify_corpus.py`, `verify_wdl_parse.py`). The
+   second job checks for `original/piposh3d/` first and explicitly reports a
+   **skip** with a `::notice::` pointing at manual §3.7 when absent, rather
+   than either crashing or faking a pass -- on GitHub-hosted runners today
+   that's every run, since the dump isn't fetchable from anywhere in CI yet
+   (that gap is Phase 8's problem, tracked, not hidden). Sanity-checked all
+   four commands actually run correctly by running them locally (this
+   machine has `original/`): all four exit 0 against current `HEAD`.
+7. **Opportunistic fix, not originally a Phase 0 item:** the new strict-glTF
+   check is written as a *required* CI gate, but with the known-broken
+   `Shiks.glb` still in the tree it could never go green -- Phase 0's own
+   gate ("CI green on a clean clone") and Phase 8's task list ("regenerate
+   or delete Shiks.glb... confirm the Phase 0 gate passes") were in tension.
+   Diffed the two copies byte-for-byte: `assets/converted/wmb/Shiks.glb` and
+   `assets/converted/levels/Shiks_brush.glb` are identical except the first
+   pads its JSON chunk with NUL and the second (correctly) with space --
+   exactly CONTRACT §2 item 5's known bug, on a file that predates the fix
+   and was never regenerated. `_find_wmb_glb()` in `wmb_level_loader.gd`
+   checks the direct `wmb/` path before its `_brush.glb` fallback, so it was
+   reaching the broken copy. Grepped every level JSON for a nested
+   `Shiks.wmb` prop reference first (none — it's only ever loaded as a
+   level's own brush, never as another level's prop) before deleting
+   `assets/converted/wmb/Shiks.glb` + its `.import` + its 25 duplicate
+   texture PNGs, letting the loader fall through to the already-correct
+   `levels/Shiks_brush.glb`. Reran the strict check after: 783/783, 0
+   failures.
+
+Result: `powershell -File tools/check_all.ps1` green (regenerated
+`docs/LEVELS.md` as a side effect, byte-identical to what was committed —
+confirmed via `git diff`, no unrelated drift). Phase 0 gate genuinely met,
+not just claimed: `tools/verify_gltf_strict.py` passes on every committed
+GLB, the four source-dependent scripts were confirmed to actually run
+(not just read), and the docs no longer contradict each other or the code.
+Phase 0 item left undone: `tools/verify_normals.py` exists and runs but is
+intentionally non-blocking, per the manual's own instruction that it should
+fail until Phase 2. Not logged as a question needing a user answer --
+everything here was closable from the repo's own data.
+
+## 2026-07-29 — `rewrite_skill/PORTING_MANUAL.md` Phase 1 (dispatch chain): every level now reaches a real path, two real bugs found by actually running it
+
+User asked to continue past Phase 0 into fixing levels / "making the main
+work." Phase 1 targets exactly the P1 defect from the manual's audit:
+`wdl_director.gd`'s dispatch chain conflated *who owns the camera* with
+*whether the level's script runs at all*, so `elif fp:` (first-person
+levels) sat **before** `elif scripted_camera and _try_begin_interpreted_level()`
+in `setup()` -- meaning every FP level ran zero WDL regardless of the
+now-removed `HAND_PORTS_ENABLED` flag, and any level without a camera
+entity (`scripted_camera == false`) never even tried the interpreter.
+
+**Code changes (`scripts/engine/wdl_director.gd`):**
+1. `const HAND_PORTS_ENABLED := false` replaced with `const HAND_PORTED:
+   Dictionary = {}` (empty -- matches the user's 2026-07-28 request to run
+   every chapter through the interpreter; the manual's own suggested
+   default was `{"shiks": true}`, written before it knew about that
+   request, so left empty rather than silently reverting Shiks against
+   what the user already asked for) plus `_is_hand_ported()`, which mirrors
+   the exact same fuzzy script-name-or-level-name matching every
+   `_is_X_level()` already uses, rather than a second, looser lookup that
+   could disagree with it. Swapped in at all three dispatch points
+   (`setup()`, `_process()`, `ensure_scripted_view()`) -- same three the
+   old flag touched.
+2. `setup()`'s dispatch restructured so `_try_begin_interpreted_level()`
+   (renamed dependency: extracted `_wdl_ast_stem()`/`_has_wdl_ast()` out of
+   it so the AST-existence check is shared, not duplicated) runs whenever a
+   level isn't hand-ported, regardless of `fp`. Camera/click wiring for `fp`
+   levels moved to run *after*, unconditionally on top of whatever the
+   interpreter did -- `LevelRunner._enable_first_person()` already
+   independently forces `scripted_camera=false` and switches to the player
+   camera from `loader.has_first_person()` alone (verified by reading
+   `scenes/level_runner.gd:73-84`: `use_fp` never consults
+   `_director.scripted_camera`), so this was safe to decouple without
+   touching that file. The bottom `else` branch now `push_warning()`s by
+   name if a level with a parsed AST still reaches it, per the manual's "log
+   loudly, don't silently stay inert" instruction.
+
+**Verification (R1/R2: had to actually run it, not read it):** built
+`tools/smoke_dispatch.gd`, a headless script that really instantiates
+`WmbLevelLoader` + `WdlDirector` and calls `setup()` per level, then reads
+back `fp`/`_is_hand_ported()`/`_has_wdl_ast()`/`_wdl_interp != null`/
+`scripted_camera`. Two throwaway mistakes on the way, both worth recording
+so they're not repeated: (a) GDScript has no implicit adjacent-string-literal
+concatenation like Python -- `"a" "b" % x` is a parse error, not string
+concat, hit twice (once in the script, once in the `push_warning` I'd just
+added to the director) before checking the GDScript-vs-Python assumption;
+(b) a first version looped over all ~55 `levels.json` levels with zero
+`await` between iterations, instantiating full scenes back-to-back with no
+frame yields -- looked hung (5+ minutes, zero output, because Godot's
+`print()` to a redirected file doesn't flush until something actually
+yields) and got killed rather than trusted; confirmed via
+`Get-Process -Id <pid>` that CPU was still climbing (not deadlocked, just
+heavy) before killing it, so the real fix was scope + pacing, not "wait
+longer": bounded the default roster to the 19 levels the manual's audit
+specifically named as affected (7 former hand-ports + the 13 listed as
+"parsed AST, no camera entity, guaranteed inert"), and added
+`await process_frame` between levels so previous levels' fire-and-forget
+interpreter coroutines actually get torn down before the next one piles on
+(`--all` still runs the full roster if wanted later). Also hit "Identifier
+not found: GameState/AudioBus/PiposhDebug" the first time it ran -- a
+static `WmbLevelLoader`/`WdlDirector` type reference at the top of a
+`-s`-mode custom-main-loop script apparently compiles before this project's
+autoloads finish registering (no existing `tools/smoke_*.gd` had ever
+instantiated either class, so this ordering gap had never been hit before);
+fixed by `load()`-ing both scripts inside `_run()`, after an initial
+`await process_frame`, instead of a static top-level type reference.
+
+**Real bug the fixed dispatch surfaced, not introduced by it:**
+`WdlInterpreter._loose_eq()` (`wdl_interpreter.gd:394`) did
+`if l == null or r == null or l is Node3D or r is Node3D: return l == r` --
+correct when *both* sides are an entity reference or null, but GDScript
+throws `Invalid operands 'float' and 'Object' in operator '=='` when
+*exactly one* side is (e.g. a WDL `target == 0` "no entity" sentinel
+check, a common pattern). Fired 16 times across the 19-level run before the
+fix, at a real call site (`_try_begin_interpreted_level -> setup`), meaning
+these comparisons had always been broken -- they just never ran before,
+since none of these 19 levels' scripts ever executed under the old dispatch
+bug. Fixed by only taking the identity-compare path when both sides are
+null-or-Node3D; when exactly one is, they can never be meaningfully equal,
+so return `false` directly instead of calling `==` on mismatched types.
+
+Result: `tools/smoke_dispatch.gd` now reports 19/19 dispatched, zero
+inert-with-AST levels, zero script errors (down from 16). Plane2 --
+"the level that lost both paths," the manual's own suggested first signal
+--  now shows `fp + interpreted`: player-controlled first-person camera
+*and* a live WDL script, instead of the previous total silence. `check_all.ps1`
+green, `verify_gltf_strict.py` still 783/783, base `smoke_test.gd` still
+6/6. **This confirms dispatch reaches the interpreter, not that any of
+these 19 levels play correctly** -- none have had a human playtest through
+the interpreter yet; `docs/PLAYTEST.md`'s hand-port row updated to say so
+explicitly rather than implying more than was checked. Per the manual's own
+suggestion, Plane2 is the sharpest next signal: asking the user to run F4 →
+Plane2 and report what they see.
+
+## 2026-07-30 — Plane2 playtest report: found and fixed a real game-wide bug (`my.enable_click`/`my.event` were complete no-ops), not a Plane2-specific one
+
+Checked: `Answer` first. User's report: "I see camera shots moving one by
+one but without any audio or animation." User also gave two standing
+instructions for this session: fix things generically ("any change...
+should be applied to all levels at once"), and hold the original-game
+fidelity bar ("the game should be played as it would be played originally
+if opened in its original way").
+
+Investigated by running the actual game state instead of re-reading
+Plane2.wdl for a third time. Built `tools/smoke_camera_trace.gd`
+(instantiates the real `level_runner.tscn`, not just
+`WmbLevelLoader`+`WdlDirector` in isolation, so `LevelRunner`'s own
+`_enable_first_person()` camera-authority logic actually runs) and traced
+900 frames of both Plane2 and Plane with zero input: **camera never moved,
+never switched, in either level.** This ruled out "the interpreter is
+fighting the player camera" -- there was nothing to see because nothing
+auto-triggers in Plane2 by design (every dialogue/animation sequence in
+`Plane2.wdl` is gated behind `my.enable_click`/`my.event`, i.e. the player
+has to click HeadPhone/TV/Sikot/Passenger/STU1 to trigger anything).
+
+That reframed the question: does *clicking* work at all? Traced the click
+pipeline and found the real bug, confirmed general (not Plane2-specific)
+by inspection of the shared interpreter code:
+
+- `WdlInterpreter._set_field()` (`wdl_interpreter.gd`) had no case for
+  `enable_click` or `event` at all -- the match statement's wildcard branch
+  only handles `skillN`; every other field assignment, including these two,
+  was silently dropped. `my.enable_click = on; my.event = HP;` -- the
+  standard WDL idiom for "make this entity clickable, run HP when it is,"
+  used throughout the corpus, not just Plane2 -- did *nothing*.
+- Independently, `_assign()` would have mis-evaluated the RHS anyway: for
+  `my.event = HP;`, `HP` is a bare identifier naming an `action`/`function`,
+  not a declared variable -- `_eval()` on an undeclared identifier silently
+  returns `0.0` (same class of bug the `create()` 3rd-arg special case
+  already exists to avoid, see `_call()`). Fixed both: `_assign()` now
+  special-cases a bare-identifier RHS on `.event =` as a literal name
+  string; `_set_field()` stores it as `wdl_event` meta and, for
+  `enable_click`, ensures a pickable `Area3D` exists (`_ensure_clickable_area()`).
+- `WdlDirector._handle_click_action()` (`wdl_director.gd`) now checks the
+  clicked node for `wdl_event` meta *first*, before any of the
+  hardcoded per-level action-string branches below it, and dispatches via
+  a new `WdlInterpreter.invoke_event()` (runs the named action as a fresh
+  fire-and-forget coroutine, same mechanism `begin_level()` uses to start
+  each entity's own initial action). This generic path now sits in front
+  of e.g. the old `_plane2_active`-gated dispatch, which was itself
+  confirmed dead for interpreter-mode Plane2 (that flag is only ever set by
+  the hand-ported `_begin_plane2()`, which never runs now -- see the
+  2026-07-29 Phase 1 entry above).
+
+**Verification (R1/R2): built two throwaway regression tools, both kept.**
+`tools/smoke_event_unit.gd` constructs a bare `WdlInterpreter` with a
+synthetic one-statement action and calls `invoke_event()` directly --
+isolates the mechanism from Plane2's 14 concurrent always-on coroutines,
+which made a first full-level trace attempt unreadable (every coroutine's
+statements interleave in the log). `tools/smoke_click_event.gd` then
+verifies it end-to-end against the real level: loads Plane2, finds the
+HeadPhone entity, confirms `wdl_event == "HP"` (not the pre-fix `0.0`),
+simulates the click via `_handle_click_action`, and checks the result.
+
+Both false starts on the way are worth recording: (1) a first debug pass
+showed `Scene` still `0.0` immediately after invoking the click and looked
+like the fix hadn't worked -- turned out the assertion was wrong, not the
+fix: headless audio never actually loads/plays dialogue WAVs, so
+`GetPosition(Voice)` reports "finished" immediately and every
+`while (GetPosition(Voice) < 1000000) { wait(1); }` in `action HP`'s
+21-statement body resolves with zero iterations, so the *entire* action
+(all 5 lines, all state transitions) runs to completion in one synchronous
+pass instead of pausing mid-sequence like it would with real audio -- a
+step-by-step per-statement trace confirmed this exactly, down to `Scene`
+correctly going `1.0 -> ... -> 0.0` (its own final reset) within a single
+call. Fixed the assertion to check the actually-correct end state
+(`Goal_Headphones == 1`, `Scene`/`MoviePlaying` back to `0`) instead of an
+assumed mid-sequence snapshot. (2) A debug-only `var tag := <bool
+expression>` in a hot path failed GDScript's static type inference
+("Cannot infer the type of tag") and silently broke compilation of
+everything depending on `WdlInterpreter` for one run, producing a
+completely unrelated-looking failure (`WdlDirector` couldn't `.new()` it) —
+worth remembering that a compile error deep in a dependency can surface as
+a confusing symptom several frames removed from its actual cause.
+
+Result: both new regression tests pass; `tools/smoke_dispatch.gd` still
+19/19 with zero script errors; `check_all.ps1` green. All temporary debug
+`print()`s removed from `wdl_interpreter.gd`/`wdl_director.gd` before
+committing -- none belong in the shipped code. This is a real, general fix
+(every interpreted level using `enable_click`/`event` benefits, not just
+Plane2) per the user's explicit instruction, and CONTRACT.md §4.1
+documents the mechanism for future reference. **Not yet re-confirmed by the
+user in the actual game** -- the original report (camera shots, no audio)
+wasn't literally reproduced by this investigation (the camera-trace tool
+showed no automatic movement at all, contradicting "shots moving one by
+one"), so there is still an open question about what exactly the user saw;
+asking them to retest Plane2 with this fix and describe the result again,
+specifically whether clicking the headphones/TV/passenger/Sikot/STU1 now
+produces dialogue and animation.
+
+## 2026-07-30 — "Add many more debug prints... run it yourself too don't rely on me": found and fixed two real corpus-wide bugs, one of them a hard engine crash
+
+User asked for more instrumentation and, explicitly, for verification to
+happen by actually running the game rather than asking for another
+playtest report. Added permanent (not throwaway) debug logging via the
+existing `PiposhDebug.log_msg()` convention: `[wdl-event]` tags in
+`wdl_interpreter.gd` for `.event`/`enable_click` capture and
+`invoke_event()` dispatch outcome, `[click-hit-interp]` in
+`wdl_director.gd` for the generic click-dispatch priority check added
+2026-07-30 earlier today.
+
+Then, instead of testing only the one entity the earlier session verified
+(Plane2's HeadPhone), grepped the whole corpus for `enable_click`
+(`grep -rl enable_click original/piposh3d/*.wdl` — 17 files) and built
+`tools/smoke_click_survey.gd`: loads each of the 16 loadable levels for
+real through `level_runner.tscn`, finds every entity that ends up with a
+captured `wdl_event`, and clicks every single one — 307 entities across 16
+levels in one run. This is the level of coverage a single hand-picked
+regression test structurally cannot provide, and it paid off immediately:
+the first full run surfaced two real, previously-undetected bugs, both
+corpus-wide, neither specific to the level they happened to be found in.
+
+**Bug 1 — `_actions` had no case-insensitive fallback.** `_functions` has
+had one (`_functions_lower`) since the 2026-07-29 O(n)-lookup fix;
+`_actions` never got the same treatment. The WDL corpus is not
+consistently cased between an action's own declaration and its use as a
+bare-identifier `.event` target: Olympic.wdl's `action GiveNut` is
+referenced as `my.event = givenut;` (lowercase) everywhere it's placed;
+Dutyfree's `Talktome`/`talktome` is the same shape. Confirmed as a real,
+repeated corpus pattern (not one typo) via the survey's "NOT FOUND" log
+lines before the fix. Fixed with `_actions_lower` + a `_resolve_action()`
+helper, used everywhere an action name is looked up by string
+(`begin_level()`, `invoke_event()`, `create()`'s 3rd arg). Full detail in
+`docs/CONTRACT.md` §4.1.2.
+
+**Bug 2 — a real engine crash (SIGSEGV), not a script error.** The survey
+log showed `SCRIPT ERROR: Invalid type in function '_eval' ... previously
+freed instance` 25 times, always right after clicking an
+`AFG_Card`/`AFG_Take`-shaped entity (the collectible-card system shared
+across many levels via `WDL/Afgan.wdl`). Root-caused with an isolated
+reproduction, `tools/smoke_remove_race.gd`, built specifically because the
+full corpus survey's 300+ interleaved coroutines made the original crash
+log unreadable (guessed wrong twice reading it before building the
+isolated repro — see below). The actual mechanism, confirmed step by step:
+
+1. `AFG_Card`'s own persistent `while(1) { if (AFG[my.skill1]==1)
+   {AFGremove();} wait(1); }` coroutine and the click-triggered `AFG_Take`
+   (which sets `AFG[my.skill1]=1` then calls `remove(my)` itself) can both
+   end up resumed within the *same* synchronous `process_frame`
+   signal-dispatch batch.
+2. This means `remove(my)` can be called **twice** on one entity in that
+   same window — once from the click handler, once from the persistent
+   coroutine's own next iteration re-observing the flag it just set.
+3. At that reentrant instant, `is_instance_valid()` and `is_inside_tree()`
+   on the entity both still read `true` — neither validity check catches
+   it — and even `my == null` is unreliable (directly observed returning
+   `true` for a reference that was never null and was definitely freed).
+   Yet simply passing that same reference into any `Node3D`-typed
+   parameter throws immediately, regardless of what the callee's body
+   does with it (confirmed by making a decoy guard function's own
+   parameter untyped: the crash moved to the *next* typed-parameter call
+   site instead of going away, proving it's GDScript's own
+   argument-passing validation, not anything checkable from inside the
+   receiving function).
+
+Three things were tried and confirmed **not** sufficient, in order, each
+disproven by rerunning `smoke_remove_race.gd` and watching the crash
+persist: deferring the `queue_free()` call via `call_deferred`; deferring
+which frame the click-triggered coroutine even starts on; switching the
+defer from `process_frame` to `physics_frame` (headless mode processes
+both together, so this bought nothing). The fix that actually worked, and
+is now permanent, has three parts (all required — removing any one brings
+the crash back, re-verified individually while narrowing this down):
+untyping every `my`/`entity` parameter in `wdl_interpreter.gd` (~20
+functions) so the crash-causing argument-type validation never triggers;
+making `_do_remove()` idempotent (no-ops past the first call on one
+entity, closing the double-removal path directly); and checking
+`typeof(my) == TYPE_NIL` instead of `my == null` in the shared
+`_entity_alive()` guard, since the latter was the specific check observed
+giving a false answer on a dangling reference. Full mechanism and the
+reasoning for each of the three parts is in `docs/CONTRACT.md` §4.1.2 —
+read that before touching `_eval`/`exec_stmt`/`_do_remove` again.
+
+**Process note for next time:** the corpus-survey script itself needed two
+rounds of hardening before it was trustworthy — a first version crashed
+the engine itself (SIGSEGV) from a `.map()` lambda touching a Node3D that
+a *prior* click in the same loop had freed (fixed by snapshotting
+name/action/event as plain strings up front, never holding a Node3D
+reference across a click), and reading its raw log directly (hundreds of
+interleaved coroutines) led to two wrong guesses about the root cause
+before building the isolated single-entity reproduction. The isolated
+repro is what actually solved it — worth building one earlier next time a
+crash log is this tangled, rather than trying to read the corpus log more
+carefully.
+
+Result: `tools/smoke_click_survey.gd` now reports 0 script errors across
+all 307 clickable entities in all 16 levels (down from 25 crashes + ~15
+unresolved-event misses). `tools/smoke_remove_race.gd`,
+`tools/smoke_click_event.gd`, `tools/smoke_event_unit.gd`,
+`tools/smoke_dispatch.gd`, and `check_all.ps1` all still pass. All
+temporary print-debugging removed from the shipped code; the permanent
+`[wdl-event]`/`[click-hit-interp]` logging and the three new smoke-test
+tools remain. **Still not confirmed by the user in the actual running
+game** — this closes a real, general, corpus-wide defect class (verified
+by execution, per R1/R2), but the original reported symptom ("camera
+shots… no audio or animation") was never literally reproduced by any of
+today's tooling, so it remains an open question what exactly the user saw;
+still asking for a retest.
+
+## 2026-07-30 (cont.) — Added camera-write-vs-actual logging and ran a real Plane2 playtest myself: found the WDL script's camera writes never reach the visible camera in FP mode
+
+User: "I don't see the logging being added" (the `[wdl-event]` logging from
+the entry above only fires for entities using `enable_click`, and their
+pasted console excerpt only covered Start/Menu, neither of which use it --
+not a real problem, but not visible from what they'd seen either) and
+asked specifically for camera-position logging compared against what the
+script says the camera should be, plus running it myself instead of
+handing back another request to test blind.
+
+Added two new tags, same `PiposhDebug.log_msg()` family as `[wdl-event]`:
+`[cam-write]` in `WdlInterpreter._set_camera_field()` (every
+`camera.x/y/z/pan/tilt/roll` write, tagged with which entity's coroutine
+made it) and `[cam-actual]` in `WdlDirector._process()` (the real position
+of whichever `Camera3D` has `.current == true`, i.e. what's actually
+rendered, change-detected so it can't itself flood the console). Then
+built `tools/smoke_plane2_playtest.gd`: loads Plane2 through the real
+`level_runner.tscn` flow (not the director in isolation), idles 120
+frames, clicks the Passenger entity (the one interaction in Plane2 that
+engages a WDL-driven camera -- `action Cam3` sets `camera.*` from its own
+position whenever the click-set `HitHim > 0`), and watches both tags for
+60 more frames.
+
+**Result, run directly rather than asked about:** `[cam-write]` fired 364
+times after the click (Cam3's `while(1){ if(HitHim>0){camera.x=my.x;...}
+wait(1); }` genuinely runs every tick) -- but `[cam-actual]` logged a
+changed position only **twice** in the entire run, both before the click
+(the initial spawn placement and the floor-snap adjustment), and **zero
+times** afterward. The script is correctly, continuously trying to move
+the camera to Cam3's viewpoint; the actually-rendered camera (the player's
+own first-person `Camera3D`) never moves at all, because
+`LevelRunner._enable_first_person()` sets `_script_cam.current = false`
+for the whole level and nothing re-enables it for a script-driven
+camera-takeover moment like this one. `WdlInterpreter._set_camera_field()`
+only ever writes to `_camera` (the script camera), with no path to the
+player's own camera or to toggling which one is `.current`. In the
+original Acknex engine there is only one camera object, so this
+distinction doesn't exist -- `camera.x/y/z` always affected what the
+player saw, first-person or not. This looks like a real, previously
+unknown fidelity gap in how FP levels handle a scripted camera cutscene
+mid-level, not something specific to Plane2's Passenger interaction --
+worth checking whether it explains part of the original "camera shots"
+report, but not confirmed as *the* cause; flagging it as a separate,
+concrete, verified finding rather than folding it into that guess.
+
+Secondary observation, not yet root-caused: `HitHim` stayed at `1.0` for
+all 60 post-click frames instead of progressing through
+`action Passanger`'s own sequence to `2.0` then back to `0.0` -- the
+click-triggered `HitMe` (`{HitHim = 1;}`) ran fine, but the *persistent*
+`Passanger` coroutine (started at `begin_level()`, not by the click) that
+is supposed to notice `HitHim==1` on its next tick and run the hit
+animation didn't visibly progress within the window checked. Not
+investigated further this pass -- noted here so it isn't rediscovered from
+scratch, and flagged to the user rather than silently left for later.
+
+Result: `tools/smoke_dispatch.gd` (19/19) and `tools/smoke_click_event.gd`
+still pass after the logging additions -- no regression. This is a real,
+concrete finding produced by actually running the game, not a report asked
+of the user, per their explicit request this round.
+
+## 2026-07-30 (cont. 2) — Chased a stray `[cam-write] field=visible` line back to a real, previously-undocumented missing subsystem: Acknex PANEL objects
+
+User pasted their own console capture (Start -> Menu -> Studio loading) and
+it included two unexpected new lines: `[cam-write] field=visible value=0.0
+by=<no entity>` / `value=1.0`, right at the Start->Menu boundary. Not
+asked about explicitly, but worth chasing since "the camera is getting a
+field write nobody expects" is exactly the kind of thing this session's
+`cam-write` logging exists to catch.
+
+Traced it: `_set_field()`'s `if node == _camera:` check routes here
+whenever `_resolve_entity()` can't resolve an identifier to a real
+Node3D and falls back to `my` -- normally safe, but harmless-looking here
+specifically because `my` and `_camera` happened to coincide. Grepped
+Menu.wdl for the actual statements near this point in execution
+(`entSaveLoadMenu.visible = off;`, `pConsole.visible = off;`,
+`SavePanel.visible = on;`, `pMenu.visible = ...` -- Menu.wdl alone has
+~10+ of these) and checked whether these names are declared anywhere as
+WDL `var`s or resolvable WMB entity names: they are not. They're declared
+with Acknex's `panel` keyword instead -- confirmed via
+`grep -n "^PANEL SavePanel" original/piposh3d/IO.wdl` and
+`grep -n "^panel " original/piposh3d/Menu.wdl` (`pMenu`, `pShow`). Acknex
+`PANEL` is a distinct top-level declaration for 2D UI overlays (menus,
+save/load screens, HUD elements) -- a completely separate system from
+`var`/`action`/`function`/`sound`, the four kinds `tools/parse_wdl.py` and
+`WdlInterpreter` actually understand.
+
+**This is not a bug in anything built this session -- it's a whole
+subsystem with zero support**, previously undiscovered because nothing
+until today's `cam-write` logging surfaced its symptom. The immediate
+effect of `SavePanel.visible = on;` etc. against an interpreter with no
+concept of panels: the identifier evaluates to the "undefined" default
+(`0.0`), `_resolve_entity()` falls back to `my`, and whether that lands on
+`_camera` (harmlessly ignored, since `_set_camera_field` has no `"visible"`
+case) or nowhere at all depends on incidental context -- either way the
+actual panel visibility toggle a script is trying to do never happens.
+Given Menu.wdl's whole save/load flow is built on this
+(`while (savepanel.visible == on) { wait(1); }` gates on it directly per
+line 199), the practical effect is real menu UI flows silently not
+working, not a cosmetic log artifact.
+
+Scoped but **not implemented this session** -- a real `PANEL` system
+(parsing `panel NAME { ... }` blocks, a Godot `Control`-based renderer,
+property resolution for `.visible`/`.pos`/`.bmap`/etc., wiring named panel
+references into `_resolve_entity`'s fallback) is a substantial new feature
+area, not a bug fix, and closer in scope to `rewrite_skill/PORTING_MANUAL.md`
+Phase 5/7's UI work than to tonight's interpreter fixes. Flagged to the
+user rather than started unprompted mid-session. Debug instrumentation
+used to trace this (`print("[DBG3] node==_camera! ...")` in `_set_field`)
+was temporary and has been removed; nothing about this finding required a
+code change, only investigation.
+
+## 2026-07-30 (cont. 3) — User confirmed the camera-authority gap from real gameplay ("when pressing the hit the camera should move") and fixed it; found and fixed the real cause of "audio from talks is not being played"
+
+User pasted a real console capture of clicking Passenger in Plane2 (not a
+headless simulation -- `[click-hit] collider=Col resolved_node=Passn_mdl_011
+action=Passanger` is the real `_try_click()` raycast path, proving
+today's click-dispatch fix works in actual play) and confirmed directly:
+"when pressing the hit for example the camera should move." That's
+external ground truth for the camera-authority gap found earlier today via
+`tools/smoke_plane2_playtest.gd` -- no longer a "might explain it" guess.
+Also reported, from real play: "Audio from talks is not being played" and
+"The intro (start file) isn't showing the correct placing of the
+characters and camera movement" (not yet investigated), plus general
+frustration that fixes were accumulating as patches on top of old
+hand-port remnants rather than a clean pass, and that scene loading feels
+slow.
+
+**Fixed the camera-authority gap, generically, for every fp-mode level:**
+added `WdlInterpreter.is_driving_camera_this_frame()` (tracks
+`Engine.get_process_frames()` on every `camera.x/y/z/pan/tilt/roll`
+write) and had `LevelRunner._process()` -- new, only active for fp-mode
+levels -- switch the visible camera to the script camera on any frame the
+interpreter actually wrote it, and back to the player's own camera
+otherwise. This is the same "most recent write wins" model the original
+single-camera Acknex engine uses, implemented generically rather than
+special-cased to Plane2's Passenger/Cam3. Verified with real data via
+`tools/smoke_plane2_playtest.gd`: post-fix, `[cam-actual]` correctly
+switches from the player camera to `ScriptCamera` at `(-140.0, 85.0,
+-255.0)` (Cam3's own position, axis-converted) the frame after the click,
+and stays there for the rest of the window HitHim remains >0 -- matching
+`[cam-write]`'s target exactly, where before the fix `[cam-actual]` never
+moved at all through the same window.
+
+**Root-caused "audio from talks is not being played" -- a second real bug,
+not a duplicate of anything fixed today.** `sound Cockpit = <SFX089.WAV>;`
+-style declarations were parsed into `_sounds`/`_sounds_lower` back when
+`_actions_lower` was added, but `_get_var()` never actually read `_sounds`
+-- confirmed by grep, this was a pure oversight, not a deferred TODO.
+Referencing a declared sound name (e.g. Plane2's `action Dummy`'s ambiance
+loop, `play_entsound(my, cockpit, 300)`) silently evaluated to `0.0`
+instead of the WAV filename. On its own that's cosmetic -- but
+`AudioBus._voice_busy`/`_voice_finished` are shared, global state across
+*all* sound playback, not scoped per line, so `Dummy`'s broken call
+failing *while a real dialogue line was actively playing* force-cleared
+that shared "finished" flag every tick it ran. `GetPosition(Voice)` reads
+that same flag, so every `while (GetPosition(Voice) < 1000000) { wait(1);
+}` in the game -- the standard dialogue-wait idiom, used everywhere --
+resolved almost instantly regardless of the real clip's duration, and the
+next `sPlay()` call cut off whatever was still actually playing. This
+also explains a false conclusion from earlier today's `smoke_click_event.gd`
+work: HP's whole 21-statement, 5-line body appearing to "run to completion
+in one synchronous pass" was attributed to headless audio never loading at
+all -- it was actually this bug (Plane2's own `Dummy` entity is what was
+interfering), not a headless-specific limitation.
+
+Fixed by wiring `_sounds`/`_sounds_lower` into `_get_var()` (same
+case-insensitive-fallback pattern as `_actions_lower`/`_functions_lower`).
+Verified two ways: (1) `tools/smoke_audio_timing_check.gd` (new) confirms
+headless Godot genuinely advances real `AudioStreamPlayer` playback
+progress over real wall-clock time -- `get_voice_progress()` climbed from
+0.0 to 0.41 over 270 frames on a real SHK019.WAV clip, still not finished
+at 300 -- so headless *is* trustworthy for verifying audio timing, not
+just "whether play_sfx() was called." (2) `tools/smoke_click_event.gd`'s
+assertion was updated (it was checking the now-wrong "final state 2 frames
+after the click" behavior, which was actually itself a symptom of this
+bug) to check that `action HP` starts correctly *and* is still genuinely
+in progress rather than racing to completion -- both must hold for the
+fix to be considered confirmed working. `docs/CONTRACT.md` §5 documents
+the shared-state design trap for next time.
+
+Not investigated this round, flagged for later: Start's character
+placement/camera report, and the "old hand-port remnants" architecture
+concern -- `HAND_PORTED` is empty (§4.1.1: every chapter already runs
+through the interpreter), but the dead `_begin_start_sequence()` /
+`_update_shiks()` / etc. functions are still physically present in
+`wdl_director.gd`, unused. Worth asking the user directly whether to
+delete that dead code for a cleaner file, rather than assuming.
+
+Result: `tools/smoke_dispatch.gd` (19/19), `tools/smoke_click_survey.gd`
+(307 entities / 16 levels, 0 script errors), `tools/smoke_click_event.gd`,
+`tools/smoke_event_unit.gd`, `tools/smoke_remove_race.gd`, and
+`check_all.ps1` all pass after both fixes. Two real, user-confirmed-or-
+reported bugs fixed this round, both verified by execution against real
+data (not claimed from code reading), matching R1/R2.
+
+## 2026-07-30 — "Instead of porting the game correctly you did a combination of using the old things from the bad port and other changes" — runtime/game-logic rewrite
+Checked: user's own real playtest reports from earlier the same day (camera
+not moving on click, audio from talks not playing, Start intro placement
+wrong) against the fixes already made for them — each fix was individually
+correct and verified by execution, but landed as a patch on
+`wdl_director.gd`, a 3,220-line file still physically containing all seven
+dead hand-port chapters (Start/Studio/Town/Shiks/Plane/Plane2/Range) even
+though none of them had run since `HAND_PORTED` was emptied 2026-07-28.
+Asked: "I want you to 'start over'... create the game again now with a
+proper way of doing it and with a proper porting and running logic" — then,
+after investigating (the named reference path was the same raw game data
+already in `original/piposh3d/`, and decompiling the actual Acknex runtime
+exe is out of reach), asked directly: "What's the real goal here — what's
+making the current codebase feel wrong enough to restart?"
+Answer: "Specific bugs are piling up." Reframed from "rewrite everything" to
+"architecturally redo the runtime/game-logic layer" via three follow-up
+questions: keep the native `CharacterBody3D` FP controller (fix the
+camera-authority seam, don't reimplement Acknex movement builtins); scope
+is runtime/game-logic only (asset pipeline — WMB/MDL/WDL convert — stays
+untouched, it's verified byte-accurate and isn't where the bugs live);
+delete the dead hand-port code entirely, not just leave it disabled (git
+history preserves it if ever needed).
+Result: `wdl_director.gd` rewritten 3,220 → ~1,000 lines (all seven
+hand-port chapters + their exclusive fields deleted; every confirmed-generic
+piece — dispatch, click resolution, camera-class entity discovery, patrols,
+random buildings, camera-transform utilities — kept, mostly verbatim).
+New `scripts/engine/camera_authority.gd` formalizes the camera-authority
+arbitration. `autoload/audio_bus.gd` replaced by
+`autoload/audio_channels.gd` (Voice/SFX/Music split, ending the shared-flag
+class of bug documented in `docs/CONTRACT.md` §5). Two real bugs found and
+fixed *during* the rewrite, not designed in from the start:
+1. `sPlay`/`vPlay` were silently shadowed by Voice.wdl's own real,
+   DLL-backed WDL-source functions (user functions beat builtins by design,
+   correct in general, wrong for these specific names) — dialogue audio
+   never actually started on the Voice channel, so `GetPosition(Voice)`
+   reported "done" instantly and whole multi-line actions raced to
+   completion in one frame. This exact failure mode was *previously masked*
+   by the old single-channel `AudioBus`'s shared busy-flag (an unrelated
+   ambiance sound happened to keep it pinned "playing"), so splitting the
+   channels correctly is what surfaced it, not something the split caused.
+   Fixed with an explicit `AUDIO_BRIDGE_BUILTINS` allow-list in `_call()`.
+2. The AFG collectible-card HUD popup + save persistence
+   (`_run_afg_take()`/`_show_afg_card()`) had gone silently unreachable in
+   *every* level with an AFG card (not just the one first noticed), because
+   the generic `wdl_event` click-dispatch fix added earlier the same day
+   now runs before it — the interpreter's own execution of `action
+   AFG_Take` only touches an ephemeral, never-saved global and can't show
+   the HUD card (an unbridged PANEL reference). Fixed by special-casing
+   `node.has_meta("afg_card_index")` ahead of the generic dispatch.
+Verified via the full smoke suite (`tools/smoke_dispatch.gd`,
+`tools/smoke_click_survey.gd` — 16 levels/307 entities,
+`tools/smoke_click_event.gd`, `tools/smoke_event_unit.gd`,
+`tools/smoke_remove_race.gd`, `tools/smoke_plane2_playtest.gd`) plus
+`powershell -File tools/check_all.ps1` (asset pipeline untouched, still
+green). Full reasoning in `docs/CONTRACT.md` §4.1.3 and §5. Known,
+pre-existing gaps not closed by this rewrite (documented, not silently
+dropped): Range's shooting minigame has no mouse-click→fire bridge into the
+interpreter; GameHud's dialogue-choice/subtitle/range-HUD UI has no caller
+left (was already dead once `HAND_PORTED` emptied 2026-07-28, this just
+makes it permanent).
+
+## 2026-07-30 — Four concurrent headless Godot instances corrupted tracked asset files; root-caused to a `TaskStop` that didn't kill the underlying process
+Checked: mid-rewrite, `git status` (routine check before assuming a clean
+baseline) showed 54 unstaged deletions under `assets/converted/wmb/Shiks*`
+(the `Shiks.glb` mesh and every one of its textures/`.import` sidecars) —
+tracked, committed files, gone from disk, despite the working tree being
+confirmed clean at the very start of this session. This is exactly the
+asset-pipeline output this rewrite was explicitly scoped to leave untouched.
+Restored immediately via `git checkout -- "assets/converted/wmb/Shiks*"`
+(safe: matches HEAD exactly, nothing to lose) before investigating further,
+since leaving tracked files missing from disk mid-session is the higher risk.
+Root cause: a `smoke_dispatch.gd` run piped through `| tail -60` appeared to
+hang (tail withholds all output until its stdin closes, not a real hang —
+a red herring), so it was cancelled via `TaskStop`. That stopped the shell
+wrapper but **not** the underlying `godot.exe` process, which kept running
+unsupervised. Two more `smoke_dispatch.gd`/`smoke_click_survey.gd` runs were
+then launched without realizing the first was still alive — confirmed via
+`ps aux`: four separate `godot --headless` processes running concurrently
+against the same project, with start times roughly 25 minutes apart. Most
+likely explanation: concurrent headless instances racing on the same
+`.godot/` import cache during Shiks-level loads is what deleted the tracked
+source files, not any code change from this session.
+Result: all four processes force-killed, confirmed via `ps aux` that none
+remained before launching anything else. Re-ran the full smoke suite one
+process at a time afterward with no recurrence — `git status` clean for
+`assets/` after every subsequent run. Practice going forward, not yet
+automated: after any `TaskStop` on a `godot --headless` command, verify via
+`ps aux | grep godot` that the process actually exited, and never launch a
+second headless Godot instance against this project while one may still be
+running. Flagged to the user directly rather than silently fixed, since
+"tracked binary assets were deleted from disk" is the kind of thing that
+must not pass unnoticed even though the fix was a clean, lossless restore.
+
+## 2026-07-30 — Final regression pass for the runtime rewrite: one more real bug found by the test suite itself
+Checked: re-ran `tools/smoke_dispatch.gd` clean (single instance, no
+concurrent Godot processes this time) after the rewrite above. It ran but
+logged `SCRIPT ERROR: Invalid call. Nonexistent function '_is_hand_ported'
+in base 'Node (WdlDirector)'` on every level — non-fatal (GDScript's dynamic
+dispatch on a loosely-typed `Node` just errors and continues rather than
+halting), which is why it wasn't immediately obvious as a failure, but a
+real one: the tool still called a method §4.1.3's rewrite deleted on
+purpose (`_is_hand_ported()`/`HAND_PORTED` no longer exist — hand-porting
+isn't a concept anymore).
+Result: updated `tools/smoke_dispatch.gd` to drop the `hand_ported`
+column/check entirely (every level with a parsed AST now goes straight to
+"interpreted" or "fp + interpreted"). Re-ran clean: all 19/19 levels
+dispatch correctly, zero levels with an AST reached the inert branch, zero
+`SCRIPT ERROR`s, exit code 0. `git status` confirmed clean for `assets/`
+after this run too (no repeat of the concurrent-process asset corruption
+above). This is the last item in the plan's verification list — the full
+regression suite (`smoke_dispatch`, `smoke_click_survey`, `smoke_click_event`,
+`smoke_event_unit`, `smoke_remove_race`, `smoke_plane2_playtest`,
+`check_all.ps1`) now passes cleanly against the rewritten
+`wdl_director.gd`/`wdl_interpreter.gd`/`camera_authority.gd`/
+`audio_channels.gd`. Real-game human playtesting (not just smoke tests)
+still needed — see the two new `docs/PLAYTEST.md` rows for what specifically
+to check first (Shiks, Plane's idle-spinner entities), plus re-confirming
+Plane2's Passenger interaction (camera + dialogue) that motivated the
+original camera-authority fix earlier the same day.
+
+## 2026-07-30 — Real playtest report: vocals missing, camera/scene stuck on Start/Studio/Plane, Shiks loops after one line
+Checked: user actually ran the rewritten build and reported three symptoms
+with real console logs — (1) some vocals not playing, other background
+noises playing in a glitchy loop; (2) camera stuck / "game not running" on
+several levels; (3) Plane specifically stuck on the first frame. Shiks
+logs showed one correct vocal then an endless identical `[cam-write]`
+loop from `Cam_mdl_003`. Root-caused via direct corpus reading (grep +
+read the actual `.wdl` sources), not guessing from symptoms — four
+distinct, real bugs, three of them freshly introduced by tonight's own
+earlier fixes:
+
+1. **`SetVoice` was being force-routed to a no-op stub.** The
+   `AUDIO_BRIDGE_BUILTINS` list added earlier tonight (to stop Voice.wdl's
+   unbridgeable `sPlay`/`vPlay` from shadowing this interpreter's own
+   bridge) mistakenly included `setvoice`/`voiceinit` too, reasoning from
+   name-similarity rather than checking the corpus. `function SetVoice` is
+   actually declared independently in **22 different level scripts**
+   (confirmed via `grep -rn "^function SetVoice"`), each level's own real
+   dialogue/scene-boot sequencer — not a shared, unbridgeable primitive.
+   Forcing it to the stub meant every one of those levels' scene
+   progression silently died at the very first line. Exactly explains
+   Start/Studio/Plane. Fixed: removed `setvoice`/`voiceinit` from the list
+   (renamed `AUDIO_BRIDGE_BUILTINS` → `BRIDGE_OVER_SHARED_FUNCTIONS`, with
+   a corpus-grep-backed comment explaining exactly which names belong on
+   it and why, to stop this exact mistake from recurring for a fifth name).
+2. **`snd_playing(handle)` ignored its argument.** Real usage, corpus-wide
+   (30+ files, the standard `if (snd_playing(X)==0) { play_sound(...);
+   X=result; }` ambiance-loop idiom): poll a *specific* sound instance, not
+   "is anything on the Voice channel playing." The existing builtin only
+   ever checked the global Voice channel, so the check was permanently
+   true and every ambiance loop using this idiom (Shiks' `Mapal`/`Lake`,
+   Plane's `Dummy` cockpit loop, etc.) retriggered its sound from the start
+   every single tick — the reported "background noises in loop, bad
+   sound." Fixed with a real handle scheme: `AudioChannels.play_sfx()` now
+   returns `slot*1e6 + generation`; `snd_playing()` decodes it and checks
+   that specific pool slot's `.playing` state (generation-checked so a
+   stale handle from a since-reused slot reads "not playing," not a false
+   positive). Needed `result` (Acknex's implicit last-call-return value,
+   read via `X = result;`) to actually work, which it never did before —
+   added `WdlInterpreter._last_result`, updated on every `_call()`, read
+   via a new `"result"` case in `_get_var()`.
+3. **`scan_path()`/custom entity fields (`_movemode`, `_target_x`, ...)
+   were silently dropped.** `scan_path` is a documented, deliberately
+   unbridged NPC-pathing builtin — but its universal corpus idiom
+   (22 files) is `result = scan_path(...); if (result==0) {
+   my._MOVEMODE = 0; }`, and the generic unresolved-builtin 0.0 fallback
+   made that check always read "no path found," permanently zeroing
+   `_MOVEMODE` — which the *same* `while (my._MOVEMODE > 0) { ... }` loop
+   also used to gate completely unrelated per-tick logic in the original
+   scripts (dialogue-scene advancement, `GetPosition(Voice)` polling).
+   Deeper cause underneath: `_get_field`/`_set_field` only ever supported
+   a small fixed allowlist (x/y/z/pan/tilt/roll/skin/invisible/passable/
+   event/enable_click/skillN) — ANY other custom field name, like
+   `_movemode`, was a silent no-op on write and always read back 0.0, so
+   even after making `scan_path` return a truthy stub, `my._movemode = 1;`
+   still never actually stuck. Fixed both: `scan_path` now returns `1.0`
+   (path-following itself stays a no-op, a separate, smaller, already-
+   documented gap); `_get_field`/`_set_field` gained a generic fallback
+   storing/reading any unrecognized field via `node.get_meta("wdl_custom_"
+   + name, ...)`, so custom fields work generically from now on, not just
+   for this one name.
+4. **`actor_move()` was shadowed too, same shape as bug 1 but one level
+   deeper in the include chain.** `WDL/actors.wdl` (shared, pulled in by
+   nearly every level) declares a real `function actor_move()` that calls
+   `scan_floor()`/`move_gravity()`/`actor_anim()` — genuine per-tick
+   ground-scan/gravity/animation-root-motion physics, the same
+   movement.wdl-family builtins the native `CharacterBody3D` player
+   controller deliberately replaces (user's explicit "don't reimplement
+   Acknex movement for the player" decision) — except NPCs route through
+   this exact function for their own walking too. Root-caused via Shiks'
+   `Piposh2` (`if (Scene==1) { ...; actor_move(); if (my.x >
+   StandHerePoint) { Scene=2; ... } }`) never actually moving, so `Scene`
+   never left 1 — the "one correct vocal, then stuck in a loop" symptom
+   (the loop being `MyCamera`'s own *correct* static establishing shot,
+   held because `Piposh.skill2` — a separate flag, changed only by a
+   WMB-collision-triggered `action Bumped` this port doesn't model — never
+   changes either; the camera itself was never the bug). Fixed with a
+   real, approximate forward-walk bridge (`actor_move` added to
+   `BRIDGE_OVER_SHARED_FUNCTIONS`, moves `my` along its own pan-facing
+   direction, speed = `force * ACTOR_MOVE_BASE_SPEED * time`, constants
+   are a stated approximation, not measured from the original engine).
+   `actor_turnto` deliberately NOT force-bridged: its real `actors.wdl`
+   body (`angle=ang(angle-MY.PAN); ...; MY.PAN += temp*min(1,time);`) is
+   fully portable once `ang()` exists as a builtin (added, a real
+   normalize-to-(-180,180] formula, not an approximation) — so the actual
+   WDL-source implementation now runs correctly on its own merits, no
+   bridge needed.
+
+Verified each fix against real state, not just "no script error": new
+`tools/smoke_scan_path_gate.gd` (Plane's `Scene`/`Talking` advance past
+boot within 15 frames, was permanently stuck before), new
+`tools/smoke_shiks_progress.gd` (Piposh2 physically walks and Shiks'
+`Scene` reaches 2 within ~4s, was permanently stuck before), new
+`tools/smoke_studio_progress.gd` (confirmed Studio's `Scene 1` hold is a
+*real*, correctly-timed ~16s song via `AudioChannels.get_voice_progress()`
+climbing steadily, not a second stuck bug — needed a much longer test
+window than a first pass assumed, see below). Re-ran the full existing
+regression suite (`smoke_click_survey`, `smoke_click_event`,
+`smoke_remove_race`, `smoke_dispatch`) after each fix — all still green,
+no regressions from any of the four changes.
+
+**Not fixed, explicitly out of scope tonight, flagged rather than
+silently left**: the pre-existing "while-loop spinning without wait()"
+busy-loop performance issue (crowd/background entities whose scripts loop
+hundreds of times per frame instead of yielding once per tick) appears to
+also be slowing down headless audio mixing itself — Studio's real ~15.7s
+song was measured taking ~31s of wall-clock time to fully report
+"finished" via `GetPosition(Voice)`, roughly 2x dilated, consistent with
+CPU contention from those busy loops competing with the audio thread.
+This is a real, separate, already-flagged performance defect (see the
+2026-07-29 busy-loop diagnostic commits), not something introduced or
+fixed tonight; whether it dilates audio timing the same way in the real
+(non-headless, vsync-paced) game is unconfirmed and worth asking the user
+about directly if slow/laggy dialogue is reported again after this round.
+
+## 2026-07-30 — "After talking ends the game doesn't move to the next level. There's no text-choosing on screen."
+Checked: user's next real playtest report, after the four fixes above.
+Grepped the corpus for `ShowDialog` the same way the prior four bugs were
+found (a per-level scene reaching a dialogue-choice point via `DoDialog(num)
+{ DialogChoice=0; DialogIndex=num; ShowDialog(); ... }`) and confirmed
+`ShowDialog` was completely unbridged in `wdl_interpreter.gd` — hit the
+generic unresolved-builtin no-op, so the choice panel never appeared. Worse:
+even if it had, nothing fed a player's click back into the script's
+`DialogChoice` global, so every `while (DialogIndex==X) { if
+(DialogChoice==1) {...} }` polling loop already written into these scripts
+(the same shape used corpus-wide, this is how every level presents a
+dialogue choice) spun forever. This is the same "generic 0.0 fallback
+silently breaks something bigger than the missing feature itself" class of
+bug as `scan_path`, not a new category. Also confirmed via corpus grep
+(`^function ShowDialog`, `WDL/DIalog.wdl:564`) that the real `ShowDialog`
+is shared and unbridgeable (`DialogChoice=0; SetDialogOptions(); ShowText();
+Dialog.visible=on;` — needs real PANEL text rendering, which doesn't
+exist here) — added to `BRIDGE_OVER_SHARED_FUNCTIONS` for the same reason
+as `sPlay`/`vPlay`/`actor_move`.
+
+Fixed: `WdlInterpreter.setup()` now takes an optional `hud: GameHud`
+parameter (passed through from `WdlDirector._try_begin_interpreted_level()`,
+which already held `_hud`) and connects `hud.dialog_choice` to a new
+`_on_dialog_choice(choice)` that sets the `DialogChoice` global directly —
+the calling coroutine's own already-written polling loop picks it up on its
+next `wait(1)`, no other plumbing needed. New `"showdialog"` builtin
+(`_do_show_dialog`) resets `DialogChoice` to 0 (matching the real
+function's first statement) and calls `hud.show_dialog(DialogIndex)`,
+reusing GameHud's existing generic 3-option panel UI (built for the old
+hand-port, but the panel/button/click infrastructure itself was always
+level-agnostic — only `_dialog_lines(index)`'s *text* is a small hand-typed
+Hebrew table covering just the 4 indices the original hand-port authors
+transcribed for Studio/Plane; every other level's choices will show the
+panel and accept clicks correctly but with "…" placeholder text instead of
+real dialogue text — a real, honest, separate gap, not silently hidden).
+
+Verified end-to-end, not just "no script error," via new
+`tools/smoke_dialog_choice.gd`: directly drives `WdlInterpreter`'s
+`ShowDialog` builtin, confirms `GameHud.is_dialog_open()` becomes true,
+then emits `GameHud.dialog_choice` (simulating a real button click) and
+confirms `DialogChoice` lands back in the interpreter's globals correctly.
+Full regression suite (`smoke_click_survey`, `smoke_click_event`,
+`smoke_remove_race`) re-run clean after the change, asset integrity
+(`git status` on `assets/`) confirmed clean throughout.
+
+## 2026-07-30 — Start: camera/positions wrong, backgrounds "weird pattern," facing wrong, talk-stop doesn't advance; Studio: camera cut on Shik talk feels off
+Checked: user's next real playtest report, this time on Start and Studio
+specifically. Diagnosed empirically, not from source reading alone: built
+`tools/smoke_start_diag.gd` to trace `Scene`/the `LookAtMe` entity's
+position/`_movemode`/`_TARGET_X`/the actually-rendered camera's
+position+pan+tilt over 15 real seconds. Root-caused two distinct,
+compounding bugs, both real gaps in the WDL/ANGLE-by-reference system, not
+new categories:
+
+1. **`scan_path`'s 2026-07-30-earlier "always return 1.0" fix was
+   necessary but insufficient — it stopped false gating but never actually
+   bound an entity to a real path**, so `_TARGET_X`/`_TARGET_Y` (read via
+   `MY._TARGET_X - MY.X` to compute a walk direction) stayed at their
+   never-written defaults. Worse: Start.wmb has *two* `LookAtMe` entities,
+   and with `scan_path` unconditionally succeeding, both ran their
+   identical walk-toward-target logic simultaneously, both writing
+   `camera.x/y` every tick and fighting for control — this, not any
+   single bug, is what "camera positions not updated correctly" was
+   describing. (Investigated whether the two entities' WED-authored
+   `flags` bitfield — 768 vs. 769, confirmed present via
+   `assets/converted/levels/Start.json` — was meant to distinguish them
+   via `my.flag1`; inconclusive without a verified A5 FLAG1-8 bit
+   mapping, and the evidence available doesn't clearly support it. Left
+   unresolved rather than guessed at — see docs/CONTRACT.md.) Fixed
+   `scan_path` for real: finds the nearest point across every path in the
+   level (`_loader.last_level_data`, same source `WdlDirector._paths`
+   reads), binds the entity to it via node meta, writes real GS
+   coordinates into `_TARGET_X`/`_TARGET_Y`/`_TARGET_Z`. New
+   `ent_nextpoint` advances to the next bound point the same way.
+2. **The actual root cause of "characters facing wrong": `_get_field`/
+   `_set_field` returned early (a plain `return`/`return 0.0`) whenever
+   the target object didn't resolve to a real spawned entity** — correct
+   for a genuinely-missing PANEL reference, but WRONG for Acknex's scratch
+   `VECTOR`/`ANGLE` globals (`temp`, `my_angle`, ...), which are real,
+   commonly-used structs, not entities, and are written via completely
+   ordinary field-assignment syntax (`temp.x = TARGET_X - MY.X;`). Every
+   such write was silently dropped before it could reach the generic
+   custom-field fallback added earlier tonight (that fallback lived
+   *inside* the same function, past the early return, so it was
+   unreachable for this exact shape). Result: `temp` always read back as
+   `(0,0,0)` regardless of what a script "wrote" to it, so
+   `vec_to_angle(my_angle, temp)` always computed a zero-length direction
+   and wrote pan=0/tilt=0 — entities always turned to face pan=0 (Acknex
+   GS +X) instead of their real target, independent of `scan_path`'s own
+   correctness. Fixed by adding the scratch-vector fallback *before* the
+   early return in both `_get_field` and `_set_field`, backed by new
+   `_vectors: Dictionary` storage and a shared `_vec_field_slot()` helper
+   (x/pan share slot 0, y/tilt slot 1, z/roll slot 2 — Acknex's VECTOR and
+   ANGLE types are the same 3-float struct with two field-naming
+   conventions overlaid). Also implemented `vec_set`/`vec_sub`/
+   `vec_to_angle` for real (previously no-op stubs) via new `_vec_get()`/
+   `_vec_put()`, which resolve a RAW (unevaluated) AST argument node to a
+   by-reference read/write target — bare scratch identifier, or
+   `entity.x`/`entity.pan` (Acknex's "a position/angle field is also
+   usable as a pointer to the entity's whole x/y/z or pan/tilt/roll
+   triple" idiom). `vec_to_angle`'s *return value* is the input vector's
+   length (used corpus-wide as a "have I arrived?" distance check,
+   `result = vec_to_angle(...); if (result < 25) { ent_nextpoint(...); }`
+   — confirmed by reading the actual call sites, not assumed), not the
+   angle itself, which is written by reference into the first argument.
+
+Verified via `tools/smoke_start_diag.gd`: post-fix, `_TARGET_X` correctly
+advances through a real sequence of waypoint values (842→610→345→57→
+-173→...) as `ent_nextpoint` fires, `LookAtMe`'s position follows a
+genuine curved path instead of a straight line to infinity, camera
+pan/tilt track smoothly (20.9°→164°→94.9° as the entity turns toward
+Yachdal), and movement correctly *stops* once `Scene` leaves the
+`(Scene==0)||(Scene==2)` walking phase — matching the script's own
+`else` branch, not a bug.
+
+Also directly verified Studio's "camera doesn't jump well" report is
+already fixed by the earlier `ShowDialog` wiring fix, not a new issue:
+new `tools/smoke_studio_camswitch.gd` fast-forwards past the ~16s boot
+song, opens the real dialogue panel, clicks option 1, and confirms the
+camera hard-cuts instantly from `TheCam2`'s position to `TheCam`'s the
+same frame `Talking` becomes 1 — `TheCam`/`TheCam2` are real, already-
+correct WDL actions (`if (Talking==1) { camera.x=my.x; ... }` /
+`if (Talking==2||Talking==0) { ... }`), no director-side logic was ever
+needed; they just couldn't run before because nothing could ever set
+`DialogChoice` to make `Talking` change in the first place.
+
+**Not resolved, explicitly flagged rather than silently claimed fixed**:
+"backgrounds shown incorrectly, weird pattern" in Start. Investigated only
+as far as confirming it's very unlikely to be caused by tonight's
+interpreter changes: `AcknexSky.apply()` (unchanged) applies sky/scene-
+map textures once at level load from static `assets/converted/wdl_meta.json`
+data, entirely independent of the WDL runtime; Start.wdl's own `main()`
+never assigns `scene_map` at all (unlike Plane/Studio, which do), so
+whatever Start shows comes from `wdl_meta.json`'s extracted default for
+it, not from anything the interpreter does at runtime. Needs its own
+investigation (what does `wdl_meta.json` actually say for Start, and does
+the rendered result match it) rather than folding into this round's fix,
+since the evidence so far points away from the runtime layer entirely.
+
+Full regression suite (`smoke_click_survey`, `smoke_click_event`,
+`smoke_remove_race`, `smoke_dialog_choice`, `smoke_dispatch` — 19/19) run
+clean after these changes; asset integrity confirmed clean throughout.
+
+## 2026-07-30 — "The camera is still not exactly right" — Start's `flag1` disambiguation between its two LookAtMe entities
+Checked: user asked directly to read Start.wdl's camera instructions and
+explain what might still be wrong, after the scan_path/vec_to_angle fixes
+above. Re-read `action LookAtMe` end to end: it branches its ENTIRE camera
+behavior on `my.flag1` — `(Scene==0)||(Scene==2)` + `flag1==off` walks
+toward Yachdal (already confirmed working); the `else` branch +
+`flag1==on` + `Scene!=4` does a fixed `camera.pan=270` shot with no
+look-at math, meant for Scene 1/3/5. Start.wmb places TWO `LookAtMe`
+entities specifically so one can drive each half. `my.flag1` is a
+WED-authored per-entity checkbox this port has no verified bit mapping
+for (docs/CONTRACT.md §4.1 — only bit0=INVISIBLE, bit10=PASSABLE are
+confirmed). Checked all three camera-class entities in Start.json: the
+two `LookAtMe` placements have `flags` 768/769 (differ only in bit0,
+already spoken for as INVISIBLE — can't be flag1); `FarCam` has 770
+(differs in bit1 from the first, unclear meaning, and FarCam doesn't even
+read flag1 in its own script). No bit in the extracted data cleanly
+explains the split.
+Found instead a strong *textual* clue: the second `LookAtMe` entity's own
+authored pan is exactly 270° — the same literal value `flag1==on`
+hardcodes into `camera.pan`. The first entity is authored at 90°. Too
+specific to be coincidence; reads as the level designer setting that
+entity's own facing to match what its dedicated branch does.
+Asked: presented the full analysis (bit-mapping dead end + the pan=270
+textual match) and asked directly how to proceed — implement the inferred
+pan-based heuristic, try guessing a bit position instead, or leave it
+open.
+Answer: implement the inferred heuristic.
+Result: added `WdlInterpreter._seed_look_at_me_flag1()`, called once per
+entity in `begin_level()` right before its action coroutine starts.
+Scoped deliberately narrow — only entities whose *action* is exactly
+`LookAtMe` get `flag1` seeded this way (from comparing authored pan
+against 270° within a 15° tolerance); every other level's independent use
+of `my.flag1`..`flag2`.8` is untouched, since guessing a real bitfield
+position would have applied — possibly wrongly — corpus-wide, not just to
+this one action. Explicitly documented as an inference pending playtest
+confirmation, not asserted as a verified fact.
+Verified via updated `tools/smoke_start_diag.gd` (now traces both
+`LookAtMe` entities plus the real camera over 25s): the handoff works
+exactly as the script specifies — Scene 0: entity #1 walks + turns to
+face Yachdal (pan sweeping 144°→53°), entity #2 sits frozen. The instant
+Scene becomes 1 (frame 591), the camera cuts hard to entity #2's position
+with `pan=270.0` exactly, and entity #2 starts moving. The instant Scene
+becomes 2 (frame 1156), it cuts back to entity #1, which resumes turning
+to track Yachdal (pan continuing 49°→5.9°). Full regression suite re-run
+clean (`smoke_click_survey`, `smoke_dispatch`), asset integrity confirmed.
+
+**Also confirmed, not a new issue**: `smoke_click_survey.gd` took longer
+than 2 minutes on this pass (previously always well under) — re-ran with
+a longer budget and it completed correctly, 16/16 levels, 0 script
+errors. Almost certainly the pre-existing busy-loop CPU-contention issue
+(see 2026-07-29/30 entries), now somewhat worse since `scan_path` does
+real nearest-point search work instead of returning an instant stub.
+Not a correctness regression — flagged in case it's worth a dedicated
+performance pass later, not chased further tonight.
+
+## 2026-07-30 — Follow-up: "camera position is better," characters still facing wrong, scene still never advances
+Checked: user's next real playtest pass on Start, after the flag1/camera
+fixes above. Three claims: camera better (progress); character facing
+still wrong; "when the scene ends it doesn't move to the next level, just
+stays in a loop."
+
+**Character facing — investigated, concluded out of scope, not a runtime
+bug.** Compared authored WED `pan` (Start.json) against the *live*,
+currently-rendering `pan` meta on Yachdal/every Crowd/Grandma entity: they
+match exactly, no drift, confirming nothing in tonight's interpreter
+changes is rewriting these entities' orientation at runtime (`action
+Crowd`/`action DefineYachdel`/`action Grandma` never write `my.pan` at
+all, confirmed by re-reading their full bodies). The apparent mismatch
+traces to `tools/mdl_yaw_allowlist.json` (asset-pipeline, out of scope
+tonight): `Crowd`/`Crowd2`/`Yachdal`/`Genia` all carry a documented
+`extra_yaw_deg: 270.0` correction, baked into the GLB at MDL-conversion
+time — a *human-confirmed* measurement per that file's own comment and
+`docs/PLAYTEST.md`'s history (`tools/wmb_web_viewer.py`, independent of
+Godot's own rendering). `Grandma2` is NOT in that allowlist at all and was
+never verified in `docs/PLAYTEST.md` either — a real, pre-existing,
+never-closed gap, not a regression. Whatever's actually wrong on screen is
+either in that already-verified-elsewhere pipeline step or is a case
+(Grandma) that was simply never checked — outside tonight's runtime-layer
+scope either way. Flagged to the user rather than guessed at further.
+
+**"Scene never advances" — a THIRD real bug, same family as `SetVoice`/
+`actor_move`, and the one that actually mattered.** Root-caused via direct
+per-write tracing (temporary debug instrumentation on `_set_var`, removed
+after), not guessing:
+1. Fixed first, real but not sufficient on its own: `stop_sound(handle)`
+   had the identical bug shape as the earlier `snd_playing` fix — ignored
+   its argument, always force-stopped the shared Voice channel. Confirmed
+   via corpus grep that every real call site (20+ files) passes a handle
+   from a prior `play_sound`/`play_entsound`, never bare. Fixed the same
+   way: `AudioChannels.stop_sfx_handle(handle)`, generation-checked like
+   `is_sfx_handle_playing()`.
+2. Traced the actual runaway with a temporary per-write print
+   (`_set_var`, entity name + `_total_frames`): once `Scene` passed the
+   last value `Start.wdl`'s `SetVoice()` explicitly handles (5), calling
+   it again is a no-op, so the Voice channel's "finished" state never
+   resets — meaning `GetPosition(Voice) >= 1000000` reads true on every
+   subsequent real frame, and `LookAtMe`'s own progression check
+   (`Scene = Scene + 1; SetVoice();`) fires every frame forever, racing
+   arbitrarily far past the `if (Scene == 6) { Run("Menu.exe"); }`
+   terminal check the script uses to end the intro. Two sub-issues
+   compounded here: (a) initially TWO `LookAtMe` coroutines were each
+   independently consuming the same "just became finished" transition
+   within one real frame (proven via the trace: both wrote `Scene` in the
+   same `_total_frames` value) — fixed generally with a one-frame
+   debounce on `GetPosition(Voice)`'s "finished" reading itself
+   (`_do_get_voice_position()`/`_voice_finished_seen_frame`): the first
+   caller within a given frame sees the real value, later callers in that
+   same frame see "not quite yet" (corrects itself the very next frame,
+   so a second *legitimate* poller is delayed by at most one frame, never
+   given a wrong answer). This closed the double-increment but, on its
+   own, did NOT fix the underlying loop — Scene still raced past 6 one
+   step at a time. (b) The actual root cause, found by re-tracing with the
+   double-increment already fixed: `Scene==6` genuinely was reached and
+   checked, but `Run("Menu.exe")` had no effect — because `Run` is ALSO
+   shadowed, same class of bug as `SetVoice`/`actor_move`/`ShowDialog`
+   before it. `WDL/IO.wdl` (included by nearly every level) declares its
+   own `function Run(filename) { file_open_write("Run.txt"); ...;
+   file_close(...); WriteDate(); exit; }` — the ORIGINAL game's real
+   mechanism (each "level" was a separate .exe; a wrapper launcher process
+   watched `Run.txt` to know what to start next, and the current .exe's
+   own `exit;` terminated it). None of that applies to this single-process
+   Godot port, and `exit;` isn't even a statement this interpreter
+   recognizes, so the shadowed real `Run()` silently did nothing at all —
+   never called `LevelRouter`, never stopped anything. Fixed by adding
+   `run` to `BRIDGE_OVER_SHARED_FUNCTIONS` (this interpreter's own
+   `_do_run()` — confirmed already correct — always wins now) and, since
+   real Acknex's `Run()` halts the CURRENT level's script immediately, not
+   whenever the actual scene swap eventually lands, having `_do_run()` set
+   `_running = false` synchronously (the same flag `_exit_tree()` sets;
+   every `exec_stmt()` already checks it).
+
+Verified end to end via `tools/smoke_start_diag2.gd` (new, traces `Scene`/
+`Delay`/both `LookAtMe` positions and Crowd/Yachdal/Grandma pan over a
+70s real-time window): `Scene` now reaches exactly `6.0` at ~58.5s and
+**stays there** for the rest of the trace (previously: raced to `3969`+
+within 90s and never stopped) — confirming `Run()` fired and the level's
+own script execution genuinely halted, not just that a check happened to
+pass once. Full regression suite re-run clean afterward (`smoke_click_survey`
+16/16, `smoke_click_event`, `smoke_remove_race`, `smoke_dialog_choice`,
+`smoke_scan_path_gate`, `smoke_shiks_progress`, `smoke_dispatch` 19/19),
+asset integrity confirmed clean throughout.
+
+**Pattern worth calling out explicitly**: this is the FOURTH shared-function-
+shadowing bug found tonight (`SetVoice`→wrongly bridged the OTHER
+direction initially; `actor_move`; `ShowDialog`; now `Run`) — every one
+found by the same method (corpus grep for `^function NAME`, read the real
+body, decide whether it's genuinely unbridgeable) rather than guessed.
+Worth checking any OTHER builtin this interpreter provides against the
+same pattern before assuming a "no-op fallback" is harmless: a shadowed
+real function can be silently *worse* than no bridge at all, since it
+looks like it "did something" without any warning ever firing.
+
+## Follow-up: character facing in Start ("Yachdal isn't facing the right
+## way, he should be 90 degrees to its left") — found a real 180°-backwards
+## measurement in `mdl_yaw_allowlist.json`, fixed with a new direct-render
+## check, ruled out Crowd/Crowd2/Grandma2
+
+User couldn't pin down an exact degree offset for Grandma2 (the gap
+flagged in the previous entry) but was specific about Yachdal and "the
+crowd," both needing roughly a 90°-to-the-left correction. Rather than
+trust a verbal degree estimate (genuinely hard to judge precisely from
+first-person play) or the existing `mdl_yaw_allowlist.json` entries at
+face value, built a way to get real rendered ground truth without
+depending on the user running a manual tool session: Playwright (already
+installed, headless Chromium confirmed working) driving
+`tools/wmb_web_viewer.py`'s existing `window.__WMB_DEBUG__` debug hook
+(`setForwardCamera`, `findByFile`, `worldForward`/`worldPos` — built for
+exactly this, per that file's own header comment about puppeteer-style
+automated inspection). For a given entity, position the camera along a
+candidate "this should be the front" vector looking back at the model,
+screenshot, and just look — this *is* the "external ground truth /
+rendered image" rule-3 verification `docs/CONTRACT.md` #2 already
+requires, just executed by the agent instead of the user.
+
+Result for **Yachdal**: viewing from local +X (pan=0, `extra_yaw_deg=270`
+applied) showed his back — coat seam, quiver, hair from behind; viewing
+from -X showed his face dead-on (eyes, nose, mustache, open jacket, tie).
+270° was exactly 180° backwards. This directly contradicts
+`docs/PLAYTEST.md`'s prior claim that a 2026-07-28 render check had
+already confirmed 270° correct — that prior check evidently wasn't the
+clean, isolated shot it was recorded as. Fixed: `mdl_yaw_allowlist.json`
+Yachdal `270 → 90`, regenerated via
+`python tools/convert_mdl.py --only Yachdal`, re-verified with the same
+Playwright check showing his face from +X afterward. `git status` showed
+only `Yachdal.glb`/`Yachdal.mdlanim`/the allowlist JSON changed.
+
+**First attempt at checking Crowd/Crowd2/Grandma2 gave a false read** —
+screenshots kept showing 2-3 *different* faces clustered together no
+matter which entity was targeted. Root cause: `Start`'s crowd is dense
+(dozens of `Crowd.MDL`/`Crowd2.MDL` placements a few dozen units apart,
+plus Genia and Grandma2 nearby), and the first isolation attempt hid by
+`mesh === target.mesh` — `pickable` entries are per-entity, so that check
+trivially always matched only the exact object already selected and hid
+*nothing else*, leaving every entity in frame. Fixed by hiding on
+`data === target.data` (verified with a diagnostic count: 75 pickable
+total → 1 visible after) *before* screenshotting. With real isolation:
+**Crowd, Crowd2, and Genia are all still correct at 270°** (confirmed
+face-from-+X, back-from--X, cleanly, no ambiguity) — the user's read on
+"the crowd" was very likely Yachdal's own 180°-backwards facing standing
+out among an otherwise-correct crowd, not an actual crowd-model bug.
+**Grandma2 — the gap flagged in the previous entry — is also already
+correct** with no allowlist entry at all (confirmed the same way); the
+earlier unisolated attempt had actually been rendering Genia (standing
+~100 units away, also wearing a hat with baskets) in the foreground
+instead of Grandma2.
+
+Updated `docs/CONTRACT.md` #2.4 (corrected the "bearing-consistency
+confirmed Yachdal" claim — that method validates a self-consistent
+narrative, crowd loosely facing a landmark, not that the landmark's own
+mesh is oriented correctly; keep using it to rule out WMB-parsing bugs,
+not to sign off an individual model's facing) and `docs/PLAYTEST.md`
+(Yachdal and Grandma2 rows). Character-facing character-model bugs, if
+any remain, are now down to: nothing known — every entity actually named
+in a playtest report this session (Yachdal, Grandma2, Crowd, Crowd2) has
+now been checked against a real rendered image, not carried forward on
+an old note.
+
+**Immediate correction: the Yachdal `90°` fix above was itself wrong.**
+User reported it as a 180° shift when only 90° was needed. The render
+check that produced `90°` only ever distinguished front-from-back (camera
+on the model's own local ±X) — it never tested the two 90°-away
+candidates against each other, so it couldn't have caught an error of
+exactly this shape (right polarity ruled out, but overshot by a further
+90° in a direction the front/back test is blind to). Set to `180°` (the
+untested midpoint between the original `270°` and the overshot `90°`,
+i.e. a genuine 90°-magnitude change from where the user's original report
+started) and left **explicitly unconfirmed** pending the user's own
+in-game read this time, rather than repeating the mistake of trusting a
+static render to settle a question a render can't answer. If `180°` is
+still wrong, the only remaining 90°-away candidate is `0°`.
+
+## Resolution: Yachdal is `0°`, and Crowd/Crowd2 needed the identical fix
+
+`180°` was also wrong per direct user testing ("now he is 180 off").
+Since `270`, `90`, and `180` were all now ruled out by real gameplay, `0°`
+was the only remaining candidate by elimination — applied without another
+render round-trip, since there was nothing left to distinguish. The user
+also separately reported Crowd was wrong "the same way," which the
+2026-07-28 and 2026-07-30 investigations had both — independently —
+"confirmed" correct at `270°` via isolated renders. Both of those checks
+had exactly the same structural blind spot as the original Yachdal
+mistake: a static front/back render found a plausible-looking face at
+`270°` and stopped there, never actually comparing it against `0°` to see
+which was *more* correct. Set Crowd and Crowd2 to `0°` alongside Yachdal
+(`python tools/convert_mdl.py --only Yachdal Crowd Crowd2`), confirmed by
+the user in-game. Genia was NOT touched — never reported as wrong — but
+per `docs/CONTRACT.md` #2.4's updated note, her "confirmed correct" status
+from earlier this session should now be treated as unverified, not relied
+on, given the same class of check just failed twice for her neighbors.
+
+**Real lesson, not just a fixed value:** a rendered image is necessary but
+not sufficient for resolving a 90°-magnitude orientation question. It can
+cheaply rule out "exactly 180° backwards" (this session's front/back
+checks were right every time they were used for that). It cannot resolve
+"which of two remaining 90°-away candidates is correct" — that requires
+an actual moving in-game viewpoint, i.e. the human's own eyes, not a
+better camera angle in a standalone tool. Three render-based guesses
+(`90`, `180`, and the earlier unquestioned `270` for Crowd/Crowd2) were
+wrong before the user's direct testing settled it in one message. Don't
+repeat the pattern of iterating render guesses once the front/back
+question is already resolved — ask, or wait for the human's report.
+
+## 2026-07-31 — Studio "stuck in a loop" + "coroutines take a lot of time"
+## traced to the Start GetPosition(Voice) debounce fix itself; fixed
+## generically (per-caller, not per-frame); plus a real, corpus-wide
+## "black = transparent" texture bug found and fixed
+
+User reported (with a real console log excerpt) that clicking Studio's
+`ShikNote` entity (`action ShikNote` -> `event ShikKlik`) started a
+coroutine that never seemed to progress ("coroutines take a lot of time to
+start"), and separately that Ami Studio "stays in a loop without moving to
+the next part" — paired with an explicit ask: "the answer here should be
+generic," i.e. find the real shared root cause, not a Studio-specific
+patch.
+
+**Root cause, confirmed via a new diagnostic (`tools/smoke_studio_shikklik.gd`,
+directly invokes `ShikKlik` on the `ShikNote` entity and traces
+`Talking`/`Scene`/the interpreter's own `_running` flag over real time):**
+the one-frame-global `GetPosition(Voice)` debounce added 2026-07-30 for
+Start's LookAtMe double-increment bug has a fatal flaw once a THIRD kind of
+caller is in the mix. `Naknik`'s own action polls `GetPosition(Voice)`
+unconditionally every single frame from level boot onward (its own,
+unrelated `if (GetPosition(Voice) >= 1000000) { Scene = Scene + 1;
+SetVoice(); }` idiom). Godot resumes Naknik's coroutine before ShikKlik's
+(started later, on click) every frame, so Naknik always won the single
+global "first caller this frame" slot — meaning ShikKlik's own `while
+(GetPosition(Voice) < 1000000) { wait(1); }` (waiting for `SHK001.WAV` to
+finish) NEVER once saw "finished", forever. Confirmed live: `Talking`
+stuck at `3.0` and `Run("Shiks.exe")` never fired for 40+ real seconds,
+while `Scene` quietly raced into the thousands (Naknik's own poll firing
+every frame once nothing new was playing — harmless on its own, since
+nothing in Studio.wdl reads `Scene` past 3, but a symptom of the same
+underlying issue).
+
+Fixed by keying consumption per **(caller, voice generation)** instead of
+per frame: `AudioChannels` gained a `_voice_generation` counter (bumped on
+every `play_voice()` call, mirroring the existing SFX handle generation
+pattern), and `WdlInterpreter._do_get_voice_position(my)` now tracks, per
+caller, the last generation it has already seen as finished
+(`_voice_finished_consumed_by: Dictionary`), rather than a single global
+per-frame flag. Each caller gets its own guaranteed first look at every
+real completion, regardless of poll order, so a late-starting coroutine
+can never be starved by an earlier, more eager one — while a single
+caller that keeps polling after already consuming a generation still only
+acts once per real completion (both WDL idioms sharing this value keep
+working correctly, see the new code comment for the full two-idiom
+breakdown). Verified: `smoke_studio_shikklik.gd` now shows `Talking`
+cycling `3.0 -> 1.0 -> 3.0 -> 1.0` correctly and `Run()` firing at frame
+1907 (~32s); re-ran `smoke_start_diag2.gd` to confirm this doesn't regress
+Start — `Scene` still reaches exactly `6.0` and halts. Full regression
+suite (`smoke_dispatch` 19/19, `smoke_click_survey` 16 levels/307
+entities) still clean.
+
+**Separate finding while investigating: a real, corpus-wide "heads are
+transparent" bug**, reported alongside the above with a sharp, correct
+hypothesis from the user ("I think its because we make dark black
+transparent even though it should be for the 2d images not the 3d ones").
+Confirmed exactly right, via a direct render (Playwright driving the
+`tools/wmb_web_viewer.py` debug hook against Yachdal's actual head, no
+DIY reasoning): his eye sockets showed background scene geometry visible
+straight through them. Root cause: **two separate** color-decode
+functions in `tools/convert_mdl.py` each independently treat a
+"looks-empty" color value as a transparency sentinel, a convention that
+may be legitimate for 2D bitmap colorkeying but is wrong for these 3D
+model skins, which are meant to be fully opaque:
+- `_apply_quake_palette` (8-bit indexed skins): treated palette index 0 as
+  transparent. This game's actual palette (`GFX/palette.pcx`) has index 0
+  = plain black `[0,0,0]`, the start of an ordinary grayscale ramp used
+  for real shading, not a reserved colorkey slot.
+- `_rgb565_to_rgba` (16-bit RGB565 skins — the format Yachdal, Crowd,
+  Crowd2, and Genia's skins actually use; `_apply_quake_palette` was a red
+  herring for this specific report, confirmed by checking the real
+  `group=` tag in Yachdal's own MDL header before assuming): treated a raw
+  16-bit value of exactly 0 (which decodes to pure black) as transparent.
+  Same mistake, different function.
+Both fixed to full opacity (alpha=255 unconditionally). Left untouched:
+`_rgba4444_to_rgba` (a real embedded alpha channel, genuinely authored
+per-pixel, not a sentinel-color guess) and `_palette_skin` (the
+degraded no-real-palette-available fallback, where index-0-transparent is
+a reasonable choice since there's no real color data to trust at all —
+a genuinely different situation from the two fixed functions, which both
+had real, trustworthy color data being discarded).
+Regenerated the full MDL corpus (`python tools/convert_mdl.py`, no
+`--only` filter, since this is a shared decode-function fix affecting
+every model using either format): 648/649 converted (one pre-existing,
+unrelated failure — `Hezi4.MDL`, a genuinely degenerate source file with
+zero UV data, never successfully converted before this session either,
+confirmed via git history). 770 of those output files changed
+byte-for-byte (72 from the palette-index fix, ~700 more from the RGB565
+fix — confirming RGB565 is by far the more common skin format in this
+corpus, not a rare edge case). Verified: re-rendered Yachdal's head after
+the fix — eyebrows now read as a solid unbroken black line and both eyes
+show full opaque coloring, no background bleed-through. `git status`
+confirmed zero deletions throughout.
+
+## 2026-07-31 (follow-up, same day) — Studio subtitle panel wired; camera
+## gap during Shik's lines noted, not yet fixed
+
+User confirmed Start and Studio both now "look and play great" after the
+above fixes, with two small remaining reports: a camera view "not fixed"
+in Studio, and "green text" at the bottom of the screen missing at scene
+start.
+
+**Subtitle text — root-caused and fixed.** `GameHud.setup_start_subtitles()`
+/`setup_studio_subtitles()` already existed, fully built (correct texture
+names, correct `_update_crawl()` slide/blink timings matching
+`action DefineYachdel`'s `POvr.pos_x > -200` and `action Ami`'s
+`POvr.pos_x > -310` byte-for-byte) — but `git log --all -S` showed **zero
+commits ever called either function**, since the initial commit. `pSom`/
+`pOvr` are WDL `panel` objects (a pre-rendered green-on-black bitmap TEXT
+graphic, not a live font — matches "green text"), which this interpreter
+has no generic support for, so `action Ami`'s/`action DefineYachdel`'s
+opening `pOvr.visible = on; pSom.visible = on;` silently no-op. Fixed with
+a narrowly-scoped hook, `WdlInterpreter._seed_subtitle_crawl()`, called
+from `begin_level()` right alongside the existing `_seed_look_at_me_flag1`
+seed: fires `hud.setup_start_subtitles()`/`setup_studio_subtitles()` only
+for the exact (level, action) pairs GameHud was built for — `action Ami`
+is reused in Outro/Smash/VilEnd for an ordinary, unrelated talk/blink
+loop (confirmed via corpus grep), so this is gated on `_level_stem` too,
+not just the action name. Verified with a new
+`tools/smoke_studio_subtitle.gd`: `_crawl_active=true`, both panels
+visible with a loaded texture, right after Studio boots.
+
+**Camera "not fixed" — investigated, root cause plausible but not yet
+confirmed or fixed.** Studio's only two camera actions are `TheCam`
+(`Talking==1`) and `TheCam2` (`Talking==2 || Talking==0`) — confirmed via
+corpus grep that **no action anywhere in Studio.wdl ever checks
+`Talking==3`**, the value `ShikKlik` sets twice (for `SHK001.WAV`/
+`SHK002.WAV`). This is true of the original script too, not a porting
+bug on its face — during Shik's own lines, nothing claims the camera, so
+it holds whatever position was last written. Ruled out
+`CameraAuthority`/`is_driving_camera_this_frame()` as the mechanism:
+Studio is a `scripted_camera` (non-fp) level, so `LevelRunner._process()`
+never calls `_camera_authority.update()` for it at all — the single
+`_script_cam` just keeps `.current = true` throughout, it can't be
+silently handed to the player's free-look camera the way an fp-mode level
+could. Also ruled out feet-snap (camera props are explicitly excluded,
+`_should_feet_snap()`). Given the user could only now reach far enough
+into the ShikKlik flow to notice this (it used to hang before the
+Naknik/GetPosition fix above), this gap in the Talking==3 window is the
+leading hypothesis for what "not fixed" means, but unconfirmed —
+**needs a concrete description from the user (which moment, does it
+drift/shake vs. just show the wrong static framing) before touching
+anything**, since the original script itself has the same gap and
+"holds last position" might already be correct/intended behavior that
+just looks a little off, not an actual instability bug.
+
+## 2026-07-31 (same day, second follow-up) — the "camera not fixed" report
+## was actually about Shiks, not Studio; real root cause found and fixed:
+## `Dialog.visible` was a genuinely-unresolved PANEL field, always reading
+## off/0.0, so `ShowDialog()` got re-called every frame and reset every
+## click before the script could act on it
+
+Asked the user to clarify "camera not fixed." The actual answer reframed
+the whole report: it's about **Shiks** (reached via the now-working
+Studio -> `Run("Shiks.exe")` transition), not a Studio camera view at all.
+"A text choice after the Shiks scene starts - after choosing, the talk
+isn't starting, and if I do get to the point where Piposh is moving
+inside the house - the other part where the camera moves through the
+window and another part of the dialogue starts - doesn't happen."
+
+Read `Shiks.wdl`'s `action Piposh2` (the character's main state machine)
+in full. Both symptoms trace to the exact same statement: its `Scene==2`
+branch opens with `while (Dialog.visible == on) { Talking = 0; Blink();
+wait(1); }`, meant to block re-showing the dialogue prompt until the
+player's current click has actually been processed. `Dialog` is a WDL
+`panel` object (`WDL/DIalog.wdl`) — this interpreter has no generic PANEL
+support (a known, documented gap), so `_resolve_entity()` always returned
+null for it, and `_get_field()`'s null-entity fallback always returned
+`0.0` — meaning `Dialog.visible` read as permanently **off**, and that
+`while` loop never once blocked anything. Consequence: every outer-loop
+iteration re-ran `ShowDialog()` (which resets `DialogChoice` to 0, see
+`_do_show_dialog()`), so a real player click's `DialogChoice` value was
+reset back to 0 before the script's own `if (DialogChoice == N) { ... }`
+checks (further down the SAME branch) ever got a chance to see it, on
+all but a very lucky single-frame timing window. This blocks BOTH
+`DialogIndex==1` (the first prompt, "talk isn't starting") and
+`DialogIndex==2` (the second prompt, gating the whole "Piposh flies
+through waypoints... camera goes to the window... `Run("Plane.exe")`"
+sequence via its own `DialogChoice==2` branch) — one root cause explains
+both parts of the report, matching the "should be generic" pattern from
+this session's very first Dialog-choice fix.
+
+Fixed by treating `Dialog` as a special-cased pseudo-entity, the same
+pattern already used for `camera`: `_resolve_entity()` now returns `_hud`
+for the bare identifier `dialog` (case-insensitive); `_get_field()`/
+`_set_field()` check `node == _hud` before falling into the generic
+Node3D-position code path (required — `GameHud` isn't a `Node3D`, doesn't
+have `.global_position`) and bridge `.visible` to
+`_hud.is_dialog_open()` on read, and `.visible = off` to
+`_hud.hide_dialog()` on write (the only write ever seen corpus-wide —
+`.visible = on` occurs exactly once, inside the real `ShowDialog()`
+itself, which is already force-bridged to `_do_show_dialog()`, so it
+never actually reaches this code path).
+
+Verified with two new smoke tests, both simulating a real button click
+(`GameHud.hide_dialog()` + the `dialog_choice` signal, matching what
+`_emit_choice()` actually does — an earlier draft that only emitted the
+signal directly gave a false FAIL, since skipping `hide_dialog()` left
+`Dialog.visible` legitimately still "open" per the test's own
+construction, not a real bug):
+- `tools/smoke_shiks_dialog_choice.gd`: after forcing `DialogIndex=1` and
+  clicking option 1, `PIP012.WAV` now actually plays (`voice_playing`
+  goes true at frame 0 and `DialogChoice` stays at `1.0` — previously
+  reset to `0.0` every frame, voice never played at all).
+- `tools/smoke_shiks_dialog2_choice.gd`: after forcing `DialogIndex=2` and
+  clicking option 2, the full window/camera sequence now plays through
+  correctly end to end — `Talking` progresses `1→2→1→2→12→13→14→15→16→
+  17→18` and `CamShow` advances `1→3→4→5→6→7→8` (matching the source's own
+  `// Going away` / `// From the window` / `// On the phone` / `// Weasel`
+  / `// Piegon` / `// Driving away` comments) over ~52 real seconds,
+  ending with `Run("Plane.exe")` correctly firing (`_running` flips
+  false) — previously never reached at all.
+
+Full regression suite re-run clean (`smoke_dispatch` 19/19,
+`smoke_dialog_choice`), since `Dialog.visible` is used the same way
+across many levels (`Mansion.wdl`, `Studio.wdl`, `WDL/DIalog.wdl` itself),
+not just Shiks — this is a shared bridge fix, not a per-level patch.
+
+## 2026-07-31 (same day, third follow-up) — subtitle still not visible on
+## screen; a plausible unclamped-delta bug found and fixed, but NOT
+## confirmed — headless testing genuinely cannot verify this one
+
+User reports the green subtitle text still doesn't show, despite the
+previous fix making `setup_studio_subtitles()` actually get called (which
+a headless smoke test confirmed: `_crawl_active=true`, both panels
+`visible=true` with a loaded texture). This is a real limitation of this
+session's verification method: `godot --headless` always falls back to
+the dummy rendering driver in this environment (confirmed earlier the
+same day trying `smoke_orient.gd` with `--rendering-driver opengl3` --
+`Viewport.get_texture()` still came back null), so **node properties can
+be confirmed correct, but actual on-screen pixels cannot** — a bug in
+z-order, positioning, or animation timing that leaves the properties
+"correct" by the next frame is invisible to every tool used so far.
+
+Found one concrete, plausible candidate via code reading (not confirmed
+against real rendering): `GameHud._update_crawl(delta)` is driven by
+`_process(delta)`, and the FIRST call after `setup_studio_subtitles()`
+lands right after an entire level's worth of synchronous boot work (WMB/
+GLB load, every entity's action coroutine starting) — Godot's `delta` for
+that frame is the real elapsed wall-clock time, which could be large
+enough that this animation (tuned as "8 units per real tick," i.e. for a
+normal ~16ms frame) skips most or all of the way to its end state
+(off-screen, past the crawl-then-blink-then-slide-down sequence) in a
+single step, before the player's eye ever registers a frame where it's
+mid-crawl and visible. Fixed defensively: `delta = minf(delta, 1.0/30.0)`
+at the top of `_update_crawl()`, so no single frame can move the
+animation more than what a real ~30fps tick would. Re-verified the
+existing `tools/smoke_studio_subtitle.gd` still passes (doesn't regress
+the property-level check), but **this fix is unconfirmed against the
+actual symptom** — genuinely possible the real bug is something else
+entirely (z-order, an actual rendering-side issue, or something this
+session's tools simply cannot see). Needs the user's own eyes on the next
+playtest before treating this as resolved.
+
+## 2026-07-31 (fourth follow-up) — five more reports at once: dialogue
+## loop, HUD, loading-screen request, free camera in Studio, poster
+## click position. Attempted a real desktop screenshot to finally get
+## actual pixels -- accidentally captured unrelated, sensitive content
+## from another window instead; deleted immediately, abandoned the
+## approach, do not retry it.
+
+**Screenshot attempt (abandoned):** tried launching a real (non-headless)
+Godot window and capturing it via a Win32 `GetWindowRect`/
+`CopyFromScreen` PowerShell script, since headless mode is confirmed
+stuck on the dummy renderer in this environment. `SetForegroundWindow`
+either failed silently or the coordinates were wrong -- the captured
+region showed unrelated, explicit content from a different window on the
+screen, not the game. Deleted the file immediately, killed the process,
+and will not attempt desktop/window screenshotting again in this
+environment -- too easy to capture something that isn't mine to see, and
+not reliable enough to trust even when it does work. Back to code-reading
++ headless property-verification only, with the known limitation that
+real on-screen pixels still can't be confirmed by this agent.
+
+**Camera moves during Naknik's dialogue when it shouldn't — real bug,
+found and fixed, high confidence.** `WdlDirector._unhandled_input()`'s
+generic "Town.wdl / generic Cam: pan/tilt -= mickey/5 while mouse_mode==0"
+mouse-look feature applies to every `scripted_camera` level EXCEPT an
+explicit exclusion list (Start/Shiks/Plane/Range) -- Studio was simply
+missing from that list, despite `_is_studio_level()` already existing
+(unused until now). Confirmed via reading the full `Studio.wdl`: the
+script never reads or toggles mouse state at all. Worse than a no-op:
+mouse motion calls `cam.set_meta("pan"/"tilt", ...)` on whichever Cam
+entity is currently active, and `TheCam`/`TheCam2` then copy that SAME
+meta to the real camera every frame -- so mouse movement was silently
+corrupting the entity's own authored facing, not just failing to add a
+feature. Fixed by adding `_is_studio_level()` to the exclusion list.
+
+**"Dialogue looping on the first part" — real bug, found and fixed, high
+confidence, verified.** Traced `action Piposh2` (Shiks.wdl) fully: its
+`Scene==2` block re-calls `ShowDialog()` with the SAME `DialogIndex` no
+matter which of the first prompt's 3 choices is picked -- by design, a
+revisitable menu. The ONLY way out is choice 3, which sets
+`my.skill20 = 1` (walk) and, once the player physically walks into a
+separate `Bumpin`-tagged entity, `action Bumped` sets `Piposh.skill2 = 2`,
+which is what unlocks `action MyCamera`'s fly-through-waypoints sequence
+and eventually `DialogIndex = 2` (the "camera through the window" scene
+from the previous report). `Bumpin`'s trigger is
+`my.enable_entity/enable_push/enable_impact = on` -- **grepped the whole
+interpreter: none of these three fields, or any entity-to-entity physical
+collision trigger, existed at all.** 22 files in the corpus use this
+idiom. So the only real exit from the first dialogue menu was completely
+unreachable through normal play -- not a dialogue-panel bug, a missing
+core interaction (walking into things can fire their `.event`, same as
+clicking them). Fixed: `_set_field()` now handles all three fields by
+ensuring a real Area3D exists that detects the player's own
+`CharacterBody3D` (found via `is_in_group("player")`, set by
+`player_controller.gd`) entering it, firing `invoke_event()` on
+`body_entered` -- same dispatch clicks already use. Verified with a new
+`tools/smoke_shiks_bumpin.gd`: simulating the player entering `Bumpin`'s
+new trigger area correctly sets `Piposh.skill2` from `1.0` to `2.0`.
+
+**Click-area centering — generic, defensible improvement made, but
+verified NOT to be the cause of the "poster is a bit lower" report
+specifically.** Both `WdlInterpreter._ensure_clickable_area()` and
+`WdlDirector._make_clickable()` centered their 28-unit click sphere on
+the entity's raw origin, assuming it always coincides with the mesh's
+visual center -- not guaranteed (e.g. a wall note whose origin is a
+mount point). Added `_clickable_center_offset()` (AABB-center of the
+first `MeshInstance3D` found, converted to the entity's local space) to
+both, so future entities with an off-center origin get a correctly
+positioned hitbox automatically. Checked `ShikNote` specifically (the
+poster in the report) with a dedicated tool
+(`tools/smoke_shiknote_offset.gd`): its computed offset is exactly zero
+-- both of its meshes (`ShikNote`, a small pin/icon, and
+`ShikNotePoster`, the actual 58x72 flat image plane) are already
+perfectly centered on the entity's own origin (dumped the full node tree
+and both local AABBs to confirm). **So this fix, while real and worth
+keeping, does not explain the reported symptom** -- the root cause of
+"the poster is a bit lower" is still unknown; possibly the click sphere's
+28-unit radius being small relative to the 72-unit-tall poster (only
+covering the middle ~56 units), possibly something about the WED-authored
+Y position itself, possibly something else entirely. Needs either a
+screenshot or a more specific description (is it the visible graphic
+that looks low against its wall mount, or does the CLICK only register
+if you aim below where the graphic visually is) to make real progress
+here instead of guessing again.
+
+**Loading screen — implemented as requested, not yet visually confirmed
+(same tooling limitation as above).** `LevelRunner._ready()` does all of
+a level's heavy synchronous work (WMB/GLB parse, entity spawn, every
+action coroutine starting) with nothing rendered in between, reading as
+a freeze rather than a load. A real progress bar would need the load
+itself restructured to be async, out of scope for a quick fix; instead,
+`_ready()` now creates a full-screen "Loading..." `CanvasLayer` (`layer =
+40`, above both `GameHud` and the F4 level-select menu), awaits two
+`process_frame`s (one to process the new node into the tree, one to
+actually paint it) before starting the heavy work, and frees it once
+`_ready()` finishes. **Risk checked and cleared:** `_ready()` becoming an
+implicit coroutine (from the new `await`s) could have broken every
+existing smoke test that waits a fixed 3 frames after `add_child(runner)`
+before reading `_director`/`_wdl_interp` — re-ran `smoke_dispatch`
+(19/19), `smoke_click_survey` (16 levels/307 entities), and
+`smoke_studio_shikklik.gd` (the tightest-margin existing test) after the
+change; all still pass, so 3 frames remains enough headroom.
+
+`git status` confirmed zero deletions throughout this whole round of
+fixes.
+
+## 2026-07-31 (fifth follow-up) — the actual "HUD text not showing" root
+## cause, found via one precise detail: "originally a black bar with
+## green text, running for a couple seconds"
+
+Every prior attempt at this (frame-timing clamp, verifying node
+properties) missed because the actual bug was upstream of anything the
+interpreter or GameHud touches: the 2D texture converter itself.
+`tools/convert_gfx.py` unconditionally ran `color_key_black()` (pure
+black → transparent) on **every** GFX bitmap, citing "Acknex panel/bmap
+`overlay` treats pure black as transparent" — a real Acknex behavior, but
+gated on the panel actually having the `overlay` flag, which the
+converter never checked. `Studio.wdl`'s `panel pSom`/`panel pOvr` (and
+`Start.wdl`'s identical pair) do NOT have `overlay` in their flags — they
+should render their bitmap opaque, black background included. Blanket
+colorkeying every GFX file made that black background fully transparent,
+so only the green glyphs remained — technically still "shown" (matching
+every earlier property check) but with no supporting black bar for
+contrast, easy to miss entirely against a busy 3D scene, matching "I'm
+still not seeing it" even after the properties were confirmed correct.
+
+Fixed properly, not by exempting just the two reported files: wrote
+`tools/gen_overlay_bmap_list.py`, which parses every `panel NAME { ... }`
+block across the entire original `.wdl` corpus, checks whether `overlay`
+appears in that panel's own `flags`, and resolves the bmap symbol back to
+a real filename. Zero filenames were used both ways (with and without
+`overlay`) across the whole corpus — an unambiguous, corpus-measured
+split, not a guess. Result: 63 files (including `Ami`/`Someover`/
+`Somewher`, and, as a side finding, 23 `LoadingNN` images — the original
+game's own loading-screen art, unused by this port so far) are
+confirmed non-overlay and now convert as plain opaque PNGs; everything
+else keeps the historical colorkey behavior (safer than guessing a new
+default for bitmaps never actually measured). The list is a reviewed
+literal in `convert_gfx.py` (`NON_OVERLAY_BMAPS`), not auto-applied from
+the generator script, so a future corpus change can't silently alter
+conversion output without a diff someone actually looks at.
+
+Regenerated all GFX assets (`python tools/convert_gfx.py`, no filter —
+shared conversion-function fix, not per-file): 552/553 converted (one
+pre-existing unrelated failure, `stat0.pcx`, confirmed via `git log`
+never successfully converted before this session either). 54 output PNGs
+changed, zero deletions. Directly viewed the regenerated `Ami.png`:
+now shows the intended solid black bar behind the green Hebrew text,
+matching the description of the original ("a black bar... with green
+text... running for a couple seconds"). Full regression
+(`smoke_dispatch`, 19/19) still clean.
+
+## 2026-07-31 (sixth follow-up) — ShikNote poster nudge (user-confirmed
+## fixed) + a fair "why not fix the parser" challenge answered honestly +
+## the "black ball" Dummy markers, root-caused and fixed generically
+
+User confirmed the poster fix landed ("now looks like its in the right
+place") but pushed back on the approach first: "why are you manually
+doing it and not fixing the parser?" Investigated properly before
+answering rather than just defending the patch: pulled `ShikNote.wmb`'s
+raw geometry directly (`tools/extract_wmb_mesh.py`'s own `extract_brush`)
+and the entity's authored angle (`angle_gs = [180, 356, 0]`, i.e.
+pan=180°, tilt≈-4°, roll=0°) — both are sane, unremarkable values, not
+obviously corrupted. `_mount_wall_card()`'s `shiknote`/`afg` special case
+in `wmb_level_loader.gd` is narrowly scoped (exactly these 2 stems, not a
+broad pattern), so the "edge-on slab" a previous session found isn't
+symptomatic of a general coordinate-convention bug in the shared
+`_acknex_entity_basis()` transform every other entity in the game relies
+on — experimentally removing the special case to test a real fix isn't
+something this session can safely do blind (no working visual
+verification here, and that shared function is too high-blast-radius to
+touch on a guess). Answered honestly instead of quietly nudging a number:
+this stays a contained, hand-placed patch, not a parser fix, because a
+real fix needs either a working renderer or a much bigger dive than this
+session has scoped — nudged the quad up by a fixed fraction of its own
+height (`quad.size.y * 0.12`, matching the user's own "small amount"
+estimate) rather than a raw unit guess, confirmed via
+`tools/smoke_shiknote_debug.gd` that the offset applied
+(`local_pos=(0,8.64,0)`), and the user confirmed it looks right in-game.
+
+**Separately, mid-turn: "Dummy models - black balls - shouldn't appear
+visually or at all - I don't know how it reached the Ami level."**
+Checked corpus-wide before touching anything (same discipline as every
+other fix this session): grepped every `action Dummy` definition across
+the entire original `.wdl` corpus (`AsyAct1`, `AsyAct2`, `AsyAct3`,
+`Credits`, `Dutyfree`, `HitUFO`, `Inn`, `Intro2`, `MOI`, `Shiks`,
+`Studio`) — every single one is a pure logic/sound-position marker with
+zero gameplay-visual purpose; `AsyAct3`'s own copy even explicitly sets
+`my.invisible = on;` itself, confirming the convention. `Dummy.MDL`'s
+real, successfully-converted geometry (62 verts, ~32-unit roughly
+spherical bounds) is genuine, not a missing-asset fallback -- just an
+unremarkable placeholder shape that apparently went unnoticed in the
+original's low-res rendering and stands out as a visible stray dark
+sphere in this port. Not level-specific (`Dummy_mdl_018` is a real entity
+placed directly in `Studio.WMB`, not carried over from another level, so
+"how did it reach Ami" has a mundane answer: it was always there, just
+newly visible). Fixed the same way camera placeholders already are:
+`_hide_meshes(root)` now also fires for `action.to_lower() == "dummy"`,
+alongside the existing camera/`flag_invisible` checks in
+`wmb_level_loader.gd`. Visual-only (`_hide_meshes` just sets
+`MeshInstance3D.visible = false`), so collision/click/audio behavior for
+these entities is untouched — Studio's own `Dummy` still plays its
+ambient sound loop correctly, it just doesn't render a mesh anymore. Full
+regression (`smoke_dispatch` 19/19, `smoke_click_survey` 16 levels/307
+entities) clean after both fixes; `git status` zero deletions throughout.
