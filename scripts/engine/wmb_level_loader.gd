@@ -102,12 +102,37 @@ func load_level(p_level_name: String) -> bool:
 					skipped += 1
 			"light":
 				_spawn_light(obj)
+	if level_name == "Plane":
+		_snap_piposh_walk_to_krupnik()
 	print(
 		"WmbLevelLoader: %s spawned=%d skipped=%d brush=%s floor_y=%.1f spawn=%s"
 		% [level_name, spawned, skipped, has_brush, floor_y, spawn_position]
 	)
 	level_loaded.emit(level_name, true)
 	return true
+
+
+## See _spawn_entity()'s own PiposhWalk comment. Runs once, after every
+## entity has actually finished spawning (feet-snap/scale/basis already
+## applied), so Krupnik's `global_position.y` here is his real, final
+## on-screen height -- copying it directly is the only way to guarantee
+## an exact match without reverse-engineering this pipeline's Y transform.
+func _snap_piposh_walk_to_krupnik() -> void:
+	var piposh: Node3D = null
+	var krup: Node3D = null
+	for node in _entities_root.get_children():
+		if not (node is Node3D):
+			continue
+		var action := str(node.get_meta("action", ""))
+		if action == "PiposhWalk":
+			piposh = node
+		elif action == "Krup" or action == "ThePlaneMovie":
+			krup = node
+	if piposh == null or krup == null:
+		return
+	var pos := piposh.global_position
+	pos.y = krup.global_position.y
+	piposh.global_position = pos
 
 
 func _resolve_level_json(p_level_name: String) -> String:
@@ -295,28 +320,34 @@ func _spawn_entity(obj: Dictionary) -> bool:
 		return false
 
 	# Plane.wdl's `action PiposhWalk` (Piposh's walk-in at level start) is
-	# WED-authored ~120 units below this level's own floor_y -- Godot
-	# Y=-39 vs floor_y=83, while the surrounding cabin (Pip Y=34, Krup
-	# Y=35, Dummy Y=49, all much closer to floor_y) sits at the correct
-	# height. No WDL script anywhere manages the height axis directly
-	# around actor_move() -- the original engine's own actor_move() floor-
-	# snaps for free every tick, so this port's straight-line X/Z-only
-	# _do_actor_move() just leaves him pinned at spawn height forever.
-	# Reported live (2026-08-01): "Piposh enters lower than he should be,
-	# not walking on the plane's height at the start of the scene."
-	# A real per-tick raycast floor-snap (matching the original engine)
-	# was tried and reverted: on this exact mesh it locked onto the wrong
-	# collision surface (an upper-deck/ceiling hit above the ray's rising
-	# start point) and climbed away instead of settling -- too fragile to
-	# ship without visual verification, and touching every actor_move()
-	# call site in the corpus for one report is out of proportion anyway.
-	# Narrow, one-time spawn correction instead, scoped to this exact
-	# entity (same precedent as _mount_wall_card()'s 2-stem special
-	# case): snap to this level's own already-computed floor_y so he
-	# starts on the correct floor rather than needing a live floor-follow
-	# he'd otherwise never get.
-	if level_name == "Plane" and action == "PiposhWalk" and pos.y < floor_y - 40.0:
-		pos.y = floor_y
+	# WED-authored ~73 units below the cabin's real floor -- Godot Y=-39,
+	# while the surrounding cabin (Pip Y=34, Krup Y=35, Dummy Y=49, raw
+	# JSON origins) sits at the correct height. No WDL script anywhere
+	# manages the height axis directly around actor_move() -- the
+	# original engine's own actor_move() floor-snaps for free every
+	# tick, so this port's straight-line X/Z-only _do_actor_move() just
+	# leaves him pinned at spawn height forever. A real per-tick raycast
+	# floor-snap (matching the original engine) was tried and reverted:
+	# on this exact mesh it locked onto the wrong collision surface (an
+	# upper-deck/ceiling hit above the ray's rising start point) and
+	# climbed away instead of settling -- too fragile to ship without
+	# visual verification, and touching every actor_move() call site in
+	# the corpus for one report is out of proportion anyway.
+	#
+	# An in-line raw-Y snap was tried here first (this level's own
+	# `floor_y`, then Pip's raw origin.y=34) and reverted both times: a
+	# raw JSON Y isn't comparable to `pos.y` at this point in the
+	# pipeline, since feet-snap/scale/basis transforms haven't been
+	# applied yet -- `floor_y` overshot Krupnik's real spawned height by
+	# ~24 Godot units even after matching Pip's own raw origin (reported
+	# live 2026-08-01 twice: first "lower than he should be", then, after
+	# the floor_y fix, "too high... should be the same height as
+	# Krupnik"). See `_snap_piposh_walk_to_krupnik()` (called once after
+	# every entity has actually finished spawning, at the very end of
+	# `load_level()`): copies Krupnik's real, already-transformed
+	# `global_position.y` directly onto Piposh, the only way to guarantee
+	# an exact visual match without needing to reverse-engineer this
+	# pipeline's Y transform by hand.
 
 	var scl := _vec3(obj.get("scale", [1, 1, 1]), Vector3.ONE)
 	# Preserve authored scales (Island=20). Only reject insane non-uniform junk.

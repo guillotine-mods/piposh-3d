@@ -4391,3 +4391,79 @@ confirms bridging `startsaveload` didn't disturb the `perform_handle`
 fix it sits right next to in the same const array),
 `smoke_wait_skip.gd`, `smoke_regression_check.gd` against Studio (clean,
 faster initial load too). `git status` zero asset deletions.
+
+## 2026-08-01 (fourteenth) — Plane's Piposh spawn height, take two
+
+Follow-up report after the eleventh entry's fix: "Piposh character walks
+in and he's too high over the plane's ground, he should walk in and be
+the same height as Krupnik that's already there." That earlier fix
+snapped `action PiposhWalk`'s spawn Y to this level's own `floor_y`
+(83) on the reasoning that it was "closer" than the raw WED origin
+(-39) -- true, but `floor_y` turned out to be a different deck of the
+plane entirely; the cabin Piposh actually walks into sits at Y=34-35
+(Pip/Krup/Dummy's own raw JSON origins), not 83. Confirmed via the
+converted level JSON directly (`Piposh_mdl_001`'s "Pip" placement Y=34,
+`Krup2_mdl_035` Y=35, vs `floor_y`=83) -- the earlier fix overshot by
+~48 units, landing him floating above Krupnik instead of standing next
+to him.
+
+Re-fixed properly this time: tried hardcoding the raw JSON Y (34) in
+`_spawn_entity()`, same place as before -- still off by ~24 Godot units
+after spawning (92.35 vs Krupnik's actual 68.39), because a raw JSON Y
+isn't comparable to `pos.y` at that point in the pipeline (feet-snap/
+scale/basis transforms haven't been applied yet). Moved the fix to a
+new `_snap_piposh_walk_to_krupnik()`, called once at the very end of
+`load_level()` after every entity has actually finished spawning:
+copies Krupnik's real, already-transformed `global_position.y` directly
+onto Piposh -- the only way to guarantee an exact visual match without
+reverse-engineering this pipeline's Y transform by hand.
+
+Verified: rewrote `tools/smoke_plane_piposh_height.gd` (the original
+version asserted against `floor_y`, the now-known-wrong target) to
+assert PiposhWalk's spawn Y matches Krupnik's own spawned Y directly --
+92.35 vs 68.39 (fail) before the post-pass fix, 68.55 vs 68.39 (pass,
+within floating-point noise) after. Full regression: `smoke_dispatch`
+19/19. `git status` zero asset deletions.
+
+## 2026-08-01 (fifteenth) — investigated "2nd dialogue in Shiks doesn't play"
+
+User: "the 2nd dialogue in Shicks level doesn't play doesn't matter what
+I choose." Clarified on request: "choice box closes but total silence,
+nothing else happens" (not a stuck choice box, not a missing prompt --
+the click registers, then nothing).
+
+Extensive headless investigation, three angles, all passing:
+1. `tools/smoke_shiks_dialog2.gd` (new): drives dialogue 1 to completion
+   for real (choice 1, SHK004.WAV), then transitions to dialogue 2 the
+   way `action MyCamera` really does (`Piposh.skill2=4; DialogIndex=2;
+   ShowDialog();`) and clicks a choice -- `AudioChannels.
+   get_voice_progress()` climbs normally the whole time (0.0008 -> 0.61
+   over 4.5s for PIP017.WAV), no stall.
+2. `tools/smoke_shiks_chase.gd` (new): sets `Piposh.skill2=2` (matching
+   a real bump into `action Bumped`) and lets `action MyCamera`'s real
+   `scan_path`/`ent_nextpoint` waypoint-chase run with zero shortcuts --
+   `DialogIndex` correctly reaches 1 (~4s) then 2 (~10s), confirming the
+   whole real precondition chain (not just the forced-state shortcut in
+   (1)) genuinely completes.
+3. Pre-existing `tools/smoke_shiks_dialog2_choice.gd` (from an earlier
+   session, re-run unmodified against current code): drives the LONGEST
+   branch, `DialogChoice==2`'s 8-sequential-voice-line chain ending in
+   `Run("Plane.exe")` -- still passes, firing `Run` at ~53s real
+   (headless audio is documented slower-than-real-time, so a real
+   session should be faster, not slower).
+
+Did not find or fix a bug: every code path this could plausibly follow
+(short single-line choices, the full 8-line chain, the real trigger
+precondition instead of a forced shortcut) verifies correctly headless.
+Reported this to the user rather than guessing further -- the interpreter
+and voice-position tracking both work in every reproduction attempted.
+If the real symptom persists, the two most likely remaining explanations
+are a real-audio-output issue (volume/mixing/muting -- invisible to a
+headless position-tracking check, which only confirms the *internal*
+playback clock advances, not that sound is actually audible) or simply
+not waiting long enough (one branch takes up to a full minute of real
+playback with zero visible feedback on screen -- Shiks has no
+subtitle-panel text like Range/Studio/Start do, so a long silent wait
+reads exactly like "nothing is happening").
+`git status` zero asset deletions (no code changes from this
+investigation beyond the two new/renamed smoke tests).

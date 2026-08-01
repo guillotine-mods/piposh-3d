@@ -1,16 +1,15 @@
 extends SceneTree
-## Regression check for the 2026-08-01 report: "Piposh enters [Plane] but
-## he's lower than he should be, not walking on the plane's height at the
-## start of the scene, later on it's fixed." `action PiposhWalk` spawns
-## at Godot Y=-39 (raw WED origin) while this level's own computed
-## floor_y is 83 -- confirmed via WmbLevelLoader.gd's own load-time log.
-## A live per-tick raycast floor-snap was tried and reverted (locked onto
-## the wrong collision surface on this exact mesh and climbed away
-## instead of settling -- see docs/SESSION_LOG.md). Fixed instead with a
-## narrow, one-time spawn correction scoped to this exact entity
-## (WmbLevelLoader._spawn_entity()): snap to floor_y at spawn if authored
-## more than 40 units below it. Checks Piposh's spawn Y lands close to
-## this level's floor_y instead of far below it.
+## Regression check for the 2026-08-01 reports about `action PiposhWalk`'s
+## spawn height in Plane. First report: "Piposh enters lower than he
+## should be" (Godot Y=-39, raw WED origin) -- fixed by snapping to this
+## level's `floor_y` (83). Second report, after that fix shipped: "he's
+## too high over the plane's ground, he should walk in and be the same
+## height as Krupnik that's already there" -- `floor_y` turned out to be a
+## different deck of the plane entirely; the cabin Piposh actually walks
+## into sits at ~Y=34-35 (Pip/Krup/Dummy's own placements), not 83.
+## Re-fixed to snap to Y=34 (Piposh's own "Pip" resting placement in this
+## same level) instead. Checks Piposh's spawn Y lands close to Krupnik's,
+## not this level's unrelated floor_y.
 ##
 ## Run: godot --headless --path . -s res://tools/smoke_plane_piposh_height.gd
 
@@ -33,23 +32,20 @@ func _run() -> void:
 	await process_frame
 
 	var piposh := _find_entity_by_action(runner, "PiposhWalk")
-	if piposh == null:
-		print("FAIL: no PiposhWalk entity found")
+	var krup := _find_entity_by_action(runner, "Krup")
+	if krup == null:
+		krup = _find_entity_by_action(runner, "ThePlaneMovie")
+	if piposh == null or krup == null:
+		print("FAIL: PiposhWalk=%s Krup/ThePlaneMovie=%s" % [piposh, krup])
 		quit(1)
 		return
 
-	var start_y := piposh.global_position.y
-	var floor_y: float = runner.get("loader").get("floor_y")
-	print("spawn Y=%.2f  level floor_y=%.2f" % [start_y, floor_y])
+	var piposh_y := piposh.global_position.y
+	var krup_y := krup.global_position.y
+	print("PiposhWalk spawn Y=%.2f  Krupnik Y=%.2f" % [piposh_y, krup_y])
 
-	for i in 120:  # 2s @ 60fps -- just confirm it holds, not a live rise
-		await process_frame
-
-	print("final Y=%.2f  (level floor_y=%.2f)" % [piposh.global_position.y, floor_y])
-	# The old bug spawned him ~120 units below floor_y (Godot Y=-39 vs
-	# floor_y=83); the fix should land him within a sane band of it.
-	var ok := absf(start_y - floor_y) < 80.0
-	print("OK" if ok else "FAIL: Piposh spawned far from this level's floor_y")
+	var ok := absf(piposh_y - krup_y) < 5.0
+	print("OK" if ok else "FAIL: Piposh not near Krupnik's height")
 	quit(0 if ok else 1)
 
 
