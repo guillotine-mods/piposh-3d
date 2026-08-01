@@ -28,7 +28,7 @@ QOL item from being promoted to GB (or the reverse) by moving the row.
 
 | ID | Description | Note |
 |---|---|---|
-| GB-2 | Plane: Piposh's placement is "wrong" during the first part of the entry scene. | Plane's spawn-height half of this (Piposh floating above/below the cabin floor) was fixed twice (commits `5540f00`, and a wrong first attempt before it) — confirmed matching Krupnik's height. If this is the same issue, needs re-verification in-game; if it's a *different* "wrong placement" (e.g. facing, timing, path), needs a fresh description. |
+| GB-2 | Plane: Piposh walks in on the floor *under* the plane instead of the plane's own (higher) floor. | In progress 2026-08-02. Earlier spawn-height fixes (commits `5540f00`, and a wrong first attempt before it) snapped his spawn point to match Krupnik's height, but the user's precise report is that he's walking on a floor level below the plane entirely — a different, more specific issue than a spawn-height offset. |
 | GB-3 | Plane2: Piposh spawns lower than the plane's surface, and the character can't move. | Fixed commit `b98470e` (two separate bugs: a wrong-deck floor snap, and a camera-authority deadlock that zeroed the native controller's movement every tick). Needs re-verification in-game before closing. |
 | GB-4 | Range: the upper HUD doesn't update when a citizen or terrorist is hit. | Not yet investigated. |
 | GB-5 | Range: after Piposh dies, animations keep playing instead of stopping, and the retry/skip buttons that should appear don't show. | Not yet investigated. |
@@ -55,8 +55,7 @@ QOL item from being promoted to GB (or the reverse) by moving the row.
 | NB-4 | The green "overlay" HUD panel flickers. |
 | NB-5 | Loading text isn't centered — sits a bit too far right/down. |
 | NB-6 | "Sticker clicked/found" text isn't centered — sits a bit too far right/down. |
-| NB-7 | Shiks: after the 2nd dialogue, during the sequence where the camera cuts between several locations, Piposh isn't shown for 2 of the shots (the phone-booth/bus shot and the pigeon shot). | Two real, stacked bugs found and fixed 2026-08-02. First (necessary but not sufficient): the WED placements start with the "invisible" flag set, and the reveal write (`my.invisible = off;`) only toggled the entity's root node, never the actual mesh child `_hide_meshes()` hid — fixed by making the write recursive. Second, the actual cause of "still missing" even after that: `action Pipi`'s `my.x = XX;` (Talking==14) teleports ANY Pipi placement ~13,600 units away to wherever `action Dummy` sits, gated on `my.flag1==off` — a WED per-entity flag this port never reads, so it defaults to "off" for every placement and all three teleport together, when only the ordinary-scale one should. Fixed by seeding `flag1=on` for placements with a significantly non-1.0 scale (the dramatically-scaled cutaway props), confirmed via `Camera3D.is_position_in_frustum()` that the entity now sits exactly where authored and is actually in frame. Needs in-game re-verification before closing. |
 
 ---
 
-_Last edited: 2026-08-02 (later)._
+_Last edited: 2026-08-02 (GB-2 in progress)._
