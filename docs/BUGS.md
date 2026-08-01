@@ -44,6 +44,7 @@ QOL item from being promoted to GB (or the reverse) by moving the row.
 | QOL-4 | Add a load / save / quick-save option on the right side of the screen. |
 | QOL-5 | Move the skip button to the right side. |
 | QOL-6 | Add a right-side menu: debug, mouse-look toggle, level select, settings, and separate volume sliders for SFX / Music / Voice — default voice ~30-40% louder than music and SFX. |
+| QOL-7 | Add subtitles (on-screen text for voice lines / dialogue). |
 
 ## Non-breaking bugs
 

@@ -2404,8 +2404,8 @@ func _register_builtins() -> void:
 		"move_view_1st": func(_a, _my): return 0.0,
 		"move_view_3rd": func(_a, _my): return 0.0,
 		"move_view_3rd_2": func(_a, _my): return 0.0,
-		"splay": func(a, _my): return _do_play_sfx(a, 0, true),
-		"vplay": func(a, _my): return _do_play_sfx(a, 0, true),
+		"splay": func(a, my): return _do_play_sfx_logged(a, my),
+		"vplay": func(a, my): return _do_play_sfx_logged(a, my),
 		"play_sound": func(a, _my): return _do_play_sfx(a, 0, false),
 		"play_entsound": func(a, _my): return _do_play_sfx(a, 1, false),
 		# `stop_sound(handle)` -- same per-sound handle idiom as
@@ -2475,6 +2475,18 @@ const SFX_VOLUME_TRIM_DB := {
 	# loud enough to mask PIP/KRP's voice lines during the intro dialogue.
 	"sfx091.wav": -14.0,  # Jet (Range background engine ambiance)
 }
+
+
+## GB-1 investigation (2026-08-01, Shiks): a real session showed no
+## VOICE_FINISHED for PIP017.WAV even after 30+s -- need to know whether
+## sPlay() was ever actually called for it, or whether the caller's own
+## coroutine never reached this statement at all.
+func _do_play_sfx_logged(a: Array, my) -> float:
+	if a.size() > 0:
+		PiposhDebug.log_msg("dialog-choice", "SPLAY wav=%s by=%s" % [
+			str(a[0]), (str(my.name) if (my != null and is_instance_valid(my)) else "<null>")
+		])
+	return _do_play_sfx(a, 0, true)
 
 
 func _do_play_sfx(a: Array, wav_index: int, is_voice: bool) -> float:
@@ -2827,6 +2839,8 @@ func _do_stop_sound(a: Array) -> float:
 ## generation (AudioChannels.get_voice_generation()) that caller has
 ## already observed as "finished". See _do_get_voice_position().
 var _voice_finished_consumed_by: Dictionary = {}
+## GB-1 investigation heartbeat -- see _do_get_voice_position()'s own comment.
+var _voice_poll_heartbeat: Dictionary = {}
 
 
 ## Per-CALLER, per-GENERATION debounce of `GetPosition(Voice)`'s "finished"
@@ -2864,9 +2878,21 @@ var _voice_finished_consumed_by: Dictionary = {}
 ## nothing else can consume vs it -- consumption is per-caller, not shared).
 func _do_get_voice_position(my) -> float:
 	var progress := AudioChannels.get_voice_progress()
+	# GB-1 heartbeat: once every ~60 calls (roughly 1/sec at 60fps) per
+	# caller, so a real session shows whether this is even being polled,
+	# and whether progress is climbing, frozen, or stuck at the
+	# already-consumed 999999 sentinel -- without flooding the log every
+	# single tick.
+	var who_hb := str(my.name) if (my != null and is_instance_valid(my)) else "<null>"
+	var hb_count := int(_voice_poll_heartbeat.get(who_hb, 0)) + 1
+	_voice_poll_heartbeat[who_hb] = hb_count
+	if hb_count % 60 == 1:
+		PiposhDebug.log_msg("dialog-choice", "VOICE_POLL by=%s progress=%.4f is_playing=%s generation=%d" % [
+			who_hb, progress, AudioChannels.is_voice_playing(), AudioChannels.get_voice_generation()
+		])
 	if progress >= 1.0:
 		var gen: int = AudioChannels.get_voice_generation()
-		var who := str(my.name) if (my != null and is_instance_valid(my)) else "<null>"
+		var who := who_hb
 		if _voice_finished_consumed_by.get(my, -1) == gen:
 			return 999999.0
 		_voice_finished_consumed_by[my] = gen
