@@ -4594,3 +4594,80 @@ Full regression after both fixes: `smoke_dispatch` 19/19,
 `smoke_shiks_chase.gd`, `smoke_shiks_bumpin_proximity.gd` (both still
 "OK" -- confirms the debounce doesn't suppress the real, intended
 first trigger). `git status` zero asset deletions.
+
+## 2026-08-02 (GB-1) — Shiks 2nd dialogue: root cause found and fixed
+
+Continuation of the fifteenth/seventeenth entries' investigation, this
+time with real evidence: the user captured a live console log (filtered
+to the `dialog-choice` tag, added specifically for this) covering the
+actual click. It showed `Piposh_mdl_001`'s voice-poll heartbeat frozen
+on the SAME generation (an old, already-finished line) from before a
+`SHOWDIALOG DialogIndex=2.0` call, through the real click, and for 30+
+seconds after -- meaning `action Piposh2`'s coroutine never reached the
+`DialogIndex==2` response code at all.
+
+Reproduced headless for the first time this investigation
+(`tools/smoke_shiks_dialog2_choice3.gd`, using choice 3 for dialogue 1 --
+the earlier smoke_shiks_dialog2.gd used choice 1 and never hit this),
+then root-caused via a temporary per-statement trace scoped to
+`my.name == "Piposh_mdl_001"` plus an un-throttled log of every
+`Dialog.visible` read. Confirmed exactly:
+
+1. After choice 3, `action Piposh2` re-shows a stale `DialogIndex=1`
+   dialogue box (`DialogIndex` is never reset in the WDL source --
+   `//DialogIndex = 0;` is commented out at Shiks.wdl:327 -- corpus
+   data, not something to hand-edit).
+2. `action MyCamera`'s waypoint-chase loop (still running at this point,
+   ~10s total) contains `Dialog.visible = off;` **unconditionally, every
+   tick** (Shiks.wdl:110, meant to hide leftover subtitle text while the
+   camera flies through) -- with zero awareness that a completely
+   unrelated dialogue box might be open for a different reason at that
+   exact moment.
+3. That force-closes Piposh2's stale box before any real click can
+   happen. `DialogChoice` stays at its post-`ShowDialog()` reset value
+   (0), so when Piposh2 re-checks its own `if(DialogIndex==1/2){if
+   (DialogChoice==1/2/3){...}}` blocks, none of them match -- no new
+   `sPlay()` ever happens -- and it falls through to
+   `while(GetPosition(Voice)<1000000){Talk();wait(1);}`, still polling
+   the SAME already-finished generation from choice 3's own response.
+4. The interpreter's per-caller voice-finished debounce
+   (`_voice_finished_consumed_by`, built 2026-07-31 to stop a
+   *different* idiom -- `if(GetPosition(Voice)>=1000000){OneShot();}`
+   inside a perpetual `while(1)` -- from re-firing every tick forever)
+   had already marked this exact (caller, generation) pair consumed,
+   from the earlier wait loop moments before. So this NEW, unrelated
+   `while` loop's very first check saw the debounce's "already seen"
+   sentinel (999999, not real progress) instead of the fresh "yes,
+   finished" real Acknex would have given it -- permanently stuck,
+   since nothing will ever bump the generation again.
+
+Root cause was the debounce being too sticky for this shape, not the
+`Dialog.visible` race itself (which may well exist in the original
+engine too, and isn't something to "fix" by editing WDL data). A
+blocking `while(GetPosition(Voice)<1000000){...})` loop ("idiom A")
+only ever needs to see "finished" once, by construction -- unlike idiom
+B, it can never incorrectly "re-fire" from seeing it more than once, so
+it should never be starved by an earlier, unrelated while-loop (same
+caller) having already consumed the current generation. Fixed by
+clearing `_voice_finished_consumed_by[my]` the moment a NEW
+`while`-loop whose condition calls `GetPosition` begins (both the async
+and sync `exec_stmt` "while" cases) -- gives idiom A a guaranteed fresh
+read every time, without touching idiom B's own debounce at all (that
+lives entirely inside a perpetual `while(1)`'s nested `if`, never a
+fresh `while` dispatch).
+
+Verified: `smoke_shiks_dialog2_choice3.gd` now shows real voice progress
+climbing normally through the full DialogIndex=2 chain after the click
+(previously frozen at the same generation, `is_playing=false`, forever).
+Confirmed the fix does NOT reopen the idiom-B bug it would have
+regressed: `smoke_studio_shikklik.gd` (the original Naknik/ShikKlik
+report this debounce was built for) still shows `run_fired=true`. Full
+regression: `smoke_dispatch` 19/19, `smoke_shiks_dialog2_choice.gd`
+(the long 8-line chain, still `OK`), `smoke_plane2_all_goals.gd` (still
+reaches the all-4-goals branch). `git status` zero asset deletions.
+
+Also added (kept, throttled): `SPLAY`/`VOICE_POLL`/`SHOWDIALOG`/`CLICK`/
+`DIALOG_VISIBLE_READ` under the `dialog-choice` PiposhDebug tag --
+useful general-purpose dialogue/voice diagnostics beyond just this bug,
+low-noise (once-per-call for discrete events, ~1/sec heartbeats for
+polling loops).

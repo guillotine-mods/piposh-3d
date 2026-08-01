@@ -916,6 +916,35 @@ func exec_stmt(stmt: Dictionary, my) -> Variant:
 		"while":
 			var guard := 0
 			var who: String = str(my.name) if (my != null and is_instance_valid(my)) else "main"
+			# GB-1 fix (2026-08-02, Shiks): `while (GetPosition(Voice) <
+			# 1000000) {...}` ("idiom A", a one-time blocking wait -- see
+			# _do_get_voice_position()'s own comment for "idiom B", the
+			# perpetual-poll shape the consumed-generation debounce was
+			# actually built for) only ever needs to see "finished" ONCE
+			# to exit, by construction -- there's no way for it to
+			# "re-fire" a side effect the way idiom B can, so it should
+			# never be starved by an EARLIER, unrelated while-loop (same
+			# caller) having already consumed the current generation.
+			# Real Acknex has no such concept at all: GetPosition(Voice)
+			# just reports actual playback state to every caller, every
+			# time. Confirmed live: Shiks' `action Piposh2`, after
+			# choice 3, re-shows a stale DialogIndex=1 box (DialogIndex
+			# is never reset -- corpus data, not a bug to "fix" by
+			# editing the WDL) which `action MyCamera`'s still-running
+			# chase loop (`Dialog.visible = off;`, unconditional, every
+			# tick for ~10s) then force-closes before any real click --
+			# Piposh2 falls through to the shared reaction-wait loop
+			# with DialogChoice still 0, no new sPlay() ever happens, and
+			# the OLD generation was already consumed by the PREVIOUS
+			# wait loop moments earlier -- permanently stuck. Clearing
+			# consumption for `my` right as a NEW GetPosition(Voice)-
+			# gated while loop begins gives it the same one-time-fresh
+			# read idiom A always needs, without touching idiom B's own
+			# debounce at all (that lives entirely inside a perpetual
+			# while(1)'s nested `if`, never inside a fresh "while"
+			# dispatch like this one).
+			if my != null and _scan_for_calls(stmt.get("cond"), ["getposition"]):
+				_voice_finished_consumed_by.erase(my)
 			# _entity_alive() guards each loop iteration the same way
 			# exec_stmt's own top-level guard does -- a *different*
 			# coroutine on the same entity can free `my` between
@@ -1269,7 +1298,22 @@ func _get_field(obj_expr: Variant, field: String, my) -> Variant:
 		# ever blocking it long enough for a real click to be read before
 		# being reset again. Confirmed live (2026-07-31, Shiks: "after
 		# choosing, the talk isn't starting"). Bridged to the real HUD state.
-		return 1.0 if (low == "visible" and _hud.is_dialog_open()) else 0.0
+		if low == "visible":
+			var is_open := _hud.is_dialog_open()
+			# GB-1 heartbeat, same throttling idea as _do_get_voice_
+			# position()'s own -- answers "does this caller's
+			# while(Dialog.visible==on) gate ever actually see the box as
+			# open, or does it race past instantly" without flooding the
+			# log every tick a dialog gate is blocking (which is normal,
+			# expected, and would otherwise fire constantly in any level
+			# with a dialogue choice).
+			var who_dh := str(my.name) if (my != null and is_instance_valid(my)) else "<null>"
+			var dh_count := int(_dialog_visible_read_heartbeat.get(who_dh, 0)) + 1
+			_dialog_visible_read_heartbeat[who_dh] = dh_count
+			if dh_count % 60 == 1:
+				PiposhDebug.log_msg("dialog-choice", "DIALOG_VISIBLE_READ by=%s is_open=%s" % [who_dh, is_open])
+			return 1.0 if is_open else 0.0
+		return 0.0
 	if node is Control:
 		return _get_panel_field(node, low)
 	var gs := _godot_to_gs(node.global_position)
@@ -2254,6 +2298,10 @@ func _exec_stmt_sync(stmt: Dictionary, my) -> Variant:
 			return null
 		"while":
 			var guard := 0
+			# Same GB-1 fresh-read fix as exec_stmt's async "while" case
+			# above -- see its own comment.
+			if my != null and _scan_for_calls(stmt.get("cond"), ["getposition"]):
+				_voice_finished_consumed_by.erase(my)
 			# Same _entity_alive() guard as exec_stmt's async "while" case
 			# above and for the same reason: the loop body itself (or a
 			# builtin it calls) can free `my` via remove(my), and the very
@@ -2563,6 +2611,7 @@ func _do_show_dialog(my) -> float:
 		return 0.0
 	var idx := int(_to_num(_get_var("DialogIndex", my)))
 	_hud.show_dialog(idx)
+	PiposhDebug.log_msg("dialog-choice", "  -> after show_dialog(%d), is_dialog_open=%s" % [idx, _hud.is_dialog_open()])
 	return 0.0
 
 
@@ -2841,6 +2890,8 @@ func _do_stop_sound(a: Array) -> float:
 var _voice_finished_consumed_by: Dictionary = {}
 ## GB-1 investigation heartbeat -- see _do_get_voice_position()'s own comment.
 var _voice_poll_heartbeat: Dictionary = {}
+## GB-1 investigation heartbeat -- see _get_field()'s "Dialog"/"visible" comment.
+var _dialog_visible_read_heartbeat: Dictionary = {}
 
 
 ## Per-CALLER, per-GENERATION debounce of `GetPosition(Voice)`'s "finished"
