@@ -3711,6 +3711,189 @@
   "splashmap": "A5.pcx",
   "Shkufit": "Shkufit.pcx"
  },
+ "panels": {
+  "pSom": {
+   "kind": "panel",
+   "fields": {
+    "layer": [
+     [
+      "2"
+     ]
+    ],
+    "bmap": [
+     [
+      "bSom"
+     ]
+    ],
+    "pos_x": [
+     [
+      "0"
+     ]
+    ],
+    "pos_y": [
+     [
+      "460"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d"
+     ]
+    ]
+   }
+  },
+  "pOvr": {
+   "kind": "panel",
+   "fields": {
+    "layer": [
+     [
+      "3"
+     ]
+    ],
+    "bmap": [
+     [
+      "bOvr"
+     ]
+    ],
+    "pos_x": [
+     [
+      "223"
+     ]
+    ],
+    "pos_y": [
+     [
+      "460"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d"
+     ]
+    ]
+   }
+  },
+  "splashscreen": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "splashmap"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d"
+     ]
+    ]
+   }
+  },
+  "pShkufit": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "Shkufit"
+     ]
+    ],
+    "layer": [
+     [
+      "5"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_space"
+    },
+    "value": {
+     "t": "call",
+     "name": "EndLogo",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_mouse_left"
+    },
+    "value": {
+     "t": "call",
+     "name": "EndLogo",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_mouse_right"
+    },
+    "value": {
+     "t": "call",
+     "name": "EndLogo",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_enter"
+    },
+    "value": {
+     "t": "call",
+     "name": "EndLogo",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_esc"
+    },
+    "value": {
+     "t": "call",
+     "name": "EndScene",
+     "args": []
+    }
+   }
+  }
+ ],
  "skip_count": 1,
  "skipped": [
   "line 271: stray '}' at top level (skipped)"

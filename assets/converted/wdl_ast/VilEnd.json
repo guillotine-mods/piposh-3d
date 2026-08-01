@@ -10706,6 +10706,144 @@
   "bCredits": "credits.pcx",
   "b2Min": "2Min.pcx"
  },
+ "panels": {
+  "pKtuvit": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "btxt1"
+     ]
+    ],
+    "pos_y": [
+     [
+      "461"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "transparent"
+     ]
+    ]
+   }
+  },
+  "p2Min": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "b2Min"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d"
+     ]
+    ]
+   }
+  },
+  "pBack": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bcredits"
+     ]
+    ],
+    "layer": [
+     [
+      "10"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "pButton1": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "500"
+     ]
+    ],
+    "pos_y": [
+     [
+      "350"
+     ]
+    ],
+    "layer": [
+     [
+      "11"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d"
+     ]
+    ],
+    "button": [
+     [
+      "0",
+      "0",
+      "bBtn2",
+      "bBtn1",
+      "bBtn2",
+      "Opt1",
+      "null",
+      "null"
+     ]
+    ]
+   }
+  },
+  "pButton2": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "0"
+     ]
+    ],
+    "pos_y": [
+     [
+      "350"
+     ]
+    ],
+    "layer": [
+     [
+      "11"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d"
+     ]
+    ],
+    "button": [
+     [
+      "0",
+      "0",
+      "bBtn4",
+      "bBtn3",
+      "bBtn4",
+      "Opt2",
+      "null",
+      "null"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [],
  "skip_count": 3,
  "skipped": [
   "line 140: stray '}' at top level (skipped)",

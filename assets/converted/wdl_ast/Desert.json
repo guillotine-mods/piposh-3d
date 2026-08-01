@@ -565,6 +565,46 @@
    "init_list": false
   },
   {
+   "name": "MineForce",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill40"
+   },
+   "init_list": false
+  },
+  {
+   "name": "MineElevation",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill41"
+   },
+   "init_list": false
+  },
+  {
+   "name": "MineStage",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill42"
+   },
+   "init_list": false
+  },
+  {
+   "name": "MineDiff",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill43"
+   },
+   "init_list": false
+  },
+  {
    "name": "VENG",
    "kind": "var",
    "array_size": null,
@@ -19770,6 +19810,70 @@
  "bmaps": {
   "bPanel": "Bike.pcx"
  },
+ "panels": {
+  "pPanel": {
+   "kind": "panel",
+   "fields": {
+    "layer": [
+     [
+      "-0.2"
+     ]
+    ],
+    "bmap": [
+     [
+      "bPanel"
+     ]
+    ],
+    "pos_y": [
+     [
+      "330"
+     ]
+    ],
+    "flags": [
+     [
+      "visible",
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_mouse_left"
+    },
+    "value": {
+     "t": "call",
+     "name": "ShotMis",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_tab"
+    },
+    "value": {
+     "t": "call",
+     "name": "cheat",
+     "args": []
+    }
+   }
+  }
+ ],
  "skip_count": 2,
  "skipped": [
   "line 580: stray '}' at top level (skipped)",

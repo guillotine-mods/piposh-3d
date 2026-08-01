@@ -177,6 +177,76 @@
    "init_list": false
   },
   {
+   "name": "delay",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill10"
+   },
+   "init_list": false
+  },
+  {
+   "name": "zoom",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill21"
+   },
+   "init_list": false
+  },
+  {
+   "name": "speed",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill22"
+   },
+   "init_list": false
+  },
+  {
+   "name": "haspara",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill23"
+   },
+   "init_list": false
+  },
+  {
+   "name": "airborn",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill24"
+   },
+   "init_list": false
+  },
+  {
+   "name": "active",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill26"
+   },
+   "init_list": false
+  },
+  {
+   "name": "fall",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill30"
+   },
+   "init_list": false
+  },
+  {
    "name": "KIV",
    "kind": "var",
    "array_size": null,
@@ -13137,6 +13207,390 @@
   "Cube": "Cube.bmp",
   "Panel": "ShtrPnl.pcx"
  },
+ "panels": {
+  "Pwr1": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "Cube"
+     ]
+    ],
+    "pos_x": [
+     [
+      "45"
+     ]
+    ],
+    "pos_y": [
+     [
+      "223"
+     ]
+    ],
+    "flags": [
+     [
+      "visible",
+      "d3d",
+      "refresh"
+     ]
+    ],
+    "layer": [
+     [
+      "-1"
+     ]
+    ]
+   }
+  },
+  "Pwr2": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "Cube"
+     ]
+    ],
+    "pos_x": [
+     [
+      "70"
+     ]
+    ],
+    "pos_y": [
+     [
+      "223"
+     ]
+    ],
+    "flags": [
+     [
+      "visible",
+      "d3d",
+      "refresh"
+     ]
+    ],
+    "layer": [
+     [
+      "-1"
+     ]
+    ]
+   }
+  },
+  "Pwr3": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "Cube"
+     ]
+    ],
+    "pos_x": [
+     [
+      "95"
+     ]
+    ],
+    "pos_y": [
+     [
+      "223"
+     ]
+    ],
+    "flags": [
+     [
+      "visible",
+      "d3d",
+      "refresh"
+     ]
+    ],
+    "layer": [
+     [
+      "-1"
+     ]
+    ]
+   }
+  },
+  "Pwr4": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "Cube"
+     ]
+    ],
+    "pos_x": [
+     [
+      "120"
+     ]
+    ],
+    "pos_y": [
+     [
+      "223"
+     ]
+    ],
+    "flags": [
+     [
+      "visible",
+      "d3d",
+      "refresh"
+     ]
+    ],
+    "layer": [
+     [
+      "-1"
+     ]
+    ]
+   }
+  },
+  "Pwr5": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "Cube"
+     ]
+    ],
+    "pos_x": [
+     [
+      "145"
+     ]
+    ],
+    "pos_y": [
+     [
+      "223"
+     ]
+    ],
+    "flags": [
+     [
+      "visible",
+      "d3d",
+      "refresh"
+     ]
+    ],
+    "layer": [
+     [
+      "-1"
+     ]
+    ]
+   }
+  },
+  "Pwr6": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "Cube"
+     ]
+    ],
+    "pos_x": [
+     [
+      "170"
+     ]
+    ],
+    "pos_y": [
+     [
+      "223"
+     ]
+    ],
+    "flags": [
+     [
+      "visible",
+      "d3d",
+      "refresh"
+     ]
+    ],
+    "layer": [
+     [
+      "-1"
+     ]
+    ]
+   }
+  },
+  "bHit1": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "Hit1"
+     ]
+    ],
+    "pos_x": [
+     [
+      "45"
+     ]
+    ],
+    "pos_y": [
+     [
+      "248"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh"
+     ]
+    ],
+    "layer": [
+     [
+      "-1"
+     ]
+    ]
+   }
+  },
+  "bHit2": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "Hit1"
+     ]
+    ],
+    "pos_x": [
+     [
+      "84"
+     ]
+    ],
+    "pos_y": [
+     [
+      "248"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh"
+     ]
+    ],
+    "layer": [
+     [
+      "-1"
+     ]
+    ]
+   }
+  },
+  "bHit3": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "Hit1"
+     ]
+    ],
+    "pos_x": [
+     [
+      "125"
+     ]
+    ],
+    "pos_y": [
+     [
+      "248"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh"
+     ]
+    ],
+    "layer": [
+     [
+      "-1"
+     ]
+    ]
+   }
+  },
+  "bHit4": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "Hit1"
+     ]
+    ],
+    "pos_x": [
+     [
+      "165"
+     ]
+    ],
+    "pos_y": [
+     [
+      "248"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh"
+     ]
+    ],
+    "layer": [
+     [
+      "-1"
+     ]
+    ]
+   }
+  },
+  "GUI": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "Panel"
+     ]
+    ],
+    "layer": [
+     [
+      "-1"
+     ]
+    ],
+    "pos_x": [
+     [
+      "0"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "visible",
+      "overlay"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_mouse_left"
+    },
+    "value": {
+     "t": "id",
+     "name": "createspark"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_tab"
+    },
+    "value": {
+     "t": "call",
+     "name": "cheat",
+     "args": []
+    }
+   }
+  }
+ ],
  "skip_count": 1,
  "skipped": [
   "line 885: stray '}' at top level (skipped)"

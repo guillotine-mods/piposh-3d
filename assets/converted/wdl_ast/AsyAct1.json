@@ -9,6 +9,36 @@
  ],
  "globals": [
   {
+   "name": "pencils",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill2"
+   },
+   "init_list": false
+  },
+  {
+   "name": "dime",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill3"
+   },
+   "init_list": false
+  },
+  {
+   "name": "CurrentInv",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill4"
+   },
+   "init_list": false
+  },
+  {
    "name": "video_mode",
    "kind": "var",
    "array_size": null,
@@ -17627,6 +17657,362 @@
   "bkey8B": "key8B.pcx",
   "bkey9B": "key9B.pcx"
  },
+ "panels": {
+  "Phon": {
+   "kind": "text",
+   "fields": {
+    "string": [
+     [
+      "\"         \""
+     ]
+    ],
+    "pos_x": [
+     [
+      "60"
+     ]
+    ],
+    "pos_y": [
+     [
+      "260"
+     ]
+    ],
+    "font": [
+     [
+      "digit_font"
+     ]
+    ],
+    "layer": [
+     [
+      "4"
+     ]
+    ]
+   }
+  },
+  "pPhone": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "0"
+     ]
+    ],
+    "pos_y": [
+     [
+      "245"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "bmap": [
+     [
+      "bPhone"
+     ]
+    ],
+    "layer": [
+     [
+      "3"
+     ]
+    ],
+    "button": [
+     [
+      "43",
+      "74",
+      "bkey1B",
+      "bkey1",
+      "bKey1",
+      "AddNum1",
+      "null",
+      "null"
+     ],
+     [
+      "76",
+      "74",
+      "bkey2B",
+      "bkey2",
+      "bKey2",
+      "AddNum2",
+      "null",
+      "null"
+     ],
+     [
+      "113",
+      "74",
+      "bkey3B",
+      "bkey3",
+      "bKey3",
+      "AddNum3",
+      "null",
+      "null"
+     ],
+     [
+      "43",
+      "110",
+      "bkey4B",
+      "bkey4",
+      "bKey4",
+      "AddNum4",
+      "null",
+      "null"
+     ],
+     [
+      "76",
+      "110",
+      "bkey5B",
+      "bkey5",
+      "bKey5",
+      "AddNum5",
+      "null",
+      "null"
+     ],
+     [
+      "113",
+      "110",
+      "bkey6B",
+      "bkey6",
+      "bKey6",
+      "AddNum6",
+      "null",
+      "null"
+     ],
+     [
+      "43",
+      "144",
+      "bkey7B",
+      "bkey7",
+      "bKey7",
+      "AddNum7",
+      "null",
+      "null"
+     ],
+     [
+      "76",
+      "144",
+      "bkey8B",
+      "bkey8",
+      "bKey8",
+      "AddNum8",
+      "null",
+      "null"
+     ],
+     [
+      "113",
+      "144",
+      "bkey9B",
+      "bkey9",
+      "bKey9",
+      "AddNum9",
+      "null",
+      "null"
+     ],
+     [
+      "76",
+      "176",
+      "bkey0B",
+      "bkey0",
+      "bKey0",
+      "AddNum0",
+      "null",
+      "null"
+     ]
+    ]
+   }
+  },
+  "InventoryName": {
+   "kind": "text",
+   "fields": {
+    "layer": [
+     [
+      "5"
+     ]
+    ],
+    "pos_x": [
+     [
+      "340"
+     ]
+    ],
+    "pos_y": [
+     [
+      "380"
+     ]
+    ],
+    "font": [
+     [
+      "standard_font"
+     ]
+    ],
+    "string": [
+     [
+      "\"              XFLK JL YJA              \""
+     ]
+    ],
+    "flags": [
+     [
+      "center_x"
+     ]
+    ]
+   }
+  },
+  "Inventory": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "-10"
+     ]
+    ],
+    "pos_y": [
+     [
+      "20"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "bmap": [
+     [
+      "large"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ],
+    "button": [
+     [
+      "450",
+      "300",
+      "switch2",
+      "switch1",
+      "switch2",
+      "ChangeItem",
+      "null",
+      "null"
+     ],
+     [
+      "200",
+      "200",
+      "choose",
+      "null",
+      "null",
+      "PickItem",
+      "null",
+      "null"
+     ]
+    ]
+   }
+  },
+  "GUI": {
+   "kind": "panel",
+   "fields": {
+    "layer": [
+     [
+      "3"
+     ]
+    ],
+    "pos_x": [
+     [
+      "1"
+     ]
+    ],
+    "pos_y": [
+     [
+      "1"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "visible",
+      "overlay"
+     ]
+    ],
+    "button": [
+     [
+      "1",
+      "1",
+      "caseon",
+      "caseoff",
+      "caseon",
+      "Switchcase",
+      "null",
+      "null"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_F1"
+    },
+    "value": {
+     "t": "id",
+     "name": "changeview"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_F2"
+    },
+    "value": {
+     "t": "call",
+     "name": "switchcase",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_F3"
+    },
+    "value": {
+     "t": "call",
+     "name": "ReleaseItem",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_u"
+    },
+    "value": {
+     "t": "id",
+     "name": "clickme"
+    }
+   }
+  }
+ ],
  "skip_count": 2,
  "skipped": [
   "line 1247: stray '}' at top level (skipped)",

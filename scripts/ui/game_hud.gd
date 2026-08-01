@@ -8,6 +8,15 @@ signal skip_line_pressed
 const DESIGN := Vector2(640, 480)
 const GFX := "res://assets/converted/gfx/"
 
+## Hand-transcribed from the raw source bitmaps (`pSom`'s `bmap`, viewed
+## directly -- there's no string data to extract, it's baked-in pixel
+## art), keyed by the texture filename `_set_tex()` loads. Debug-only, so
+## the "not showing on screen" report (2026-08-01) has something concrete
+## to check against besides node properties.
+const SUBTITLE_TEXT := {
+	"Ami.png": "אי שם בפאתי רחוב בוגרשוב בסמטוך למשחק של עמי הבמאי...",
+}
+
 var mouse_look := true  # mouse_mode==0 in WDL
 var show_debug := false
 
@@ -34,9 +43,12 @@ var _ovr_base_x := 223.0
 var _som_base_y := 450.0
 var _ovr_x := 223.0
 var _crawl_active := false
-var _blink_t := 0.0
-var _slide_t := 0.0
+var _blink_t := 0.0  # my.skill35 in Studio/Start.wdl: drives pOvr's blink.
+var _hold_t := 0.0  # my.skill34: gates the downward scroll behind a hold.
 var _subtitle_kind := ""  # start | studio | ""
+var _subtitle_heartbeat_t := 0.0
+var _logged_reveal_done := false
+var _logged_scroll_started := false
 
 
 func _ready() -> void:
@@ -124,10 +136,14 @@ func setup_start_subtitles() -> void:
 	_p_ovr.visible = true
 	_p_shkufit.visible = false
 	_ovr_x = _ovr_base_x
-	_slide_t = 0.0
+	_hold_t = 0.0
 	_blink_t = 0.0
+	_subtitle_heartbeat_t = 0.0
+	_logged_reveal_done = false
+	_logged_scroll_started = false
 	_crawl_active = true
 	_layout_subtitles()
+	_log_subtitle_setup("Somewher.png")
 
 
 func setup_studio_subtitles() -> void:
@@ -138,13 +154,60 @@ func setup_studio_subtitles() -> void:
 	_p_ovr.visible = true
 	_p_shkufit.visible = false
 	_ovr_x = _ovr_base_x
-	_slide_t = 0.0
+	_hold_t = 0.0
 	_blink_t = 0.0
+	_subtitle_heartbeat_t = 0.0
+	_logged_reveal_done = false
+	_logged_scroll_started = false
 	_crawl_active = true
 	_layout_subtitles()
+	_log_subtitle_setup("Ami.png")
+
+
+## Full lifecycle logging under one tag, all under PiposhDebug.ENABLED so
+## it can be switched off in one place -- see the "not showing on screen"
+## report (2026-08-01). Logs the actual text content (SUBTITLE_TEXT, hand-
+## transcribed from the raw bitmap -- there's no string to read from the
+## running game itself) plus every measurement needed to tell "not
+## rendering" apart from "rendering somewhere the eye isn't looking".
+func _log_subtitle_setup(som_file: String) -> void:
+	var text: String = SUBTITLE_TEXT.get(som_file, "(no transcription on file for %s)" % som_file)
+	PiposhDebug.log_msg(
+		"hud-event",
+		"subtitle START kind=%s text=\"%s\" pSom_tex=%s(%s) pOvr_tex=%s layer=%d root_scale=%s root_pos=%s viewport=%s"
+		% [
+			_subtitle_kind, text,
+			som_file, (_p_som.texture.get_size() if _p_som.texture else "MISSING"),
+			(_p_ovr.texture != null),
+			layer, _root.scale, _root.position,
+			get_viewport().get_visible_rect().size,
+		]
+	)
+	_log_subtitle_frame("setup")
+
+
+## Position/visibility/z-order snapshot -- call at any point to see
+## exactly where the subtitle actually is in both design and real screen
+## space, and what's drawn immediately around/after it in the tree.
+func _log_subtitle_frame(context: String) -> void:
+	var p_som_screen: Vector2 = _root.position + _p_som.position * _scale
+	var p_ovr_screen: Vector2 = _root.position + _p_ovr.position * _scale
+	PiposhDebug.log_msg(
+		"hud-event",
+		("subtitle %s: pSom design_pos=%s screen_pos=%s visible=%s | " +
+		"pOvr design_pos=%s screen_pos=%s visible=%s | scale=%.3f " +
+		"hold_t=%.2f blink_t=%.2f ovr_x=%.1f")
+		% [
+			context,
+			_p_som.position, p_som_screen, _p_som.visible,
+			_p_ovr.position, p_ovr_screen, _p_ovr.visible,
+			_scale, _hold_t, _blink_t, _ovr_x,
+		]
+	)
 
 
 func clear_subtitles() -> void:
+	PiposhDebug.log_msg("hud-event", "subtitle CLEAR kind=%s" % _subtitle_kind)
 	_crawl_active = false
 	_subtitle_kind = ""
 	_p_som.visible = false
@@ -168,6 +231,15 @@ func setup_town_bio() -> void:
 
 func set_zoom_digit(zoom: int) -> void:
 	_zoom_label.text = "%02d" % clampi(zoom, 1, 14)
+
+
+## WdlInterpreter's Acknex `panel`/`text` HUD objects (health bars, hit
+## icons, win/lose screens, ...) mount here -- same design-space (640x480,
+## `_scale`-applied) root every other HUD element already uses, so panel
+## `pos_x`/`pos_y` values from the original WDL line up without any extra
+## conversion.
+func get_panel_root() -> Control:
+	return _root
 
 
 func set_range_hud(text: String) -> void:
@@ -355,6 +427,20 @@ func _dialog_lines(index: int) -> Array[String]:
 				"תן לי מקום להניח את הרגלים שלי! איפה אתה מושיב אותי?",
 				"בלבוסטע אכפת לך שאני אשים את האגרטל הזה על הראש שלך?",
 			]
+		4:
+			# Range.wdl DialogIndex 4 (DIalog.wdl) -- decoded 2026-08-01, was
+			# never transcribed (fell through to the "…" placeholder, see
+			# docs/SESSION_LOG.md). DIalog.wdl stores these reversed and run
+			# through a per-letter Hebrew-alphabet substitution (a→א, b→ב,
+			# c→ג, ... in alphabetical order -- NOT a keyboard layout, a
+			# straight a-z→א-ת cipher) instead of real Hebrew text, decoded
+			# by cross-referencing the already-solved DialogIndex 0-3 pairs
+			# above to recover the exact mapping, then applying it here.
+			return [
+				"ניחוש פרוע! אתה לא יודע איך להטיס מטוס",
+				"אוך! תן לי כבר אני אנהג במקומך",
+				"אגב קרופניק אולי תשפיע בשבילי לקבל סיכת קברניט מה?!",
+			]
 		_:
 			return ["…", "…", "…"]
 
@@ -375,20 +461,53 @@ func _update_crawl(delta: float) -> void:
 	if _ovr_x > stop_x:
 		_ovr_x -= 8.0 * delta * 16.0  # ~time units → seconds
 		_layout_subtitles()
+		_subtitle_heartbeat_t += delta
+		if _subtitle_heartbeat_t > 1.0:
+			_subtitle_heartbeat_t = 0.0
+			_log_subtitle_frame("reveal in progress")
 		return
-	_slide_t += delta
+	if not _logged_reveal_done:
+		_logged_reveal_done = true
+		_log_subtitle_frame("reveal done, holding")
+	# `my.skill34`/`my.skill35` in the source: skill35 drives the blink,
+	# skill34 gates the downward scroll behind a ~60-tick (3.75s) HOLD --
+	# `pOvr.pos_y`/`pSom.pos_y` only start incrementing once skill34 > 60,
+	# so the fully-revealed line sits still and readable for ~3.75s before
+	# any scrolling starts. Missing that gate here made the line start
+	# sliding away within under 2 seconds of finishing its reveal --
+	# functionally still "shown", but easy to miss entirely at that speed.
+	_hold_t += delta
 	_blink_t += delta
-	var dy := _slide_t * 16.0  # slow downward crawl
-	_p_som.position.y = (_som_base_y + dy) * _scale
-	_p_ovr.position.y = (_som_base_y + dy) * _scale
+	if _hold_t > 60.0 / 16.0:
+		if not _logged_scroll_started:
+			_logged_scroll_started = true
+			_log_subtitle_frame("hold done, scrolling away")
+		var dy := (_hold_t - 60.0 / 16.0) * 16.0  # slow downward crawl
+		# Design-space, unscaled -- see _layout_subtitles()'s comment.
+		_p_som.position.y = _som_base_y + dy
+		_p_ovr.position.y = _som_base_y + dy
 	if _blink_t > 5.0 / 16.0:
 		_blink_t = 0.0
 		_p_ovr.visible = not _p_ovr.visible
 
 
 func _layout_subtitles() -> void:
-	_p_som.position = Vector2(0, _som_base_y * _scale)
-	_p_ovr.position = Vector2(_ovr_x * _scale, _som_base_y * _scale)
+	# Design-space coordinates, unscaled -- `_p_som`/`_p_ovr` are children
+	# of `_root`, which already carries `_root.scale = Vector2(_scale,
+	# _scale)` (see _layout()). Every other element in this file (
+	# `_zoom_label`, `_range_label`, dialog buttons, ...) sets `.position`
+	# this same unscaled way for that exact reason. This function used to
+	# multiply by `_scale` a SECOND time here, so at any real viewport
+	# size other than exactly 640x480 (i.e. essentially always) the
+	# subtitle rendered `_scale` times further down/right than intended --
+	# e.g. at `_scale=2.0`, `_som_base_y=450` design-space landed at
+	# world y=1800 (plus `_root.position`), off the bottom of any normal
+	# window. Found via the [hud-event] logging added for the "not
+	# showing on screen" report (2026-08-01) -- its very first
+	# `screen_pos` log line showed the panel positioned below the visible
+	# viewport entirely.
+	_p_som.position = Vector2(0, _som_base_y)
+	_p_ovr.position = Vector2(_ovr_x, _som_base_y)
 	_fit(_p_som)
 	_fit(_p_ovr)
 
@@ -402,6 +521,12 @@ func _layout() -> void:
 		(vp.y - DESIGN.y * _scale) * 0.5
 	)
 	_root.size = DESIGN
+	if _crawl_active:
+		PiposhDebug.log_msg(
+			"hud-event",
+			"subtitle _layout(): viewport=%s scale=%.4f root_pos=%s"
+			% [vp, _scale, _root.position]
+		)
 	_fit(_bio)
 	_fit(_p_shkufit)
 	_fit(_dialog_bg)

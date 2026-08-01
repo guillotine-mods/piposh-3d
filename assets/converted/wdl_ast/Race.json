@@ -439,6 +439,56 @@
    "init_list": true
   },
   {
+   "name": "Lap",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill30"
+   },
+   "init_list": false
+  },
+  {
+   "name": "CheckPoint",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill25"
+   },
+   "init_list": false
+  },
+  {
+   "name": "Speed",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill26"
+   },
+   "init_list": false
+  },
+  {
+   "name": "Accel",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill12"
+   },
+   "init_list": false
+  },
+  {
+   "name": "Pos",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill23"
+   },
+   "init_list": false
+  },
+  {
    "name": "MoviePlaying",
    "kind": "var",
    "array_size": null,
@@ -21151,8 +21201,104 @@
  "bmaps": {
   "bRace": "Racel.pcx"
  },
- "skip_count": 1,
+ "panels": {},
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_t"
+    },
+    "value": {
+     "t": "call",
+     "name": "saystam",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_F1"
+    },
+    "value": {
+     "t": "id",
+     "name": "ChangeCamera"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_F2"
+    },
+    "value": {
+     "t": "id",
+     "name": "togglegui"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_tab"
+    },
+    "value": {
+     "t": "id",
+     "name": "cheat"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_cuu"
+    },
+    "value": {
+     "t": "id",
+     "name": "Accelerate"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_cud"
+    },
+    "value": {
+     "t": "id",
+     "name": "Brake"
+    }
+   }
+  }
+ ],
+ "skip_count": 3,
  "skipped": [
+  "line 85: expected a name, got '.' ('.')",
+  "line 110: stray '}' at top level (skipped)",
   "line 1502: stray '}' at top level (skipped)"
  ]
 }

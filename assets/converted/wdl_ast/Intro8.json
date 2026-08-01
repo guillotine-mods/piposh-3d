@@ -143,6 +143,16 @@
     "v": "                                       VFNFKU JVUB XJTC FNHNA TUS YJA TUS UJ      VFILFU EJQAM VFNFKU JVU     VFLENM YA'CJMGFQGFQ VA         VFTSL LFKJ LKE YAK                    VFTSL LFKJ LKE                                                           VFTSL LFKJ LKE                            YBUJB WLU TCFAL VVL AB JNA EKH JIFM"
    },
    "init_list": false
+  },
+  {
+   "name": "Anim",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill22"
+   },
+   "init_list": false
   }
  ],
  "functions": {
@@ -7226,6 +7236,149 @@
   "Vilon2": "Vilon2.pcx",
   "Stage": "Stage.pcx"
  },
+ "panels": {
+  "pLoading2": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bLoading2"
+     ]
+    ],
+    "layer": [
+     [
+      "21"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "visible"
+     ]
+    ]
+   }
+  },
+  "Ktuvit": {
+   "kind": "text",
+   "fields": {
+    "layer": [
+     [
+      "2"
+     ]
+    ],
+    "pos_x": [
+     [
+      "0"
+     ]
+    ],
+    "pos_y": [
+     [
+      "465"
+     ]
+    ],
+    "font": [
+     [
+      "standard_font"
+     ]
+    ],
+    "string": [
+     [
+      "KTV1"
+     ]
+    ],
+    "flags": [
+     [
+      "visible"
+     ]
+    ]
+   }
+  },
+  "pStage": {
+   "kind": "panel",
+   "fields": {
+    "layer": [
+     [
+      "1"
+     ]
+    ],
+    "bmap": [
+     [
+      "Stage"
+     ]
+    ],
+    "pos_y": [
+     [
+      "450"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "visible"
+     ]
+    ]
+   }
+  },
+  "pVil1": {
+   "kind": "panel",
+   "fields": {
+    "layer": [
+     [
+      "2"
+     ]
+    ],
+    "pos_x": [
+     [
+      "-20"
+     ]
+    ],
+    "bmap": [
+     [
+      "Vilon1"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "overlay",
+      "visible"
+     ]
+    ]
+   }
+  },
+  "pVil2": {
+   "kind": "panel",
+   "fields": {
+    "layer": [
+     [
+      "2"
+     ]
+    ],
+    "pos_x": [
+     [
+      "320"
+     ]
+    ],
+    "bmap": [
+     [
+      "Vilon2"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "overlay",
+      "visible"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [],
  "skip_count": 1,
  "skipped": [
   "line 533: stray '}' at top level (skipped)"

@@ -3648,6 +3648,8 @@
   "smoke_map": "blitz.pcx",
   "gbrass_map": "gbrass.pcx"
  },
+ "panels": {},
+ "top_level_stmts": [],
  "skip_count": 2,
  "skipped": [
   "line 21: stray '}' at top level (skipped)",

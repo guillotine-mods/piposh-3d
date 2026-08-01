@@ -3460,3 +3460,855 @@ these entities is untouched — Studio's own `Dummy` still plays its
 ambient sound loop correctly, it just doesn't render a mesh anymore. Full
 regression (`smoke_dispatch` 19/19, `smoke_click_survey` 16 levels/307
 entities) clean after both fixes; `git status` zero deletions throughout.
+
+## 2026-08-01 — Shiks dialogue loop, take two: the 2026-07-31 Bumpin fix's
+## own verification only proved dispatch worked, never that real NPC
+## movement would ever reach it -- it didn't
+
+User reported: after the first Shiks dialogue choice, "whatever we
+choose, it either don't 'go back' to the dialogue, or tries to continue
+to the next part (animation fires off) then the game gets back to the
+previous dialogue instead of doing the camera movement." Matches `action
+Piposh2`'s own structure exactly: every branch of the first prompt
+(`DialogIndex==1`) falls through to the same `ShowDialog()` re-open
+unless `Piposh.skill2` reaches 2, which only happens via `action Bumped`
+-- the walk-into-it collision the previous session's fix was supposed to
+enable.
+
+**Root cause: the previous fix's own test never actually tested real
+movement.** `tools/smoke_shiks_bumpin.gd` called
+`_on_impact_body_entered()` directly -- proved the *dispatch* (event
+fires, `Piposh.skill2` gets set) works, never that anything would
+actually *call* it during real gameplay. It doesn't: every WDL entity
+(`WmbLevelLoader._spawn_entity()`) is a plain `Node3D`, moved by
+`actor_move()` writing `global_position` directly -- Godot's physics
+engine has zero awareness of that, so `Area3D.body_entered` (which only
+fires for real `PhysicsBody3D` nodes) can NEVER fire for an NPC like
+Piposh2 walking into something, only for the real player's own
+`CharacterBody3D`. Built a real end-to-end test this time,
+`tools/smoke_shiks_bumpin_proximity.gd`: physically move Piposh2's
+`global_position` toward the Bumpin entity over real frames (the same
+thing `actor_move()` does, no interpreter shortcut) and check whether the
+existing mechanism picks it up on its own. It didn't -- confirming the
+gap for real before trying to fix it.
+
+Added the missing half: `WdlInterpreter._impact_zones` +
+`_check_impact_proximity()`, called from the existing per-frame
+`_process()`. Plain distance check between every `enable_impact`-tagged
+entity and every other live entity in the level, edge-triggered
+(`_impact_touching` dict per zone, fires once per approach, not every
+frame spent overlapping) to match `body_entered`'s own semantics. Kept
+the original Area3D/`body_entered` path too -- still correct for the real
+player's actual physics-based movement, just not sufcient on its own.
+
+**Second bug found while wiring the proximity check up, same session:**
+first attempt reused `_clickable_center_offset()` (the AABB-centering
+added for the "poster is a bit low" fix) for the impact zone's center.
+Wrong call for this case -- that centering is correct for raycasting a
+*visible* mesh, but "walking into it" is a position-to-position proximity
+check, and Shiks' own `Snail` (the entity `action Bumpin` is on) has a
+424x344x89-unit mesh, so its AABB center sits ~100 units away from the
+entity's own origin. That silently moved the whole trigger zone into
+empty space -- confirmed by rerunning `smoke_shiks_bumpin_proximity.gd`
+with the zone's actual computed offset logged: Piposh2 walked to within
+0.2 units of Snail's origin and the zone (centered ~100 units off) never
+fired. Fixed by dropping the AABB offset for impact zones entirely --
+plain origin, matching how every other entity's position is measured.
+Reran the same test after the fix: fires correctly at frame 176, 27.7
+units from Snail's origin (within the 28-unit radius), via real simulated
+movement, not a shortcut.
+
+**Honest scope note:** verified the proximity mechanism itself is now
+real and correct. NOT independently verified: whether Piposh2's actual,
+natural walk direction during real gameplay (driven by whatever `my.pan`
+happens to be at that point in the scene, since `action Piposh2`'s
+`skill20==1` walk block has no steering/aim logic of its own) actually
+carries it close enough to Snail to trigger the now-working proximity
+check. The test above walked Piposh2 in a straight line directly at the
+target to isolate and confirm the proximity mechanism itself; it doesn't
+prove the natural in-game walk direction lands within range. Needs a real
+playtest to close the loop on that part.
+
+Full regression (`smoke_dispatch` 19/19, `smoke_click_survey` 16
+levels/307 entities) clean; `git status` zero deletions.
+
+## 2026-08-01 (second) — subtitle mechanism fully explained, one real
+## timing bug found and fixed: missing hold delay before scroll-away
+
+User pointed at `bmap bOvr = <Someover.bmp>;` and asked to understand the
+mechanism properly rather than keep guessing at the visibility symptom.
+Read `action Ami` line by line and viewed the raw source bitmaps directly
+(bypassing the whole conversion pipeline) to confirm the actual mechanic,
+not assumed:
+- `pSom` (`Ami.pcx`) is the real message: green Hebrew text on a solid
+  black strip, fixed at x=0, never moves horizontally.
+- `pOvr` (`Someover.bmp`) is NOT separate text -- viewed the raw 417x23
+  bitmap directly: almost entirely solid black (matching `pSom`'s own
+  background, so it visually blends), with one small green accent at its
+  right edge. It's a wipe MASK, layered on top (`layer=3` vs `pSom`'s
+  `layer=2`).
+- Phase 1 (reveal): `pOvr` starts covering `pSom`'s right ~417px and
+  slides left (`pos_x -= 8*time`) until `pos_x <= -310`. Since the
+  covering window's right edge recedes from 640 toward 107, this reveals
+  `pSom`'s text right-to-left -- matching Hebrew reading order, a
+  scripted typewriter effect, not a static image ever fully visible at
+  once during the reveal.
+- Phase 2 (hold): once the slide stops, `my.skill34`/`my.skill35`
+  (separate counters) start. `skill35` toggles `pOvr.visible` every ~5
+  ticks (~0.3s) -- a blinking cursor sitting at the end of the revealed
+  line. `skill34` does nothing for the first 60 ticks (~3.75s) -- **this
+  gate was missing from the Godot port.**
+- Phase 3 (scroll away): only once `skill34 > 60` do `pOvr.pos_y`/
+  `pSom.pos_y` start incrementing, drifting the whole line down and off
+  the visible strip.
+
+`GameHud._update_crawl()` had phases 1 and the blink correct, but started
+the downward scroll (`dy = _slide_t * 16.0`) the instant phase 2 began,
+with no hold gate -- the fully-revealed line started sliding away within
+under 2 real seconds of finishing its reveal instead of holding for
+~3.75s, on top of the ~4.16s the reveal itself takes. Renamed
+`_slide_t` -> `_hold_t` for clarity and gated the scroll behind it
+(`dy = (_hold_t - 60.0/16.0) * 16.0`, only once `_hold_t > 60.0/16.0`),
+matching `my.skill34`'s own gated-increment shape exactly.
+
+Extended `tools/smoke_studio_subtitle.gd` with a real timing check (not
+just a property check, which couldn't have caught this): waits 6.5
+real-frame-seconds (comfortably past the ~4.16s slide, comfortably short
+of the ~7.9s total before scroll should start) and confirms
+`pSom.position.y` hasn't moved from its base — would have failed under
+the pre-fix code (which have already started scrolling by ~37 units at
+that point per the old, ungated formula). Full regression
+(`smoke_dispatch` 19/19) clean; `git status` zero deletions.
+
+## 2026-08-01 (third) — the ACTUAL "not showing on screen" cause, found
+## immediately once real logging existed: a double-scale position bug,
+## present since this code was written, unrelated to every earlier theory
+
+User: still not visible, asked for `[hud-event]` logging plus the actual
+text content printed, instead of more guessing. Added
+`GameHud.SUBTITLE_TEXT` (hand-transcribed from the raw source bitmap --
+there's no string to read, it's baked pixel art) and full lifecycle
+logging under `PiposhDebug.log_msg("hud-event", ...)`: setup (kind, text,
+texture load status, layer, root scale/position, viewport size),
+per-phase snapshots (reveal in progress, heartbeat every 1s; reveal done;
+hold done/scrolling), and a `_layout()`-triggered log whenever a
+subtitle is active. Design goal: enough to reconstruct the whole picture
+without needing eyes on a real window.
+
+**The very first log line, from the very first test run, showed it:**
+`pSom design_pos=(0.0, 900.0) screen_pos=(0.0, 1960.0)` against a
+1280-tall viewport -- the panel was positioned entirely below the visible
+screen. `_layout_subtitles()` set `_p_som.position = Vector2(0,
+_som_base_y * _scale)` -- but `_p_som` is a child of `_root`, and `_root`
+already carries `_root.scale = Vector2(_scale, _scale)` (set in
+`_layout()`). Every other element in this file (`_zoom_label`,
+`_range_label`, dialog buttons, ...) sets `.position` in plain unscaled
+design-space coordinates for exactly this reason -- `_layout_subtitles()`
+was the one place that multiplied by `_scale` a SECOND time, and the
+scroll-away code in `_update_crawl()` had the identical bug
+(`_p_som.position.y = (_som_base_y + dy) * _scale`). At `_scale=1.0`
+(viewport exactly 640x480) this is invisible -- 450*1=450, correct by
+coincidence. At any other scale (i.e. essentially every real window size
+this game will ever actually run at) the panel lands `_scale` times
+further down than intended. This has been wrong since the subtitle code
+was first written, completely unrelated to the mouse-look bug, the
+colorkey bug, the wiring-never-called bug, or the missing-hold-delay bug
+found across the prior four rounds chasing this same report -- none of
+those were wrong to fix, but none of them were reachable as "the" bug
+until the panel was actually on screen to see them fail at.
+
+Fixed both call sites to use plain design-space coordinates, matching
+the rest of the file. Re-ran with the same logging: `screen_pos=(0.0,
+1060.0)` against the same 1280-tall viewport -- comfortably on screen.
+Full regression: `smoke_dispatch` 19/19 clean; `smoke_click_survey` was
+still running after several minutes on this session's own machine load
+(observed spending a long stretch re-invoking a single `SparkHit`
+entity's event repeatedly -- matches this project's previously-documented
+ambient busy-loop/CPU-contention slowness, not a new regression: nothing
+this fix touches is reachable from click/event dispatch at all) --
+left running in the background rather than block on an unrelated,
+already-known-flaky check; `smoke_dispatch`'s clean pass plus the direct
+before/after position log are sufficient confirmation for this specific
+fix. `git status` zero deletions.
+
+## 2026-08-01 (fourth) — Shiks dialogue loop, take three: found via the
+## real dialogue-choice-driven flow, root cause was a fixed ~80-unit
+## vertical gap the 2026-07-31 impact fix's sphere check could never close
+
+User pasted the full `original/piposh3d/Shiks.wdl` source and asked to
+check the *parser* specifically. Checked `assets/converted/wdl_ast/
+Shiks.json`'s `skip_count`/`skipped`: exactly one skip, a genuine stray
+`}` in `function Blink()` (a real typo in the recovered source, lines
+404-412 -- 4 `{` vs 5 `}`). Traced it by hand: the parser correctly
+captures all three of `Blink()`'s intended if-statements before the
+orphaned brace and safely skips it with zero cascading damage -- confirmed
+via AST dump that all 24 actions and 4 functions parse completely,
+including `action Piposh2`'s full DialogChoice/DialogIndex structure.
+**Real, pre-existing artifact; not the cause of the reported bug.**
+
+Read `action Piposh2` closely: picking DialogChoice==3 at DialogIndex==1
+does *not* advance DialogIndex. It plays `SHK007.WAV`, sets
+`my.skill20=1` (which makes the entity walk via `actor_move()` while the
+line plays), and once the voice finishes, calls `ShowDialog()` again --
+reopening the *same* DialogIndex==1 prompt. This is correct, intended
+design, not a bug: the real advance happens by *physically walking into*
+`Bumpin` (`action Bumpin`: `enable_impact=on`, `event=Bumped`), which sets
+`Piposh.skill2=2`, waking `action MyCamera`'s scripted path-follow flight
+that ends with `DialogIndex=2; ShowDialog();`. So "loops on the same
+prompt while Piposh walks" is exactly what the original game does too --
+the bug is specifically that the walk-into-Bumpin trigger never fires in
+this port.
+
+Wrote `tools/smoke_shiks_walk_to_bumpin_real.gd` to drive the *actual*
+reported flow (repeated `hud.dialog_choice.emit(3)`, not manual position
+manipulation, unlike the 2026-07-31 proximity test). Result: Piposh
+closes to distance 143.4 on round 1, then overshoots and keeps walking
+away in a straight line every subsequent round (`Piposh.skill2` stuck at
+1.0 for all 15 rounds) -- confirming the 2026-07-31 impact-proximity fix
+(`_check_impact_proximity()`) dispatches correctly when invoked directly
+but still never fires for this *specific* real walk.
+
+Root cause, confirmed via `assets/converted/levels/Shiks.json` origins:
+`Piposh2` spawns at Godot `(-893, 8, 0)` with `pan=0`, so
+`_do_actor_move()`'s straight-line translation (`dir=(cos(pan),0,-sin(pan))`,
+no floor tracking -- this port's movers are plain `Node3D`, not physics
+bodies, so there is no floor-snap the way the original engine's
+`actor_move()` does it for free) never changes Y or Z: Piposh walks
+dead-flat at Y=8, Z=0 forever. `Bumpin` sits at `(-149, -69, 23)`; nearby
+`StandHere` is at `(-475, -73, 8)`, confirming that whole room really is
+~80 units lower, not a data error. The closest possible 3D distance along
+Piposh's flat path to Bumpin's origin is `sqrt(77^2 + 23^2) ≈ 80.4` units
+-- comfortably outside the impact zone's 28-unit sphere radius, so the
+`_check_impact_proximity()` sphere check added 2026-07-31 could *never*
+close, no matter how long the walk continued.
+
+Fixed `_check_impact_proximity()` (`scripts/engine/wdl_interpreter.gd`)
+to compare horizontal (XZ-plane) distance only, ignoring Y, for the
+NPC-vs-entity proximity path specifically -- the real player's
+`Area3D`/`body_entered` path is untouched (the player is a genuine
+`CharacterBody3D` and floor-snaps correctly on its own). This is a
+targeted fix for the specific gap (no-floor-snap movers), not a claim
+that floor-snapping the movers generally is unneeded -- that would be the
+fuller root-cause fix but is a much larger, riskier change (raycasting
+against level collision geometry, touching every `actor_move()` call
+site across the corpus) that isn't justified by this one report.
+
+Verified: extended `smoke_shiks_walk_to_bumpin_real.gd` to check
+`Piposh.skill2` reaching 2 (Bumped fired) rather than requiring
+`Run("Plane.exe")` (a different dialogue choice under DialogIndex==2,
+out of scope here). Re-ran: `bumped=true after 1 round(s)`,
+`final Piposh.skill2=2.0`. Re-ran `smoke_shiks_bumpin_proximity.gd`
+(2026-07-31's regression test, which places Bumpin/Piposh at matching Y
+by construction) unchanged: still passes, `frame=176: skill2 became 2.0
+(distance to Bumpin=27.5)`. `git status` zero deletions.
+
+## 2026-08-01 (fifth) — two more Shiks reports in the same batch: a
+## "squirrel" that shouldn't be visible yet, and "weird noise... plays
+## non stop"; both real bugs, both fixed generically (not per-level hacks)
+
+**Squirrel (`action Weasel`, Weasel.MDL).** Only ever does
+`my.invisible = off` when `CamShow == 6`, with no initializer and no
+re-hide branch. Checked Shiks.json's raw WED flags for this entity: 256
+(bit0 clear) -- genuinely authored visible, not a flag-decode bug, so the
+model really does sit in the open from frame 1 in both the original game
+and this port; it's just that this port's `scan_path` waypoint-following
+(an *approximate* reconstruction of the original camera path, see
+`_do_scan_path()`) can plausibly point the camera at it before its
+CamShow==6 reveal, where the original's exact path may not have.
+Considered a Shiks-only hardcoded fix but `action Weasel` doesn't exist
+anywhere else in the corpus (`grep -r "action Weasel"` -- one hit), so a
+hardcoded special case would be exactly the kind of per-level branch this
+project has been deleting, not adding. Fixed generically instead: new
+`WdlInterpreter._seed_reveal_only_hidden()`, called from `begin_level()`
+before each entity's coroutine starts, statically scans the action's own
+AST body (however deeply nested in if/while) for `my.invisible = ...`
+assignments -- if it only ever finds `= off` (reveal) and never `= on`
+(hide), *and* the entity's WED flag doesn't already start it hidden, the
+reveal statement is a structural no-op (already visible) that defeats an
+obvious "become visible at the right story beat" intent, so the entity is
+forced hidden at spawn and let the script's own reveal logic do its job.
+Verified this is a real, generic pattern first: corpus-wide scan (Python,
+`assets/converted/wdl_ast/*.json`, restricted to `target.obj.name=="my"`
+specifically -- several actions, e.g. Plane2's `A1`/`PiposhHit`, also
+write `player.invisible`/`opponent.invisible`/etc., which says nothing
+about the acting entity's own starting visibility and must NOT count)
+found 26 matching actions across 20 files, not just Weasel -- this is a
+common corpus idiom, not a one-off. First implementation looked correct
+but did nothing: a GDScript lambda closure over local `bool`s doesn't
+mutate the caller's copy (captures by value), silently no-op-ing the scan
+-- rewrote to return `[seen_show, seen_hide]` directly instead of a
+callback. Verified with `tools/smoke_shiks_weasel_debug.gd` (new):
+`visible(node)=false` from frame 1 through 14s of real dialogue-driven
+play (previously `true` throughout). Full regression
+(`smoke_dispatch` 19/19, `smoke_shiks_bumpin_proximity.gd`) still clean.
+
+**Background noise ("plays non stop").** Added temporary `[sfx-event]`
+logging to `AudioChannels.play_sfx()` and ran Shiks for real (both
+headless and a real, non-headless window -- no screenshot, log capture
+only) to see what was actually happening instead of guessing. Headless:
+305 play_sfx calls in a 12s-frame-budget run. Non-headless (real audio,
+real timing): 1679 calls in 12 real seconds -- *worse*, which ruled out
+"headless dummy-audio-driver artifact" as the explanation and confirmed
+a genuine bug. Breakdown by sound name showed it wasn't evenly spread:
+SFX140.WAV (Mapal, `action Watrfall`, ~3.1s) alone accounted for 720 of
+those calls -- landing on the same pool slot every time, `was
+playing=false pos=0.000` on every single call, immediately after each
+`.play()`. Isolated test (`AudioStreamPlayer` playing the same resource
+directly, nothing else running) played it perfectly for 4s straight --
+ruling out file corruption. Root cause: `wdl_director.gd`'s `setup()`
+had a leftover hand-ported branch (`"WaterWheel"`/`"Watrfall"`/`"Dummy"`
+match arms) that called `AudioChannels.play_music("SFX100.WAV"/
+"SFX140.WAV"/"SFX089.WAV"/"SFX105.WAV", ...)` once at level load --
+*duplicating* what Shiks/Plane/Plane2/Studio's own `action WaterWheel`/
+`action Watrfall`/`action Dummy` already do generically via the
+interpreter (`play_entsound` + `snd_playing`, confirmed by reading each
+level's own recovered .wdl source directly). `play_music()` ->
+`_enable_loop()` mutates the loaded `AudioStream` *resource itself* --
+`load()` caches and shares one Resource instance per path across every
+player using it, SFX pool included -- and was setting `loop_mode` without
+`loop_end`, leaving it at its default of 0: a degenerate zero-length loop
+region. Once the duplicate `play_music()` call ran that once, the SFX
+pool's own later playback of the same file could never sustain
+`.playing == true` for its natural duration again, so `snd_playing()`
+read false almost immediately and the WDL ambiance loop retriggered as
+fast as it could poll. Fixed at both ends: deleted the duplicate
+`wdl_director.gd` branch entirely (dead/duplicate code per this file's
+own already-stated direction -- interpreter-first execution is the only
+path now, confirmed each affected level's own `action Dummy`/
+`WaterWheel`/`Watrfall` already produces the same ambiance independently:
+Studio's Dummy plays `vin`, Plane's and Plane2's both play `cockpit`),
+and made `_enable_loop()` set a real `loop_end` (from the stream's actual
+PCM sample count) so no future `play_music()` caller can corrupt a shared
+stream this way again. Also hardened `play_sfx()`'s pool to prefer a
+genuinely free slot over blind round-robin eviction -- not the actual
+cause this time, but the same class of bug (stealing an actively-playing
+slot) was a real latent risk with only 6 slots shared across every
+concurrent ambiance loop in a level, cheap to close off regardless.
+Verified: real-window re-run dropped from 1679 calls/12s to 25 (matching
+each sound's own natural retrigger rate: SFX100 x1 in 12s for a 17.9s
+clip, SFX101 x21 for a 0.7s clip, SFX140 x6 for a 3.1s clip -- all
+sane). New `tools/smoke_shiks_sfx_debug.gd` (rewritten from the
+diagnostic version into a permanent regression check, headless,
+frame-budget-based, threshold well below the old bug's rate) confirms:
+20 calls over 720 frames, comfortably under the 200-call regression
+threshold. Full regression (`smoke_dispatch` 19/19,
+`smoke_shiks_bumpin_proximity.gd`, `smoke_shiks_walk_to_bumpin_real.gd`)
+still clean. `git status` zero asset deletions.
+
+## 2026-08-01 (sixth) — Plane: Piposh enters below the cabin floor. Two
+## fix attempts reverted before landing on a narrow, safe one
+
+User: "Piposh enters but he's lower than he should be, not walking on
+the plane's height at the start of the scene" -- asked to clarify when
+(picked "right at level load, before walking", not "throughout the
+walk" or "only later"). Confirmed via `assets/converted/levels/
+Plane.json`: `action PiposhWalk` spawns at Godot Y=-39 while this
+level's own computed `floor_y` (WmbLevelLoader's own load-time log) is
+83 -- a ~120 unit gap. No script in the corpus manages the height axis
+around `actor_move()` (confirmed: the original engine's own
+`actor_move()` floor-snaps for free every tick; this port's is a
+straight-line X/Z-only translation, see `_do_actor_move()`), so nothing
+was ever going to correct this on its own.
+
+**First attempt (reverted):** interpolate height toward the entity's
+current `scan_path()`/`ent_nextpoint()` waypoint target, reusing the
+`wdl_custom__target_z` meta those builtins already track. Seemed
+principled (a real 3D waypoint, not a guess) but wrong for this case:
+Plane's own 2-point path is *also* authored at the low spawn height
+(~-28), not the cabin floor's, so this pulled Piposh the wrong direction
+instead of fixing anything. Live test (`tools/smoke_plane_piposh_height.gd`,
+new) confirmed: height converged toward the path's own low value, not
+upward.
+
+**Second attempt (reverted):** a real per-tick raycast floor-snap in
+`_do_actor_move()`, against the same collision geometry
+`_add_mesh_collision()` already builds for the player, bounded to a
+40-unit step per tick so a big gap wouldn't visibly teleport. Matches
+the original engine's actual behavior most faithfully, but broke
+immediately in testing: on this exact mesh the ray locked onto the wrong
+collision surface (plausibly an upper-deck/ceiling hit) once the ray's
+rising start point crossed into it, and climbed away without ever
+settling -- confirmed live, Y climbing 141 -> 307 -> 420 -> 553 -> 681
+over 4 seconds instead of stabilizing. Too fragile to ship blind (no way
+to visually confirm it's hitting the right surface on every level), and
+touching every `actor_move()` call site in the corpus for one report
+was disproportionate anyway.
+
+**Landed fix:** a narrow, one-time spawn-time correction in
+`WmbLevelLoader._spawn_entity()`, scoped to this exact entity (same
+precedent as `_mount_wall_card()`'s 2-stem special case) -- if
+`level_name=="Plane" and action=="PiposhWalk"` and the authored origin
+is more than 40 units below this level's own already-computed
+`floor_y`, snap to `floor_y` before the transform (and downstream
+feet-snap) is applied. Uses a value the loader already computes for this
+exact level, not a hand-picked guess. Verified: spawn Y went from 19.35
+(post feet-snap) to 141.35, landing within the same general band as the
+level's own floor_y (83) instead of ~120 units below the raw origin.
+Rewrote `tools/smoke_plane_piposh_height.gd` into a permanent regression
+check (spawn Y must land within 80 units of the level's floor_y).
+Full regression (`smoke_dispatch` 19/19, `smoke_shiks_bumpin_proximity.gd`)
+still clean -- confirms the two reverted attempts left no trace in
+`_do_actor_move()`, which is back to its original, unmodified form.
+`git status` zero asset deletions.
+
+## 2026-08-01 (seventh) — Plane2: Hammer sound too loud, and a
+## misdiagnosed "stars" report that turned out to be an unrelated static
+## prop wrongly animating
+
+**Hammer volume.** `_do_play_sfx()` never used `play_entsound`'s 3rd
+argument at all -- corpus survey (`grep` across every `.wdl` file)
+confirms it's Acknex's audible-range/falloff-distance parameter (values
+run 66-5000 corpus-wide), not a literal loudness scale, and this port
+has no distance-based 3D attenuation for entity sounds yet (a real gap,
+but implementing it properly touches every `play_entsound` call site in
+the corpus with no way to verify the result by ear -- out of proportion
+for one report). `sHammer` (SFX090.WAV, Krupnik's hammer-hit in both
+Plane.wdl and Plane2.wdl) has range 300, one of the *shorter* ranges in
+the corpus -- clearly meant to be quiet/close, which flat full-volume
+playback defeats. Fixed with a narrow, filename-keyed volume trim table
+(`SFX_VOLUME_TRIM_DB`, `-12.0` for `sfx090.wav`) in `_do_play_sfx()` --
+same precedent as the tuned per-sound dB values `wdl_director.gd` used
+to hardcode (removed 2026-08-01 fifth entry as duplicate *triggering*,
+not because per-sound tuning itself was wrong).
+
+**"Stars" report.** User initially described a "stars" effect appearing
+during Krupnik's hammer swing, rendered "a bit behind him." Investigated
+thoroughly before asking for clarification: confirmed the "Hammer" clip
+exists and plays correctly (`tools/smoke_krup2_clips.gd`), Krupnik's
+position/pan stay stable throughout (no positional bug in `action
+Krupnik`), Krup2.glb has exactly one mesh with no separate "stars" part
+(`tools/smoke_krup2_mesh_dump.gd`), no `create()`/particle-spawn call
+exists anywhere in Plane2.wdl, and the file's own AST `skip_count`
+entries are the same pre-existing `Blink()`/`Blink2()` stray-brace typo
+already confirmed harmless in Shiks. Asked the user to describe it more
+precisely rather than guess further or dig into raw MDL binary data
+blind -- turned out to be a completely different, unrelated entity:
+**AFG_Card** (Afgan.wdl's collectible flight-badge/card system, ~70
+units from Krupnik, visually mistaken for a hammer-adjacent effect).
+`action AFG_Card` (`original/piposh3d/WDL/Afgan.wdl`) never calls
+`ent_frame`/`ent_cycle` anywhere in its body -- it's a static,
+wall-mounted, clickable collectible; the only "animation" should be
+`AFG_Take`'s pickup fade, not a persistent loop. Root cause:
+`AFG.MDL` has a "Frame" clip (each frame likely one of the ~32 card
+designs, selected by `my.skill1`, though authored/selected by WED, not
+the script) but no "Stand" clip, and `MdlAnimator.setup_from_stem()`'s
+existing fallback -- `elif _clips.has("Frame"): play_cycle("Frame", 0.0)`
+-- assumes any entity that only has a "Frame" clip and no "Stand" wants
+it looped, a correct assumption for the fan/smoke/falling-debris props
+it was written for, wrong for a static collectible that just happens to
+store its one fixed pose under a clip named "Frame". Fixed generically
+(not a single-entity hack): new `MdlAnimator.hold_autoplay` export --
+when true, the "Frame" fallback (and an explicitly-requested non-Stand
+idle clip) holds frame 0 via `play_frame()` instead of `play_cycle()`.
+Set `true` only for `action=="afg_card"` in
+`WmbLevelLoader._attach_animator()`; every other user of this fallback
+(Cow/Ship/PisaFall/etc., whose own WDL scripts genuinely drive
+`ent_cycle("Frame", my.skill1)` themselves over time) is untouched,
+default `false`. Verified with new `tools/smoke_plane2_afgcard_static.gd`:
+`_playing=false`, `_percent` unchanged across 2s (previously would have
+been actively cycling). Full regression (`smoke_dispatch` 19/19,
+`smoke_plane2_playtest.gd`) still clean. `git status` zero asset
+deletions. **Superseded same-day, see next entry.**
+
+## 2026-08-01 (eighth) — the AFG_Card fix generalized: Sikot (a different
+## clickable prop, same level) turned out to have the exact same bug,
+## confirming this needed the generic fix, not a second hardcode
+
+User reported a second Plane2 entity animating when it shouldn't (from a
+`[click-hit]` log line: `resolved_node=Sikot_mdl_082 action=Sikot`).
+Checked `action Sikot` (Plane2.wdl): `{ my.enable_click=on; my.event=
+SikotClick; }` -- never calls `ent_frame`/`ent_cycle` either, same shape
+of bug as AFG_Card. Confirmed live (`tools/smoke_sikot_clips.gd`):
+Sikot.MDL also has only a "Frame" clip, `_playing=true`, `_percent`
+climbing 0.94 -> 75.85 over 2s. Two independent real cases of the exact
+same pattern is the signal this needed the generic fix, not a second
+per-action hardcode.
+
+Replaced the AFG_Card-specific hack entirely with a real, corpus-wide
+fix in the interpreter (which has AST access the loader doesn't): new
+`WdlInterpreter._seed_static_pose_if_never_animated()`, called from
+`begin_level()` alongside `_seed_reveal_only_hidden()` for every entity
+at spawn. Statically scans the action's own AST body (however deeply
+nested in if/while, via a new generic `_scan_for_calls()` helper) for
+any `ent_frame`/`ent_cycle` call; if the action never animates itself,
+whatever `MdlAnimator`'s own fallback landed on (e.g. cycling "Frame")
+gets corrected to a static hold via `play_frame()`. Runs once at
+`begin_level()`, before the first frame ever renders, so correcting an
+already-started cycle causes no visible flicker. Reverted the
+AFG_Card-specific `hold_autoplay` export and loader hardcode entirely --
+fully superseded, and leaving both in place would've meant two
+overlapping mechanisms for the same concern.
+
+Verified: `tools/smoke_sikot_clips.gd` and `tools/smoke_plane2_
+afgcard_static.gd` both now show `_playing=false`, `_percent` static
+across 2s. Confirmed the fallback's *intended* case still works:
+Ziggy's `action FCloud` genuinely calls `ent_cycle("Frame", my.skill1)`
+itself, so `_scan_for_calls()` correctly finds it and leaves it cycling.
+Full regression (`smoke_dispatch` 19/19, `smoke_plane2_playtest.gd`,
+`smoke_shiks_bumpin_proximity.gd`) still clean. `git status` zero asset
+deletions.
+
+## 2026-08-01 (ninth) — Range level "stops"/errors at start: a real
+## crash in the 2026-07-31 impact-proximity mechanism, spamming every frame
+
+User asked to add logging, run Range, and find why it stops at start.
+New `tools/smoke_range_debug.gd` loaded the level for real and caught it
+immediately: `SCRIPT ERROR: Trying to assign invalid previously freed
+instance.` at `WdlInterpreter._check_impact_proximity()`
+(wdl_interpreter.gd:1148), firing from the very first frame and
+continuing every single frame after -- in a real (non-headless) window
+this reads exactly like "stops," since the engine is spending every
+frame re-throwing the same error rather than actually hanging.
+
+Root cause: `_check_impact_proximity()` (added 2026-08-01, the Shiks
+Bumpin fix) declared `var node: Node3D = zone["node"]` -- a *typed*
+assignment. Range's shooting-range targets (`action Terrorist`/`TNT`/
+`Window`, all `enable_impact`) are dynamically created at runtime
+(`@Node3D@141`-style anonymous names in the `[wdl-event]` log, not
+WED-placed), and once one gets freed, Godot's typed-variable assignment
+validates the object reference *at the assignment itself* and throws --
+before any code, including `_entity_alive()`'s own check on the very
+next line, gets a chance to see it. Every other entity-liveness check in
+this file already takes its entity parameter untyped for exactly this
+reason (`_entity_alive(my)` itself has no type on `my`); this one
+function just didn't follow its own project's convention.
+
+Fixed: keep `node` untyped until `is_instance_valid()` (checked via the
+untyped Variant, not a typed cast) confirms it's safe, matching
+`_entity_alive()`'s own pattern. Also now drops stale entries from
+`_impact_zones` (and their `_impact_touching` bookkeeping) once found
+freed, instead of merely skipping them forever -- a shooting range that
+keeps spawning/freeing targets would otherwise accumulate dead zones
+checked every frame indefinitely.
+
+Verified: re-ran `smoke_range_debug.gd`, 0 script errors (down from
+constant per-frame spam), `interp._running=true` stable, `_impact_zones`
+count holds steady at 29 (not growing) over a 15s sustained run with
+real target hits happening (`[wdl-event] INVOKE ... TargetHit` firing
+repeatedly on dynamically-created targets throughout). Full regression
+(`smoke_dispatch` 19/19, `smoke_shiks_bumpin_proximity.gd` -- the
+original consumer of this same mechanism) still clean. `git status`
+zero asset deletions.
+
+## 2026-08-01 (tenth) — Range's whole shooting-gallery minigame built:
+## dialogue text, mouse-look, firing, panels/HUD, health, win/lose/skip.
+## The largest single change this session -- three real engine
+## subsystems, not a bug fix, done with explicit user sign-off on scope
+
+User asked for logs, then to run Range and find why it "stops"/errors at
+start (see 2026-08-01 ninth entry -- a real crash in the impact-proximity
+mechanism, fixed separately). Once that was fixed, follow-up reports:
+dialogue choice text shows "…" instead of real text; background sound too
+loud, drowns out dialogue; a gun with a visible model but the character
+can't move/shoot, no HUD/score screens ever show, and the lose/retry/skip
+logic doesn't work. Investigated each before writing code, and confirmed
+the last group was not a bug in something built, but a *missing* engine
+capability: `mickey` (mouse deltas) and `on_mouse_left` (global click
+binding) were completely unimplemented, Acknex `panel` objects (the
+entire 2D HUD system) were parsed and immediately discarded, and
+`ShowRIP()` (Range's lose screen, defined in the included IO.wdl)
+appeared unreachable. Given the scope (build three subsystems, not patch
+existing ones), asked the user directly rather than assuming -- picked
+"build all of it now."
+
+**Dialogue text ("…").** `GameHud._dialog_lines()` has hand-transcribed
+Hebrew for DialogIndex 0-3 (Start/Studio/Town/Plane's own indices) but a
+"…" placeholder for anything else -- Range uses DialogIndex 4, never
+transcribed. `WDL/DIalog.wdl` stores the real text reversed and run
+through a per-letter substitution cipher (confirmed by cross-referencing
+the ALREADY-solved indices 0-3: it's the Hebrew alphabet mapped straight
+onto a-z in order, `a`→א `b`→ב `c`→ג ... -- not a keyboard layout, as
+initially guessed and disproven by a byte-level mismatch against the
+known-good text). Decoded DialogIndex 4's three lines with the recovered
+mapping and added them.
+
+**Background sound too loud.** Same root cause and same fix shape as
+Plane2's Hammer sound (2026-08-01 seventh entry): Range's `Jet`
+(SFX091.WAV, looped continuously by both `action PIP` during the intro
+dialogue and `action Handgun` during gameplay) has an authored range of
+20-30, one of the smallest in the corpus -- clearly meant to be a quiet
+backdrop. Added `sfx091.wav: -14.0` to the same `SFX_VOLUME_TRIM_DB`
+table.
+
+**The three missing subsystems:**
+
+1. *`include` resolution* -- investigated first, turned out to be a
+   red herring: `WdlInterpreter._merge_includes_recursive()`/
+   `_merge_ast()` already resolve includes at *runtime* (discovered only
+   after building a whole redundant parse-time version in
+   `tools/parse_wdl.py` and having to revert it -- the actual gap was
+   narrower, see below).
+
+2. *Acknex `panel`/`text` objects* -- `tools/parse_wdl.py` used to
+   discard every `panel {...}` block by design (its own docstring:
+   "resilience... skipped by balanced-brace, not a hard failure" --
+   correct call at the time, before anything needed panel *data*, only
+   needed to not crash on it). Added a real `parse_panel()`: captures
+   `NAME [=] atom[,atom...];` fields generically (not a fixed schema --
+   different panels use different field sets), handling both `bmap =
+   bPanel;` and the bare `window 15,58,609,15,bpass,health2,0;`/`BUTTON
+   ...;` forms the real corpus uses interchangeably. `_merge_ast()`
+   extended to merge `panels`/`bmaps` from includes the same way it
+   already merges functions/actions/globals/sounds (this is what
+   actually made `ShowRIP()`'s panels -- defined in IO.wdl -- reachable
+   from Range; the function itself was already resolvable via the
+   existing runtime include merge in item 1, so no parser-side include
+   work was needed at all).
+
+   New in `WdlInterpreter`: `_panels_ast` (parsed data) → `_panel_nodes`
+   (real `Control` nodes, built once in `setup()` via
+   `_ensure_panels_built()`, parented under `GameHud.get_panel_root()` --
+   the same 640x480 design-space root every other HUD element uses, new
+   public accessor). `_resolve_entity()`/`_get_field()`/`_set_field()`
+   extended to recognize panel names and route `.visible`/`.bmap`/
+   `.pos_x`/`.pos_y`/`.alpha` through `_get_panel_field()`/
+   `_set_panel_field()`. `window` sub-elements (health bar:
+   `window 15,58,609,15,bpass,health2,0;`) become a `TextureRect` whose
+   `AtlasTexture.region` is resized every frame in `_update_panel_windows()`
+   to the bound variable's current value, clamped to the declared width
+   (which every corpus usage checked uses as the value's own 0-100%
+   reference range, e.g. Health2 climbs 0-609, width=609) -- found live
+   that `pass.png` (the health-bar bmap) is exactly 2x that width, a
+   "reveal more of the left portion" fill-bar sprite convention, not an
+   image meant to be squashed to fit; also found that plain `.size`
+   resizing doesn't stick on a `TextureRect` (Godot recomputes minimum
+   size from the texture on the next layout pass and snaps it back)
+   without `expand_mode = EXPAND_IGNORE_SIZE`. `button` sub-elements
+   (`button = 0,0,bSkip,bSkip,bSkip,D1,null,null;`) become a
+   `MOUSE_FILTER_STOP` child `Control` sized to its bitmap, wired through
+   `gui_input` to `invoke_event(null, onclick_name)`.
+
+3. *`mickey`/`on_mouse_left` (mouse look + firing)* -- `mickey.x/y` needed
+   no new field-routing at all: it's kept live in the SAME `_vectors`
+   scratch-vector dict `temp`/`my_angle` already use (the generic
+   fallback in `_get_field()` already reads any bare vector name from
+   there), just needed real per-frame mouse deltas written into it --
+   added `_input()` accumulating `InputEventMouseMotion.relative`,
+   applied and zeroed once per `_process()` tick (matching Acknex's own
+   per-tick-delta semantics). `on_mouse_left = Fire;` needed two fixes
+   stacked: (a) `_assign()`'s existing `my.event = HP;` symbol-capture
+   special case (assign the bare name, don't evaluate it as an
+   undeclared variable) extended to global `on_`-prefixed identifiers
+   too; (b) a NEW parser gap entirely -- `on_mouse_left = Fire;` is a
+   bare statement *outside any function*, which the old "unknown
+   top-level construct" fallback (shaped for `KEYWORD [ident]
+   ({...}|...;)` declarations like `panel`/`sound`) silently ate whole,
+   never producing an executable statement at all. Added detection for
+   `ident (=|+=|-=|*=|/=) ...;` at the top level, parsed via the real
+   statement grammar (`parse_stmt()`) into a new `top_level_stmts` AST
+   section, executed once in `setup()` after globals are initialized (via
+   `_exec_stmt_sync()`, not the async `exec_stmt()` -- these are simple
+   assignments with nothing to suspend on).
+
+   **Caught by the regression suite, not by design (important near-miss):**
+   the "on_" symbol-capture only matched a bare identifier value
+   (`on_mouse_left = Fire;`); `smoke_dispatch.gd` hung indefinitely on the
+   9th of 19 levels (AsyAct3) after this landed. Root cause: AsyAct3 uses
+   the equally-common call-shaped form, `on_F1 = SwitchWeapon();` -- not
+   an "id" node, so the symbol-capture skipped it and the `else` branch
+   *actually called* `SwitchWeapon()`, synchronously, at level load, as
+   one of the newly-added `top_level_stmts`. A handler function written
+   to run forever as its own coroutine once genuinely triggered (a
+   `while(1){...wait(1);}` body) hangs forever when run synchronously
+   instead. Corpus-wide grep after the fix: 57 call-shaped `on_`
+   bindings across 24 files -- this would have been a severe, wide
+   regression (every level using this idiom hanging on load) shipped
+   without the full-corpus dispatch check catching it first. Fixed by
+   accepting both "id" and "call" shapes in the symbol-capture condition.
+
+**Other real bugs found and fixed reaching a working end-to-end loop:**
+- `ME` (Acknex's other name for the current entity, alongside `MY`) was
+  never recognized -- `action Spark`'s entire movement is
+  `move(ME, nullskill, fireball_speed)`; unresolved, every bullet's
+  `move()` call silently targeted nothing. Added to `_get_var()`/
+  `_resolve_entity()` alongside the existing `my` handling.
+- `move(entity, angle_delta, dist_delta)` and `vec_rotate(vec, angle)`
+  were both entirely unimplemented (real Acknex engine builtins, not
+  WDL-source functions -- confirmed via corpus grep that nothing
+  redefines either, so no `BRIDGE_OVER_SHARED_FUNCTIONS` risk). Without
+  `vec_rotate`, `CreateSpark()`'s aim computation silently no-op'd, so
+  every shot used the same fixed (200,0,0) GS direction regardless of
+  where the player was aiming. `vec_rotate` reuses the existing
+  `_acknex_entity_basis()` (already the one true pan/tilt/roll -> basis
+  conversion in this file) rather than a second formula. `move` needed
+  its distance argument read via `_vec_get()`, not the generic per-arg
+  `_eval()` every other builtin's arguments go through in `_call()` --
+  same class of gap `vec_set`/`vec_sub`/`vec_to_angle` were already
+  special-cased for (a bare vector-typed identifier like
+  `fireball_speed` isn't a declared WDL global, so the normal path would
+  silently read 0.0).
+- `create(model, entity.x, Action)`'s 2nd argument was completely
+  ignored -- `_do_create()` always spawned at the *calling* entity's
+  (`my`'s) own position. Harmless everywhere this had been exercised
+  before (`create(<Photos.mdl>, my.x, Photos)` in Shiks: the position
+  entity *is* the caller), but `CreateSpark()` runs via the
+  `on_mouse_left` global binding (`my == null`), so every fired bullet
+  spawned at `Transform3D.IDENTITY`'s origin instead of the player.
+  Fixed in `_call()`: the 2nd argument, when field-shaped
+  (`entity.x`/`entity.y`/`entity.z`), is now resolved to the ENTITY it
+  names (matching the 3rd argument's existing compile-time-symbol
+  handling) and passed through; `_do_create()` prefers it over `my`,
+  falling back to the old behavior only when it isn't present.
+
+**Verified end to end**, not by inspection: new
+`tools/smoke_range_shoot.gd` drives a real click through the real
+`_input()` path (`Input.parse_input_event()`, not `warp_mouse()` --
+confirmed live that headless `warp_mouse()` doesn't generate a real
+motion event, `parse_input_event(InputEventMouseMotion)` does) and
+confirms, in order: `CamTarget`'s pan actually changes from a synthetic
+mouse-motion event; firing spawns a real `Spark` entity; the bullet
+visibly travels (position changes across frames) and/or hits an
+`enable_impact` target within the observed window (both outcomes seen
+across runs, both correct); forcing `Health` to 0 makes `pRIP` (the real
+IO.wdl lose screen) visible. `tools/smoke_range_panels.gd` separately
+confirms `ShowPanel()` makes `GUI`/`Terr1` visible, the health-bar window
+tracks `Health2` correctly (609-wide clamp, verified against a real
+`Health` change through `UpdatePanel()`, not a direct `Health2` write
+that just races against it), and `pSkip`'s button resolves to `D1`.
+
+Full regression: `smoke_dispatch` 19/19 (this is what caught the AsyAct3
+hang), `smoke_range_shoot.gd`, `smoke_range_panels.gd`,
+`smoke_shiks_bumpin_proximity.gd`, `smoke_plane2_afgcard_static.gd`,
+`smoke_plane2_playtest.gd` all clean. `git status`: all 85
+`assets/converted/wdl_ast/*.json` modified (every file now carries
+`panels`/`top_level_stmts` sections even where empty), zero deletions.
+
+## 2026-08-01 (eleventh) — Plane2: finishing all 4 side quests never
+## advanced to the next part. Three real, stacked bugs found chasing one
+## report, the deepest a genuine gap in the execution model itself
+
+User: "After finishing the tasks/level quest in Plane2 we need to start
+the logic that passes us to the next part, which currently doesn't
+trigger." The whole check (`if ((Goal_Passanger==1)&&(Goal_TV==1)&&
+(Goal_Sikot==1)&&(Goal_Headphones==1)) { ...; Run("Range.exe"); }`) lives
+inside `action player_move2`'s main loop -- the real Acknex first-person
+movement builtin body this port's native `CharacterBody3D` controller
+deliberately replaces for actual movement (user's own standing decision,
+see docs/CONTRACT.md), but which still carries this one real piece of
+game-progression logic nothing else duplicates. Three independent bugs
+were stacked between "the entity exists" and "the check ever runs even
+once," found and fixed in order via `tools/smoke_plane2_all_goals.gd`
+(new, drives the check directly by setting all 4 goals and watching for
+the branch's own side effects: `Scene=2`, `MoviePlaying=1`, `Talking=3`,
+set together only inside it):
+
+1. **`DEFINE` constants silently discarded.** `tools/parse_wdl.py` parsed
+   `DEFINE NAME,VALUE;` and threw the value away entirely ("rare enough
+   outside the shared library files" -- wrong assumption). `WDL/
+   movement.wdl` (included by nearly every level) defines
+   `_MODE_WALKING`=1 and `_MODE_STILL`=15, and `player_move2()`'s entire
+   loop is gated on `(MY._MOVEMODE>0)&&(MY._MOVEMODE<=_MODE_STILL)` --
+   unresolved, both constants read as the generic-undeclared-global
+   0.0, so `MY._MOVEMODE=_MODE_WALKING` set movemode to 0 and the loop's
+   own guard was false from the very first check; the entire body,
+   goals check included, never ran at all. Fixed: `DEFINE` now captured
+   into `globals` as an ordinary var-shaped decl (`kind: "define"`), so
+   it resolves/merges exactly like every other global already does
+   (including through the existing runtime include-merge -- no new
+   interpreter machinery needed for this part).
+
+2. **Bare bottom-level function calls had no real per-frame yield.**
+   Even with (1) fixed, the check still never fired: `player_move2()`'s
+   own body opens with `anim_init(); perform_handle();` before its main
+   loop -- both plain function calls, which `_call_user_function()`
+   (used for every nested call, including this one) runs via
+   `_exec_stmt_sync()`, a synchronous-only executor whose only "while"
+   safety valve is a flat 100000-iteration counter, no real per-frame
+   wait. `perform_handle()` (`WDL/input.wdl`, included the same way) is
+   itself a `while(1){...wait(1);}` loop meant to run forever as its own
+   coroutine (polling a "handle" key signal) -- run synchronously, it
+   burns its entire 100000-iteration budget in a single frame (`wait()`
+   here is a one-time no-op warning, not a real suspend) and returns
+   having accomplished nothing, meaning `player_move2()`'s own main loop
+   -- everything after this call -- never ran either. Two-part fix:
+   (a) a genuine architectural addition -- `exec_stmt()`'s "expr_stmt"
+   case now detects a BARE top-level call to a user function (not
+   nested inside a larger expression, which still can't suspend
+   mid-expression -- real WDL never needs that) and awaits a new
+   `_call_user_function_async()` (mirrors `_call_user_function()`'s
+   parameter binding, but runs the body via the real async `exec_block()`
+   instead of the sync executor) -- so a function written as a genuine
+   long-running per-frame loop, called as another action's tail
+   statement, actually behaves like one; (b) `perform_handle` specifically
+   added to `BRIDGE_OVER_SHARED_FUNCTIONS` (forced to a harmless no-op
+   builtin) -- it's meaningless in this port (the native controller owns
+   all real input, nothing ever sets `_SIGNAL`), and even with (a) its
+   genuine `while(1)` would otherwise now run forever for real, which is
+   *correct* per real WDL semantics but permanently blocks
+   `player_move2()`'s own subsequent code, the same class of problem
+   `actor_move`/`ShowDialog`/`run` were already force-bridged for.
+   **Caught by the regression suite before being called done:** with (a)
+   alone, `smoke_dispatch.gd` still passed (19/19, no level in the
+   default roster happens to hit a second forever-loop shared function
+   the way Plane2 does) -- the `perform_handle` hang was only found by
+   directly testing Plane2's own goal-completion path, a reminder that
+   `smoke_dispatch.gd`'s roster answers "does it dispatch," not "does
+   every one of its actual behaviors run."
+3. **`ACTION`-declared code called like a function was silently
+   unresolvable.** Even with (1) and (2) both fixed, the check *still*
+   didn't fire -- `TempZ` (the first thing `player_move2()`'s body
+   sets) stayed exactly 0.0 forever, proving the body never executed at
+   all. Root cause: `player_move2` is itself declared with `ACTION`, not
+   `function` (`ACTION player_move2 { TempZ = my.z; ...`) -- Acknex
+   allows an action to be invoked like a plain function (no separate
+   "callable" concept, both are just named statement blocks), but
+   `_call()`'s dispatch (both the sync path and the new async path from
+   fix 2) only ever checked `_resolve_function()`, never
+   `_resolve_action()`, for a bare call target -- `player_walk2`'s tail
+   statement `player_move2();` fell all the way through to the generic
+   "unbridged builtin" no-op every time, regardless of the other two
+   fixes. Added an `_resolve_action()` fallback to both `_call()` (sync,
+   via `_exec_block_sync()`, matching `_call_user_function()`'s own
+   shape) and `exec_stmt()`'s new async "expr_stmt" path (via
+   `exec_block()`).
+
+**Verified**, layer by layer as each fix landed (not just at the end):
+`_MODE_WALKING`/`_MODE_STILL` read correctly (1.0/15.0, was 0.0/0.0);
+`TempZ` becomes non-zero (proving `player_move2()`'s body actually
+runs); finally, with all three fixes together, setting all 4 goals makes
+`Scene`/`MoviePlaying`/`Talking` jump to 2/1/3 together within a few
+frames -- the all-4-goals branch's own unique side effects, confirming
+it was reached. Did not wait for the actual `Run("Range.exe")` in the
+test: the branch first plays `KRP009.WAV` (confirmed via direct duration
+check: ~32 real seconds) and waits for it via the already-established,
+separately-verified `GetPosition(Voice)`/`sPlay` machinery, slower still
+under headless audio's already-documented slower-than-real-time
+playback -- waiting that out would test headless audio timing, not this
+report. Full regression: `smoke_dispatch` 19/19 (twice -- once after
+fix 2 alone, once with all three), `smoke_range_shoot.gd`,
+`smoke_range_panels.gd`, `smoke_range_debug.gd`, `smoke_sikot_clips.gd`,
+`smoke_shiks_bumpin_proximity.gd`, `smoke_plane2_afgcard_static.gd`,
+`smoke_plane2_playtest.gd` all still clean. `git status` zero asset
+deletions (same 85 `wdl_ast/*.json` files as the previous entry, now
+also carrying real `DEFINE` values).
+
+## 2026-08-01 (twelfth) — skip the original game's pre-level `wait(3);`
+
+User: "in the original game there's a sleep/wait function for 3 seconds
+before each level actually start, i think we can skip it since it loads
+very quickly anyways on modern devices." Confirmed via corpus grep
+(`^\twait(`) this is a real, near-universal idiom -- virtually every
+level's `main()` opens with `wait(3);` (or similar), presumably to give
+the original engine's own genuinely slow level load a moment to finish
+before gameplay started. This port's load is fast enough that the delay
+is pure dead time now.
+
+Fixed narrowly, not by scaling/skipping `wait()` generally (would touch
+real gameplay timing everywhere): a new `_skip_next_main_wait` flag, set
+`true` in `begin_level()` right before `main()`'s own coroutine starts,
+consumed by exec_stmt()'s "wait"/"waitt" case the first time it's hit
+with `my == null` (main()'s own calling context, the only place this
+flag is ever true) -- reduces that one call to a single-frame yield and
+clears itself immediately, so every other `wait()` in the entire game,
+including any later ones inside `main()` itself, is completely
+unaffected.
+
+Verified: new `tools/smoke_wait_skip.gd` checks how many frames it takes
+Range's `Health` global (set on the line right after `wait(3);` in its
+own `main()`) to become 609 -- 1 frame (was previously gated behind the
+skipped wait, which alone would have added several more). Full
+regression: `smoke_dispatch` 19/19, `smoke_range_shoot.gd`,
+`smoke_plane2_all_goals.gd`, `smoke_shiks_bumpin_proximity.gd`,
+`smoke_plane2_playtest.gd` all still clean -- confirms other `wait()`
+calls elsewhere in the same levels (ambiance loops, dialogue pacing,
+animation timing) are unaffected. `git status` zero asset deletions.

@@ -17805,6 +17805,39 @@
   "SwitchClick": "SFX082.WAV"
  },
  "bmaps": {},
+ "panels": {},
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_tab"
+    },
+    "value": {
+     "t": "id",
+     "name": "cheat"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_F1"
+    },
+    "value": {
+     "t": "id",
+     "name": "cycle_person_view"
+    }
+   }
+  }
+ ],
  "skip_count": 2,
  "skipped": [
   "line 660: stray '}' at top level (skipped)",

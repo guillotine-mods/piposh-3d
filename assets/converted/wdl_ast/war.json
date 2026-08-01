@@ -53,12 +53,232 @@
    "init_list": false
   },
   {
+   "name": "ACTOR_EXPLO",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "res",
+    "v": "explo+7.pcx"
+   },
+   "init_list": false
+  },
+  {
+   "name": "ACTOR_EXPLO_FRAMES",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 7.0
+   },
+   "init_list": false
+  },
+  {
    "name": "freeze_actors",
    "kind": "var",
    "array_size": null,
    "init": {
     "t": "num",
     "v": 0.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_STATE_WAIT",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 1.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_STATE_ATTACK",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 2.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_STATE_ESCAPE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_STATE_DIE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 4.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_STATE_FREEZE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 5.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_STATE_HUNT",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 6.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_MUZZLE_VERT",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL32"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_I_ACCURACY",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL33"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_I_COWARDICE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL34"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_I_ALERTNESS",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL35"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_WALKSWIM_DIST",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL1"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_RUNCRAWL_DIST",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL2"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_STANDJUMP_TIME",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL3"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ATTACKDUCK_TIME",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL4"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_RUNTHRESHOLD",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL14"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ALERTNESS",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL11"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ACCURACY",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL12"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_COWARDICE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL13"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_MUZZLEATTACH",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL15"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_WEAPONRANGE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL16"
    },
    "init_list": false
   },
@@ -101,6 +321,76 @@
    "kind": "entity",
    "array_size": null,
    "init": null,
+   "init_list": false
+  },
+  {
+   "name": "__NO_FALLDAMAGE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "FLAG1"
+   },
+   "init_list": false
+  },
+  {
+   "name": "__NO_JUMP",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "FLAG4"
+   },
+   "init_list": false
+  },
+  {
+   "name": "__NO_BOB",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "FLAG5"
+   },
+   "init_list": false
+  },
+  {
+   "name": "__NO_STRAFE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "FLAG6"
+   },
+   "init_list": false
+  },
+  {
+   "name": "__NO_TRIGGER",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "FLAG7"
+   },
+   "init_list": false
+  },
+  {
+   "name": "__NO_DUCK",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "FLAG8"
+   },
+   "init_list": false
+  },
+  {
+   "name": "kActorAIAvoidDist",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 150.0
+   },
    "init_list": false
   },
   {
@@ -14429,7 +14719,348 @@
  },
  "sounds": {},
  "bmaps": {},
- "skip_count": 27,
+ "panels": {},
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "damage"
+    },
+    "value": {
+     "t": "binop",
+     "op": "*",
+     "l": {
+      "t": "call",
+      "name": "frc",
+      "args": [
+       {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "MY"
+        },
+        "name": "_FIREMODE"
+       }
+      ]
+     },
+     "r": {
+      "t": "num",
+      "v": 100.0
+     }
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "fire_mode"
+    },
+    "value": {
+     "t": "field",
+     "obj": {
+      "t": "id",
+      "name": "MY"
+     },
+     "name": "_FIREMODE"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "temp"
+    },
+    "value": {
+     "t": "call",
+     "name": "INT",
+     "args": [
+      {
+       "t": "binop",
+       "op": "*",
+       "l": {
+        "t": "call",
+        "name": "FRC",
+        "args": [
+         {
+          "t": "field",
+          "obj": {
+           "t": "id",
+           "name": "MY"
+          },
+          "name": "_STANDJUMP_TIME"
+         }
+        ]
+       },
+       "r": {
+        "t": "num",
+        "v": 100.0
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "temp"
+    },
+    "value": {
+     "t": "call",
+     "name": "INT",
+     "args": [
+      {
+       "t": "field",
+       "obj": {
+        "t": "id",
+        "name": "MY"
+       },
+       "name": "_ATTACKDUCK_TIME"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "temp"
+    },
+    "value": {
+     "t": "call",
+     "name": "INT",
+     "args": [
+      {
+       "t": "binop",
+       "op": "*",
+       "l": {
+        "t": "call",
+        "name": "FRC",
+        "args": [
+         {
+          "t": "field",
+          "obj": {
+           "t": "id",
+           "name": "MY"
+          },
+          "name": "_ATTACKDUCK_TIME"
+         }
+        ]
+       },
+       "r": {
+        "t": "num",
+        "v": 100.0
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "+=",
+    "target": {
+     "t": "id",
+     "name": "pap_pack1"
+    },
+    "value": {
+     "t": "id",
+     "name": "temp"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "temp"
+    },
+    "value": {
+     "t": "call",
+     "name": "INT",
+     "args": [
+      {
+       "t": "field",
+       "obj": {
+        "t": "id",
+        "name": "MY"
+       },
+       "name": "_WALKSWIM_DIST"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "temp"
+    },
+    "value": {
+     "t": "call",
+     "name": "INT",
+     "args": [
+      {
+       "t": "binop",
+       "op": "*",
+       "l": {
+        "t": "call",
+        "name": "FRC",
+        "args": [
+         {
+          "t": "field",
+          "obj": {
+           "t": "id",
+           "name": "MY"
+          },
+          "name": "_WALKSWIM_DIST"
+         }
+        ]
+       },
+       "r": {
+        "t": "num",
+        "v": 100.0
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "+=",
+    "target": {
+     "t": "id",
+     "name": "pap_pack2"
+    },
+    "value": {
+     "t": "id",
+     "name": "temp"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "temp"
+    },
+    "value": {
+     "t": "call",
+     "name": "INT",
+     "args": [
+      {
+       "t": "field",
+       "obj": {
+        "t": "id",
+        "name": "MY"
+       },
+       "name": "_RUNCRAWL_DIST"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "temp"
+    },
+    "value": {
+     "t": "call",
+     "name": "INT",
+     "args": [
+      {
+       "t": "binop",
+       "op": "*",
+       "l": {
+        "t": "call",
+        "name": "FRC",
+        "args": [
+         {
+          "t": "field",
+          "obj": {
+           "t": "id",
+           "name": "MY"
+          },
+          "name": "_RUNCRAWL_DIST"
+         }
+        ]
+       },
+       "r": {
+        "t": "num",
+        "v": 100.0
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "temp"
+    },
+    "value": {
+     "t": "call",
+     "name": "INT",
+     "args": [
+      {
+       "t": "field",
+       "obj": {
+        "t": "id",
+        "name": "MY"
+       },
+       "name": "_RUNTHRESHOLD"
+      }
+     ]
+    }
+   }
+  }
+ ],
+ "skip_count": 33,
  "skipped": [
   "line 440: unexpected token '>' ('>')",
   "line 444: stray '}' at top level (skipped)",
@@ -14450,6 +15081,6 @@
   "line 745: stray '}' at top level (skipped)",
   "line 1968: unexpected token '>' ('>')",
   "line 1976: stray '}' at top level (skipped)",
-  "line 1985: stray '}' at top level (skipped)"
+  "line 1977: unexpected token '<' ('<')"
  ]
 }

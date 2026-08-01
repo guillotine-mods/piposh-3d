@@ -140,7 +140,9 @@ class Parser:
         self.globals: list[dict] = []
         self.sounds: dict[str, str] = {}
         self.bmaps: dict[str, str] = {}
+        self.panels: dict[str, Any] = {}
         self.includes: list[str] = []
+        self.top_level_stmts: list[dict] = []
         self.skipped: list[str] = []
 
     # -- token helpers --
@@ -222,6 +224,26 @@ class Parser:
 
     def parse_top_decl(self) -> None:
         t = self.cur()
+        if t.kind == "ident" and self.toks[self.i + 1].kind in ("=", "+=", "-=", "*=", "/="):
+            # A bare top-level assignment statement, e.g. Range.wdl's
+            # `on_mouse_left = Fire;` (an Acknex global input-event
+            # binding, written outside any function/action). Previously
+            # fell through to the generic "unknown top-level construct"
+            # skip below -- which assumes a `KEYWORD [ident] ({...}|...;)`
+            # shape (panel/font/text/... declarations) and, applied to a
+            # bare `ident = ident;`, silently ate the whole statement
+            # without ever turning it into an executable AST node at all.
+            # Confirmed live (2026-08-01, Range): "can't shoot" -- the
+            # click hadn't even reached the interpreter's own runtime
+            # `on_`-binding logic (WdlInterpreter._assign()), because this
+            # line never became a statement in the first place. Reuses
+            # the real statement grammar (parse_stmt()) so it round-trips
+            # through the exact same `assign`/`id` AST shape a statement
+            # inside a function would produce; collected separately so
+            # to_json() can expose it and the interpreter can run these
+            # once at level start, the same way top-level `var` inits do.
+            self.top_level_stmts.append(self.parse_stmt())
+            return
         if t.kind == "include":
             self.advance()
             res = self.expect("resource").value
@@ -291,12 +313,41 @@ class Parser:
             self.accept(";")
             return
         if t.kind == "define":
-            # `DEFINE NAME,VALUE;` -- a compile-time constant macro. Not
-            # tracked as a real symbol table (rare enough outside the
-            # shared WDL/ library files); just consume the statement.
+            # `DEFINE NAME,VALUE;` -- a compile-time constant macro.
+            # Previously parsed but discarded ("rare enough outside the
+            # shared WDL/ library files" -- wrong assumption, corrected
+            # 2026-08-01): `WDL/movement.wdl` (included by nearly every
+            # level via IO.wdl) defines `_MODE_WALKING`/`_MODE_STILL`
+            # (1/15) that real player-movement scripts gate their entire
+            # per-tick loop on (`while((MY._MOVEMODE>0)&&(MY._MOVEMODE<=
+            # _MODE_STILL)){...}`). Left unresolved, both read as the
+            # generic undeclared-global fallback (0.0), so
+            # `MY._MOVEMODE=_MODE_WALKING` sets movemode to 0 and the
+            # loop's own `>0` guard is false from the very first check --
+            # the entire loop body, including any win-condition checks it
+            # guards, silently never runs at all. Confirmed live: Plane2's
+            # `player_move2()` -- the real Acknex movement builtin body
+            # this port's native CharacterBody3D controller replaces for
+            # actual movement, but which still carries the ONLY copy of
+            # "all 4 side-quest goals done -> Run(Range.exe)" -- reported
+            # as "the logic that passes us to the next part... doesn't
+            # trigger." Captured into `globals` as an ordinary var-shaped
+            # decl (`kind: "define"`) so it merges/resolves exactly like
+            # every other global already does, including through
+            # WdlInterpreter's runtime include-merge -- no new machinery
+            # needed on the interpreter side.
             self.advance()
-            self._skip_expr_until([";"])
+            name = self.take_name()
+            value = None
+            if self.accept(","):
+                value = self.parse_ternary()
             self.accept(";")
+            self.globals.append(
+                {"name": name, "kind": "define", "array_size": None, "init": value, "init_list": False}
+            )
+            return
+        if t.kind in ("panel", "text"):
+            self.parse_panel(t.kind)
             return
         if t.kind == ";":
             self.advance()
@@ -328,6 +379,58 @@ class Parser:
         if self.at("ident"):
             self.advance()
         self._skip_balanced_or_stmt()
+
+    # `panel NAME { field = value[,value...]; ... }` / `text NAME { ... }` --
+    # Acknex 2D bitmap/text HUD declarations, previously discarded entirely
+    # by the generic "unknown top-level construct" skip above (2026-08-01:
+    # this is why Range's shooting-gallery HUD, health bar, and win/lose
+    # screens never rendered -- the WDL data for them was never even
+    # reaching the AST). Every field line is `NAME [=] atom[,atom...];`
+    # (both forms appear in the real corpus -- `bmap = bPanel;` vs. the
+    # bare `window 15,58,609,15,bpass,health2,0;`/`BUTTON 020,380,...;`),
+    # captured generically (not a fixed schema of known field names) since
+    # different panel/text blocks use different field sets. Fields that
+    # can legitimately repeat within one panel (`button`, `window`) collect
+    # into a list of atom-lists; the interpreter decides how to use each
+    # field by name.
+    def parse_panel(self, kind: str) -> None:
+        self.advance()  # 'panel' / 'text'
+        name = self.take_name() if (self.at("ident") or self.cur().kind in KEYWORDS) else f"_anon_{self.cur().line}"
+        body: dict[str, list] = {}
+        if not self.accept("{"):
+            self.accept(";")
+            self.panels[name] = {"kind": kind, "fields": body}
+            return
+        while not self.at("}") and not self.at("eof"):
+            if self.accept(";"):
+                continue
+            field = self.take_name().lower()
+            self.accept("=")
+            atoms: list[str] = []
+            while True:
+                atoms.append(self._parse_panel_atom())
+                if not self.accept(","):
+                    break
+            self.accept(";")
+            body.setdefault(field, []).append(atoms)
+        self.accept("}")
+        self.panels[name] = {"kind": kind, "fields": body}
+
+    def _parse_panel_atom(self) -> str:
+        t = self.cur()
+        if t.kind == "resource":
+            return self.advance().value.strip("<>")
+        if t.kind in ("number", "string", "ident", "on", "off", "null"):
+            return self.advance().value
+        if t.kind in KEYWORDS:
+            return self.advance().value
+        if t.kind == "-":
+            # Negative numeric literal (panel positions can be off-screen).
+            self.advance()
+            return "-" + self._parse_panel_atom()
+        # Unrecognized atom shape (rare: an inline expression) -- consume
+        # one token so the field list still terminates instead of hanging.
+        return self.advance().value
 
     def parse_param_list(self) -> list[str]:
         params: list[str] = []
@@ -677,6 +780,8 @@ def to_json(p: Parser, source: str) -> dict:
         "actions": {k: v for k, v in p.actions.items()},
         "sounds": p.sounds,
         "bmaps": p.bmaps,
+        "panels": p.panels,
+        "top_level_stmts": p.top_level_stmts,
         "skip_count": len(p.skipped),
         "skipped": p.skipped[:20],
     }
@@ -705,6 +810,16 @@ def main() -> int:
         want = {n.lower() for n in args.only}
         files = [f for f in files if f.stem.lower() in want]
 
+    # `include`s are deliberately NOT resolved here -- each file is parsed
+    # standalone, `includes` is just recorded (see Parser.includes). That
+    # resolution already happens once, at runtime, in
+    # WdlInterpreter._merge_includes_recursive()/_merge_ast() (confirmed
+    # 2026-08-01 while investigating why Range's `Restart()` -> `ShowRIP()`
+    # -- defined only in the included IO.wdl -- appeared to do nothing:
+    # turned out the runtime merge already pulls it in correctly, the
+    # actual gap was that `panel {...}` blocks were never captured into the
+    # AST at all, fixed by parse_panel() above. A second, parse-time merge
+    # here would just duplicate that existing, working mechanism.
     args.dst.mkdir(parents=True, exist_ok=True)
     ok = 0
     total_skip = 0
@@ -716,7 +831,7 @@ def main() -> int:
         total_skip += len(p.skipped)
         print(
             f"OK {f.name}: functions={len(p.functions)} actions={len(p.actions)} "
-            f"globals={len(p.globals)} skipped_decls={len(p.skipped)}"
+            f"globals={len(p.globals)} panels={len(p.panels)} skipped_decls={len(p.skipped)}"
         )
         ok += 1
     print(f"Parsed {ok}/{len(files)} files, {total_skip} total skipped top-level decls")

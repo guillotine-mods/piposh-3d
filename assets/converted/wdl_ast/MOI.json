@@ -8586,6 +8586,90 @@
   "bDoc2": "Doc2.pcx",
   "bClips": "clips.pcx"
  },
+ "panels": {
+  "pClips": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bClips"
+     ]
+    ],
+    "layer": [
+     [
+      "21"
+     ]
+    ],
+    "pos_x": [
+     [
+      "200"
+     ]
+    ],
+    "pos_y": [
+     [
+      "10"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "overlay"
+     ]
+    ]
+   }
+  },
+  "pStamp": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bDoc1"
+     ]
+    ],
+    "layer": [
+     [
+      "19"
+     ]
+    ],
+    "pos_x": [
+     [
+      "130"
+     ]
+    ],
+    "pos_y": [
+     [
+      "10"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "overlay"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_f1"
+    },
+    "value": {
+     "t": "call",
+     "name": "ToggleView",
+     "args": []
+    }
+   }
+  }
+ ],
  "skip_count": 1,
  "skipped": [
   "line 617: stray '}' at top level (skipped)"

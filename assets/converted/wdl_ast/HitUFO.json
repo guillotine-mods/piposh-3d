@@ -79,6 +79,46 @@
    "init_list": false
   },
   {
+   "name": "Timer",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill27"
+   },
+   "init_list": false
+  },
+  {
+   "name": "Delay",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill28"
+   },
+   "init_list": false
+  },
+  {
+   "name": "Kind",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill29"
+   },
+   "init_list": false
+  },
+  {
+   "name": "OriginalZ",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill30"
+   },
+   "init_list": false
+  },
+  {
    "name": "GameOverDelay",
    "kind": "var",
    "array_size": null,
@@ -4877,6 +4917,274 @@
   "bBar": "pigsbar.pcx",
   "YouLose": "YouLose.bmp"
  },
+ "panels": {
+  "pWinLose": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "YouLose"
+     ]
+    ],
+    "layer": [
+     [
+      "10"
+     ]
+    ],
+    "pos_x": [
+     [
+      "150"
+     ]
+    ],
+    "pos_y": [
+     [
+      "150"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "overlay"
+     ]
+    ]
+   }
+  },
+  "txtEXIT": {
+   "kind": "text",
+   "fields": {
+    "string": [
+     [
+      "\"SHUME VA XJJOLF ENFKMB IFPBL JDK esc [HL\""
+     ]
+    ],
+    "layer": [
+     [
+      "20"
+     ]
+    ],
+    "font": [
+     [
+      "standard_font"
+     ]
+    ],
+    "pos_x": [
+     [
+      "10"
+     ]
+    ],
+    "pos_y": [
+     [
+      "470"
+     ]
+    ],
+    "flags": [
+     [
+      "visible"
+     ]
+    ]
+   }
+  },
+  "pTimeLeft": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bPigs"
+     ]
+    ],
+    "window": [
+     [
+      "287",
+      "18",
+      "316",
+      "16",
+      "bBar",
+      "TimeLeft",
+      "0"
+     ]
+    ],
+    "digits": [
+     [
+      "193",
+      "25",
+      "2",
+      "standard_font",
+      "1",
+      "UFOLeft"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "visible"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_cud"
+    },
+    "value": {
+     "t": "call",
+     "name": "tDown",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_cuu"
+    },
+    "value": {
+     "t": "call",
+     "name": "tUp",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_cur"
+    },
+    "value": {
+     "t": "call",
+     "name": "tRight",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_cul"
+    },
+    "value": {
+     "t": "call",
+     "name": "tLeft",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_home"
+    },
+    "value": {
+     "t": "call",
+     "name": "tLU",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_pgup"
+    },
+    "value": {
+     "t": "call",
+     "name": "tRU",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_pgdn"
+    },
+    "value": {
+     "t": "call",
+     "name": "tRD",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_end"
+    },
+    "value": {
+     "t": "call",
+     "name": "tLD",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_enter"
+    },
+    "value": {
+     "t": "call",
+     "name": "Again",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_esc"
+    },
+    "value": {
+     "t": "call",
+     "name": "quitUFO",
+     "args": []
+    }
+   }
+  }
+ ],
  "skip_count": 0,
  "skipped": []
 }

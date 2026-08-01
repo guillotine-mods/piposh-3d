@@ -3,6 +3,48 @@
  "includes": [],
  "globals": [
   {
+   "name": "weather_rain",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "weather_storm",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "weather_snow",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "rain_fog",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "sky_color_rain",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "snow_fog",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
    "name": "weather",
    "kind": "var",
    "array_size": null,
@@ -4237,8 +4279,414 @@
   "tornado": "tor_ic.pcx",
   "fog_sky": "fog_sky.pcx"
  },
- "skip_count": 17,
+ "panels": {
+  "panel_txt": {
+   "kind": "text",
+   "fields": {
+    "pos_x": [
+     [
+      "0"
+     ]
+    ],
+    "pos_y": [
+     [
+      "60"
+     ]
+    ],
+    "font": [
+     [
+      "standard_font"
+     ]
+    ],
+    "string": [
+     [
+      "empty_str"
+     ]
+    ]
+   }
+  },
+  "weather_particel_panel": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "10"
+     ]
+    ],
+    "pos_y": [
+     [
+      "35"
+     ]
+    ],
+    "bmap": [
+     [
+      "slider_background"
+     ]
+    ],
+    "digits": [
+     [
+      "80",
+      "25",
+      "3",
+      "standard_font",
+      "1",
+      "weather_strength"
+     ]
+    ],
+    "hslider": [
+     [
+      "0",
+      "0",
+      "100",
+      "slider",
+      "0",
+      "100",
+      "weather_strength"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "overlay"
+     ]
+    ]
+   }
+  },
+  "weather_panel": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "30"
+     ]
+    ],
+    "pos_y": [
+     [
+      "440"
+     ]
+    ],
+    "button": [
+     [
+      "0",
+      "0",
+      "snowing",
+      "snowing",
+      "snowing",
+      "start_snow",
+      "null",
+      "null"
+     ],
+     [
+      "40",
+      "0",
+      "raining",
+      "raining",
+      "raining",
+      "start_rain",
+      "null",
+      "null"
+     ],
+     [
+      "80",
+      "0",
+      "th_storm",
+      "th_storm",
+      "th_storm",
+      "start_storm",
+      "null",
+      "null"
+     ],
+     [
+      "120",
+      "0",
+      "fog_p",
+      "fog_p",
+      "fog_p",
+      "start_fog",
+      "null",
+      "null"
+     ],
+     [
+      "160",
+      "0",
+      "lightn",
+      "lightn",
+      "lightn",
+      "lightning",
+      "null",
+      "null"
+     ],
+     [
+      "200",
+      "0",
+      "day",
+      "day",
+      "day",
+      "set_day",
+      "null",
+      "null"
+     ],
+     [
+      "240",
+      "0",
+      "night_p",
+      "night_p",
+      "night_p",
+      "set_night",
+      "null",
+      "null"
+     ],
+     [
+      "280",
+      "0",
+      "tornado",
+      "tornado",
+      "tornado",
+      "null",
+      "null",
+      "null"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "act_weather_panel": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "26"
+     ]
+    ],
+    "pos_y": [
+     [
+      "436"
+     ]
+    ],
+    "hbar": [
+     [
+      "0",
+      "0",
+      "320",
+      "akt_w",
+      "40",
+      "act_weather"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "transparent"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "FLAGS"
+    },
+    "value": {
+     "t": "id",
+     "name": "refresh"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "act_weather"
+    },
+    "value": {
+     "t": "num",
+     "v": 9.0
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "act_weather"
+    },
+    "value": {
+     "t": "num",
+     "v": 2.0
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "SKY_MAP"
+    },
+    "value": {
+     "t": "id",
+     "name": "sky_day"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "CLOUD_MAP"
+    },
+    "value": {
+     "t": "id",
+     "name": "cloud_day"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "night"
+    },
+    "value": {
+     "t": "num",
+     "v": 0.0
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_1"
+    },
+    "value": {
+     "t": "id",
+     "name": "let_it_snow"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_2"
+    },
+    "value": {
+     "t": "id",
+     "name": "let_it_rain"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_3"
+    },
+    "value": {
+     "t": "id",
+     "name": "storm"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_4"
+    },
+    "value": {
+     "t": "id",
+     "name": "set_fog"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_5"
+    },
+    "value": {
+     "t": "id",
+     "name": "lightning"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_6"
+    },
+    "value": {
+     "t": "id",
+     "name": "set_day"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_7"
+    },
+    "value": {
+     "t": "id",
+     "name": "set_night"
+    }
+   }
+  }
+ ],
+ "skip_count": 19,
  "skipped": [
+  "line 43: expected a name, got '.' ('.')",
+  "line 46: stray '}' at top level (skipped)",
   "line 270: stray '}' at top level (skipped)",
   "line 279: stray '}' at top level (skipped)",
   "line 286: stray '}' at top level (skipped)",

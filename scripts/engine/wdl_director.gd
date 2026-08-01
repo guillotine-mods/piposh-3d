@@ -131,17 +131,6 @@ func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud
 				else:
 					node.set_meta("afg_card_index", card_i)
 					_make_clickable(node, "AFG_Take")
-			"Dummy":
-				# Studio.wdl Dummy = room tone; Plane/Plane2 = cockpit loop.
-				if _is_studio_level():
-					AudioChannels.play_sfx("SFX105.WAV", -8.0)
-				elif _is_plane_level() or _is_plane2_level():
-					AudioChannels.play_music("SFX089.WAV", -10.0)
-			"WaterWheel":
-				# Shiks.wdl: loop Lake = SFX100 while the wheel turns.
-				AudioChannels.play_music("SFX100.WAV", -12.0)
-			"Watrfall":
-				AudioChannels.play_music("SFX140.WAV", -10.0)
 			"Cow", "Cow2", "Arrow1", "Arrow2", "Ship", "Falling", "PisaFall", \
 			"Dome", "Wind", "Land":
 				_anim_cycle(node, "Frame")

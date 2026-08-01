@@ -19616,6 +19616,310 @@
   "Close2": "Close2.pcx",
   "Cheater": "Cheater.pcx"
  },
+ "panels": {
+  "txtAFG": {
+   "kind": "text",
+   "fields": {
+    "string": [
+     [
+      "\"                             \""
+     ]
+    ],
+    "font": [
+     [
+      "standard_font"
+     ]
+    ],
+    "pos_x": [
+     [
+      "500"
+     ]
+    ],
+    "flags": [
+     [
+      "visible"
+     ]
+    ]
+   }
+  },
+  "Location": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "Loc1"
+     ]
+    ],
+    "pos_x": [
+     [
+      "230"
+     ]
+    ],
+    "pos_y": [
+     [
+      "150"
+     ]
+    ],
+    "layer": [
+     [
+      "3"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "overlay"
+     ]
+    ]
+   }
+  },
+  "ChooseCheat": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "Vilon"
+     ]
+    ],
+    "pos_x": [
+     [
+      "200"
+     ]
+    ],
+    "pos_y": [
+     [
+      "100"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "overlay"
+     ]
+    ],
+    "button": [
+     [
+      "30",
+      "15",
+      "a1b",
+      "a1a",
+      "a1b",
+      "SwitchLeft",
+      "null",
+      "null"
+     ],
+     [
+      "100",
+      "15",
+      "a2b",
+      "a2a",
+      "a2b",
+      "SwitchRight",
+      "null",
+      "null"
+     ],
+     [
+      "25",
+      "85",
+      "bv1b",
+      "bv1a",
+      "bv1b",
+      "C1",
+      "null",
+      "null"
+     ],
+     [
+      "100",
+      "85",
+      "bv2b",
+      "bv2a",
+      "bv2b",
+      "C2",
+      "null",
+      "null"
+     ],
+     [
+      "170",
+      "85",
+      "bv3b",
+      "bv3a",
+      "bv3b",
+      "C3",
+      "null",
+      "null"
+     ]
+    ]
+   }
+  },
+  "pPhoto": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "Photo1"
+     ]
+    ],
+    "pos_x": [
+     [
+      "100"
+     ]
+    ],
+    "pos_y": [
+     [
+      "15"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "overlay"
+     ]
+    ],
+    "button": [
+     [
+      "160",
+      "165",
+      "Photo2",
+      "Photo2",
+      "Photo2",
+      "PP1",
+      "null",
+      "null"
+     ],
+     [
+      "160",
+      "251",
+      "Photo3",
+      "Photo3",
+      "Photo3",
+      "PP2",
+      "null",
+      "null"
+     ],
+     [
+      "160",
+      "337",
+      "Photo4",
+      "Photo4",
+      "Photo4",
+      "PP3",
+      "null",
+      "null"
+     ],
+     [
+      "032",
+      "251",
+      "Photo5",
+      "Photo5",
+      "Photo5",
+      "PP4",
+      "null",
+      "null"
+     ],
+     [
+      "288",
+      "251",
+      "Photo6",
+      "Photo6",
+      "Photo6",
+      "PP5",
+      "null",
+      "null"
+     ]
+    ]
+   }
+  },
+  "CheatPanel": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "Cheater"
+     ]
+    ],
+    "pos_x": [
+     [
+      "200"
+     ]
+    ],
+    "pos_y": [
+     [
+      "100"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "overlay"
+     ]
+    ]
+   }
+  },
+  "Info": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "Info01"
+     ]
+    ],
+    "pos_x": [
+     [
+      "200"
+     ]
+    ],
+    "pos_y": [
+     [
+      "100"
+     ]
+    ],
+    "layer": [
+     [
+      "3"
+     ]
+    ],
+    "button": [
+     [
+      "80",
+      "190",
+      "Close2",
+      "Close1",
+      "Close2",
+      "Close",
+      "null",
+      "null"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "overlay"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [],
  "skip_count": 2,
  "skipped": [
   "line 1333: stray '}' at top level (skipped)",

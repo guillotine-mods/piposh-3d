@@ -95,6 +95,156 @@
    "init_list": false
   },
   {
+   "name": "CurrentInv",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill4"
+   },
+   "init_list": false
+  },
+  {
+   "name": "Anim",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill10"
+   },
+   "init_list": false
+  },
+  {
+   "name": "Speed",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill2"
+   },
+   "init_list": false
+  },
+  {
+   "name": "Floor",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill3"
+   },
+   "init_list": false
+  },
+  {
+   "name": "Path",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill5"
+   },
+   "init_list": false
+  },
+  {
+   "name": "Pushed",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill6"
+   },
+   "init_list": false
+  },
+  {
+   "name": "percent",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill15"
+   },
+   "init_list": false
+  },
+  {
+   "name": "PrevX",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill7"
+   },
+   "init_list": false
+  },
+  {
+   "name": "PrevY",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill9"
+   },
+   "init_list": false
+  },
+  {
+   "name": "T",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill4"
+   },
+   "init_list": false
+  },
+  {
+   "name": "XCheck",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill11"
+   },
+   "init_list": false
+  },
+  {
+   "name": "YCheck",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill14"
+   },
+   "init_list": false
+  },
+  {
+   "name": "ZCheck",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill20"
+   },
+   "init_list": false
+  },
+  {
+   "name": "Shocked",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill30"
+   },
+   "init_list": false
+  },
+  {
+   "name": "n",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill8"
+   },
+   "init_list": false
+  },
+  {
    "name": "TargetX",
    "kind": "var",
    "array_size": {
@@ -21974,6 +22124,158 @@
   "bBar2": "AsyBar2.pcx",
   "NVision": "NVision.pcx"
  },
+ "panels": {
+  "NightV": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "NVision"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "transparent"
+     ]
+    ],
+    "layer": [
+     [
+      "5"
+     ]
+    ]
+   }
+  },
+  "pPanel": {
+   "kind": "panel",
+   "fields": {
+    "layer": [
+     [
+      "2"
+     ]
+    ],
+    "bmap": [
+     [
+      "bPNL"
+     ]
+    ],
+    "window": [
+     [
+      "7",
+      "43",
+      "8",
+      "110",
+      "bBar2",
+      "0",
+      "Batts"
+     ],
+     [
+      "7",
+      "242",
+      "8",
+      "110",
+      "bBar1",
+      "0",
+      "Health"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "overlay",
+      "visible"
+     ]
+    ]
+   }
+  },
+  "InventoryName": {
+   "kind": "text",
+   "fields": {
+    "layer": [
+     [
+      "5"
+     ]
+    ],
+    "pos_x": [
+     [
+      "340"
+     ]
+    ],
+    "pos_y": [
+     [
+      "380"
+     ]
+    ],
+    "font": [
+     [
+      "standard_font"
+     ]
+    ],
+    "string": [
+     [
+      "\"              I've got nothing              \""
+     ]
+    ],
+    "flags": [
+     [
+      "center_x"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_F1"
+    },
+    "value": {
+     "t": "call",
+     "name": "SwitchWeapon",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_ctrl"
+    },
+    "value": {
+     "t": "call",
+     "name": "WeaponHit",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_tab"
+    },
+    "value": {
+     "t": "call",
+     "name": "cheat",
+     "args": []
+    }
+   }
+  }
+ ],
  "skip_count": 0,
  "skipped": []
 }

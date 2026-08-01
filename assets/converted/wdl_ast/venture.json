@@ -27,6 +27,16 @@
    "init_list": false
   },
   {
+   "name": "__BUSY",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "FLAG8"
+   },
+   "init_list": false
+  },
+  {
    "name": "wrong_key_str",
    "kind": "string",
    "array_size": null,
@@ -167,6 +177,62 @@
    "init_list": false
   },
   {
+   "name": "SCREEN_STAT_HP_BAR_X",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "SCREEN_STAT_HP_BAR_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "SCREEN_STAT_STR_BAR_X",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "SCREEN_STAT_STR_BAR_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "SCREEN_STAT_MANA_BAR_X",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "SCREEN_STAT_MANA_BAR_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "SCREEN_STAT_BAR_HEIGHT",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "SCREEN_STAT_BAR_FACTOR",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
    "name": "statbar_pan_hp",
    "kind": "var",
    "array_size": null,
@@ -183,6 +249,114 @@
   {
    "name": "statbar_pan_mana",
    "kind": "var",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PICSIZE_X",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PICSIZE_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PICSAVE_BKGD",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "picloadbk_map",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "panel_font",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "standard_font"
+   },
+   "init_list": false
+  },
+  {
+   "name": "PICSLOT1_X",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PICSLOT1_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PICSLOT2_X",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PICSLOT2_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PICSLOT3_X",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PICSLOT3_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PICSLOT4_X",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PICSLOT4_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PICEXIT_X",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PICEXIT_Y",
+   "kind": "define",
    "array_size": null,
    "init": null,
    "init_list": false
@@ -237,10 +411,97 @@
    "init_list": false
   },
   {
+   "name": "ENT_SCALE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL33"
+   },
+   "init_list": false
+  },
+  {
+   "name": "ENT_ID",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL34"
+   },
+   "init_list": false
+  },
+  {
    "name": "NPC_ENTITY",
    "kind": "entity",
    "array_size": null,
    "init": null,
+   "init_list": false
+  },
+  {
+   "name": "_NPC_WALK",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 1.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_NPC_COME",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 2.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_NPC_ATTACK",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_NPC_RETREAT",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "_NPC_STOP",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 5.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_NPC_TALK",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 6.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_NPC_DEAD",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 7.0
+   },
    "init_list": false
   },
   {
@@ -269,6 +530,34 @@
   {
    "name": "vsk_time_nav_speed",
    "kind": "var",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PLAYER_LEVEL_TWO_EXP",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PLAYER_LEVEL_THREE_EXP",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PLAYER_LEVEL_FOUR_EXP",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PLAYER_LEVEL_FIVE_EXP",
+   "kind": "define",
    "array_size": null,
    "init": null,
    "init_list": false
@@ -331,6 +620,76 @@
     "t": "num",
     "v": 15.0
    },
+   "init_list": false
+  },
+  {
+   "name": "PLAYER_RAND_HP",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PLAYER_RAND_MANA",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PLAYER_RAND_STR",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PLAYER_RAND_GEW",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PLAYER_RAND_MUT",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PLAYER_RAND_INT",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PLAYER_BONUS_PER_LVL",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PLAYER_PERIODIC_HP",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PLAYER_PERIODIC_STR",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PLAYER_PERIODIC_MANA",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
    "init_list": false
   },
   {
@@ -397,6 +756,16 @@
   {
    "name": "give_exp",
    "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_EMPTY",
+   "kind": "define",
    "array_size": null,
    "init": {
     "t": "num",
@@ -506,6 +875,97 @@
     }
    ],
    "init_list": true
+  },
+  {
+   "name": "INVENT_P_invent_temp_item_DX",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "INVENT_P_X",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "INVENT_P_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "INVENT_P_WIN_DX",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "INVENT_P_WIN_DY",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "INVENT_P_ROW_1",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "INVENT_P_ROW_2",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "INVENT_P_ROW_3",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "INVENT_P_ROW_4",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "INVENT_P_ROW_5",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "INVENT_P_ROW_6",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "INVENT_P_COL_1",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "INVENT_P_COL_2",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
   },
   {
    "name": "i1_window",
@@ -844,6 +1304,43 @@
    "init_list": false
   },
   {
+   "name": "COMBAT_SWORD_LENGTH",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "_VWEAPON_TYPE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL19"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_VWEAPON_TYPE_MELEE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 1.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_VWEAPON_TYPE_DIRECT",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 2.0
+   },
+   "init_list": false
+  },
+  {
    "name": "__HAS_SWORD",
    "kind": "var",
    "array_size": null,
@@ -965,6 +1462,16 @@
    "init_list": false
   },
   {
+   "name": "_DIALOG_STATE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL33"
+   },
+   "init_list": false
+  },
+  {
    "name": "blank_dialog_str",
    "kind": "string",
    "array_size": null,
@@ -996,6 +1503,20 @@
     }
    ],
    "init_list": true
+  },
+  {
+   "name": "MOUSE_WALK",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "unop",
+    "op": "-",
+    "expr": {
+     "t": "num",
+     "v": 1.0
+    }
+   },
+   "init_list": false
   },
   {
    "name": "old_mouse_object",
@@ -17979,6 +18500,1829 @@
   "i12_map": "invent.bmp",
   "mouse_l_map": "arrow.pcx"
  },
+ "panels": {
+  "info1_txt": {
+   "kind": "text",
+   "fields": {
+    "pos_x": [
+     [
+      "80"
+     ]
+    ],
+    "pos_y": [
+     [
+      "280"
+     ]
+    ],
+    "layer": [
+     [
+      "5"
+     ]
+    ],
+    "font": [
+     [
+      "panel_font"
+     ]
+    ],
+    "string": [
+     [
+      "vent_blank_str"
+     ]
+    ]
+   }
+  },
+  "info2_txt": {
+   "kind": "text",
+   "fields": {
+    "pos_x": [
+     [
+      "80"
+     ]
+    ],
+    "pos_y": [
+     [
+      "355"
+     ]
+    ],
+    "layer": [
+     [
+      "5"
+     ]
+    ],
+    "font": [
+     [
+      "panel_font"
+     ]
+    ],
+    "string": [
+     [
+      "vent_blank_str"
+     ]
+    ]
+   }
+  },
+  "bonus_info_txt": {
+   "kind": "text",
+   "fields": {
+    "pos_x": [
+     [
+      "84"
+     ]
+    ],
+    "pos_y": [
+     [
+      "430"
+     ]
+    ],
+    "layer": [
+     [
+      "5"
+     ]
+    ],
+    "font": [
+     [
+      "panel_font"
+     ]
+    ],
+    "string": [
+     [
+      "bonus_info_str"
+     ]
+    ]
+   }
+  },
+  "statbar_pan": {
+   "kind": "panel",
+   "fields": {
+    "vbar": [
+     [
+      "SCREEN_STAT_HP_BAR_X",
+      "SCREEN_STAT_HP_BAR_Y",
+      "SCREEN_STAT_BAR_HEIGHT",
+      "hpbar_map",
+      "SCREEN_STAT_BAR_FACTOR",
+      "statbar_pan_hp"
+     ],
+     [
+      "SCREEN_STAT_STR_BAR_X",
+      "SCREEN_STAT_STR_BAR_Y",
+      "SCREEN_STAT_BAR_HEIGHT",
+      "strbar_map",
+      "SCREEN_STAT_BAR_FACTOR",
+      "statbar_pan_str"
+     ],
+     [
+      "SCREEN_STAT_MANA_BAR_X",
+      "SCREEN_STAT_MANA_BAR_Y",
+      "SCREEN_STAT_BAR_HEIGHT",
+      "manabar_map",
+      "SCREEN_STAT_BAR_FACTOR",
+      "statbar_pan_mana"
+     ]
+    ],
+    "layer": [
+     [
+      "7"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH",
+      "VISIBLE"
+     ]
+    ]
+   }
+  },
+  "screen_pan": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "screen_map"
+     ]
+    ],
+    "button": [
+     [
+      "535",
+      "0",
+      "char_button_map",
+      "NULL",
+      "NULL",
+      "vpst_toggle_char",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "530",
+      "120",
+      "inv_button_map",
+      "NULL",
+      "NULL",
+      "vinv_toggle_inventory",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "570",
+      "210",
+      "menu_button_map",
+      "NULL",
+      "NULL",
+      "vscr_toggle_menu",
+      "NULL",
+      "NULL"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ],
+    "flags": [
+     [
+      "OVERLAY",
+      "REFRESH",
+      "VISIBLE"
+     ]
+    ]
+   }
+  },
+  "info1_pan": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "61"
+     ]
+    ],
+    "pos_y": [
+     [
+      "265"
+     ]
+    ],
+    "bmap": [
+     [
+      "info1_map"
+     ]
+    ],
+    "layer": [
+     [
+      "3"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH",
+      "OVERLAY"
+     ]
+    ]
+   }
+  },
+  "info2_pan": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "61"
+     ]
+    ],
+    "pos_y": [
+     [
+      "344"
+     ]
+    ],
+    "bmap": [
+     [
+      "info2_map"
+     ]
+    ],
+    "layer": [
+     [
+      "3"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH",
+      "OVERLAY"
+     ]
+    ]
+   }
+  },
+  "info_exit_vbpan": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "61"
+     ]
+    ],
+    "pos_y": [
+     [
+      "265"
+     ]
+    ],
+    "button": [
+     [
+      "200",
+      "180",
+      "button_map",
+      "button_map",
+      "button_map",
+      "vscr_close_all",
+      "NULL",
+      "NULL"
+     ]
+    ],
+    "layer": [
+     [
+      "4"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH",
+      "OVERLAY"
+     ]
+    ]
+   }
+  },
+  "info_exit_right_vbpan": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "61"
+     ]
+    ],
+    "pos_y": [
+     [
+      "265"
+     ]
+    ],
+    "button": [
+     [
+      "375",
+      "175",
+      "button_map",
+      "button_map",
+      "button_map",
+      "vscr_close_all",
+      "NULL",
+      "NULL"
+     ]
+    ],
+    "layer": [
+     [
+      "4"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH",
+      "OVERLAY"
+     ]
+    ]
+   }
+  },
+  "intro_exit_vbpan": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "61"
+     ]
+    ],
+    "pos_y": [
+     [
+      "265"
+     ]
+    ],
+    "button": [
+     [
+      "375",
+      "175",
+      "button_map",
+      "button_map",
+      "button_map",
+      "vscr_show_startmenu",
+      "NULL",
+      "NULL"
+     ]
+    ],
+    "layer": [
+     [
+      "4"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH",
+      "OVERLAY"
+     ]
+    ]
+   }
+  },
+  "start_menu_vbpan": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "61"
+     ]
+    ],
+    "pos_y": [
+     [
+      "265"
+     ]
+    ],
+    "layer": [
+     [
+      "4"
+     ]
+    ],
+    "button": [
+     [
+      "45",
+      "40",
+      "button_map",
+      "button_map",
+      "button_map",
+      "vpst_show_create_character",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "45",
+      "60",
+      "button_map",
+      "button_map",
+      "button_map",
+      "vpic_load",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "45",
+      "80",
+      "button_map",
+      "button_map",
+      "button_map",
+      "vscr_show_start_exit",
+      "NULL",
+      "NULL"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH",
+      "OVERLAY"
+     ]
+    ]
+   }
+  },
+  "main_menu_vbpan": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "61"
+     ]
+    ],
+    "pos_y": [
+     [
+      "265"
+     ]
+    ],
+    "layer": [
+     [
+      "4"
+     ]
+    ],
+    "button": [
+     [
+      "45",
+      "40",
+      "button_map",
+      "button_map",
+      "button_map",
+      "main",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "45",
+      "60",
+      "button_map",
+      "button_map",
+      "button_map",
+      "vpic_save",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "45",
+      "80",
+      "button_map",
+      "button_map",
+      "button_map",
+      "vpic_load",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "45",
+      "100",
+      "button_map",
+      "button_map",
+      "button_map",
+      "vscr_show_exit",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "45",
+      "120",
+      "button_map",
+      "button_map",
+      "button_map",
+      "vscr_close_all",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "45",
+      "140",
+      "button_map",
+      "button_map",
+      "button_map",
+      "vscr_show_help",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "45",
+      "160",
+      "button_map",
+      "button_map",
+      "button_map",
+      "vscr_show_credits",
+      "NULL",
+      "NULL"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH"
+     ]
+    ]
+   }
+  },
+  "admenu_vbpan": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "61"
+     ]
+    ],
+    "pos_y": [
+     [
+      "265"
+     ]
+    ],
+    "layer": [
+     [
+      "4"
+     ]
+    ],
+    "button": [
+     [
+      "45",
+      "40",
+      "button_map",
+      "button_map",
+      "button_map",
+      "main",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "45",
+      "60",
+      "button_map",
+      "button_map",
+      "button_map",
+      "vpic_save",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "45",
+      "80",
+      "button_map",
+      "button_map",
+      "button_map",
+      "vpic_load",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "45",
+      "100",
+      "button_map",
+      "button_map",
+      "button_map",
+      "vscr_show_exit",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "45",
+      "120",
+      "button_map",
+      "button_map",
+      "button_map",
+      "vscr_show_help",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "45",
+      "140",
+      "button_map",
+      "button_map",
+      "button_map",
+      "vscr_show_credits",
+      "NULL",
+      "NULL"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH"
+     ]
+    ]
+   }
+  },
+  "exit_vbpan": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "61"
+     ]
+    ],
+    "pos_y": [
+     [
+      "344"
+     ]
+    ],
+    "layer": [
+     [
+      "4"
+     ]
+    ],
+    "button": [
+     [
+      "40",
+      "60",
+      "button_map",
+      "button_map",
+      "button_map",
+      "vmsc_exit",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "40",
+      "80",
+      "button_map",
+      "button_map",
+      "button_map",
+      "vscr_close_all",
+      "NULL",
+      "NULL"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH"
+     ]
+    ]
+   }
+  },
+  "start_exit_vbpan": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "61"
+     ]
+    ],
+    "pos_y": [
+     [
+      "344"
+     ]
+    ],
+    "layer": [
+     [
+      "4"
+     ]
+    ],
+    "button": [
+     [
+      "40",
+      "60",
+      "button_map",
+      "button_map",
+      "button_map",
+      "vmsc_exit",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "40",
+      "80",
+      "button_map",
+      "button_map",
+      "button_map",
+      "vscr_show_startmenu",
+      "NULL",
+      "NULL"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH"
+     ]
+    ]
+   }
+  },
+  "blood_pan": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "3"
+     ]
+    ],
+    "pos_y": [
+     [
+      "4"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ],
+    "bmap": [
+     [
+      "blood_splash_map"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH",
+      "OVERLAY"
+     ]
+    ]
+   }
+  },
+  "blackTop16_pan": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "black_map"
+     ]
+    ],
+    "layer": [
+     [
+      "16"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH"
+     ]
+    ]
+   }
+  },
+  "blackTop15_pan": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "black_map"
+     ]
+    ],
+    "layer": [
+     [
+      "15"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH",
+      "TRANSPARENT"
+     ]
+    ]
+   }
+  },
+  "blackTop14_pan": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "black_map"
+     ]
+    ],
+    "layer": [
+     [
+      "14"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH",
+      "TRANSPARENT"
+     ]
+    ]
+   }
+  },
+  "blackTop13_pan": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "black_map"
+     ]
+    ],
+    "layer": [
+     [
+      "13"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH",
+      "TRANSPARENT"
+     ]
+    ]
+   }
+  },
+  "picsave_pan": {
+   "kind": "panel",
+   "fields": {
+    "ifdef": [
+     [
+      "PICSAVE_BKGD"
+     ]
+    ],
+    "bmap": [
+     [
+      "picsavebk_map"
+     ]
+    ],
+    "endif": [
+     [
+      ";"
+     ]
+    ],
+    "layer": [
+     [
+      "10"
+     ]
+    ],
+    "button": [
+     [
+      "PICSLOT1_X",
+      "PICSLOT1_Y",
+      "slot1_map",
+      "slot1_map",
+      "slot1_map",
+      "_vpic_save1",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "PICSLOT2_X",
+      "PICSLOT2_Y",
+      "slot2_map",
+      "slot2_map",
+      "slot2_map",
+      "_vpic_save2",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "PICSLOT3_X",
+      "PICSLOT3_Y",
+      "slot3_map",
+      "slot3_map",
+      "slot3_map",
+      "_vpic_save3",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "PICSLOT4_X",
+      "PICSLOT4_Y",
+      "slot4_map",
+      "slot4_map",
+      "slot4_map",
+      "_vpic_save4",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "PICEXIT_X",
+      "PICEXIT_Y",
+      "button_map",
+      "button_map",
+      "button_map",
+      "_vpic_save_hide",
+      "NULL",
+      "NULL"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH"
+     ]
+    ]
+   }
+  },
+  "picload_pan": {
+   "kind": "panel",
+   "fields": {
+    "ifdef": [
+     [
+      "PICSAVE_BKGD"
+     ]
+    ],
+    "bmap": [
+     [
+      "picloadbk_map"
+     ]
+    ],
+    "endif": [
+     [
+      ";"
+     ]
+    ],
+    "layer": [
+     [
+      "10"
+     ]
+    ],
+    "button": [
+     [
+      "PICSLOT1_X",
+      "PICSLOT1_Y",
+      "slot1_map",
+      "slot1_map",
+      "slot1_map",
+      "_vpic_load1",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "PICSLOT2_X",
+      "PICSLOT2_Y",
+      "slot2_map",
+      "slot2_map",
+      "slot2_map",
+      "_vpic_load2",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "PICSLOT3_X",
+      "PICSLOT3_Y",
+      "slot3_map",
+      "slot3_map",
+      "slot3_map",
+      "_vpic_load3",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "PICSLOT4_X",
+      "PICSLOT4_Y",
+      "slot4_map",
+      "slot4_map",
+      "slot4_map",
+      "_vpic_load4",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "PICEXIT_X",
+      "PICEXIT_Y",
+      "button_map",
+      "button_map",
+      "button_map",
+      "_vpic_save_hide",
+      "NULL",
+      "NULL"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH"
+     ]
+    ]
+   }
+  },
+  "picsave1_txt": {
+   "kind": "text",
+   "fields": {
+    "layer": [
+     [
+      "11"
+     ]
+    ],
+    "font": [
+     [
+      "panel_font"
+     ]
+    ],
+    "string": [
+     [
+      "name1_str"
+     ]
+    ]
+   }
+  },
+  "picsave2_txt": {
+   "kind": "text",
+   "fields": {
+    "layer": [
+     [
+      "11"
+     ]
+    ],
+    "font": [
+     [
+      "panel_font"
+     ]
+    ],
+    "string": [
+     [
+      "name2_str"
+     ]
+    ]
+   }
+  },
+  "picsave3_txt": {
+   "kind": "text",
+   "fields": {
+    "layer": [
+     [
+      "11"
+     ]
+    ],
+    "font": [
+     [
+      "panel_font"
+     ]
+    ],
+    "string": [
+     [
+      "name3_str"
+     ]
+    ]
+   }
+  },
+  "picsave4_txt": {
+   "kind": "text",
+   "fields": {
+    "layer": [
+     [
+      "11"
+     ]
+    ],
+    "font": [
+     [
+      "panel_font"
+     ]
+    ],
+    "string": [
+     [
+      "name4_str"
+     ]
+    ]
+   }
+  },
+  "bonus_pan": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "61"
+     ]
+    ],
+    "pos_y": [
+     [
+      "265"
+     ]
+    ],
+    "button": [
+     [
+      "15",
+      "40",
+      "button_map",
+      "button_map",
+      "button_map",
+      "_vpst_bonus_hp",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "15",
+      "60",
+      "button_map",
+      "button_map",
+      "button_map",
+      "_vpst_bonus_mana",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "15",
+      "80",
+      "button_map",
+      "button_map",
+      "button_map",
+      "_vpst_bonus_str",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "15",
+      "100",
+      "button_map",
+      "button_map",
+      "button_map",
+      "_vpst_bonus_gew",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "180",
+      "40",
+      "button_map",
+      "button_map",
+      "button_map",
+      "_vpst_bonus_mut",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "180",
+      "60",
+      "button_map",
+      "button_map",
+      "button_map",
+      "_vpst_bonus_int",
+      "NULL",
+      "NULL"
+     ]
+    ],
+    "digits": [
+     [
+      "130",
+      "175",
+      "2",
+      "panel_font",
+      "1",
+      "player_bonus_pts"
+     ]
+    ],
+    "layer": [
+     [
+      "4"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH",
+      "OVERLAY"
+     ]
+    ]
+   }
+  },
+  "char_pan": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "65"
+     ]
+    ],
+    "pos_y": [
+     [
+      "265"
+     ]
+    ],
+    "digits": [
+     [
+      "125",
+      "45",
+      "2",
+      "panel_font",
+      "1",
+      "player_current_hp"
+     ],
+     [
+      "150",
+      "45",
+      "2",
+      "panel_font",
+      "1",
+      "player_hp"
+     ],
+     [
+      "125",
+      "65",
+      "2",
+      "panel_font",
+      "1",
+      "player_current_mana"
+     ],
+     [
+      "150",
+      "65",
+      "2",
+      "panel_font",
+      "1",
+      "player_mana"
+     ],
+     [
+      "125",
+      "85",
+      "2",
+      "panel_font",
+      "1",
+      "player_current_str"
+     ],
+     [
+      "150",
+      "85",
+      "2",
+      "panel_font",
+      "1",
+      "player_str"
+     ],
+     [
+      "150",
+      "105",
+      "2",
+      "panel_font",
+      "1",
+      "player_gew"
+     ],
+     [
+      "350",
+      "45",
+      "2",
+      "panel_font",
+      "1",
+      "player_mut"
+     ],
+     [
+      "350",
+      "65",
+      "2",
+      "panel_font",
+      "1",
+      "player_int"
+     ],
+     [
+      "350",
+      "85",
+      "2",
+      "panel_font",
+      "1",
+      "player_lvl"
+     ],
+     [
+      "325",
+      "105",
+      "5",
+      "panel_font",
+      "1",
+      "player_exp"
+     ],
+     [
+      "325",
+      "125",
+      "5",
+      "panel_font",
+      "1",
+      "next_lvl_exp"
+     ]
+    ],
+    "layer": [
+     [
+      "4"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH",
+      "OVERLAY"
+     ]
+    ]
+   }
+  },
+  "invent_pan": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "INVENT_P_X"
+     ]
+    ],
+    "pos_y": [
+     [
+      "INVENT_P_Y"
+     ]
+    ],
+    "bmap": [
+     [
+      "invent_map"
+     ]
+    ],
+    "button": [
+     [
+      "INVENT_P_COL_1",
+      "INVENT_P_ROW_1",
+      "i1_map",
+      "NULL",
+      "NULL",
+      "_vinv_check_i1",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "INVENT_P_COL_2",
+      "INVENT_P_ROW_1",
+      "i2_map",
+      "NULL",
+      "NULL",
+      "_vinv_check_i2",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "INVENT_P_COL_1",
+      "INVENT_P_ROW_2",
+      "i3_map",
+      "NULL",
+      "NULL",
+      "_vinv_check_i3",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "INVENT_P_COL_2",
+      "INVENT_P_ROW_2",
+      "i4_map",
+      "NULL",
+      "NULL",
+      "_vinv_check_i4",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "INVENT_P_COL_1",
+      "INVENT_P_ROW_3",
+      "i5_map",
+      "NULL",
+      "NULL",
+      "_vinv_check_i5",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "INVENT_P_COL_2",
+      "INVENT_P_ROW_3",
+      "i6_map",
+      "NULL",
+      "NULL",
+      "_vinv_check_i6",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "INVENT_P_COL_1",
+      "INVENT_P_ROW_4",
+      "i7_map",
+      "NULL",
+      "NULL",
+      "_vinv_check_i7",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "INVENT_P_COL_2",
+      "INVENT_P_ROW_4",
+      "i8_map",
+      "NULL",
+      "NULL",
+      "_vinv_check_i8",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "INVENT_P_COL_1",
+      "INVENT_P_ROW_5",
+      "i9_map",
+      "NULL",
+      "NULL",
+      "_vinv_check_i9",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "INVENT_P_COL_2",
+      "INVENT_P_ROW_5",
+      "i10_map",
+      "NULL",
+      "NULL",
+      "_vinv_check_i10",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "INVENT_P_COL_1",
+      "INVENT_P_ROW_6",
+      "i11_map",
+      "NULL",
+      "NULL",
+      "_vinv_check_i11",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "INVENT_P_COL_2",
+      "INVENT_P_ROW_6",
+      "i12_map",
+      "NULL",
+      "NULL",
+      "_vinv_check_i12",
+      "NULL",
+      "NULL"
+     ]
+    ],
+    "window": [
+     [
+      "INVENT_P_COL_1",
+      "INVENT_P_ROW_1",
+      "INVENT_P_WIN_DX",
+      "INVENT_P_WIN_DY",
+      "invent_item_map",
+      "i1_window",
+      "0"
+     ],
+     [
+      "INVENT_P_COL_2",
+      "INVENT_P_ROW_1",
+      "INVENT_P_WIN_DX",
+      "INVENT_P_WIN_DY",
+      "invent_item_map",
+      "i2_window",
+      "0"
+     ],
+     [
+      "INVENT_P_COL_1",
+      "INVENT_P_ROW_2",
+      "INVENT_P_WIN_DX",
+      "INVENT_P_WIN_DY",
+      "invent_item_map",
+      "i3_window",
+      "0"
+     ],
+     [
+      "INVENT_P_COL_2",
+      "INVENT_P_ROW_2",
+      "INVENT_P_WIN_DX",
+      "INVENT_P_WIN_DY",
+      "invent_item_map",
+      "i4_window",
+      "0"
+     ],
+     [
+      "INVENT_P_COL_1",
+      "INVENT_P_ROW_3",
+      "INVENT_P_WIN_DX",
+      "INVENT_P_WIN_DY",
+      "invent_item_map",
+      "i5_window",
+      "0"
+     ],
+     [
+      "INVENT_P_COL_2",
+      "INVENT_P_ROW_3",
+      "INVENT_P_WIN_DX",
+      "INVENT_P_WIN_DY",
+      "invent_item_map",
+      "i6_window",
+      "0"
+     ],
+     [
+      "INVENT_P_COL_1",
+      "INVENT_P_ROW_4",
+      "INVENT_P_WIN_DX",
+      "INVENT_P_WIN_DY",
+      "invent_item_map",
+      "i7_window",
+      "0"
+     ],
+     [
+      "INVENT_P_COL_2",
+      "INVENT_P_ROW_4",
+      "INVENT_P_WIN_DX",
+      "INVENT_P_WIN_DY",
+      "invent_item_map",
+      "i8_window",
+      "0"
+     ],
+     [
+      "INVENT_P_COL_1",
+      "INVENT_P_ROW_5",
+      "INVENT_P_WIN_DX",
+      "INVENT_P_WIN_DY",
+      "invent_item_map",
+      "i9_window",
+      "0"
+     ],
+     [
+      "INVENT_P_COL_2",
+      "INVENT_P_ROW_5",
+      "INVENT_P_WIN_DX",
+      "INVENT_P_WIN_DY",
+      "invent_item_map",
+      "i10_window",
+      "0"
+     ],
+     [
+      "INVENT_P_COL_1",
+      "INVENT_P_ROW_6",
+      "INVENT_P_WIN_DX",
+      "INVENT_P_WIN_DY",
+      "invent_item_map",
+      "i11_window",
+      "0"
+     ],
+     [
+      "INVENT_P_COL_2",
+      "INVENT_P_ROW_6",
+      "INVENT_P_WIN_DX",
+      "INVENT_P_WIN_DY",
+      "invent_item_map",
+      "i12_window",
+      "0"
+     ]
+    ],
+    "layer": [
+     [
+      "3"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH",
+      "OVERLAY"
+     ]
+    ]
+   }
+  },
+  "dialog_txt": {
+   "kind": "text",
+   "fields": {
+    "pos_x": [
+     [
+      "100"
+     ]
+    ],
+    "pos_y": [
+     [
+      "355"
+     ]
+    ],
+    "layer": [
+     [
+      "5"
+     ]
+    ],
+    "font": [
+     [
+      "panel_font"
+     ]
+    ],
+    "string": [
+     [
+      "blank_dialog_str"
+     ]
+    ],
+    "flags": [
+     [
+      "CONDENSED"
+     ]
+    ]
+   }
+  },
+  "dialog1_button_panel": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "61"
+     ]
+    ],
+    "pos_y": [
+     [
+      "265"
+     ]
+    ],
+    "button": [
+     [
+      "15",
+      "130",
+      "button_map",
+      "button_map",
+      "button_map",
+      "_vdia_button1",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "15",
+      "160",
+      "button_map",
+      "button_map",
+      "button_map",
+      "_vdia_button2",
+      "NULL",
+      "NULL"
+     ]
+    ],
+    "layer": [
+     [
+      "5"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH",
+      "OVERLAY"
+     ]
+    ]
+   }
+  },
+  "dialog2_button_panel": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "61"
+     ]
+    ],
+    "pos_y": [
+     [
+      "265"
+     ]
+    ],
+    "button": [
+     [
+      "200",
+      "180",
+      "button_map",
+      "button_map",
+      "button_map",
+      "_vdia_button3",
+      "NULL",
+      "NULL"
+     ]
+    ],
+    "layer": [
+     [
+      "5"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH",
+      "OVERLAY"
+     ]
+    ]
+   }
+  },
+  "touch_txt_old": {
+   "kind": "text",
+   "fields": {
+    "pos_x": [
+     [
+      "320"
+     ]
+    ],
+    "pos_y": [
+     [
+      "410"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ],
+    "font": [
+     [
+      "panel_font"
+     ]
+    ],
+    "string": [
+     [
+      "vent_null_str"
+     ]
+    ],
+    "flags": [
+     [
+      "VISIBLE",
+      "CENTER_X"
+     ]
+    ]
+   }
+  },
+  "wrong_item_txt": {
+   "kind": "text",
+   "fields": {
+    "pos_x": [
+     [
+      "320"
+     ]
+    ],
+    "pos_y": [
+     [
+      "410"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ],
+    "font": [
+     [
+      "panel_font"
+     ]
+    ],
+    "string": [
+     [
+      "wrong_item_str"
+     ]
+    ],
+    "flags": [
+     [
+      "CENTER_X"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "YOU"
+    },
+    "value": {
+     "t": "null"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "move_mode"
+    },
+    "value": {
+     "t": "binop",
+     "op": "+",
+     "l": {
+      "t": "binop",
+      "op": "+",
+      "l": {
+       "t": "binop",
+       "op": "+",
+       "l": {
+        "t": "binop",
+        "op": "+",
+        "l": {
+         "t": "id",
+         "name": "ignore_you"
+        },
+        "r": {
+         "t": "id",
+         "name": "ignore_passable"
+        }
+       },
+       "r": {
+        "t": "id",
+        "name": "ignore_push"
+       }
+      },
+      "r": {
+       "t": "id",
+       "name": "activate_trigger"
+      }
+     },
+     "r": {
+      "t": "id",
+      "name": "glide"
+     }
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "result"
+    },
+    "value": {
+     "t": "call",
+     "name": "ent_move",
+     "args": [
+      {
+       "t": "id",
+       "name": "sw_normal"
+      },
+      {
+       "t": "id",
+       "name": "nullskill"
+      }
+     ]
+    }
+   }
+  }
+ ],
  "skip_count": 32,
  "skipped": [
   "line 159: expected a name, got 'number' ('535')",

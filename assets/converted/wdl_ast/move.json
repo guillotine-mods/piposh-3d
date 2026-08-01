@@ -8891,6 +8891,8 @@
  },
  "sounds": {},
  "bmaps": {},
+ "panels": {},
+ "top_level_stmts": [],
  "skip_count": 11,
  "skipped": [
   "line 681: unexpected token '<' ('<')",

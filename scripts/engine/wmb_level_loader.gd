@@ -294,6 +294,30 @@ func _spawn_entity(obj: Dictionary) -> bool:
 	if pos.length() > MAX_ORIGIN_DIST:
 		return false
 
+	# Plane.wdl's `action PiposhWalk` (Piposh's walk-in at level start) is
+	# WED-authored ~120 units below this level's own floor_y -- Godot
+	# Y=-39 vs floor_y=83, while the surrounding cabin (Pip Y=34, Krup
+	# Y=35, Dummy Y=49, all much closer to floor_y) sits at the correct
+	# height. No WDL script anywhere manages the height axis directly
+	# around actor_move() -- the original engine's own actor_move() floor-
+	# snaps for free every tick, so this port's straight-line X/Z-only
+	# _do_actor_move() just leaves him pinned at spawn height forever.
+	# Reported live (2026-08-01): "Piposh enters lower than he should be,
+	# not walking on the plane's height at the start of the scene."
+	# A real per-tick raycast floor-snap (matching the original engine)
+	# was tried and reverted: on this exact mesh it locked onto the wrong
+	# collision surface (an upper-deck/ceiling hit above the ray's rising
+	# start point) and climbed away instead of settling -- too fragile to
+	# ship without visual verification, and touching every actor_move()
+	# call site in the corpus for one report is out of proportion anyway.
+	# Narrow, one-time spawn correction instead, scoped to this exact
+	# entity (same precedent as _mount_wall_card()'s 2-stem special
+	# case): snap to this level's own already-computed floor_y so he
+	# starts on the correct floor rather than needing a live floor-follow
+	# he'd otherwise never get.
+	if level_name == "Plane" and action == "PiposhWalk" and pos.y < floor_y - 40.0:
+		pos.y = floor_y
+
 	var scl := _vec3(obj.get("scale", [1, 1, 1]), Vector3.ONE)
 	# Preserve authored scales (Island=20). Only reject insane non-uniform junk.
 	if scl.x <= 0.0 or scl.y <= 0.0 or scl.z <= 0.0:

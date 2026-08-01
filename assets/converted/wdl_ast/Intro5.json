@@ -7621,6 +7621,8 @@
   "redsky": "redsky.pcx",
   "redmount": "horizon7.pcx"
  },
+ "panels": {},
+ "top_level_stmts": [],
  "skip_count": 2,
  "skipped": [
   "line 435: stray '}' at top level (skipped)",

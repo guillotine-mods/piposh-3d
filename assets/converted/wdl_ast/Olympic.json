@@ -26969,6 +26969,25 @@
   "Dusty": "cursor2.pcx",
   "Nutty": "cursor3.pcx"
  },
+ "panels": {},
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_F1"
+    },
+    "value": {
+     "t": "call",
+     "name": "SwitchView",
+     "args": []
+    }
+   }
+  }
+ ],
  "skip_count": 2,
  "skipped": [
   "line 1445: stray '}' at top level (skipped)",

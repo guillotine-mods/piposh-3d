@@ -4922,6 +4922,274 @@
   "bOpt2": "Opt2.pcx",
   "bSteel": "Steel.pcx"
  },
+ "panels": {
+  "txt1": {
+   "kind": "text",
+   "fields": {
+    "layer": [
+     [
+      "-1"
+     ]
+    ],
+    "pos_x": [
+     [
+      "60"
+     ]
+    ],
+    "pos_y": [
+     [
+      "340"
+     ]
+    ],
+    "string": [
+     [
+      "\"\""
+     ]
+    ],
+    "flags": [
+     [
+      "visible"
+     ]
+    ],
+    "font": [
+     [
+      "standard_font"
+     ]
+    ]
+   }
+  },
+  "txt2": {
+   "kind": "text",
+   "fields": {
+    "layer": [
+     [
+      "-1"
+     ]
+    ],
+    "pos_x": [
+     [
+      "60"
+     ]
+    ],
+    "pos_y": [
+     [
+      "395"
+     ]
+    ],
+    "string": [
+     [
+      "\"\""
+     ]
+    ],
+    "flags": [
+     [
+      "visible"
+     ]
+    ],
+    "font": [
+     [
+      "standard_font"
+     ]
+    ]
+   }
+  },
+  "txt3": {
+   "kind": "text",
+   "fields": {
+    "layer": [
+     [
+      "-1"
+     ]
+    ],
+    "pos_x": [
+     [
+      "60"
+     ]
+    ],
+    "pos_y": [
+     [
+      "450"
+     ]
+    ],
+    "string": [
+     [
+      "\"\""
+     ]
+    ],
+    "flags": [
+     [
+      "visible"
+     ]
+    ],
+    "font": [
+     [
+      "standard_font"
+     ]
+    ]
+   }
+  },
+  "Dialog": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bSteel"
+     ]
+    ],
+    "pos_x": [
+     [
+      "0"
+     ]
+    ],
+    "pos_y": [
+     [
+      "333"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "layer": [
+     [
+      "-2"
+     ]
+    ],
+    "button": [
+     [
+      "0",
+      "-15",
+      "bOpt1",
+      "bOpt1",
+      "bOpt2",
+      "Choice1",
+      "null",
+      "null"
+     ],
+     [
+      "0",
+      "40",
+      "bOpt1",
+      "bOpt1",
+      "bOpt2",
+      "Choice2",
+      "null",
+      "null"
+     ],
+     [
+      "0",
+      "97",
+      "bOpt1",
+      "bOpt1",
+      "bOpt2",
+      "Choice3",
+      "null",
+      "null"
+     ]
+    ]
+   }
+  },
+  "Option1": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "50"
+     ]
+    ],
+    "pos_y": [
+     [
+      "337"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "layer": [
+     [
+      "-1"
+     ]
+    ],
+    "on_click": [
+     [
+      "Choice1"
+     ]
+    ]
+   }
+  },
+  "Option2": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "50"
+     ]
+    ],
+    "pos_y": [
+     [
+      "390"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "layer": [
+     [
+      "-1"
+     ]
+    ],
+    "on_click": [
+     [
+      "Choice2"
+     ]
+    ]
+   }
+  },
+  "Option3": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "50"
+     ]
+    ],
+    "pos_y": [
+     [
+      "438"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "layer": [
+     [
+      "-1"
+     ]
+    ],
+    "on_click": [
+     [
+      "Choice3"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [],
  "skip_count": 0,
  "skipped": []
 }

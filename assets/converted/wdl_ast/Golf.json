@@ -10826,6 +10826,256 @@
   "Wind1": "GolfWnd1.pcx",
   "Wind2": "GolfWnd2.pcx"
  },
+ "panels": {
+  "GUI": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "Golf1"
+     ]
+    ],
+    "pos_x": [
+     [
+      "0"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "layer": [
+     [
+      "1"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "visible",
+      "overlay"
+     ]
+    ],
+    "digits": [
+     [
+      "128",
+      "95",
+      "4",
+      "standard_font",
+      "1",
+      "AbsWind"
+     ],
+     [
+      "120",
+      "30",
+      "4",
+      "standard_font",
+      "1",
+      "Strikes"
+     ]
+    ]
+   }
+  },
+  "pInst": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bGlf1"
+     ]
+    ],
+    "pos_x": [
+     [
+      "209"
+     ]
+    ],
+    "pos_y": [
+     [
+      "430"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "visible",
+      "transparent"
+     ]
+    ]
+   }
+  },
+  "pWind": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "117"
+     ]
+    ],
+    "pos_y": [
+     [
+      "75"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "visible"
+     ]
+    ]
+   }
+  },
+  "OnAir": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "Border"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "layer": [
+     [
+      "1"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "visible",
+      "overlay"
+     ]
+    ]
+   }
+  },
+  "Putt": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "Golf4"
+     ]
+    ],
+    "pos_x": [
+     [
+      "18"
+     ]
+    ],
+    "pos_y": [
+     [
+      "130"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "visible",
+      "overlay"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_mouse_left"
+    },
+    "value": {
+     "t": "call",
+     "name": "SetHitting",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_F1"
+    },
+    "value": {
+     "t": "id",
+     "name": "SetSee"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_F2"
+    },
+    "value": {
+     "t": "call",
+     "name": "toggleArrow",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_F3"
+    },
+    "value": {
+     "t": "call",
+     "name": "ToggleClub",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_tab"
+    },
+    "value": {
+     "t": "call",
+     "name": "cheat",
+     "args": []
+    }
+   }
+  }
+ ],
  "skip_count": 1,
  "skipped": [
   "line 877: stray '}' at top level (skipped)"

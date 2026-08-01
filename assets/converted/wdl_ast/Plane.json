@@ -6346,6 +6346,8 @@
   "sHammer": "SFX090.WAV"
  },
  "bmaps": {},
+ "panels": {},
+ "top_level_stmts": [],
  "skip_count": 2,
  "skipped": [
   "line 332: stray '}' at top level (skipped)",

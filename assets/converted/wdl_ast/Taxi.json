@@ -6724,6 +6724,30 @@
  "bmaps": {
   "Bk": "Zimimbk.pcx"
  },
+ "panels": {
+  "pZimim": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "Bk"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [],
  "skip_count": 2,
  "skipped": [
   "line 467: stray '}' at top level (skipped)",

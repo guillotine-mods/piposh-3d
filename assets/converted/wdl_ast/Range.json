@@ -52,6 +52,86 @@
    "init_list": false
   },
   {
+   "name": "muzzle_flash",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "res",
+    "v": "Fire.bmp"
+   },
+   "init_list": false
+  },
+  {
+   "name": "Pop",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill20"
+   },
+   "init_list": false
+  },
+  {
+   "name": "Delay",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill21"
+   },
+   "init_list": false
+  },
+  {
+   "name": "Dying",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill22"
+   },
+   "init_list": false
+  },
+  {
+   "name": "OriginalZ",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill23"
+   },
+   "init_list": false
+  },
+  {
+   "name": "GoingUp",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill24"
+   },
+   "init_list": false
+  },
+  {
+   "name": "Type",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill25"
+   },
+   "init_list": false
+  },
+  {
+   "name": "Base",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill26"
+   },
+   "init_list": false
+  },
+  {
    "name": "SkyTilt",
    "kind": "var",
    "array_size": null,
@@ -10933,6 +11013,790 @@
   "bSkip": "Skip.pcx",
   "bCongrat": "afri1.pcx"
  },
+ "panels": {
+  "pCongrat": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bCongrat"
+     ]
+    ],
+    "pos_x": [
+     [
+      "200"
+     ]
+    ],
+    "pos_y": [
+     [
+      "70"
+     ]
+    ],
+    "layer": [
+     [
+      "4"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d"
+     ]
+    ],
+    "button": [
+     [
+      "0",
+      "0",
+      "bCongrat",
+      "bCongrat",
+      "bCongrat",
+      "C1",
+      "null",
+      "null"
+     ]
+    ]
+   }
+  },
+  "pSkip": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bSkip"
+     ]
+    ],
+    "flags": [
+     [
+      "overlay",
+      "d3d",
+      "refresh"
+     ]
+    ],
+    "pos_x": [
+     [
+      "600"
+     ]
+    ],
+    "pos_y": [
+     [
+      "440"
+     ]
+    ],
+    "button": [
+     [
+      "0",
+      "0",
+      "bSkip",
+      "bSkip",
+      "bSkip",
+      "D1",
+      "null",
+      "null"
+     ]
+    ]
+   }
+  },
+  "GUI": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bPanel"
+     ]
+    ],
+    "pos_x": [
+     [
+      "0"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "layer": [
+     [
+      "1"
+     ]
+    ],
+    "window": [
+     [
+      "15",
+      "58",
+      "609",
+      "15",
+      "bpass",
+      "health2",
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "overlay"
+     ]
+    ]
+   }
+  },
+  "Civ1": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bCiv"
+     ]
+    ],
+    "pos_x": [
+     [
+      "430"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ]
+   }
+  },
+  "Civ2": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bCiv"
+     ]
+    ],
+    "pos_x": [
+     [
+      "460"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ]
+   }
+  },
+  "Civ3": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bCiv"
+     ]
+    ],
+    "pos_x": [
+     [
+      "490"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ]
+   }
+  },
+  "Civ4": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bCiv"
+     ]
+    ],
+    "pos_x": [
+     [
+      "520"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ]
+   }
+  },
+  "Civ5": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bCiv"
+     ]
+    ],
+    "pos_x": [
+     [
+      "550"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ]
+   }
+  },
+  "Terr1": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bTerr"
+     ]
+    ],
+    "pos_x": [
+     [
+      "10"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ]
+   }
+  },
+  "Terr2": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bTerr"
+     ]
+    ],
+    "pos_x": [
+     [
+      "40"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ]
+   }
+  },
+  "Terr3": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bTerr"
+     ]
+    ],
+    "pos_x": [
+     [
+      "70"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ]
+   }
+  },
+  "Terr4": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bTerr"
+     ]
+    ],
+    "pos_x": [
+     [
+      "100"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ]
+   }
+  },
+  "Terr5": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bTerr"
+     ]
+    ],
+    "pos_x": [
+     [
+      "130"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ]
+   }
+  },
+  "Terr6": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bTerr"
+     ]
+    ],
+    "pos_x": [
+     [
+      "160"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ]
+   }
+  },
+  "Terr7": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bTerr"
+     ]
+    ],
+    "pos_x": [
+     [
+      "190"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ]
+   }
+  },
+  "Terr8": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bTerr"
+     ]
+    ],
+    "pos_x": [
+     [
+      "220"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ]
+   }
+  },
+  "Terr9": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bTerr"
+     ]
+    ],
+    "pos_x": [
+     [
+      "250"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ]
+   }
+  },
+  "Terr10": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bTerr"
+     ]
+    ],
+    "pos_x": [
+     [
+      "280"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ]
+   }
+  },
+  "Terr11": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bTerr"
+     ]
+    ],
+    "pos_x": [
+     [
+      "25"
+     ]
+    ],
+    "pos_y": [
+     [
+      "15"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "layer": [
+     [
+      "3"
+     ]
+    ]
+   }
+  },
+  "Terr12": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bTerr"
+     ]
+    ],
+    "pos_x": [
+     [
+      "55"
+     ]
+    ],
+    "pos_y": [
+     [
+      "15"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "layer": [
+     [
+      "3"
+     ]
+    ]
+   }
+  },
+  "Terr13": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bTerr"
+     ]
+    ],
+    "pos_x": [
+     [
+      "85"
+     ]
+    ],
+    "pos_y": [
+     [
+      "15"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "layer": [
+     [
+      "3"
+     ]
+    ]
+   }
+  },
+  "Terr14": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bTerr"
+     ]
+    ],
+    "pos_x": [
+     [
+      "115"
+     ]
+    ],
+    "pos_y": [
+     [
+      "15"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "layer": [
+     [
+      "3"
+     ]
+    ]
+   }
+  },
+  "Terr15": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bTerr"
+     ]
+    ],
+    "pos_x": [
+     [
+      "145"
+     ]
+    ],
+    "pos_y": [
+     [
+      "15"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "layer": [
+     [
+      "3"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_mouse_left"
+    },
+    "value": {
+     "t": "id",
+     "name": "Fire"
+    }
+   }
+  }
+ ],
  "skip_count": 1,
  "skipped": [
   "line 808: stray '}' at top level (skipped)"

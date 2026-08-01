@@ -6821,6 +6821,530 @@
   "bf2": "manorh.pcx",
   "bLastLev": "LastLev.pcx"
  },
+ "panels": {
+  "pLastLev": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bLastLev"
+     ]
+    ],
+    "layer": [
+     [
+      "10"
+     ]
+    ],
+    "pos_x": [
+     [
+      "162"
+     ]
+    ],
+    "pos_y": [
+     [
+      "222"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d"
+     ]
+    ]
+   }
+  },
+  "pLaw": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bLaw"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ],
+    "pos_x": [
+     [
+      "100"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ]
+   }
+  },
+  "pMap": {
+   "kind": "panel",
+   "fields": {
+    "layer": [
+     [
+      "-4"
+     ]
+    ],
+    "bmap": [
+     [
+      "Map"
+     ]
+    ],
+    "pos_x": [
+     [
+      "0"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "button": [
+     [
+      "10",
+      "158",
+      "ba2",
+      "ba1",
+      "ba2",
+      "Goto1",
+      "null",
+      "Show1"
+     ],
+     [
+      "189",
+      "197",
+      "bb2",
+      "bb1",
+      "bb2",
+      "Goto2",
+      "null",
+      "Show2"
+     ],
+     [
+      "379",
+      "161",
+      "bc2",
+      "bc1",
+      "bc2",
+      "Goto3",
+      "null",
+      "Show3"
+     ],
+     [
+      "458",
+      "188",
+      "bd2",
+      "bd1",
+      "bd2",
+      "Goto4",
+      "null",
+      "Show4"
+     ],
+     [
+      "486",
+      "149",
+      "be2",
+      "be1",
+      "be2",
+      "Goto5",
+      "null",
+      "Show5"
+     ],
+     [
+      "533",
+      "211",
+      "bf2",
+      "bf1",
+      "bf2",
+      "Goto6",
+      "null",
+      "Show6"
+     ]
+    ]
+   }
+  },
+  "pnl": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "mappnl"
+     ]
+    ],
+    "pos_x": [
+     [
+      "231"
+     ]
+    ],
+    "pos_y": [
+     [
+      "430"
+     ]
+    ],
+    "layer": [
+     [
+      "-3"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ]
+   }
+  },
+  "X1": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "vol1"
+     ]
+    ],
+    "pos_x": [
+     [
+      "250"
+     ]
+    ],
+    "pos_y": [
+     [
+      "439"
+     ]
+    ],
+    "layer": [
+     [
+      "-2"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "X2": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "vol2"
+     ]
+    ],
+    "pos_x": [
+     [
+      "282"
+     ]
+    ],
+    "pos_y": [
+     [
+      "439"
+     ]
+    ],
+    "layer": [
+     [
+      "-2"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "X3": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "vol3"
+     ]
+    ],
+    "pos_x": [
+     [
+      "314"
+     ]
+    ],
+    "pos_y": [
+     [
+      "439"
+     ]
+    ],
+    "layer": [
+     [
+      "-2"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "X4": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "vol4"
+     ]
+    ],
+    "pos_x": [
+     [
+      "346"
+     ]
+    ],
+    "pos_y": [
+     [
+      "439"
+     ]
+    ],
+    "layer": [
+     [
+      "-2"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "X5": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "vol5"
+     ]
+    ],
+    "pos_x": [
+     [
+      "378"
+     ]
+    ],
+    "pos_y": [
+     [
+      "439"
+     ]
+    ],
+    "layer": [
+     [
+      "-2"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "D1": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "none"
+     ]
+    ],
+    "pos_x": [
+     [
+      "250"
+     ]
+    ],
+    "pos_y": [
+     [
+      "439"
+     ]
+    ],
+    "layer": [
+     [
+      "-1"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ]
+   }
+  },
+  "D2": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "none"
+     ]
+    ],
+    "pos_x": [
+     [
+      "282"
+     ]
+    ],
+    "pos_y": [
+     [
+      "439"
+     ]
+    ],
+    "layer": [
+     [
+      "-1"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ]
+   }
+  },
+  "D3": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "none"
+     ]
+    ],
+    "pos_x": [
+     [
+      "314"
+     ]
+    ],
+    "pos_y": [
+     [
+      "439"
+     ]
+    ],
+    "layer": [
+     [
+      "-1"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ]
+   }
+  },
+  "D4": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "none"
+     ]
+    ],
+    "pos_x": [
+     [
+      "346"
+     ]
+    ],
+    "pos_y": [
+     [
+      "439"
+     ]
+    ],
+    "layer": [
+     [
+      "-1"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ]
+   }
+  },
+  "D5": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "none"
+     ]
+    ],
+    "pos_x": [
+     [
+      "378"
+     ]
+    ],
+    "pos_y": [
+     [
+      "439"
+     ]
+    ],
+    "layer": [
+     [
+      "-1"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_space"
+    },
+    "value": {
+     "t": "call",
+     "name": "EndLogo",
+     "args": []
+    }
+   }
+  }
+ ],
  "skip_count": 0,
  "skipped": []
 }

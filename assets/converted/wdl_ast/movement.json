@@ -8,6 +8,46 @@
  ],
  "globals": [
   {
+   "name": "shadowsprite",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "res",
+    "v": "shadow.pcx"
+   },
+   "init_list": false
+  },
+  {
+   "name": "shadowflat",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "res",
+    "v": "shadflat.pcx"
+   },
+   "init_list": false
+  },
+  {
+   "name": "DEFAULT_WALK",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 13.04
+   },
+   "init_list": false
+  },
+  {
+   "name": "DEFAULT_RUN",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 5.06
+   },
+   "init_list": false
+  },
+  {
    "name": "movement_scale",
    "kind": "var",
    "array_size": null,
@@ -202,6 +242,556 @@
    "kind": "var",
    "array_size": null,
    "init": null,
+   "init_list": false
+  },
+  {
+   "name": "_WALKFRAMES",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL1"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_RUNFRAMES",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL2"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ATTACKFRAMES",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL3"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_DIEFRAMES",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL4"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ADVANIM_TICK",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL1"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ADVANIM_DIST",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL2"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_WALKDIST",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL27"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_RUNDIST",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL28"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_FORCE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL5"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ENTFORCE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL5"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_BANKING",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL6"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_PENDOLINO",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL6"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_HITMODE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL6"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_MOVEMODE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL7"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_FIREMODE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL8"
+   },
+   "init_list": false
+  },
+  {
+   "name": "__FALL",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "FLAG1"
+   },
+   "init_list": false
+  },
+  {
+   "name": "__WHEELS",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "FLAG2"
+   },
+   "init_list": false
+  },
+  {
+   "name": "__SLOPES",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "FLAG3"
+   },
+   "init_list": false
+  },
+  {
+   "name": "__JUMP",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "FLAG4"
+   },
+   "init_list": false
+  },
+  {
+   "name": "__BOB",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "FLAG5"
+   },
+   "init_list": false
+  },
+  {
+   "name": "__STRAFE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "FLAG6"
+   },
+   "init_list": false
+  },
+  {
+   "name": "__TRIGGER",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "FLAG7"
+   },
+   "init_list": false
+  },
+  {
+   "name": "__DUCK",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "FLAG8"
+   },
+   "init_list": false
+  },
+  {
+   "name": "__SOUND",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "FLAG8"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_HEALTH",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL9"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ARMOR",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL10"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_SPEED",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL11"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_SPEED_X",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL11"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_SPEED_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL12"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_POWER",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL12"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_SPEED_Z",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL13"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ASPEED",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL14"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ASPEED_PAN",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL14"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ASPEED_TILT",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL15"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ASPEED_ROLL",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL16"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_TARGET_X",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL17"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_TARGET_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL18"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_TARGET_Z",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL19"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_TARGET_PAN",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL20"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_TARGET_TILT",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL21"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_TARGET_ROLL",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL22"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_FORCE_X",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL17"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_FORCE_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL18"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_FORCE_Z",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL19"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_AFORCE_PAN",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL20"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_AFORCE_TILT",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL21"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_AFORCE_ROLL",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL22"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_WALKSOUND",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL23"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_SIGNAL",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL24"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_COUNTER",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL25"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_STATE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL26"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ANIMDIST",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL28"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_JUMPTARGET",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL29"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_TYPE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL30"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_FALLTIME",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL31"
+   },
    "init_list": false
   },
   {
@@ -531,6 +1121,296 @@
    "kind": "entity",
    "array_size": null,
    "init": null,
+   "init_list": false
+  },
+  {
+   "name": "_MODE_NONE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_MODE_WALKING",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 1.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_MODE_DRIVING",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 2.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_MODE_SWIMMING",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_MODE_DIVING",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 4.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_MODE_WADING",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 5.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_MODE_HELICOPTER",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 6.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_MODE_ROCKETEER",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 7.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_MODE_DUCKING",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 8.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_MODE_JUMPING",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 9.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_MODE_CRAWLING",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 10.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_MODE_TRANSITION",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 14.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_MODE_STILL",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 15.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_MODE_PLANE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 16.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_MODE_CHOPPER",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 17.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_MODE_ATTACK",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 20.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_SOUND_WALKER",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 1.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_SOUND_ROBOT",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 2.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_TYPE_PLAYER",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 1.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_TYPE_ACTOR",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 2.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_TYPE_FOE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_TYPE_DOOR",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 10.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_TYPE_GATE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 11.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_TYPE_ELEVATOR",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 12.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_TYPE_GUN",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 20.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_TYPE_AMMO",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 21.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_TYPE_ARMOR",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 22.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_TYPE_HEALTH",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 23.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_FOG_UNDERWATER",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 2.0
+   },
    "init_list": false
   },
   {
@@ -1594,6 +2474,8 @@
   "beep_sound": "beep.wav"
  },
  "bmaps": {},
+ "panels": {},
+ "top_level_stmts": [],
  "skip_count": 1,
  "skipped": [
   "line 328: expected a name, got '*' ('*')"

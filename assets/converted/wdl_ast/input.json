@@ -3,6 +3,66 @@
  "includes": [],
  "globals": [
   {
+   "name": "_HANDLE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 1.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_EXPLODE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 2.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_GUNFIRE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_WATCH",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 4.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_DETECTED",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 5.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_SHOOT1",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 6.0
+   },
+   "init_list": false
+  },
+  {
    "name": "indicator",
    "kind": "var",
    "array_size": null,
@@ -2088,6 +2148,8 @@
  "actions": {},
  "sounds": {},
  "bmaps": {},
+ "panels": {},
+ "top_level_stmts": [],
  "skip_count": 0,
  "skipped": []
 }

@@ -4940,6 +4940,73 @@
   "bHlp2": "Help1b.pcx",
   "bHelp": "Help2.pcx"
  },
+ "panels": {
+  "pHelp": {
+   "kind": "panel",
+   "fields": {
+    "layer": [
+     [
+      "8"
+     ]
+    ],
+    "bmap": [
+     [
+      "bHelp"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "overlay"
+     ]
+    ],
+    "button": [
+     [
+      "5",
+      "410",
+      "bhlp1",
+      "bhlp2",
+      "bhlp1",
+      "CloseHelp",
+      "NULL",
+      "NULL"
+     ]
+    ]
+   }
+  },
+  "tHelp": {
+   "kind": "text",
+   "fields": {
+    "font": [
+     [
+      "standard_font"
+     ]
+    ],
+    "layer": [
+     [
+      "9"
+     ]
+    ],
+    "pos_x": [
+     [
+      "250"
+     ]
+    ],
+    "pos_y": [
+     [
+      "60"
+     ]
+    ],
+    "strings": [
+     [
+      "20"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [],
  "skip_count": 0,
  "skipped": []
 }

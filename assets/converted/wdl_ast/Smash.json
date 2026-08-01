@@ -15979,6 +15979,61 @@
   "Wart6": "Wart6.pcx",
   "Wart7": "Wart7.pcx"
  },
+ "panels": {
+  "pWart": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "Wart1"
+     ]
+    ],
+    "pos_x": [
+     [
+      "130"
+     ]
+    ],
+    "pos_y": [
+     [
+      "100"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ]
+   }
+  },
+  "pSkuf": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bSkuf"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [],
  "skip_count": 2,
  "skipped": [
   "line 814: stray '}' at top level (skipped)",

@@ -3,6 +3,140 @@
  "includes": [],
  "globals": [
   {
+   "name": "MSG_X",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 4.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "MSG_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 4.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "BLINK_TICKS",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 6.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "MSG_TICKS",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 64.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "msg_font",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "standard_font"
+   },
+   "init_list": false
+  },
+  {
+   "name": "PANEL_POSX",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 4.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "PANEL_POSY",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "unop",
+    "op": "-",
+    "expr": {
+     "t": "num",
+     "v": 20.0
+    }
+   },
+   "init_list": false
+  },
+  {
+   "name": "SCROLL_X",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 4.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "SCROLL_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 4.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "SCROLL_LINES",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 4.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "HEALTHPANEL",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "game_panel"
+   },
+   "init_list": false
+  },
+  {
+   "name": "touch_font",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "standard_font"
+   },
+   "init_list": false
+  },
+  {
+   "name": "touch_sound",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "msg_sound"
+   },
+   "init_list": false
+  },
+  {
    "name": "msg_counter",
    "kind": "var",
    "array_size": null,
@@ -1955,6 +2089,214 @@
   "msg_sound": "msg.wav"
  },
  "bmaps": {},
+ "panels": {
+  "msg": {
+   "kind": "text",
+   "fields": {
+    "pos_x": [
+     [
+      "MSG_X"
+     ]
+    ],
+    "pos_y": [
+     [
+      "MSG_Y"
+     ]
+    ],
+    "font": [
+     [
+      "msg_font"
+     ]
+    ],
+    "string": [
+     [
+      "empty_str"
+     ]
+    ]
+   }
+  },
+  "enter_txt": {
+   "kind": "text",
+   "fields": {
+    "font": [
+     [
+      "msg_font"
+     ]
+    ],
+    "string": [
+     [
+      "message_str"
+     ]
+    ]
+   }
+  },
+  "scroll": {
+   "kind": "text",
+   "fields": {
+    "pos_x": [
+     [
+      "MSG_X"
+     ]
+    ],
+    "pos_y": [
+     [
+      "MSG_Y"
+     ]
+    ],
+    "font": [
+     [
+      "msg_font"
+     ]
+    ],
+    "strings": [
+     [
+      "8"
+     ]
+    ],
+    "string": [
+     [
+      "\"                                                           \""
+     ],
+     [
+      "\"                                                           \""
+     ],
+     [
+      "\"                                                           \""
+     ],
+     [
+      "\"                                                           \""
+     ],
+     [
+      "\"                                                           \""
+     ],
+     [
+      "\"                                                           \""
+     ],
+     [
+      "\"                                                           \""
+     ],
+     [
+      "\"                                                           \""
+     ]
+    ],
+    "index": [
+     [
+      "SCROLL_LINES"
+     ]
+    ]
+   }
+  },
+  "game_panel": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "PANEL_POSX"
+     ]
+    ],
+    "digits": [
+     [
+      "0",
+      "0",
+      "3",
+      "digit_font",
+      "1",
+      "show_ammo"
+     ],
+     [
+      "40",
+      "0",
+      "3",
+      "digit_font",
+      "1",
+      "show_health"
+     ],
+     [
+      "80",
+      "0",
+      "3",
+      "digit_font",
+      "1",
+      "show_armor"
+     ]
+    ],
+    "flags": [
+     [
+      "TRANSPARENT",
+      "REFRESH"
+     ]
+    ]
+   }
+  },
+  "touch_txt": {
+   "kind": "text",
+   "fields": {
+    "font": [
+     [
+      "touch_font"
+     ]
+    ],
+    "string": [
+     [
+      "empty_str"
+     ]
+    ],
+    "flags": [
+     [
+      "CENTER_X",
+      "CENTER_Y"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "ON_SERVER"
+    },
+    "value": {
+     "t": "id",
+     "name": "server_event"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "ON_CLIENT"
+    },
+    "value": {
+     "t": "id",
+     "name": "client_event"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "ON_F4"
+    },
+    "value": {
+     "t": "id",
+     "name": "enter_message"
+    }
+   }
+  }
+ ],
  "skip_count": 0,
  "skipped": []
 }

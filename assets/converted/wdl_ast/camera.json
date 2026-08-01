@@ -3,6 +3,36 @@
  "includes": [],
  "globals": [
   {
+   "name": "kOrbitCameraPanInc",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 5.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "kOrbitCameraDistInc",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 5.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "kOrbitCameraZOffInc",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 5.0
+   },
+   "init_list": false
+  },
+  {
    "name": "camera_solidpass",
    "kind": "var",
    "array_size": null,
@@ -6034,6 +6064,8 @@
  },
  "sounds": {},
  "bmaps": {},
+ "panels": {},
+ "top_level_stmts": [],
  "skip_count": 0,
  "skipped": []
 }

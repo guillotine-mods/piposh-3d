@@ -240,6 +240,76 @@
    "init_list": false
   },
   {
+   "name": "MASK_ANIM_ATTACK_TICKS",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 2093056.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "MASK_ANIM_JUMP_TICKS",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 4032.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "MASK_ANIM_DUCK_TICKS",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 63.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "MASK_ANIM_RUN_DIST",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 2064384.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "MASK_ANIM_WALK_DIST",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 31744.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "MASK_ANIM_CRAWL_DIST",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 992.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "MASK_ANIM_SWIM_DIST",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 31.0
+   },
+   "init_list": false
+  },
+  {
    "name": "pStr_old_anim",
    "kind": "string",
    "array_size": null,
@@ -251,6 +321,130 @@
    "kind": "string",
    "array_size": null,
    "init": null,
+   "init_list": false
+  },
+  {
+   "name": "_ANIM_MODE_QUIT",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "unop",
+    "op": "-",
+    "expr": {
+     "t": "num",
+     "v": 1.0
+    }
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ANIM_MODE_NONE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ANIM_MODE_STAND",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 1.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ANIM_MODE_WALK",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 2.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ANIM_MODE_RUN",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ANIM_MODE_WADE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 4.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ANIM_MODE_DUCK",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 5.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ANIM_MODE_CRAWL",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 6.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ANIM_MODE_JUMP",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 7.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ANIM_MODE_SWIM",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 8.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ANIM_MODE_ATTACK",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 9.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ANIM_MODE_DEATH",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 10.0
+   },
    "init_list": false
   },
   {
@@ -6652,6 +6846,134 @@
  },
  "sounds": {},
  "bmaps": {},
+ "panels": {},
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "pStr_cur_anim"
+    },
+    "value": {
+     "t": "id",
+     "name": "anim_stand_str"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "temp"
+    },
+    "value": {
+     "t": "num",
+     "v": 0.0
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "temp"
+    },
+    "value": {
+     "t": "num",
+     "v": 0.0
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "temp"
+    },
+    "value": {
+     "t": "num",
+     "v": 0.0
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "temp"
+    },
+    "value": {
+     "t": "num",
+     "v": 0.0
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "temp"
+    },
+    "value": {
+     "t": "num",
+     "v": 0.0
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "temp"
+    },
+    "value": {
+     "t": "binop",
+     "op": "/",
+     "l": {
+      "t": "binop",
+      "op": "*",
+      "l": {
+       "t": "num",
+       "v": 100.0
+      },
+      "r": {
+       "t": "field",
+       "obj": {
+        "t": "id",
+        "name": "MY"
+       },
+       "name": "_ANIMDIST"
+      }
+     },
+     "r": {
+      "t": "id",
+      "name": "temp2"
+     }
+    }
+   }
+  }
+ ],
  "skip_count": 29,
  "skipped": [
   "line 186: unexpected token '<' ('<')",

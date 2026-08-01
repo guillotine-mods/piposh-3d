@@ -13,6 +13,77 @@
  ],
  "globals": [
   {
+   "name": "MSG_DEFS",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "MSG_X",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 4.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "MSG_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 4.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "BLINK_TICKS",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 6.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "MSG_TICKS",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 64.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "PANEL_POSX",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 4.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "PANEL_POSY",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "unop",
+    "op": "-",
+    "expr": {
+     "t": "num",
+     "v": 20.0
+    }
+   },
+   "init_list": false
+  },
+  {
    "name": "mission_str",
    "kind": "string",
    "array_size": null,
@@ -1562,6 +1633,24 @@
  "bmaps": {
   "splashmap": "splash.pcx"
  },
+ "panels": {
+  "splashscreen": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "splashmap"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [],
  "skip_count": 0,
  "skipped": []
 }

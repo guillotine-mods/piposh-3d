@@ -481,6 +481,61 @@ hand-porting:
   a fresh fire-and-forget coroutine, the same way `begin_level()` starts
   each entity's own initial action. Applies to every interpreted level with
   no per-level wiring needed.
+- **`my.enable_impact/enable_push/enable_entity = on; my.event = X;` — the
+  walk-into-it counterpart to `enable_click` — needs TWO mechanisms, not
+  one, and got the second one wrong on the first attempt (2026-07-31, then
+  corrected 2026-08-01).** 22 files use this idiom (Shiks' `action Bumpin`
+  is the confirmed case). Real "walk into it" collisions come from two
+  structurally different movers in this port: the real player
+  (`player_controller.gd`'s `CharacterBody3D`, a genuine physics body —
+  `Area3D.body_entered` correctly detects it) and every OTHER entity
+  (`WmbLevelLoader._spawn_entity()` spawns everything as a plain `Node3D`,
+  repositioned by `actor_move()` writing `global_position` directly — no
+  physics-engine awareness at all, so `body_entered` can NEVER fire for
+  an NPC walking into something). The first fix only implemented the
+  Area3D half and verified it by calling the event handler directly
+  (`tools/smoke_shiks_bumpin.gd`) — proved the *dispatch* worked, never
+  that real NPC movement would ever reach it, which it didn't (Shiks'
+  own `action Piposh2` walking into `action Bumpin`'s `Snail` is exactly
+  this case). Fixed with a second, complementary mechanism:
+  `WdlInterpreter._impact_zones` + `_check_impact_proximity()`, a plain
+  per-frame distance check (called from the existing `_process()`)
+  against every other live entity, edge-triggered via `_impact_touching`
+  to match `body_entered`'s once-per-approach semantics, not a per-frame
+  poll. **Do not reuse `_clickable_center_offset()` (the AABB-centering
+  from the `enable_click`/poster-position fix) for impact zones** — that
+  centering is correct for raycasting a *visible* mesh, but this is a
+  position-to-position proximity check; Shiks' own `Snail` mesh is
+  424x344x89 units, so its AABB center sits ~100 units from the entity's
+  actual origin, which silently moved the whole trigger zone into empty
+  space when first tried. Impact zones use plain origin. Verified end to
+  end (not a shortcut) with `tools/smoke_shiks_bumpin_proximity.gd`:
+  physically walks an entity's `global_position` toward the target over
+  real frames, same as `actor_move()` does, and confirms the mechanism
+  fires on its own.
+  **Still not enough for a real walk (2026-08-01, third pass):**
+  `_check_impact_proximity()`'s original full-3D-sphere distance check
+  can never fire for a mover whose Y never changes if the target sits on
+  genuinely different ground — and this port's non-player movers never
+  floor-snap (`_do_actor_move()` is a straight-line X/Z translation, no
+  raycast against level geometry, unlike the original engine's
+  `actor_move()`). Confirmed live: Shiks' `Piposh2` spawns and walks flat
+  at Y=8 while `Bumpin` sits at Y=-69 (its neighbor `StandHere`, Y=-73,
+  confirms that room really is ~80 units lower, not bad data) — closest
+  possible 3D approach along the flat path is ~80 units, outside even a
+  28-unit sphere, forever. Fixed by comparing horizontal (XZ) distance
+  only in `_check_impact_proximity()` for the NPC-vs-entity path — the
+  real player's `Area3D`/`body_entered` path is untouched (a genuine
+  `CharacterBody3D` floor-snaps correctly already). This sidesteps the
+  missing-floor-snap gap for the one mechanism it broke; it does not fix
+  floor-snapping generally (a larger, riskier change touching every
+  `actor_move()` call site, not justified by this one report — see
+  docs/SESSION_LOG.md 2026-08-01 fourth entry). Verified with the same
+  `smoke_shiks_bumpin_proximity.gd` (unchanged, still passes — it places
+  entities at matching Y by construction) plus a new
+  `tools/smoke_shiks_walk_to_bumpin_real.gd`, which drives the actual
+  reported flow (repeated dialogue-choice selection, not manual position
+  manipulation) and confirms `Piposh.skill2` really reaches 2.
 - **`ShowDialog()`/`DialogChoice` dialogue-choice UI (2026-07-30) is a
   real, generic mechanism, not a per-level hand-port.** Every dialogue
   choice in the game follows the same shape: `DoDialog(num) {

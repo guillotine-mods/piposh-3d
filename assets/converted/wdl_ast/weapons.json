@@ -3,6 +3,116 @@
  "includes": [],
  "globals": [
   {
+   "name": "hit_wham",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "explo_wham"
+   },
+   "init_list": false
+  },
+  {
+   "name": "ammo_fetch",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "gun_fetch"
+   },
+   "init_list": false
+  },
+  {
+   "name": "health_fetch",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "gun_fetch"
+   },
+   "init_list": false
+  },
+  {
+   "name": "muzzle_flash",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "res",
+    "v": "particle.pcx"
+   },
+   "init_list": false
+  },
+  {
+   "name": "small_flash",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "res",
+    "v": "particle.pcx"
+   },
+   "init_list": false
+  },
+  {
+   "name": "fireball",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "res",
+    "v": "blitz.pcx"
+   },
+   "init_list": false
+  },
+  {
+   "name": "BULLET_EXPLO",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "res",
+    "v": "explo+7.pcx"
+   },
+   "init_list": false
+  },
+  {
+   "name": "EXPLO_FRAMES",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 7.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "WEAPON_AMPL",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.2
+   },
+   "init_list": false
+  },
+  {
+   "name": "bullethole_map",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "res",
+    "v": "bulhole.pcx"
+   },
+   "init_list": false
+  },
+  {
+   "name": "ibullethole_map",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "res",
+    "v": "ibulhole.pcx"
+   },
+   "init_list": false
+  },
+  {
    "name": "strRocket_Model",
    "kind": "string",
    "array_size": null,
@@ -436,8 +546,392 @@
    "init_list": false
   },
   {
+   "name": "__REPEAT",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "FLAG7"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_OFFS_X",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL1"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_OFFS_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL2"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_OFFS_Z",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL3"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_AMMOTYPE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL4"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_BULLETSPEED",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL5"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_WEAPONNUMBER",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL6"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_FIRETIME",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL7"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_GUN_SOURCE_X",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL11"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_GUN_SOURCE_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL12"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_GUN_SOURCE_Z",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL13"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_OFFS_FLASH",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL14"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_RECOIL",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL15"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_DAMAGE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL16"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_DISPLACEMENT",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL17"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_FIRE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL18"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_PACKAMOUNT",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL5"
+   },
+   "init_list": false
+  },
+  {
+   "name": "MODE_DAMAGE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "DAMAGE_SHOOT",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 1.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "DAMAGE_IMPACT",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 2.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "DAMAGE_EXPLODE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "MODE_FIRE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 28.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "FIRE_PARTICLE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 4.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "FIRE_DPARTICLE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 8.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "FIRE_BALL",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 12.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "FIRE_ROCKET",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 16.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "FIRE_LASER",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 20.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "BULLET_SMOKETRAIL",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 32.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "MODE_HIT",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 384.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "HIT_FLASH",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 128.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "HIT_EXPLO",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 256.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "HIT_GIB",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 384.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "HIT_SMOKE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 512.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "HIT_SCATTER",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 1024.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "GUNFX_BRASS",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 2048.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "HIT_SPARKS",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 8192.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "HIT_HOLE",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "GUNFX_ANIMATE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 32768.0
+   },
+   "init_list": false
+  },
+  {
    "name": "weapon",
    "kind": "entity",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "kMaxWeapons",
+   "kind": "define",
    "array_size": null,
    "init": null,
    "init_list": false
@@ -716,6 +1210,26 @@
    "init_list": false
   },
   {
+   "name": "SCATTER_RAND",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 160.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "SCATTER_HALF_RAND",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 80.0
+   },
+   "init_list": false
+  },
+  {
    "name": "bullet_hole_index",
    "kind": "var",
    "array_size": null,
@@ -723,6 +1237,13 @@
     "t": "num",
     "v": 0.0
    },
+   "init_list": false
+  },
+  {
+   "name": "kMaxBulletHole",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
    "init_list": false
   },
   {
@@ -760,6 +1281,36 @@
     }
    ],
    "init_list": true
+  },
+  {
+   "name": "_DEMOPACK_TIMER",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL1"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_DEMOPACK_BLASTRANGE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL2"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_DEMOPACK_DAMAGE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL3"
+   },
+   "init_list": false
   }
  ],
  "functions": {
@@ -21171,6 +21722,32 @@
  "bmaps": {
   "cross_bmp": "cross.pcx"
  },
+ "panels": {
+  "cross_pan": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "cross_bmp"
+     ]
+    ],
+    "layer": [
+     [
+      "1"
+     ]
+    ],
+    "flags": [
+     [
+      "overlay",
+      "transparent",
+      "refresh",
+      "d3d"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [],
  "skip_count": 0,
  "skipped": []
 }

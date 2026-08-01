@@ -278,6 +278,16 @@
     "v": 8.0
    },
    "init_list": false
+  },
+  {
+   "name": "Phase",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill1"
+   },
+   "init_list": false
   }
  ],
  "functions": {
@@ -24576,6 +24586,959 @@
   "ZigIcon1": "ZigIcon1.pcx",
   "ZigIcon2": "ZigIcon2.pcx"
  },
+ "panels": {
+  "pWinLose": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "YouWin"
+     ]
+    ],
+    "layer": [
+     [
+      "10"
+     ]
+    ],
+    "pos_x": [
+     [
+      "150"
+     ]
+    ],
+    "pos_y": [
+     [
+      "150"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "overlay"
+     ]
+    ]
+   }
+  },
+  "pH01": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "ZigIcon1"
+     ]
+    ],
+    "layer": [
+     [
+      "0"
+     ]
+    ],
+    "pos_x": [
+     [
+      "75"
+     ]
+    ],
+    "pos_y": [
+     [
+      "420"
+     ]
+    ],
+    "flags": [
+     [
+      "overlay",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "pH02": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "ZigIcon1"
+     ]
+    ],
+    "layer": [
+     [
+      "0"
+     ]
+    ],
+    "pos_x": [
+     [
+      "115"
+     ]
+    ],
+    "pos_y": [
+     [
+      "420"
+     ]
+    ],
+    "flags": [
+     [
+      "overlay",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "pH03": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "ZigIcon1"
+     ]
+    ],
+    "layer": [
+     [
+      "0"
+     ]
+    ],
+    "pos_x": [
+     [
+      "155"
+     ]
+    ],
+    "pos_y": [
+     [
+      "420"
+     ]
+    ],
+    "flags": [
+     [
+      "overlay",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "pH04": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "ZigIcon1"
+     ]
+    ],
+    "layer": [
+     [
+      "0"
+     ]
+    ],
+    "pos_x": [
+     [
+      "195"
+     ]
+    ],
+    "pos_y": [
+     [
+      "420"
+     ]
+    ],
+    "flags": [
+     [
+      "overlay",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "pH05": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "ZigIcon1"
+     ]
+    ],
+    "layer": [
+     [
+      "0"
+     ]
+    ],
+    "pos_x": [
+     [
+      "235"
+     ]
+    ],
+    "pos_y": [
+     [
+      "420"
+     ]
+    ],
+    "flags": [
+     [
+      "overlay",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "pH06": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "ZigIcon1"
+     ]
+    ],
+    "layer": [
+     [
+      "0"
+     ]
+    ],
+    "pos_x": [
+     [
+      "275"
+     ]
+    ],
+    "pos_y": [
+     [
+      "420"
+     ]
+    ],
+    "flags": [
+     [
+      "overlay",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "pH07": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "ZigIcon1"
+     ]
+    ],
+    "layer": [
+     [
+      "0"
+     ]
+    ],
+    "pos_x": [
+     [
+      "315"
+     ]
+    ],
+    "pos_y": [
+     [
+      "420"
+     ]
+    ],
+    "flags": [
+     [
+      "overlay",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "pH08": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "ZigIcon1"
+     ]
+    ],
+    "layer": [
+     [
+      "0"
+     ]
+    ],
+    "pos_x": [
+     [
+      "355"
+     ]
+    ],
+    "pos_y": [
+     [
+      "420"
+     ]
+    ],
+    "flags": [
+     [
+      "overlay",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "pH09": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "ZigIcon1"
+     ]
+    ],
+    "layer": [
+     [
+      "0"
+     ]
+    ],
+    "pos_x": [
+     [
+      "395"
+     ]
+    ],
+    "pos_y": [
+     [
+      "420"
+     ]
+    ],
+    "flags": [
+     [
+      "overlay",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "pH10": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "ZigIcon1"
+     ]
+    ],
+    "layer": [
+     [
+      "0"
+     ]
+    ],
+    "pos_x": [
+     [
+      "435"
+     ]
+    ],
+    "pos_y": [
+     [
+      "420"
+     ]
+    ],
+    "flags": [
+     [
+      "overlay",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "pH11": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "ZigIcon1"
+     ]
+    ],
+    "layer": [
+     [
+      "0"
+     ]
+    ],
+    "pos_x": [
+     [
+      "475"
+     ]
+    ],
+    "pos_y": [
+     [
+      "420"
+     ]
+    ],
+    "flags": [
+     [
+      "overlay",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "pH12": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "ZigIcon1"
+     ]
+    ],
+    "layer": [
+     [
+      "0"
+     ]
+    ],
+    "pos_x": [
+     [
+      "515"
+     ]
+    ],
+    "pos_y": [
+     [
+      "420"
+     ]
+    ],
+    "flags": [
+     [
+      "overlay",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "pE01": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "ZigIcon2"
+     ]
+    ],
+    "layer": [
+     [
+      "0"
+     ]
+    ],
+    "pos_x": [
+     [
+      "75"
+     ]
+    ],
+    "pos_y": [
+     [
+      "20"
+     ]
+    ],
+    "flags": [
+     [
+      "overlay",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "pE02": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "ZigIcon2"
+     ]
+    ],
+    "layer": [
+     [
+      "0"
+     ]
+    ],
+    "pos_x": [
+     [
+      "115"
+     ]
+    ],
+    "pos_y": [
+     [
+      "20"
+     ]
+    ],
+    "flags": [
+     [
+      "overlay",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "pE03": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "ZigIcon2"
+     ]
+    ],
+    "layer": [
+     [
+      "0"
+     ]
+    ],
+    "pos_x": [
+     [
+      "155"
+     ]
+    ],
+    "pos_y": [
+     [
+      "20"
+     ]
+    ],
+    "flags": [
+     [
+      "overlay",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "pE04": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "ZigIcon2"
+     ]
+    ],
+    "layer": [
+     [
+      "0"
+     ]
+    ],
+    "pos_x": [
+     [
+      "195"
+     ]
+    ],
+    "pos_y": [
+     [
+      "20"
+     ]
+    ],
+    "flags": [
+     [
+      "overlay",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "pE05": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "ZigIcon2"
+     ]
+    ],
+    "layer": [
+     [
+      "0"
+     ]
+    ],
+    "pos_x": [
+     [
+      "235"
+     ]
+    ],
+    "pos_y": [
+     [
+      "20"
+     ]
+    ],
+    "flags": [
+     [
+      "overlay",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "pE06": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "ZigIcon2"
+     ]
+    ],
+    "layer": [
+     [
+      "0"
+     ]
+    ],
+    "pos_x": [
+     [
+      "275"
+     ]
+    ],
+    "pos_y": [
+     [
+      "20"
+     ]
+    ],
+    "flags": [
+     [
+      "overlay",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "pE07": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "ZigIcon2"
+     ]
+    ],
+    "layer": [
+     [
+      "0"
+     ]
+    ],
+    "pos_x": [
+     [
+      "315"
+     ]
+    ],
+    "pos_y": [
+     [
+      "20"
+     ]
+    ],
+    "flags": [
+     [
+      "overlay",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "pE08": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "ZigIcon2"
+     ]
+    ],
+    "layer": [
+     [
+      "0"
+     ]
+    ],
+    "pos_x": [
+     [
+      "355"
+     ]
+    ],
+    "pos_y": [
+     [
+      "20"
+     ]
+    ],
+    "flags": [
+     [
+      "overlay",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "pE09": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "ZigIcon2"
+     ]
+    ],
+    "layer": [
+     [
+      "0"
+     ]
+    ],
+    "pos_x": [
+     [
+      "395"
+     ]
+    ],
+    "pos_y": [
+     [
+      "20"
+     ]
+    ],
+    "flags": [
+     [
+      "overlay",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "pE10": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "ZigIcon2"
+     ]
+    ],
+    "layer": [
+     [
+      "0"
+     ]
+    ],
+    "pos_x": [
+     [
+      "435"
+     ]
+    ],
+    "pos_y": [
+     [
+      "20"
+     ]
+    ],
+    "flags": [
+     [
+      "overlay",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "txtEXIT": {
+   "kind": "text",
+   "fields": {
+    "string": [
+     [
+      "\"SHUME VA XJJOLF ENFKMB IFPBL JDK esc [HL\""
+     ]
+    ],
+    "layer": [
+     [
+      "20"
+     ]
+    ],
+    "font": [
+     [
+      "standard_font"
+     ]
+    ],
+    "pos_x": [
+     [
+      "10"
+     ]
+    ],
+    "pos_y": [
+     [
+      "470"
+     ]
+    ],
+    "flags": [
+     [
+      "visible"
+     ]
+    ]
+   }
+  },
+  "GUI": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "N1"
+     ]
+    ],
+    "pos_x": [
+     [
+      "0"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "layer": [
+     [
+      "1"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "visible",
+      "overlay"
+     ]
+    ]
+   }
+  },
+  "Shadow": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "N2"
+     ]
+    ],
+    "pos_x": [
+     [
+      "200"
+     ]
+    ],
+    "pos_y": [
+     [
+      "55"
+     ]
+    ],
+    "layer": [
+     [
+      "6"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "visible",
+      "transparent"
+     ]
+    ]
+   }
+  },
+  "Credits": {
+   "kind": "text",
+   "fields": {
+    "string": [
+     [
+      "\"player 2 insert coin(s)\""
+     ]
+    ],
+    "font": [
+     [
+      "standard_font"
+     ]
+    ],
+    "pos_x": [
+     [
+      "420"
+     ]
+    ],
+    "pos_y": [
+     [
+      "10"
+     ]
+    ]
+   }
+  },
+  "ShowLevel": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "Level1"
+     ]
+    ],
+    "layer": [
+     [
+      "5"
+     ]
+    ],
+    "pos_x": [
+     [
+      "190"
+     ]
+    ],
+    "pos_y": [
+     [
+      "100"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "overlay"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_enter"
+    },
+    "value": {
+     "t": "call",
+     "name": "Again",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_z"
+    },
+    "value": {
+     "t": "id",
+     "name": "ZiggyPunch"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_x"
+    },
+    "value": {
+     "t": "id",
+     "name": "ZiggyKick"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_c"
+    },
+    "value": {
+     "t": "id",
+     "name": "ZiggyJump"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_esc"
+    },
+    "value": {
+     "t": "call",
+     "name": "quitziggy",
+     "args": []
+    }
+   }
+  }
+ ],
  "skip_count": 1,
  "skipped": [
   "line 1120: stray '}' at top level (skipped)"

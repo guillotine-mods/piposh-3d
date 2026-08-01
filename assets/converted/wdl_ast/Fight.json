@@ -6,6 +6,76 @@
  ],
  "globals": [
   {
+   "name": "Anim",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill10"
+   },
+   "init_list": false
+  },
+  {
+   "name": "Speed",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill2"
+   },
+   "init_list": false
+  },
+  {
+   "name": "Hitting",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill3"
+   },
+   "init_list": false
+  },
+  {
+   "name": "HitType",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill15"
+   },
+   "init_list": false
+  },
+  {
+   "name": "Thrown",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill33"
+   },
+   "init_list": false
+  },
+  {
+   "name": "Health",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill17"
+   },
+   "init_list": false
+  },
+  {
+   "name": "hits",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill18"
+   },
+   "init_list": false
+  },
+  {
    "name": "cheatstring",
    "kind": "string",
    "array_size": null,
@@ -14626,6 +14696,185 @@
   "Bully2": "Bully2.pcx",
   "Bully3": "Bully3.pcx"
  },
+ "panels": {
+  "Panel1": {
+   "kind": "panel",
+   "fields": {
+    "layer": [
+     [
+      "0.5"
+     ]
+    ],
+    "bmap": [
+     [
+      "bmpPanel1"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "overlay"
+     ]
+    ],
+    "pos_y": [
+     [
+      "300"
+     ]
+    ]
+   }
+  },
+  "Panel2": {
+   "kind": "panel",
+   "fields": {
+    "layer": [
+     [
+      "0.5"
+     ]
+    ],
+    "bmap": [
+     [
+      "bmpPanel2"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "overlay"
+     ]
+    ],
+    "pos_y": [
+     [
+      "200"
+     ]
+    ]
+   }
+  },
+  "Portrait1": {
+   "kind": "panel",
+   "fields": {
+    "layer": [
+     [
+      "0.6"
+     ]
+    ],
+    "bmap": [
+     [
+      "Fatass1"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d"
+     ]
+    ]
+   }
+  },
+  "Portrait2": {
+   "kind": "panel",
+   "fields": {
+    "layer": [
+     [
+      "0.6"
+     ]
+    ],
+    "bmap": [
+     [
+      "Piposh1"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d"
+     ]
+    ]
+   }
+  },
+  "VS": {
+   "kind": "panel",
+   "fields": {
+    "layer": [
+     [
+      "0.5"
+     ]
+    ],
+    "bmap": [
+     [
+      "bmpVS"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "visible",
+      "overlay"
+     ]
+    ],
+    "pos_x": [
+     [
+      "180"
+     ]
+    ],
+    "pos_y": [
+     [
+      "-200"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "Holding"
+    },
+    "value": {
+     "t": "num",
+     "v": 0.0
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "Holding"
+    },
+    "value": {
+     "t": "num",
+     "v": 0.0
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_tab"
+    },
+    "value": {
+     "t": "call",
+     "name": "Cheat",
+     "args": []
+    }
+   }
+  }
+ ],
  "skip_count": 8,
  "skipped": [
   "line 552: unexpected token '>' ('>')",

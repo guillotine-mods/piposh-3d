@@ -8913,6 +8913,30 @@
  "bmaps": {
   "bMeanwhile": "mod2.pcx"
  },
+ "panels": {
+  "pMeanwhile": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bMeanwhile"
+     ]
+    ],
+    "layer": [
+     [
+      "20"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [],
  "skip_count": 2,
  "skipped": [
   "line 639: stray '}' at top level (skipped)",

@@ -4310,6 +4310,8 @@
   "PhoneSND": "SFX086.WAV"
  },
  "bmaps": {},
+ "panels": {},
+ "top_level_stmts": [],
  "skip_count": 1,
  "skipped": [
   "line 296: stray '}' at top level (skipped)"

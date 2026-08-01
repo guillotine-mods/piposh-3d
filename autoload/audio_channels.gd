@@ -127,16 +127,42 @@ func _on_voice_finished() -> void:
 
 
 ## play_sound / play_entsound -- ambient/one-shot/entity SFX. Never touches
-## Voice state. Round-robins across a small pool so e.g. an ambiance loop
-## and a footstep can overlap instead of cutting each other off.
-## Returns a handle for is_sfx_handle_playing()/snd_playing() -- -1.0 if the
-## stream couldn't be loaded (never "playing").
+## Voice state. Prefers a genuinely free (not currently playing) slot;
+## only falls back to blind round-robin eviction when every slot is busy
+## -- cheap insurance against the same slot-theft-mid-playback class of
+## bug as the real one found below, even though it wasn't the actual
+## cause that time. Returns a handle for is_sfx_handle_playing()/
+## snd_playing() -- -1.0 if the stream couldn't be loaded.
+##
+## Reported live (2026-08-01, Shiks): "a weird noise that plays in the
+## background non stop." Root cause was NOT this pool at all: a leftover
+## hand-ported branch in wdl_director.gd's setup() *also* called
+## play_music() on SFX100.WAV/SFX140.WAV for the same WaterWheel/Watrfall
+## entities Shiks.wdl's own interpreter-driven actions already loop via
+## this function (play_entsound + snd_playing) -- a genuine duplicate
+## implementation, since removed. play_music() -> _enable_loop() mutates
+## the loaded AudioStream *resource* (shared/cached by path across every
+## player using it, SFX pool included) and was setting `loop_mode` without
+## `loop_end`, leaving it at its default of 0 -- a degenerate zero-length
+## loop region. Once that ran, the SFX pool's own later playback of the
+## same file could no longer sustain `.playing == true` for its natural
+## duration, so `snd_playing()` read false almost immediately and the
+## WDL ambiance loop retriggered up to ~140x/sec instead of once per
+## ~3s (confirmed via a temporary per-call log: 1679 play_sfx calls in a
+## 12s real-time run, vs ~22 expected). Fixed at both ends: the duplicate
+## caller removed, and _enable_loop() now sets a real loop_end so any
+## future play_music() caller can't corrupt a shared stream this way
+## again.
 func play_sfx(name: String, volume_db: float = 0.0) -> float:
 	var stream := _load_stream(name)
 	if stream == null:
 		return -1.0
 	var slot := _sfx_next
-	_sfx_next = (_sfx_next + 1) % _sfx_pool.size()
+	for i in _sfx_pool.size():
+		if not _sfx_pool[i].playing:
+			slot = i
+			break
+	_sfx_next = (slot + 1) % _sfx_pool.size()
 	_sfx_generation[slot] += 1
 	var p := _sfx_pool[slot]
 	p.stream = stream
@@ -205,10 +231,38 @@ func is_music_playing() -> bool:
 	return _music != null and _music.playing
 
 
+## Mutates the loaded AudioStream resource itself, not per-player state --
+## `load()` caches and shares one Resource instance per path, so this
+## affects every OTHER AudioStreamPlayer using the same stream too (e.g.
+## the SFX pool, if anything else ever plays the same file). Setting only
+## `loop_mode` without `loop_end` left it at its default of 0, producing a
+## degenerate zero-length loop region (loop from frame 0 to frame 0) --
+## found chasing a 2026-08-01 "weird noise, plays non-stop" report in
+## Shiks: wdl_director.gd used to *also* call play_music() on SFX100.WAV/
+## SFX140.WAV (a redundant duplicate of what Watrfall/WaterWheel's own
+## interpreter-driven actions already do via play_entsound/snd_playing --
+## removed as dead code), and once that call corrupted the shared
+## AudioStreamWAV resource's loop region, the SFX pool's own later
+## playback of the same file could no longer sustain `.playing == true`
+## for its natural duration, retriggering up to ~140x/sec instead of once
+## per ~3s. Setting `loop_end` to the actual sample count keeps this
+## correct for any current or future legitimate play_music() caller.
 func _enable_loop(stream: AudioStream) -> void:
 	if stream is AudioStreamWAV:
 		var wav := stream as AudioStreamWAV
 		wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		wav.loop_begin = 0
+		# PCM only (this corpus's converted SFX are all 8-bit mono/stereo
+		# PCM, never IMA_ADPCM/QOA) -- bytes-per-sample from `format`
+		# (FORMAT_8_BITS=0 -> 1 byte, FORMAT_16_BITS=1 -> 2 bytes) times
+		# channel count. Falls back to the raw byte count (still better
+		# than the previous always-0 default) for a compressed format.
+		if wav.format == AudioStreamWAV.FORMAT_8_BITS or wav.format == AudioStreamWAV.FORMAT_16_BITS:
+			var bytes_per_sample := 2 if wav.format == AudioStreamWAV.FORMAT_16_BITS else 1
+			var channels := 2 if wav.stereo else 1
+			wav.loop_end = wav.data.size() / (bytes_per_sample * channels)
+		else:
+			wav.loop_end = wav.data.size()
 	elif stream is AudioStreamOggVorbis:
 		(stream as AudioStreamOggVorbis).loop = true
 

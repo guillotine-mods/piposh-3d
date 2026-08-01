@@ -13025,6 +13025,8 @@
   "bdrop": "drop.bmp",
   "lava": "lava.bmp"
  },
+ "panels": {},
+ "top_level_stmts": [],
  "skip_count": 2,
  "skipped": [
   "line 410: stray '}' at top level (skipped)",

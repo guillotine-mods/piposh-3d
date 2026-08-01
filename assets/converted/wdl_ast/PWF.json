@@ -14390,6 +14390,179 @@
   "YouWin": "YouWin.bmp",
   "YouLose": "YouLose.bmp"
  },
+ "panels": {
+  "pWinLose": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "YouWin"
+     ]
+    ],
+    "layer": [
+     [
+      "5"
+     ]
+    ],
+    "pos_x": [
+     [
+      "150"
+     ]
+    ],
+    "pos_y": [
+     [
+      "150"
+     ]
+    ],
+    "alpha": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "transparent",
+      "overlay"
+     ]
+    ]
+   }
+  },
+  "VSImage": {
+   "kind": "panel",
+   "fields": {
+    "layer": [
+     [
+      "-0.2"
+     ]
+    ],
+    "bmap": [
+     [
+      "bVS"
+     ]
+    ],
+    "pos_x": [
+     [
+      "0"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d"
+     ]
+    ]
+   }
+  },
+  "HealthBar": {
+   "kind": "panel",
+   "fields": {
+    "layer": [
+     [
+      "-0.1"
+     ]
+    ],
+    "window": [
+     [
+      "22",
+      "26",
+      "205",
+      "36",
+      "Meter2",
+      "opphealth",
+      "0"
+     ],
+     [
+      "408",
+      "26",
+      "205",
+      "36",
+      "Meter1",
+      "piphealth",
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_z"
+    },
+    "value": {
+     "t": "call",
+     "name": "slap",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_x"
+    },
+    "value": {
+     "t": "call",
+     "name": "kick",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_c"
+    },
+    "value": {
+     "t": "call",
+     "name": "spin",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_v"
+    },
+    "value": {
+     "t": "call",
+     "name": "rasia",
+     "args": []
+    }
+   }
+  }
+ ],
  "skip_count": 0,
  "skipped": []
 }

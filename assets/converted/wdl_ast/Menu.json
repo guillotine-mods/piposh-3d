@@ -7070,6 +7070,118 @@
   "bBt2A": "msgbtn2a.pcx",
   "bBt2B": "msgbtn2b.pcx"
  },
+ "panels": {
+  "pMenu": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bMenu"
+     ]
+    ],
+    "pos_x": [
+     [
+      "170"
+     ]
+    ],
+    "pos_y": [
+     [
+      "100"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "overlay"
+     ]
+    ],
+    "button": [
+     [
+      "70",
+      "200",
+      "bBt1A",
+      "bBt1B",
+      "bBt1A",
+      "EndThis",
+      "null",
+      "null"
+     ],
+     [
+      "193",
+      "192",
+      "bBt2A",
+      "bBt2B",
+      "bBt2A",
+      "TryAgain",
+      "null",
+      "null"
+     ]
+    ]
+   }
+  },
+  "pShow": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bShow1"
+     ]
+    ],
+    "pos_x": [
+     [
+      "460"
+     ]
+    ],
+    "pos_y": [
+     [
+      "450"
+     ]
+    ],
+    "flags": [
+     [
+      "visible",
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "button": [
+     [
+      "0",
+      "0",
+      "bShow3",
+      "bShow1",
+      "bShow3",
+      "MovClick",
+      "null",
+      "null"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_esc"
+    },
+    "value": {
+     "t": "null"
+    }
+   }
+  }
+ ],
  "skip_count": 1,
  "skipped": [
   "line 537: stray '}' at top level (skipped)"

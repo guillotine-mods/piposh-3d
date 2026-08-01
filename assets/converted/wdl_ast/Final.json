@@ -246,6 +246,36 @@
    "init_list": false
   },
   {
+   "name": "state",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill10"
+   },
+   "init_list": false
+  },
+  {
+   "name": "duration",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill11"
+   },
+   "init_list": false
+  },
+  {
+   "name": "health",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill12"
+   },
+   "init_list": false
+  },
+  {
    "name": "DMG",
    "kind": "var",
    "array_size": null,
@@ -10873,6 +10903,160 @@
   "bBar": "fBar.pcx",
   "bpwr": "powrbar.pcx"
  },
- "skip_count": 0,
- "skipped": []
+ "panels": {
+  "pHealth": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bPanel"
+     ]
+    ],
+    "pos_x": [
+     [
+      "0"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "layer": [
+     [
+      "1"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "visible",
+      "overlay"
+     ]
+    ],
+    "window": [
+     [
+      "71",
+      "18",
+      "251",
+      "21",
+      "bBar",
+      "shealth",
+      "0"
+     ],
+     [
+      "377",
+      "18",
+      "251",
+      "21",
+      "bBar",
+      "khealth",
+      "0"
+     ]
+    ]
+   }
+  },
+  "DuckIcon": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "DuckIMG"
+     ]
+    ],
+    "pos_x": [
+     [
+      "600"
+     ]
+    ],
+    "pos_y": [
+     [
+      "50"
+     ]
+    ],
+    "layer": [
+     [
+      "1"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "visible",
+      "overlay"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_mouse_left"
+    },
+    "value": {
+     "t": "id",
+     "name": "Fire"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_cud"
+    },
+    "value": {
+     "t": "id",
+     "name": "Duck"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_cuu"
+    },
+    "value": {
+     "t": "id",
+     "name": "Duck"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_tab"
+    },
+    "value": {
+     "t": "call",
+     "name": "Cheat",
+     "args": []
+    }
+   }
+  }
+ ],
+ "skip_count": 2,
+ "skipped": [
+  "line 86: expected a name, got '.' ('.')",
+  "line 87: stray '}' at top level (skipped)"
+ ]
 }

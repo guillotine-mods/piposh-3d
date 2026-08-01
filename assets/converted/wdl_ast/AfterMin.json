@@ -2543,6 +2543,8 @@
   "Break": "SFX001.wav"
  },
  "bmaps": {},
+ "panels": {},
+ "top_level_stmts": [],
  "skip_count": 1,
  "skipped": [
   "line 136: stray '}' at top level (skipped)"

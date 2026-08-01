@@ -286,6 +286,36 @@
     "v": 0.0
    },
    "init_list": false
+  },
+  {
+   "name": "Health",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill10"
+   },
+   "init_list": false
+  },
+  {
+   "name": "myage",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill11"
+   },
+   "init_list": false
+  },
+  {
+   "name": "speed",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill20"
+   },
+   "init_list": false
   }
  ],
  "functions": {
@@ -22637,6 +22667,319 @@
   "bToTemple": "temple.pcx",
   "bdrop": "drop.bmp"
  },
+ "panels": {
+  "pToTemple": {
+   "kind": "panel",
+   "fields": {
+    "layer": [
+     [
+      "20"
+     ]
+    ],
+    "bmap": [
+     [
+      "bToTemple"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d"
+     ]
+    ],
+    "pos_x": [
+     [
+      "200"
+     ]
+    ],
+    "pos_y": [
+     [
+      "230"
+     ]
+    ]
+   }
+  },
+  "MisView": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bMisView"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "overlay"
+     ]
+    ],
+    "pos_x": [
+     [
+      "430"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ]
+   }
+  },
+  "guiCover": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bmpCover"
+     ]
+    ],
+    "pos_x": [
+     [
+      "16"
+     ]
+    ],
+    "pos_y": [
+     [
+      "16"
+     ]
+    ],
+    "layer": [
+     [
+      "6"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "visible",
+      "transparent",
+      "overlay"
+     ]
+    ]
+   }
+  },
+  "guiPlaneName": {
+   "kind": "text",
+   "fields": {
+    "layer": [
+     [
+      "8"
+     ]
+    ],
+    "pos_x": [
+     [
+      "260"
+     ]
+    ],
+    "pos_y": [
+     [
+      "40"
+     ]
+    ],
+    "string": [
+     [
+      "\"                            \""
+     ]
+    ],
+    "font": [
+     [
+      "standard_font"
+     ]
+    ],
+    "flags": [
+     [
+      "visible"
+     ]
+    ]
+   }
+  },
+  "guiPlaneHealth": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bmpRadar"
+     ]
+    ],
+    "pos_x": [
+     [
+      "0"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "layer": [
+     [
+      "5"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "visible",
+      "overlay"
+     ]
+    ],
+    "digits": [
+     [
+      "245",
+      "63",
+      "6",
+      "standard_font",
+      "1",
+      "Alt"
+     ],
+     [
+      "323",
+      "63",
+      "1",
+      "standard_font",
+      "1",
+      "PlanesLeft"
+     ]
+    ]
+   }
+  },
+  "guiMeter": {
+   "kind": "panel",
+   "fields": {
+    "layer": [
+     [
+      "6"
+     ]
+    ],
+    "window": [
+     [
+      "250",
+      "10",
+      "100",
+      "15",
+      "Grad",
+      "PlayerHealth",
+      "0"
+     ],
+     [
+      "250",
+      "34",
+      "100",
+      "15",
+      "Grad",
+      "PlaneHealth",
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "visible",
+      "overlay"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_F1"
+    },
+    "value": {
+     "t": "call",
+     "name": "toggleview",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_F2"
+    },
+    "value": {
+     "t": "call",
+     "name": "togglepanel",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_space"
+    },
+    "value": {
+     "t": "null"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_tab"
+    },
+    "value": {
+     "t": "id",
+     "name": "cheat"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_v"
+    },
+    "value": {
+     "t": "call",
+     "name": "ToggleMisView",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_b"
+    },
+    "value": {
+     "t": "call",
+     "name": "BrachaBomb",
+     "args": []
+    }
+   }
+  }
+ ],
  "skip_count": 1,
  "skipped": [
   "line 1065: stray '}' at top level (skipped)"

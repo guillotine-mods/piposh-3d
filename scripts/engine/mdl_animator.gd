@@ -88,7 +88,12 @@ func setup_from_stem(stem: String, host: Node) -> bool:
 		else:
 			play_cycle(idle, 0.0)
 	elif _clips.has("Frame"):
-		# Props (fan/smoke) intentionally loop Frame*.
+		# Props (fan/smoke) intentionally loop Frame* -- entities whose own
+		# WDL action never calls ent_frame/ent_cycle at all get corrected
+		# back to a static hold by WdlInterpreter._seed_static_pose_if_
+		# never_animated(), which runs once at begin_level() (before the
+		# first frame renders) since MdlAnimator has no AST access of its
+		# own to make that call here.
 		play_cycle("Frame", 0.0)
 	return true
 

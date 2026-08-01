@@ -20853,6 +20853,25 @@
  "bmaps": {
   "bdrop": "drop.pcx"
  },
+ "panels": {},
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_F1"
+    },
+    "value": {
+     "t": "call",
+     "name": "ToggleView",
+     "args": []
+    }
+   }
+  }
+ ],
  "skip_count": 2,
  "skipped": [
   "line 1278: stray '}' at top level (skipped)",

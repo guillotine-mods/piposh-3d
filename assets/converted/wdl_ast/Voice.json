@@ -10913,6 +10913,25 @@
  "actions": {},
  "sounds": {},
  "bmaps": {},
+ "panels": {},
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_space"
+    },
+    "value": {
+     "t": "call",
+     "name": "FF",
+     "args": []
+    }
+   }
+  }
+ ],
  "skip_count": 0,
  "skipped": []
 }

@@ -5,6 +5,26 @@
  ],
  "globals": [
   {
+   "name": "CurrentInv",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill4"
+   },
+   "init_list": false
+  },
+  {
+   "name": "Anim",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill10"
+   },
+   "init_list": false
+  },
+  {
    "name": "video_mode",
    "kind": "var",
    "array_size": null,
@@ -36311,6 +36331,340 @@
   "bMov2": "Mov2.pcx",
   "bMov3": "Mov3.pcx"
  },
+ "panels": {
+  "pStomak": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bStomak"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d"
+     ]
+    ]
+   }
+  },
+  "pPaper": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bPaper"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "overlay"
+     ]
+    ],
+    "button": [
+     [
+      "0",
+      "0",
+      "bPaper",
+      "bPaper",
+      "bPaper",
+      "ClosePaper",
+      "null",
+      "null"
+     ]
+    ]
+   }
+  },
+  "BarImage": {
+   "kind": "panel",
+   "fields": {
+    "layer": [
+     [
+      "4"
+     ]
+    ],
+    "pos_x": [
+     [
+      "340"
+     ]
+    ],
+    "bmap": [
+     [
+      "wPanel"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "overlay",
+      "d3d"
+     ]
+    ]
+   }
+  },
+  "BreathBar": {
+   "kind": "panel",
+   "fields": {
+    "layer": [
+     [
+      "3"
+     ]
+    ],
+    "pos_x": [
+     [
+      "340"
+     ]
+    ],
+    "window": [
+     [
+      "10",
+      "9",
+      "280",
+      "20",
+      "wBar",
+      "AirLeft",
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d"
+     ]
+    ]
+   }
+  },
+  "pMov": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bMov1"
+     ]
+    ],
+    "pos_x": [
+     [
+      "200"
+     ]
+    ],
+    "pos_y": [
+     [
+      "100"
+     ]
+    ],
+    "layer": [
+     [
+      "10"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh"
+     ]
+    ],
+    "button": [
+     [
+      "20",
+      "0",
+      "bMov2",
+      "bMov2",
+      "bMov2",
+      "ShowMov1",
+      "null",
+      "null"
+     ],
+     [
+      "20",
+      "120",
+      "bMov3",
+      "bMov3",
+      "bMov3",
+      "ShowMov2",
+      "null",
+      "null"
+     ]
+    ]
+   }
+  },
+  "InventoryName": {
+   "kind": "text",
+   "fields": {
+    "layer": [
+     [
+      "5"
+     ]
+    ],
+    "pos_x": [
+     [
+      "340"
+     ]
+    ],
+    "pos_y": [
+     [
+      "380"
+     ]
+    ],
+    "font": [
+     [
+      "standard_font"
+     ]
+    ],
+    "string": [
+     [
+      "\"              XFLK JL YJA              \""
+     ]
+    ],
+    "flags": [
+     [
+      "center_x"
+     ]
+    ]
+   }
+  },
+  "Inventory": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "-10"
+     ]
+    ],
+    "pos_y": [
+     [
+      "20"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "bmap": [
+     [
+      "large"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ],
+    "button": [
+     [
+      "450",
+      "300",
+      "switch2",
+      "switch1",
+      "switch2",
+      "ChangeItem",
+      "null",
+      "null"
+     ],
+     [
+      "200",
+      "200",
+      "choose",
+      "null",
+      "null",
+      "PickItem",
+      "null",
+      "null"
+     ]
+    ]
+   }
+  },
+  "GUI": {
+   "kind": "panel",
+   "fields": {
+    "layer": [
+     [
+      "3"
+     ]
+    ],
+    "pos_x": [
+     [
+      "1"
+     ]
+    ],
+    "pos_y": [
+     [
+      "1"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "visible",
+      "overlay"
+     ]
+    ],
+    "button": [
+     [
+      "1",
+      "1",
+      "caseon",
+      "caseoff",
+      "caseon",
+      "Switchcase",
+      "null",
+      "null"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_F1"
+    },
+    "value": {
+     "t": "id",
+     "name": "changeview"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_F2"
+    },
+    "value": {
+     "t": "id",
+     "name": "SwitchCase"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_F3"
+    },
+    "value": {
+     "t": "call",
+     "name": "ReleaseItem",
+     "args": []
+    }
+   }
+  }
+ ],
  "skip_count": 2,
  "skipped": [
   "line 1963: stray '}' at top level (skipped)",

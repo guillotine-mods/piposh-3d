@@ -1568,6 +1568,238 @@
  "bmaps": {
   "bBack": "Credits.bmp"
  },
+ "panels": {
+  "Back": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bBack"
+     ]
+    ],
+    "pos_x": [
+     [
+      "320"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "layer": [
+     [
+      "1"
+     ]
+    ],
+    "flags": [
+     [
+      "visible",
+      "d3d",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "Credits": {
+   "kind": "text",
+   "fields": {
+    "layer": [
+     [
+      "2"
+     ]
+    ],
+    "pos_x": [
+     [
+      "340"
+     ]
+    ],
+    "pos_y": [
+     [
+      "550"
+     ]
+    ],
+    "font": [
+     [
+      "standard_font"
+     ]
+    ],
+    "flags": [
+     [
+      "visible"
+     ]
+    ],
+    "strings": [
+     [
+      "255"
+     ]
+    ],
+    "string": [
+     [
+      "\"                                        EBJVK \"",
+      "\"                                       -------\\n\"",
+      "\"                                    YMGFLC YNT\"",
+      "\"                                   YMGFLC JPFT\"",
+      "\"                                  [JBFTGL JPFT\\n\"",
+      "\"                                       ESJQTC \"",
+      "\"                                      --------\\n\"",
+      "\"YMGFLC YNT                    VJDMJM FD ESJQTC\"",
+      "\"[JBFTGL JPFT                   JDMJM VLV BFRJP\\n\"",
+      "\"                                        VFNKV \"",
+      "\"                                       -------\\n\"",
+      "\"                                  [JBFTGL JPFT\\n\"",
+      "\"                                        VFLFS \"",
+      "\"                                       -------\\n\"",
+      "\"UFQJQ JGH                            JNNC YLJA\\n\"",
+      "\"SJNQFTS YIQS                          DLQ YLJA\"",
+      "\"GFP OFU                                       \"",
+      "\"YKAG AILA                                     \"",
+      "\"JNN LU YLKLKE JSFRSJI TM                      \\n\"",
+      "\"SIOFBLB LDHJ                          BEL JNFJ\"",
+      "\"YFLME LENM                                    \"",
+      "\"TMG ELTB                                      \\n\"",
+      "\"JNN LJTBJ'C                  YFTU (U\\\"MFV) TMFV\"",
+      "\"PCFUME SJR ERJBS                              \"",
+      "\"PCFUME LKFNE                                  \"",
+      "\"XFBJLCJD                                      \"",
+      "\"VFPJON YKFO                                   \\n\"",
+      "\"ELPCFT                            TBE YJP WLJL\"",
+      "\"EKTB                                          \"",
+      "\"SMPGFQ SAMGFQ VFHA                            \"",
+      "\"XJNQE DTUM VDJSQ                              \"",
+      "\"BFLFAU LU FVUA                                \\n\"",
+      "\"VJMO QFLQ SJN SJN'RFFS                FMO LBFJ\"",
+      "\"XJLBJNS TQK YJJTS                             \"",
+      "\"LBJNSE EDNCFA DJLJ JRNB                       \"",
+      "\"SJOFO                                         \"",
+      "\"BRSE                                          \\n\"",
+      "\"FLFLE JQA                            YLFC TQFP\\n\"",
+      "\"SJU TM                               TILS TPLC\"",
+      "\"XJPCFUME VJBB XJPCFUMEM JRH                   \\n\"",
+      "\"[JBFTGL JPFT             XJPCFUME VJBB XJAQFTE\"",
+      "\"YMGFLC YNT                                    \"",
+      "\"TFGM JL                                       \\n\"",
+      "\"OFIME VLJJD YGH ETJM                  TSN VJLE\\n\"",
+      "\"EHQN FBA ZFTPM                      YMGFLC YNT\"",
+      "\"UJLU ELRS                                     \"",
+      "\"ZFI JDJC                                      \"",
+      "\"YEK VNOFA ZJ'R                                \"",
+      "\"JTQ JIFJDB TKFM                               \"",
+      "\"BFLFAU                                        \\n\"",
+      "\"UJLU E'RHN                        [JBFTGL JPFT\"",
+      "\"TFQJR AFEU BUFHU DOFME LENM                   \"",
+      "\"IOJITSE JCJG                                  \"",
+      "\"XJUJUSE VDJJQMJLFA YJJTS TBC .P BBFJ          \"",
+      "\"XFIAIE                                        \"",
+      "\"XFJOE YJJTS ZOFJ                              \"",
+      "\"CFLFKJOQE EUNM XHNM                           \"",
+      "\"FNJMFD                                        \\n\"",
+      "\"TFGM JL                           XJQOFN VFLFS\"",
+      "\"JBU JTFA                                      \"",
+      "\"[JBFNJD LI                                    \"",
+      "\"PBC ZOA                                       \"",
+      "\"TSN VJLE                                      \"",
+      "\"TKFG AL JNAU EMK DFP FJE HIB                  \\n\"",
+      "\"                           XJJLBB OTH JDK ITO \"",
+      "\"                          --------------------\\n\"",
+      "\"YMGFLC YNT                               EBJVK\"",
+      "\"[JBFTGL JPFT                              SHUM\"",
+      "\"YMGFLC YNT                             VFNJJTS\"",
+      "\"JBU JTFA                                 XFLJR\"",
+      "\"TSN VJLEF JBU JTFA              LJPCM SRB VNKE\\n\"",
+      "\"                                        XJTJU \"",
+      "\"                                       -------\\n\"",
+      "\"                                   XJIJ'RE TJU\\n\"",
+      "\"[JBFTGL JPFTF YMGFLC YNT          PFRJB, XJLJM\"",
+      "\"ENBL YTJU                                  YHL\\n\"",
+      "\"                            XJMJ'R EBFDL EDLBE\\n\"",
+      "\"YMGFLC YNT                               XJLJM\"",
+      "\"JSONJDBJL LACJ                             YHL\"",
+      "\"YFTU (U\\\"MFV) TMFV                        PFRJB\\n\"",
+      "\"                        JNFIFNFM VDLFE XFJ TJU\\n\"",
+      "\"YMGFLC YNT                          XJLJM PBTA\"",
+      "\"ENBL YTJU                                  YHL\"",
+      "\"YMGFLC YNTF JNNC YLJA                    PFRJB\\n\"",
+      "\"                                     BFBGE TJU\\n\"",
+      "\"YMGFLC YNT                               XJLJM\"",
+      "\"ENBL YTJU                                  YHL\"",
+      "\"JNNC YLJA                                PFRJB\\n\"",
+      "\"                           JCJG LU TJUE YFJOJN\\n\"",
+      "\"[JBFTGL JPFT                      PFRJB ,XJLJM\"",
+      "\"ENBL YTJU                                  YHL\\n\"",
+      "\"                                   OTH JLP LQN\\n\"",
+      "\"YLFC TQFP                    PFRJB, YHL ,XJLJM\\n\"",
+      "\"                              JGH WTDE VA LKAV\\n\"",
+      "\"YLFC TQFP                    PFRJB, YHL ,XJLJM\\n\"",
+      "\"                                         LBJNS\\n\"",
+      "\"[JBFTGL JPFT                             XJLJM\"",
+      "\"DLQ LAJND                                  YHL\"",
+      "\"[JBFTGL JPFTF YMGFLC YNT                 PFRJB\\n\"",
+      "\"                                        SJNIJB\\n\"",
+      "\"YMGFLC YNT                               XJLJM\"",
+      "\"JSONJDBJL LACJ                             YHL\"",
+      "\"JNNC YLJA                                PFRJB\\n\"",
+      "\"                          XJOTHE LU TFBJHE HFL\\n\"",
+      "\"YMGFLC YNT                               XJLJM\"",
+      "\"ENBL YTJU                                  YHL\"",
+      "\"JNNC YLJA                                PFRJB\\n\"",
+      "\"                                       JBR VJB\\n\"",
+      "\"YMGFLC YNT                               XJLJM\"",
+      "\"ENBL YTJU                                  YHL\"",
+      "\"JNNC YLJA                                PFRJB\\n\"",
+      "\"                               TUS YJA ,TUS UJ\\n\"",
+      "\"[JBFTGL JPFTF YMGFLC YNT          PFRJB ,XJLJM\"",
+      "\"ENBL YTJU                                  YHL\\n\"",
+      "\"                            SIOFBLB LDHJL ENJS\\n\"",
+      "\"[JBFTGL JPFTF YMGFLC YNT          PFRJB ,XJLJM\"",
+      "\"ENBL YTJU                                  YHL\\n\"",
+      "\"                                     TGCB WFUM\\n\"",
+      "\"[JBFTGL JPFTF YMGFLC YNT                 XJLJM\"",
+      "\"ENBL YTJU                                  YHL\"",
+      "\"[JBFTGL JPFT                             PFRJB\"",
+      "\"YFQLH JOA                                     \"",
+      "\"[JBFNJD LI                                    \\n\"",
+      "\"                               CCFLCFGL VMFOTQ\\n\"",
+      "\"YMGFLC YNT                               XJLJM\"",
+      "\"DLQ LAJND                                  YHL\"",
+      "\"JNNC YLJA                                PFRJB\\n\"",
+      "\"                                        VFDFV \"",
+      "\"                                       -------\\n\"",
+      "\"additional audio programming by cameron aycock\\n\"",
+      "\"     TUAM THA AL VLENEB m-vision JNQLFAB ILSFE\"",
+      "\"            JSONJDBJL \\\"FJUKP FAFBV LA AL\\\" LACJ\\n\"",
+      "\"                TFMLI LCF [JBFNJD LI :VFKJA VTSB\\n\"",
+      "\"                 [JBFTGL JPFTL VFDFEL ERFT YNT\"",
+      "\"     FVFA XJHJTKM LBA YNTL VFDFEL ERFT AL JPFT\\n\"",
+      "\"1789 GAM    www.piposh.co.il    M\\\"PB YJIFJLJC\\n\"",
+      "\"                               XJATFS XVAU YMGB\"",
+      "\"XJ BLB XJARMN SHUME LU XJTRFJE ELAE XJIJDTSE VA\"",
+      "\"ABE SHUME VA XJBVFKF VFJNVMJA XJ VFRLQMB XJSBAN\\n\"",
+      "\"                 2 EJNCL UDSFM                 \"",
+      "\" YFSTJE ZFHM XJTIMJINO 2 VP XTVB XJPLOB EONKNU \\n\""
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_esc"
+    },
+    "value": {
+     "t": "call",
+     "name": "GetOut",
+     "args": []
+    }
+   }
+  }
+ ],
  "skip_count": 1,
  "skipped": [
   "line 360: stray '}' at top level (skipped)"

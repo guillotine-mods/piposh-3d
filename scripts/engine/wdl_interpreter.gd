@@ -22,6 +22,28 @@ var _actions: Dictionary = {}
 var _actions_lower: Dictionary = {}  # lowercase name -> canonical name, see _resolve_action()
 var _sounds: Dictionary = {}
 var _sounds_lower: Dictionary = {}  # lowercase name -> canonical name, same pattern as _actions_lower
+var _bmaps: Dictionary = {}  # bmap resource name -> file (e.g. "Hit1.pcx"), see _merge_ast()
+## Raw parsed panel declarations (tools/parse_wdl.py's `panels` AST
+## section) keyed by name, merged in setup() the same way functions/
+## actions/etc. are -- see _merge_ast(). Turned into real Control nodes
+## (`_panel_nodes`) lazily/once via _ensure_panels_built(), not here.
+var _panels_ast: Dictionary = {}
+## name -> the live Control node, built from `_panels_ast` -- see
+## _ensure_panels_built()/_resolve_entity()'s panel-name lookup.
+var _panel_nodes: Dictionary = {}
+## Bare top-level assignment statements (e.g. Range.wdl's `on_mouse_left =
+## Fire;`, written outside any function/action) -- see
+## tools/parse_wdl.py's parse_top_decl() for why these needed their own
+## AST section. Run once in setup(), after globals are initialized (so an
+## `on_` binding's _assign() symbol-capture special case can already see
+## the action/function it names).
+var _top_level_stmts: Array = []
+## Consumed by exec_stmt()'s "wait"/"waitt" case -- see its own comment.
+## Set once per level in begin_level(), right before main()'s coroutine
+## starts, so only its opening wait() (virtually every level's main()
+## starts with one, e.g. `wait(3);`) is skipped, not any later wait()
+## call anywhere else.
+var _skip_next_main_wait := false
 var _loader: WmbLevelLoader
 var _camera: Camera3D
 var _hud: GameHud
@@ -49,6 +71,29 @@ var _total_frames := 0
 var _last_result: Variant = 0.0
 var _warned_builtins: Dictionary = {}
 var _builtins: Dictionary = {}
+## Entities with `enable_impact`/`enable_push`/`enable_entity = on`, for the
+## non-physics-body half of that mechanism -- see
+## _ensure_impact_area()/_check_impact_proximity()'s comments.
+var _impact_zones: Array = []
+## node (the impact zone) -> Dictionary of {other_node: true} currently
+## within range, so proximity firing is edge-triggered, not per-frame.
+var _impact_touching: Dictionary = {}
+## Raw mouse motion accumulated since the last _process() tick, exposed as
+## the `mickey.x`/`mickey.y` scratch vector (see _vec_field_slot()'s
+## generic fallback in _get_field() -- `mickey` needs no special-case
+## field routing, just to be kept live in `_vectors` like `temp`/`my_angle`
+## already are). Real Acknex `mickey` is a per-tick delta that resets
+## itself; mirrored here by zeroing after each _process() read. Range.wdl's
+## `action CamTarget`/`action Handgun` (mouse-look aim) are the confirmed
+## live use (2026-08-01) -- reported as "the character doesn't move" when
+## this was always zero.
+var _mouse_delta := Vector2.ZERO
+## True for exactly one _process() tick after a real left-click -- the
+## non-physics-body half of `on_mouse_left = FuncName;` (Acknex's global
+## click-event binding, e.g. Range.wdl's `on_mouse_left = Fire;`, the
+## entire firing mechanism for its shooting-gallery gameplay). See
+## _assign()'s "on_" symbol-capture case and _check_mouse_click().
+var _mouse_left_clicked := false
 
 
 # ---------------------------------------------------------------------------
@@ -61,8 +106,38 @@ func _exit_tree() -> void:
 	_running = false
 
 
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion:
+		_mouse_delta += (event as InputEventMouseMotion).relative
+	elif event is InputEventMouseButton:
+		var mb := event as InputEventMouseButton
+		if mb.button_index == MOUSE_BUTTON_LEFT and mb.pressed:
+			_mouse_left_clicked = true
+
+
 func _process(_delta: float) -> void:
 	_total_frames += 1
+	_check_impact_proximity()
+	_vectors["mickey"] = Vector3(_mouse_delta.x, _mouse_delta.y, 0.0)
+	_mouse_delta = Vector2.ZERO
+	_check_mouse_click()
+	_update_panel_windows()
+
+
+## `on_mouse_left = FuncName;`'s runtime half -- see _assign()'s "on_"
+## symbol-capture case for how the binding itself gets stored. Fires the
+## bound action/function once per real click, `my=null` (a global input
+## binding has no entity context, same as main()'s own body -- confirmed
+## safe: `invoke_event()` already handles `my==null` for exactly this
+## reason, and Range's `action Fire` -- the only real user of this --
+## touches only globals, never `my.*`).
+func _check_mouse_click() -> void:
+	if not _mouse_left_clicked:
+		return
+	_mouse_left_clicked = false
+	var bound := str(_get_var("on_mouse_left", null))
+	if bound != "":
+		invoke_event(null, bound)
 
 
 func setup(level_stem: String, loader: WmbLevelLoader, camera: Camera3D, hud: GameHud = null) -> bool:
@@ -80,6 +155,9 @@ func setup(level_stem: String, loader: WmbLevelLoader, camera: Camera3D, hud: Ga
 	_merge_includes_recursive(ast.get("includes", []), {level_stem.to_lower(): true})
 	for g in _globals.values():
 		g["value"] = _eval_init(g.get("init"), null, g.get("kind", "var"))
+	for stmt in _top_level_stmts:
+		_exec_stmt_sync(stmt, null)
+	_ensure_panels_built()
 	return true
 
 
@@ -177,6 +255,19 @@ func _merge_ast(ast: Dictionary, _ctx: Dictionary) -> void:
 		if not _sounds.has(k):
 			_sounds[k] = ast["sounds"][k]
 			_index_symbol(_sounds_lower, String(k))
+	for k in ast.get("bmaps", {}):
+		if not _bmaps.has(k):
+			_bmaps[k] = ast["bmaps"][k]
+	# Panel *names* are effectively global too (Dialog.wdl's own panels,
+	# Range's GUI/Terr*/Civ*, IO.wdl's pRIP/pSkip/pCongrat-shaped screens
+	# all get `include`d the same way functions/actions do) -- same
+	# first-writer-wins merge order as everything else above (the level's
+	# own definition, merged first in setup(), always beats a same-named
+	# one pulled in later via include).
+	for k in ast.get("panels", {}):
+		if not _panels_ast.has(k):
+			_panels_ast[k] = ast["panels"][k]
+	_top_level_stmts.append_array(ast.get("top_level_stmts", []))
 
 
 ## Every exact-case symbol table (`_globals`, `_functions`, `_actions`,
@@ -215,6 +306,233 @@ func _resolve_sound(name: String) -> String:
 	return _resolve_symbol(_sounds, _sounds_lower, name)
 
 
+# ---------------------------------------------------------------------------
+# Acknex panel/text HUD objects (bmap-based 2D overlays: health bars, hit
+# icons, win/lose screens, ...) -- see tools/parse_wdl.py's parse_panel()
+# for the AST shape this reads. Previously a complete gap (docs/CONTRACT.md,
+# "PANEL objects... known gap, not built") -- every `panel {...}` block was
+# silently discarded at parse time, so nothing using one could ever render.
+# Reported live (2026-08-01, Range): "all of the HUD / Screens aren't shown
+# on screen." Built generically off the parsed data, not per-level: any
+# level with `panel`/`text` declarations gets this for free.
+# ---------------------------------------------------------------------------
+var _panels_built := false
+## Per-frame "window" (progress-bar) fills to keep in sync with their bound
+## WDL variable -- {"control": TextureRect, "var": String, "width": float}.
+var _panel_windows: Array = []
+
+
+func _ensure_panels_built() -> void:
+	if _panels_built or _hud == null:
+		return
+	_panels_built = true
+	for pname in _panels_ast:
+		_build_panel(String(pname), _panels_ast[pname])
+
+
+func _panel_field_first(fields: Dictionary, key: String, default: String = "") -> String:
+	var occurrences: Array = fields.get(key, [])
+	if occurrences.is_empty() or (occurrences[0] as Array).is_empty():
+		return default
+	return str(occurrences[0][0])
+
+
+func _build_panel(pname: String, decl: Dictionary) -> void:
+	var fields: Dictionary = decl.get("fields", {})
+	var root := Control.new()
+	root.name = "Panel_" + pname
+	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.position = Vector2(
+		float(_panel_field_first(fields, "pos_x", "0")),
+		float(_panel_field_first(fields, "pos_y", "0"))
+	)
+	root.z_index = clampi(int(_panel_field_first(fields, "layer", "0")), -4096, 4096)
+	root.visible = false  # every real usage in the corpus explicitly turns panels on when needed
+	_hud.get_panel_root().add_child(root)
+	_panel_nodes[pname.to_lower()] = root
+
+	var bmap_name := _panel_field_first(fields, "bmap")
+	if bmap_name != "":
+		var tex := _resolve_bmap_texture(bmap_name)
+		if tex != null:
+			var tr := TextureRect.new()
+			tr.name = "Bmap"
+			tr.texture = tex
+			tr.size = tex.get_size()
+			tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			root.add_child(tr)
+			root.set_meta("wdl_bmap_rect", tr)
+
+	for window_args in fields.get("window", []):
+		_build_panel_window(root, window_args)
+	for button_args in fields.get("button", []):
+		_build_panel_button(root, button_args)
+
+
+## `window x,y,width,height,bmap,var,orientation;` -- a fill-proportional
+## progress bar (Range.wdl's health bar: `window 15,58,609,15,bpass,
+## health2,0;`). The bound variable's own natural range matches the
+## declared width exactly in every corpus usage checked (Health2 climbs
+## 0-609, width=609) -- Acknex's `window` element uses the width itself as
+## the implicit 100% reference, not a separate declared max.
+##
+## The referenced bmap (`pass.png`, confirmed via direct pixel-size check)
+## is exactly 2x the declared width -- a standard "fill bar" sprite
+## convention: reveal more of the LEFT portion via a growing crop region
+## as the value rises, not a single image meant to be squashed to fit.
+## Cropped with an AtlasTexture region (updated per-frame in
+## _update_panel_windows()) rather than resizing the TextureRect's own
+## `.size` directly -- confirmed live that doesn't work here: Godot
+## recomputes a TextureRect's minimum size from its texture on the next
+## layout pass and snaps `.size` straight back to the texture's full
+## 1218px width unless `expand_mode` is set to ignore it, which still
+## wouldn't give the right crop -- just a squashed full image.
+func _build_panel_window(root: Control, args: Array) -> void:
+	if args.size() < 6:
+		return
+	var x := float(args[0])
+	var y := float(args[1])
+	var w := float(args[2])
+	var h := float(args[3])
+	var bmap_name := str(args[4])
+	var var_name := str(args[5])
+	var fill := TextureRect.new()
+	fill.name = "Window_" + var_name
+	fill.position = Vector2(x, y)
+	fill.size = Vector2(w, h)
+	fill.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var tex := _resolve_bmap_texture(bmap_name)
+	if tex != null:
+		var atlas := AtlasTexture.new()
+		atlas.atlas = tex
+		atlas.region = Rect2(0, 0, w, h)
+		fill.texture = atlas
+	root.add_child(fill)
+	_panel_windows.append({"control": fill, "var": var_name, "width": w, "height": h})
+
+
+## `button x,y,bmap_up,bmap_down,bmap_over,onclick,arg1,arg2;` -- a
+## clickable hotspot (Range's pSkip: `button = 0,0,bSkip,bSkip,bSkip,D1,
+## null,null;`). Only the up-state bmap and the onclick target matter here
+## -- no hover/press visual-state swap (cosmetic, not blocking any of the
+## reported behavior).
+func _build_panel_button(root: Control, args: Array) -> void:
+	if args.size() < 6:
+		return
+	var x := float(args[0])
+	var y := float(args[1])
+	var bmap_name := str(args[2])
+	var onclick := str(args[5])
+	var btn := Control.new()
+	btn.name = "Button_" + onclick
+	btn.position = Vector2(x, y)
+	var tex := _resolve_bmap_texture(bmap_name)
+	btn.size = tex.get_size() if tex != null else Vector2(32, 32)
+	btn.mouse_filter = Control.MOUSE_FILTER_STOP
+	btn.set_meta("wdl_onclick", onclick)
+	btn.gui_input.connect(_on_panel_button_input.bind(btn))
+	root.add_child(btn)
+
+
+func _on_panel_button_input(event: InputEvent, btn: Control) -> void:
+	if event is InputEventMouseButton:
+		var mb := event as InputEventMouseButton
+		if mb.button_index == MOUSE_BUTTON_LEFT and mb.pressed:
+			get_viewport().set_input_as_handled()
+			invoke_event(null, str(btn.get_meta("wdl_onclick", "")))
+
+
+func _update_panel_windows() -> void:
+	for w in _panel_windows:
+		var control: TextureRect = w["control"]
+		if not is_instance_valid(control):
+			continue
+		var value := _to_num(_get_var(str(w["var"]), null))
+		var full: float = w["width"]
+		var clamped := clampf(value, 0.0, full)
+		control.size.x = clamped
+		var atlas := control.texture as AtlasTexture
+		if atlas != null:
+			atlas.region = Rect2(0, 0, maxf(clamped, 0.01), float(w["height"]))
+
+
+## `bmap`'s referenced file (e.g. `<Hit1.pcx>`) never matches a converted
+## filename literally -- this corpus's GFX conversion always emits `.png`.
+## Self-contained (not reusing GameHud._resolve_gfx()) so panel rendering
+## doesn't depend on GameHud's private implementation details, and still
+## works if a panel is ever needed without a GameHud instance.
+func _resolve_bmap_texture(bmap_var_name: String) -> Texture2D:
+	if bmap_var_name == "":
+		return null
+	var file := ""
+	if _bmaps.has(bmap_var_name):
+		file = _bmaps[bmap_var_name]
+	else:
+		var low := bmap_var_name.to_lower()
+		for k in _bmaps:
+			if String(k).to_lower() == low:
+				file = _bmaps[k]
+				break
+	if file == "":
+		return null
+	var stem := file.get_basename()
+	const GFX := "res://assets/converted/gfx/"
+	var candidates := [GFX + stem + ".png", GFX + stem.to_lower() + ".png", GFX + file]
+	for path in candidates:
+		if ResourceLoader.exists(path):
+			var tex := load(path) as Texture2D
+			if tex != null:
+				return tex
+	# Last resort: case-insensitive directory scan (mixed-case originals).
+	var dir := DirAccess.open(GFX)
+	if dir == null:
+		return null
+	var want := (stem + ".png").to_lower()
+	dir.list_dir_begin()
+	var fn := dir.get_next()
+	while fn != "":
+		if fn.to_lower() == want:
+			return load(GFX + fn) as Texture2D
+		fn = dir.get_next()
+	return null
+
+
+func _get_panel_field(node: Control, low: String) -> Variant:
+	match low:
+		"visible":
+			return 1.0 if node.visible else 0.0
+		"pos_x":
+			return node.position.x
+		"pos_y":
+			return node.position.y
+		"alpha":
+			return node.modulate.a * 100.0
+		_:
+			return 0.0
+
+
+func _set_panel_field(node: Control, low: String, value: Variant) -> void:
+	match low:
+		"visible":
+			node.visible = _truthy(value)
+		"pos_x":
+			node.position.x = _to_num(value)
+		"pos_y":
+			node.position.y = _to_num(value)
+		"alpha":
+			node.modulate.a = clampf(_to_num(value) / 100.0, 0.0, 1.0)
+		"transparent":
+			pass  # cosmetic fade-state flag, not needed for visible/invisible correctness
+		"bmap":
+			var tr: TextureRect = node.get_meta("wdl_bmap_rect", null)
+			if tr != null:
+				var tex := _resolve_bmap_texture(str(value))
+				if tex != null:
+					tr.texture = tex
+					tr.size = tex.get_size()
+
+
 func _default_for(kind: String) -> Variant:
 	match kind:
 		"string":
@@ -236,6 +554,7 @@ func has_main() -> bool:
 ## replacement for wdl_director.gd's per-level `_begin_X()` dispatch.
 func begin_level() -> void:
 	if _functions.has("main"):
+		_skip_next_main_wait = true
 		_run_coroutine(_functions["main"].get("body", {}), null)
 	if _loader == null:
 		print("[wdl] begin_level: no loader, no entity actions started")
@@ -259,6 +578,8 @@ func begin_level() -> void:
 			node.set_meta("wdl_skills", (node.get_meta("skills", []) as Array).duplicate())
 			_seed_look_at_me_flag1(node, action)
 			_seed_subtitle_crawl(action)
+			_seed_reveal_only_hidden(node, _actions[resolved_action].get("body", {}))
+			_seed_static_pose_if_never_animated(node, _actions[resolved_action].get("body", {}))
 			_run_coroutine(_actions[resolved_action].get("body", {}), node)
 			started += 1
 		else:
@@ -329,6 +650,121 @@ func _seed_look_at_me_flag1(node: Node3D, action: String) -> void:
 	var pan := float(node.get_meta("pan", 0.0))
 	var diff := absf(fposmod(pan - LOOK_AT_ME_FLAG1_ON_PAN + 180.0, 360.0) - 180.0)
 	node.set_meta("wdl_custom_flag1", 1.0 if diff <= LOOK_AT_ME_FLAG1_PAN_TOLERANCE else 0.0)
+
+
+## Generic fix for "reveal-only" actors: an action whose only
+## `my.invisible = ...` assignments (anywhere in its body, however deeply
+## nested in if/while) ever set it to `off` (visible), never `on` (hidden).
+## If the entity's own WED-authored flag doesn't already mark it invisible
+## (`_ensure_impact_area`'s sibling concern -- see wmb_level_loader.gd's
+## `flag_invisible`), such an action's reveal statement is a structural
+## no-op: the entity is visible from frame 1 regardless, defeating the
+## obvious intent of a staged "become visible at the right story beat"
+## reveal. Confirmed live (2026-08-01, Shiks): `action Weasel` only ever
+## does `my.invisible = off` when `CamShow == 6`, with no initializer and
+## no re-hide branch; Shiks.json's raw WED flags for that entity (256,
+## bit0 clear) confirm it truly is authored visible, not a flag-decode
+## bug -- so the model sits in the open from the very first frame and
+## whatever the camera happens to look at early (this port's `scan_path`
+## waypoint-following is an *approximate* reconstruction of the original
+## path, not byte-exact -- see `_do_scan_path()`) can expose it well
+## before its intended CamShow==6 reveal. Unlike the Weasel-specific
+## conclusion, this scan itself is generic (AST-shape based, not keyed on
+## action/level name) so it transparently protects any other
+## similarly-authored reveal-only actor in the corpus without needing a
+## per-level special case.
+func _seed_reveal_only_hidden(node: Node3D, body: Dictionary) -> void:
+	if bool(node.get_meta("invisible", false)):
+		return  # WED already starts it hidden -- nothing to fix.
+	# [seen_show, seen_hide] as an Array, not two local bools: GDScript
+	# lambdas capture primitives by value, so a closure mutating outer
+	# `bool` locals silently never propagates back -- first version of
+	# this fix looked correct and did nothing. Recursing with explicit
+	# return values (no closure) instead.
+	var seen := _scan_invisible_assignments(body)
+	if seen[0] and not seen[1]:
+		node.visible = false
+
+
+## Returns [seen_show, seen_hide] for `my.invisible = <bool>` assignments
+## found anywhere in the given AST subtree (however deeply nested in
+## if/while). See _seed_reveal_only_hidden()'s docstring for why only
+## statements targeting `my` specifically (not `player`/other objects)
+## count.
+func _scan_invisible_assignments(n: Variant) -> Array:
+	var seen_show := false
+	var seen_hide := false
+	if n is Dictionary:
+		if str(n.get("t", "")) == "assign" and str(n.get("op", "")) == "=":
+			var target: Dictionary = n.get("target", {})
+			if str(target.get("t", "")) == "field" and str(target.get("name", "")).to_lower() == "invisible":
+				var obj: Dictionary = target.get("obj", {})
+				if str(obj.get("t", "")) == "id" and str(obj.get("name", "")).to_lower() == "my":
+					var val: Dictionary = n.get("value", {})
+					if str(val.get("t", "")) == "bool":
+						if bool(val.get("v", false)):
+							seen_hide = true
+						else:
+							seen_show = true
+		for key in n.keys():
+			var sub := _scan_invisible_assignments(n[key])
+			seen_show = seen_show or sub[0]
+			seen_hide = seen_hide or sub[1]
+	elif n is Array:
+		for item in n:
+			var sub := _scan_invisible_assignments(item)
+			seen_show = seen_show or sub[0]
+			seen_hide = seen_hide or sub[1]
+	return [seen_show, seen_hide]
+
+
+## `MdlAnimator.setup_from_stem()`'s own fallback -- when a model has no
+## "Stand" clip, only "Frame" -- assumes any such entity wants "Frame"
+## looped (correct for fan/smoke/falling-debris props whose own WDL
+## scripts drive `ent_cycle("Frame", my.skill1)` themselves over time,
+## e.g. Ziggy's FCloud, Plane's Cow/Ship/PisaFall). Wrong for a static
+## prop that just happens to store its one fixed pose under a clip named
+## "Frame" -- confirmed twice independently (2026-08-01, Plane2):
+## AFG_Card (Afgan.wdl's clickable collectible flight badge) and Sikot
+## (a clickable static NPC/prop) both never call `ent_frame`/`ent_cycle`
+## anywhere in their own action body at all, yet both were left actively
+## cycling through "Frame"'s poses by the loader-time fallback, reported
+## live as "animating instead of being static." Generic fix, not a
+## per-action hardcode (the first attempt, an `action=="afg_card"` check
+## plus a `MdlAnimator.hold_autoplay` export, worked but doesn't
+## generalize -- Sikot needed the exact same fix under a different name,
+## confirming this is a real corpus-wide pattern, not a one-off):
+## statically scans the action's own AST body (however deeply nested in
+## if/while) for any `ent_frame`/`ent_cycle` call; if it never animates
+## itself, whatever pose MdlAnimator's own fallback landed on gets held
+## static instead of cycled. Runs once per entity at `begin_level()`,
+## before the first frame ever renders, so there's no visible flicker
+## even though it corrects an already-started cycle.
+func _seed_static_pose_if_never_animated(node: Node3D, body: Dictionary) -> void:
+	if _scan_for_calls(body, ["ent_frame", "ent_cycle"]):
+		return
+	var anim := node.get_node_or_null("MdlAnimator") as MdlAnimator
+	if anim == null or not bool(anim.get("_playing")):
+		return
+	var clip := str(anim.get("_current_clip"))
+	if clip != "":
+		anim.play_frame(clip, 0.0)
+
+
+## True if the given AST subtree contains a `call` expression whose name
+## (case-insensitive) is in `names`, anywhere, however deeply nested.
+func _scan_for_calls(n: Variant, names: Array) -> bool:
+	if n is Dictionary:
+		if str(n.get("t", "")) == "call" and str(n.get("name", "")).to_lower() in names:
+			return true
+		for key in n.keys():
+			if _scan_for_calls(n[key], names):
+				return true
+	elif n is Array:
+		for item in n:
+			if _scan_for_calls(item, names):
+				return true
+	return false
 
 
 func _run_coroutine(body: Dictionary, entity) -> void:
@@ -403,7 +839,41 @@ func exec_stmt(stmt: Dictionary, my) -> Variant:
 				_index_global(dname)
 			return null
 		"expr_stmt":
-			_eval(stmt.get("expr", {}), my)
+			# A bare top-level call to a USER function (not a builtin) gets
+			# a real, awaitable coroutine instead of _call()'s normal
+			# synchronous-to-completion path -- see
+			# _call_user_function_async()'s docstring for why this specific
+			# shape needs it. Nested calls (inside a larger expression,
+			# `a = b + Foo();`) are unaffected -- WDL never needs a
+			# mid-expression `wait()`, only real WDL scripts calling a
+			# genuinely long-running shared function as their own tail
+			# statement do, and this only fires for that exact shape.
+			var top_expr: Dictionary = stmt.get("expr", {})
+			if str(top_expr.get("t", "")) == "call":
+				var fname := str(top_expr.get("name", ""))
+				if not (fname.to_lower() in BRIDGE_OVER_SHARED_FUNCTIONS):
+					var resolved := _resolve_function(fname)
+					if resolved != "":
+						_last_result = await _call_user_function_async(resolved, top_expr.get("args", []), my)
+						return null
+					# Acknex lets an `action NAME {...}` be invoked like a
+					# plain function too (no separate "callable" concept --
+					# both are just named statement blocks); `_call()`'s
+					# normal dispatch only ever checked `_functions`, never
+					# `_actions`, for a bare call target. Confirmed live
+					# (2026-08-01, Plane2): `action player_walk2`'s tail
+					# statement is `player_move2();`, and `player_move2`
+					# is itself declared with `ACTION`, not `function` --
+					# unresolved, this fell all the way through to the
+					# generic "unbridged builtin" no-op, so its entire body
+					# (including the real "all 4 side-quest goals done ->
+					# Run(Range.exe)" check, the actual report) never ran
+					# even once, let alone as an ongoing per-frame check.
+					var resolved_action := _resolve_action(fname)
+					if resolved_action != "":
+						await exec_block(_actions[resolved_action].get("body", {}), my)
+						return null
+			_eval(top_expr, my)
 			return null
 		"if":
 			if _truthy(_eval(stmt.get("cond"), my)):
@@ -445,6 +915,21 @@ func exec_stmt(stmt: Dictionary, my) -> Variant:
 			var n := 1
 			if stmt.get("n") != null:
 				n = int(_eval(stmt.get("n"), my))
+			if my == null and _skip_next_main_wait:
+				# `main()`'s own opening `wait(3);` (or similar, corpus-wide
+				# -- confirmed via grep, virtually every level's main()
+				# starts with one) existed to give the original engine's
+				# own, genuinely slow level load a moment to actually
+				# finish before gameplay started. Reported live
+				# (2026-08-01): "in the original game there's a sleep/wait
+				# function for 3 seconds before each level actually
+				# starts... loads very quickly anyway on modern devices."
+				# Consumed once per level (see begin_level()) so only
+				# main()'s own first wait is affected -- every other
+				# wait() in the game, including any later ones inside
+				# main() itself, is untouched.
+				_skip_next_main_wait = false
+				n = 1
 			for i in maxi(n, 1):
 				await get_tree().process_frame
 				if not _running:
@@ -605,7 +1090,12 @@ func _truthy(v: Variant) -> bool:
 # ---------------------------------------------------------------------------
 func _get_var(name: String, my) -> Variant:
 	var low := name.to_lower()
-	if low == "my":
+	if low == "my" or low == "me":
+		# `ME` is Acknex's other name for the current entity, same as `MY`
+		# -- confirmed live (2026-08-01, Range): `ACTION Spark`'s bullet
+		# movement is entirely `move(ME, nullskill, fireball_speed)`
+		# (WDL/weapons.wdl), so without this every bullet's own move()
+		# call resolved to a null entity and silently did nothing.
 		return my
 	if low == "you" or low == "then":
 		return null  # proximity-scan pointers -- not tracked generically yet
@@ -694,12 +1184,18 @@ func _resolve_entity(obj: Variant, my):
 	# and _get_field()/_set_field() already treat null as a safe no-op.
 	if obj == null:
 		return my
-	if obj is Dictionary and obj.get("t") == "id" and str(obj.get("name", "")).to_lower() == "my":
+	if obj is Dictionary and obj.get("t") == "id" and str(obj.get("name", "")).to_lower() in ["my", "me"]:
 		return my
 	if obj is Dictionary and obj.get("t") == "id" and str(obj.get("name", "")).to_lower() == "camera":
 		return _camera
 	if obj is Dictionary and obj.get("t") == "id" and str(obj.get("name", "")).to_lower() == "dialog" and _hud != null:
 		return _hud
+	if obj is Dictionary and obj.get("t") == "id":
+		var idname := str(obj.get("name", "")).to_lower()
+		if _panels_ast.has(idname) or _panel_nodes.has(idname):
+			_ensure_panels_built()
+			if _panel_nodes.has(idname):
+				return _panel_nodes[idname]
 	var v = _eval(obj, my)
 	return v if (is_instance_valid(v) and v is Node3D) else null
 
@@ -742,6 +1238,8 @@ func _get_field(obj_expr: Variant, field: String, my) -> Variant:
 		# being reset again. Confirmed live (2026-07-31, Shiks: "after
 		# choosing, the talk isn't starting"). Bridged to the real HUD state.
 		return 1.0 if (low == "visible" and _hud.is_dialog_open()) else 0.0
+	if node is Control:
+		return _get_panel_field(node, low)
 	var gs := _godot_to_gs(node.global_position)
 	match low:
 		"x":
@@ -829,6 +1327,9 @@ func _set_field(obj_expr: Variant, field: String, value: Variant, my) -> void:
 		# never actually reaches here).
 		if low == "visible" and _to_num(value) == 0.0:
 			_hud.hide_dialog()
+		return
+	if node is Control:
+		_set_panel_field(node, low, value)
 		return
 	match low:
 		"x", "y", "z":
@@ -951,12 +1452,37 @@ func _clickable_center_offset(node: Node3D) -> Vector3:
 
 
 ## See the `enable_impact`/`enable_push`/`enable_entity` comment in
-## _set_field(). Detects the player's own CharacterBody3D (added to group
-## "player" by player_controller.gd) entering the entity's space and fires
-## its `.event`, the same dispatch `invoke_event()` already provides for
-## clicks. `body_entered` only fires once per approach (not continuously
-## while overlapping), matching a real walk-into-it collision, not a
-## per-frame poll.
+## _set_field(). Two complementary mechanisms, because this corpus's real
+## "walk into it" collisions come from two structurally different movers:
+## 1) The real player (`player_controller.gd`'s `CharacterBody3D`, a real
+##    physics body) -- Area3D `body_entered` correctly detects it.
+## 2) Every OTHER entity (Shiks' `action Piposh2` walking via `actor_move()`
+##    into `action Bumpin`'s Snail, for example) is spawned as a plain
+##    `Node3D` (see `WmbLevelLoader._spawn_entity()`), repositioned by
+##    direct `global_position` assignment -- Godot's physics engine has no
+##    awareness of it at all, so `body_entered` NEVER fires for these,
+##    regardless of collision layers/masks. Confirmed live (2026-08-01,
+##    Shiks): picking the dialogue choice that should make Piposh walk into
+##    Snail and trigger the rest of the scene instead just walked in place
+##    and looped back to the same dialogue prompt -- the earlier fix's own
+##    verification (`tools/smoke_shiks_bumpin.gd`) called the event handler
+##    directly, which only proved the *dispatch* worked, never that real
+##    walking would ever reach it. `_impact_zones`/`_check_impact_proximity()`
+##    below is a plain per-frame distance check against every other live
+##    entity for exactly this case -- the generic analogue of Area3D
+##    overlap, for movers Godot's own physics never sees.
+## Deliberately NOT using `_clickable_center_offset()` here (unlike
+## `_ensure_clickable_area()`): that AABB-centering is for raycasting a
+## visible mesh and is correct there, but "walking into" something is a
+## position-to-position proximity check, and blindly recentering on a
+## mesh's AABB actively breaks it for any large/asymmetric prop -- Shiks'
+## own `Snail` mesh is 424x344x89 units, so its AABB center sits ~100
+## units away from the entity's own origin (where every other entity's
+## `global_position` is anchored), which silently moved the whole trigger
+## zone off into empty space. Confirmed live: a `tools/smoke_shiks_
+## bumpin_proximity.gd` run that walks Piposh2 to within 0.2 units of
+## Snail's own origin never fired, because the zone was centered ~100
+## units away. Plain origin is correct for this check.
 func _ensure_impact_area(node: Node3D) -> void:
 	if node.has_meta("wdl_impact_area"):
 		return
@@ -966,13 +1492,14 @@ func _ensure_impact_area(node: Node3D) -> void:
 	area.monitoring = true
 	var cs := CollisionShape3D.new()
 	var shape := SphereShape3D.new()
-	shape.radius = 28.0
+	var radius := 28.0
+	shape.radius = radius
 	cs.shape = shape
-	cs.position = _clickable_center_offset(node)
 	area.add_child(cs)
 	node.add_child(area)
 	node.set_meta("wdl_impact_area", true)
 	area.body_entered.connect(_on_impact_body_entered.bind(node))
+	_impact_zones.append({"node": node, "radius": radius, "offset": Vector3.ZERO})
 
 
 func _on_impact_body_entered(body: Node3D, node: Node3D) -> void:
@@ -981,6 +1508,71 @@ func _on_impact_body_entered(body: Node3D, node: Node3D) -> void:
 	if not _entity_alive(node):
 		return
 	invoke_event(node, str(node.get_meta("wdl_event", "")))
+
+
+## Per-frame distance check, the non-physics-body half of the impact
+## mechanism -- see _ensure_impact_area()'s comment. `_impact_touching`
+## debounces per (zone, other) pair so this fires once on approach, not
+## every frame spent overlapping, matching body_entered's own semantics.
+func _check_impact_proximity() -> void:
+	if _impact_zones.is_empty() or _loader == null:
+		return
+	var entities: Node = _loader.get_node_or_null("Entities")
+	if entities == null:
+		return
+	# `zone["node"]` must stay untyped until validity is confirmed --
+	# straight to a `Node3D`-typed local throws "Trying to assign invalid
+	# previously freed instance" the instant the entity's been remove()d
+	# (a real WDL builtin, used corpus-wide for shooting-range targets
+	# etc.), since Godot validates the object reference at the typed
+	# assignment itself, before any code gets to check it. Reported live
+	# (2026-08-01, Range): the level "stops"/errors right at start --
+	# `[wdl-event]`-adjacent logging showed this exact error spamming
+	# every single frame from the moment a target entity first got
+	# removed. Same untyped-until-checked convention every other
+	# entity-liveness check in this file already follows (see
+	# _entity_alive()'s own `my` parameter) -- this one just didn't.
+	# Stale zones are also dropped here instead of merely skipped, so a
+	# level that removes many targets (a shooting range) doesn't keep
+	# accumulating dead entries checked forever.
+	var live_zones := []
+	for zone in _impact_zones:
+		var node = zone["node"]
+		if not is_instance_valid(node) or not _entity_alive(node):
+			_impact_touching.erase(node)
+			continue
+		live_zones.append(zone)
+		var center: Vector3 = node.to_global(zone["offset"])
+		var radius: float = zone["radius"]
+		var touching: Dictionary = _impact_touching.get(node, {})
+		var still_touching := {}
+		for other in entities.get_children():
+			if other == node or not (other is Node3D) or not is_instance_valid(other):
+				continue
+			if not _entity_alive(other):
+				continue
+			# Horizontal-plane distance only (ignore Y). Movers in this port
+			# are plain Node3D translated by _do_actor_move() with no floor
+			# snapping (unlike the original engine's actor_move(), which
+			# tracks floor height like real physics-based movement does) --
+			# so a walker's Y stays pinned to its spawn height even while
+			# crossing a room that sits on genuinely different ground.
+			# Confirmed live (2026-08-01, Shiks): Piposh2 spawns at Y=8 and
+			# walks a dead-flat line toward Bumpin at Y=-69/Z=23 -- StandHere
+			# nearby is also Y=-73, confirming that room is really ~80 units
+			# lower, not a data error. A full 3D sphere check can never
+			# close that gap, so "walked into" NPC-vs-entity proximity uses
+			# XZ distance only. The real player's Area3D/body_entered path
+			# is untouched by this (CharacterBody3D floor-snaps for real).
+			var other_pos: Vector3 = (other as Node3D).global_position
+			var dx := center.x - other_pos.x
+			var dz := center.z - other_pos.z
+			if dx * dx + dz * dz <= radius * radius:
+				still_touching[other] = true
+				if not touching.has(other):
+					invoke_event(node, str(node.get_meta("wdl_event", "")))
+		_impact_touching[node] = still_touching
+	_impact_zones = live_zones
 
 
 func _find_mesh_instance(n: Node) -> MeshInstance3D:
@@ -1172,6 +1764,45 @@ func _assign(op: String, target: Dictionary, value_expr: Variant, my) -> Variant
 		# undeclared variable HP (which would silently evaluate to 0.0 and
 		# make every click-driven entity in the game permanently inert).
 		new_val = str(value_expr.get("name", ""))
+	elif (
+		op == "="
+		and str(target.get("t", "")) == "id"
+		and str(target.get("name", "")).to_lower().begins_with("on_")
+		and typeof(value_expr) == TYPE_DICTIONARY
+		and str(value_expr.get("t", "")) in ["id", "call"]
+		and (
+			_resolve_action(str(value_expr.get("name", ""))) != ""
+			or _resolve_function(str(value_expr.get("name", ""))) != ""
+		)
+	):
+		# `on_mouse_left = Fire;` / `on_space = X;` -- Acknex's global input-
+		# event bindings, same shape as `my.event = HP;` one level up (a
+		# GLOBAL, not a field): the value is a compile-time action/function
+		# symbol, not a variable read. Only captured as a symbol when it
+		# actually resolves to a known action/function -- e.g. Shiks'
+		# `on_space = null;` (disabling a binding) must still evaluate `null`
+		# normally, not stringify it. See _check_mouse_click()'s use of
+		# `on_mouse_left`, the only one of these actually wired to a real
+		# input event so far (see docs/CONTRACT.md for the rest as a known
+		# gap: on_space/on_enter/etc. are captured correctly but nothing
+		# polls the space/enter key itself yet).
+		#
+		# Also accepts a "call" shape (`on_F1 = SwitchWeapon();`,
+		# AsyAct3.wdl -- an equally common Acknex idiom, parens included,
+		# still meaning "bind this handler" not "invoke it now"), NOT just
+		# bare "id" (`on_mouse_left = Fire;`). Confirmed as a real, severe
+		# bug (2026-08-01): with only "id" handled, this branch's own
+		# `else: new_val = _eval(value_expr, my)` fallback ACTUALLY CALLED
+		# SwitchWeapon() -- a real function, synchronously, at level
+		# start, one of the new top_level_stmts this same session added
+		# execution for. If a "handler" function like this contains its
+		# own `while(1){...wait(1);}` (written to run forever as its OWN
+		# coroutine once actually triggered by the key press), running it
+		# synchronously via _exec_stmt_sync() hangs the whole level load
+		# forever -- confirmed live via smoke_dispatch.gd timing out on
+		# AsyAct3 specifically, the first level in the corpus using this
+		# call-shaped on_ idiom.
+		new_val = str(value_expr.get("name", ""))
 	else:
 		new_val = _eval(value_expr, my)
 	if op != "=":
@@ -1305,9 +1936,27 @@ func _assign(op: String, target: Dictionary, value_expr: Variant, my) -> Variant
 ## `LevelRouter.goto_level()` *and* sets `_running = false` immediately
 ## (matching real Acknex's Run() halting the current level right away,
 ## not some frames later once the actual scene swap lands).
+## `perform_handle` (2026-08-01) is the SAME shape one more time, found
+## once bare-call statements to user functions could genuinely run
+## forever (see exec_stmt()'s "expr_stmt" case / _call_user_function_
+## async()'s docstring, added the same day): `WDL/input.wdl`'s real
+## `function perform_handle() { while(1) { if(MY._SIGNAL==_HANDLE)
+## {...}; wait(1); } }` is a real per-tick "is the interact key held"
+## poll -- meaningless in this port, where the native player controller
+## handles all real input directly and nothing ever sets `_SIGNAL`, but
+## with nowhere that ever breaks its `while(1)`, it runs FOREVER once
+## given a genuine coroutine. `player_move2()` (Plane2, WDL/movement.wdl)
+## calls it as a plain bare statement partway through its own body, so a
+## forever-running `perform_handle()` permanently blocks everything
+## after it in the SAME caller -- including `player_move2()`'s own main
+## loop, the only place Plane2's real "all 4 side-quest goals done ->
+## Run(Range.exe)" check lives. Confirmed via corpus grep
+## (`^function perform_handle`) there is exactly one shared declaration,
+## same rule as every other entry here.
 const BRIDGE_OVER_SHARED_FUNCTIONS: Array[String] = [
 	"splay", "vplay", "play_sound", "play_entsound", "stop_sound",
 	"snd_playing", "getposition", "actor_move", "showdialog", "run",
+	"perform_handle",
 ]
 
 
@@ -1316,6 +1965,12 @@ func _call(name: String, arg_exprs: Array, my) -> Variant:
 	if low == "vec_set" or low == "vec_sub" or low == "vec_to_angle":
 		_last_result = _do_vector_call(low, arg_exprs, my)
 		return _last_result
+	if low == "move":
+		_last_result = _do_move_call(arg_exprs, my)
+		return _last_result
+	if low == "vec_rotate":
+		_do_vec_rotate(arg_exprs, my)
+		return 0.0
 	if not (low in BRIDGE_OVER_SHARED_FUNCTIONS):
 		# User-defined function call (not a builtin) -- run synchronously to
 		# completion this frame (no `wait()` support inside nested function
@@ -1323,6 +1978,18 @@ func _call(name: String, arg_exprs: Array, my) -> Variant:
 		var resolved_fn := _resolve_function(name)
 		if resolved_fn != "":
 			_last_result = _call_user_function(resolved_fn, arg_exprs, my)
+			return _last_result
+		# Acknex allows `action NAME {...}` to be invoked like a plain
+		# function too -- see exec_stmt()'s "expr_stmt" case (the async,
+		# top-level-statement counterpart of this same fallback) for the
+		# full story. Nested/mid-expression action-as-function calls are
+		# rare but not nonexistent in the corpus; handled here the same
+		# (synchronous) way _call_user_function() already runs nested
+		# function calls, for consistency.
+		var resolved_act := _resolve_action(name)
+		if resolved_act != "":
+			var sig = _exec_block_sync(_actions[resolved_act].get("body", {}), my)
+			_last_result = sig.value if sig is ReturnSignal else null
 			return _last_result
 	if _builtins.has(low):
 		var args: Array = []
@@ -1335,6 +2002,26 @@ func _call(name: String, arg_exprs: Array, my) -> Variant:
 			var action_expr: Dictionary = arg_exprs[2]
 			if action_expr.get("t") == "id":
 				args[2] = str(action_expr.get("name", ""))
+		if low == "create" and arg_exprs.size() > 1:
+			# 2nd arg is conventionally written `entity.x` (Shiks:
+			# `create(<Photos.mdl>, my.x, Photos)`; Range:
+			# `create(<UziBul.mdl>, player.x, Spark)`) -- an Acknex idiom
+			# for "spawn at THIS entity", not a real read of its numeric
+			# X coordinate. The evaluated value (a bare float) throws away
+			# *which* entity it came from, so _do_create() used to fall
+			# back to spawning at `my`'s own position regardless -- wrong
+			# whenever the position entity isn't the caller, confirmed
+			# live (2026-08-01, Range): `CreateSpark()` runs via the
+			# `on_mouse_left` global binding (`my == null`), so every
+			# fired bullet spawned at Transform3D.IDENTITY's origin
+			# instead of the player. Passed through as the RESOLVED
+			# ENTITY (or null) in args[1]; _do_create() uses it directly
+			# when present, `my` only as the pre-existing fallback.
+			var pos_expr: Dictionary = arg_exprs[1]
+			if pos_expr.get("t") == "field":
+				args[1] = _resolve_entity(pos_expr.get("obj"), my)
+			else:
+				args[1] = null
 		_last_result = _builtins[low].call(args, my)
 		return _last_result
 	_warn_once("builtin: " + name)
@@ -1354,6 +2041,62 @@ func _call_user_function(fname: String, arg_exprs: Array, my) -> Variant:
 		if not had_key:
 			_index_global(pname)
 	var sig = _exec_block_sync(fn.get("body", {}), my)
+	for pname in saved:
+		if saved[pname] == null:
+			_globals.erase(pname)
+			_deindex_global(pname)
+		else:
+			_globals[pname] = saved[pname]
+	return sig.value if sig is ReturnSignal else null
+
+
+## Real, awaitable counterpart to _call_user_function() -- used only for a
+## bare top-level call statement (see exec_stmt()'s "expr_stmt" case),
+## never for a call nested inside a larger expression (which still can't
+## suspend mid-expression, matching real WDL: `wait()` only ever appears
+## as its own statement).
+##
+## Some shared library functions (WDL/input.wdl's `perform_handle()`,
+## WDL/movement.wdl's real `player_move()`/`player_move2()`) are written
+## as `while(1){...wait(1);...}` loops meant to run for the rest of the
+## level's lifetime, one iteration per real frame -- not "call, run to
+## completion, return" helpers. `_call_user_function()`'s synchronous
+## executor has no real per-frame yield (its own `wait()` handling is a
+## one-time no-op warning, and its "while" loop's only safety valve is a
+## flat 100000-iteration counter), so calling one of these synchronously
+## burns through that entire budget in a single frame and returns having
+## accomplished nothing -- any check inside that loop (a condition meant
+## to be polled over real time) only ever got evaluated against
+## whatever state existed in that first instant, never again.
+##
+## Confirmed live (2026-08-01, Plane2): `action player_walk2`'s tail
+## statement is `player_move2();` -- and `player_move2()`'s own main loop
+## is the ONLY place the real "all 4 side-quest goals done ->
+## Run(Range.exe)" check lives (guarded by `_MOVEMODE`, itself only
+## reachable at all after the 2026-08-01 DEFINE-constants fix). Even with
+## that fix, the check never fired: player_move2() had already exhausted
+## its 100000-iteration sync budget and returned within the first frame
+## of the level loading, long before a real player could ever finish the
+## side quests. This function gives it a genuine per-frame coroutine
+## instead, so the check keeps being evaluated for as long as the level
+## runs -- matching real WDL semantics for exactly this "long-running
+## shared function called as an action's tail statement" shape, while
+## every other function call in the corpus (the overwhelming majority --
+## short helpers, called mid-expression, or never containing a real
+## per-frame loop) is completely unaffected.
+func _call_user_function_async(fname: String, arg_exprs: Array, my) -> Variant:
+	var fn: Dictionary = _functions[fname]
+	var params: Array = fn.get("params", [])
+	var saved: Dictionary = {}
+	for i in params.size():
+		var pname: String = params[i]
+		saved[pname] = _globals.get(pname)
+		var v = _eval(arg_exprs[i], my) if i < arg_exprs.size() else 0.0
+		var had_key := _globals.has(pname)
+		_globals[pname] = {"kind": "var", "init": null, "value": v}
+		if not had_key:
+			_index_global(pname)
+	var sig = await exec_block(fn.get("body", {}), my)
 	for pname in saved:
 		if saved[pname] == null:
 			_globals.erase(pname)
@@ -1530,6 +2273,13 @@ func _register_builtins() -> void:
 		# (never awaited, the calling loop already polls). Response half is
 		# `_on_dialog_choice()`, wired to GameHud.dialog_choice in setup().
 		"showdialog": func(_a, my): return _do_show_dialog(my),
+		# See BRIDGE_OVER_SHARED_FUNCTIONS's "perform_handle" comment --
+		# a real per-tick input poll this port's native player controller
+		# makes meaningless, force-bridged to a harmless no-op so its own
+		# real `while(1)` (which nothing here ever breaks) can't
+		# permanently block whatever bare-statement call site it's
+		# reached from.
+		"perform_handle": func(_a, _my): return 0.0,
 		"splay": func(a, _my): return _do_play_sfx(a, 0, true),
 		"vplay": func(a, _my): return _do_play_sfx(a, 0, true),
 		"play_sound": func(a, _my): return _do_play_sfx(a, 0, false),
@@ -1568,17 +2318,54 @@ func _register_builtins() -> void:
 	}
 
 
+## Per-filename volume trims for entity/ambient SFX (case-insensitive).
+## `play_entsound`'s 3rd argument is Acknex's audible-*range*/falloff
+## distance (corpus-wide values run 66-5000, e.g. `play_entsound(my,
+## sHammer,300)` -- see git history for the full survey), not a literal
+## loudness scale -- this port has no distance-based 3D attenuation for
+## entity sounds at all yet (a real fix, but far bigger in scope/risk
+## than warranted by one report: it'd touch every play_entsound call
+## site in the corpus with no way to verify the result by ear). So every
+## entity sound currently plays at flat, un-attenuated volume regardless
+## of range/distance -- reported live (2026-08-01, Plane2): "make the
+## Hammer volume lower." SFX090.WAV (`sHammer`, Plane.wdl and Plane2.wdl
+## both use it for Krupnik's hammer-hit) has one of the *shorter*
+## authored ranges (300, well under the corpus' most common 500/1000) --
+## clearly meant to be a close/quiet sound, not a loud one, which flat
+## full-volume playback defeats. Narrow, per-filename trim instead of
+## general attenuation, same precedent as the tuned dB values
+## wdl_director.gd used to hardcode per-sound (SFX105/SFX089/SFX100,
+## since removed as duplicate triggering, see 2026-08-01 fifth entry --
+## the tuning concept wasn't the problem, the duplicate *call site* was).
+const SFX_VOLUME_TRIM_DB := {
+	"sfx090.wav": -12.0,  # sHammer (Plane/Plane2 Krupnik hammer-hit)
+	# Range.wdl `Jet` -- background engine-idle ambiance, looped
+	# continuously via `action PIP`/`action Handgun` for the entire level
+	# (both the opening dialogue AND actual shooting-gallery gameplay).
+	# Authored range 20-30 -- far smaller than the corpus' common
+	# 500-1000, clearly meant to be a quiet backdrop, not something that
+	# competes with the foreground voice lines. Reported live
+	# (2026-08-01): "background sound for range is too high and we can
+	# hear the character dialogue [over it]" -- flat, un-attenuated
+	# playback (see SFX_VOLUME_TRIM_DB's own docstring above) made it
+	# loud enough to mask PIP/KRP's voice lines during the intro dialogue.
+	"sfx091.wav": -14.0,  # Jet (Range background engine ambiance)
+}
+
+
 func _do_play_sfx(a: Array, wav_index: int, is_voice: bool) -> float:
 	if a.size() <= wav_index:
 		return -1.0
+	var wav_name := str(a[wav_index])
 	if is_voice:
-		AudioChannels.play_voice(str(a[wav_index]))
+		AudioChannels.play_voice(wav_name)
 		return 0.0
 	# Real handle, not a placeholder -- snd_playing(result) (the WDL "is my
 	# ambiance loop still playing" idiom) needs it to identify this specific
 	# playback, not just any playback. See _register_builtins()'s
 	# "snd_playing" comment.
-	return AudioChannels.play_sfx(str(a[wav_index]))
+	var trim: float = SFX_VOLUME_TRIM_DB.get(wav_name.get_file().to_lower(), 0.0)
+	return AudioChannels.play_sfx(wav_name, trim)
 
 
 ## Approximate speeds, not measured from the original engine -- see
@@ -1763,6 +2550,63 @@ func _do_vector_call(low: String, arg_exprs: Array, my) -> float:
 				tilt = rad_to_deg(atan2(dir.z, Vector2(dir.x, dir.y).length()))
 			_vec_put(arg_exprs[0], Vector3(pan, tilt, 0.0), my)
 			return dist
+	return 0.0
+
+
+## `move(entity, angle_delta, dist_delta)` -- a real Acknex engine builtin
+## (WDL/move.wdl's own `function move` wraps lower-level primitives this
+## port doesn't have; not in BRIDGE_OVER_SHARED_FUNCTIONS because no WDL
+## script in the corpus actually redefines `move` itself, confirmed via
+## `grep -n "^function move"` across the whole corpus -- nothing to shadow).
+## `dist_delta` needs `_vec_get()`, not the generic per-arg `_eval()` every
+## other builtin's arguments go through in `_call()` -- a bare vector-typed
+## identifier like `fireball_speed` isn't a declared WDL global, so
+## `_eval()`'s normal "id" path (`_get_var`) would silently read it as 0.0,
+## same class of bug `vec_set`/`vec_sub`/`vec_to_angle` above are already
+## special-cased for. Confirmed live (2026-08-01, Range): `action Spark`'s
+## entire bullet-travel logic is `move(ME, nullskill, fireball_speed)`
+## every tick -- without this, every fired shot stayed frozen at its spawn
+## point forever, `enable_impact` proximity never had anything to detect.
+## `angle_delta` is accepted but not applied: the one real corpus usage
+## always passes a zero vector (`nullskill`), and `fireball_speed` is
+## already a fully-rotated world/GS-space vector by the time it gets here
+## (CreateSpark() rotates the base shot vector by the player's own pan/
+## tilt/roll via vec_rotate() before create()), so there is nothing left
+## for `move` itself to rotate in the only case that exists to verify
+## against.
+## `vec_rotate(vec, angle)` -- rotates `vec` (GS-space, by-reference like
+## every other vec_* op) by `angle.pan/tilt/roll`, writing the result back
+## into `vec`. Confirmed missing (2026-08-01, Range): `function
+## CreateSpark()`'s entire aiming logic is `vec_rotate(shot_speed,
+## my_angle)` after copying the player's own pan/tilt/roll into
+## `my_angle` -- unimplemented, this was a silent no-op, so every fired
+## shot kept the same fixed (200,0,0) GS direction regardless of where the
+## player was actually aiming.
+##
+## Reuses `_acknex_entity_basis()` (already the one true pan/tilt/roll ->
+## Godot-space-basis conversion in this file, used for entity transforms)
+## rather than inventing a second rotation formula: converts `vec` to
+## Godot space, applies the basis (its own local +X is "forward" at
+## pan=tilt=roll=0, matching a GS `(N,0,0)` "N units forward" vector
+## converted through `_gs_to_godot()` unchanged), converts back to GS.
+func _do_vec_rotate(arg_exprs: Array, my) -> void:
+	if arg_exprs.size() < 2:
+		return
+	var v_gs := _vec_get(arg_exprs[0], my)
+	var angle_gs := _vec_get(arg_exprs[1], my)
+	var basis := _acknex_entity_basis(angle_gs.x, angle_gs.y, angle_gs.z)
+	var rotated := basis * _gs_to_godot(v_gs)
+	_vec_put(arg_exprs[0], _godot_to_gs(rotated), my)
+
+
+func _do_move_call(arg_exprs: Array, my) -> float:
+	if arg_exprs.size() < 3:
+		return 0.0
+	var entity = _resolve_entity(arg_exprs[0], my)
+	if entity == null or not is_instance_valid(entity):
+		return 0.0
+	var dist := _vec_get(arg_exprs[2], my)
+	entity.global_position += _gs_to_godot(dist)
 	return 0.0
 
 
@@ -2005,7 +2849,13 @@ func _do_create(a: Array, my) -> Node3D:
 	if parent == null:
 		return null
 	parent.add_child(inst)
-	inst.global_transform = my.global_transform if my else Transform3D.IDENTITY
+	# a[1] is the entity `create()`'s 2nd argument named (see _call()'s
+	# "create" 2nd-arg comment) -- spawn there when resolvable, `my` only
+	# as the pre-existing fallback (bare `create(<X.mdl>, my.x, Action)`
+	# calls still resolve a[1] to `my` itself, so this is a strict
+	# superset of the old behavior, not a narrowing).
+	var pos_source: Node3D = (a[1] if a.size() > 1 and a[1] is Node3D and is_instance_valid(a[1]) else my)
+	inst.global_transform = pos_source.global_transform if pos_source else Transform3D.IDENTITY
 	var anim := MdlAnimator.new()
 	anim.name = "MdlAnimator"
 	inst.add_child(anim)

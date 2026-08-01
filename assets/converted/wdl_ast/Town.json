@@ -138,6 +138,26 @@
     "v": 0.0
    },
    "init_list": false
+  },
+  {
+   "name": "LightState",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill20"
+   },
+   "init_list": false
+  },
+  {
+   "name": "LightDelay",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill21"
+   },
+   "init_list": false
   }
  ],
  "functions": {
@@ -10389,6 +10409,69 @@
  "bmaps": {
   "BIO": "BIO.pcx"
  },
+ "panels": {
+  "GUI": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "BIO"
+     ]
+    ],
+    "pos_x": [
+     [
+      "0"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "layer": [
+     [
+      "-1"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "visible",
+      "overlay"
+     ]
+    ],
+    "digits": [
+     [
+      "60",
+      "455",
+      "2",
+      "digit_font",
+      "1",
+      "Zoom"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_v"
+    },
+    "value": {
+     "t": "call",
+     "name": "toggleview",
+     "args": []
+    }
+   }
+  }
+ ],
  "skip_count": 0,
  "skipped": []
 }

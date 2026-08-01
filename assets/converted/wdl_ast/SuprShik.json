@@ -2145,6 +2145,8 @@
   "Radar": "SFX107.WAV"
  },
  "bmaps": {},
+ "panels": {},
+ "top_level_stmts": [],
  "skip_count": 0,
  "skipped": []
 }

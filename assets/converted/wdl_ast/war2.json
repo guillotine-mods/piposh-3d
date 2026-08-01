@@ -881,6 +881,8 @@
  },
  "sounds": {},
  "bmaps": {},
+ "panels": {},
+ "top_level_stmts": [],
  "skip_count": 0,
  "skipped": []
 }

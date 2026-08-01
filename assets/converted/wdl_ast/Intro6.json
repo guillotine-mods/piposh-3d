@@ -5357,6 +5357,31 @@
  "bmaps": {
   "bMeanwhile": "mod1.pcx"
  },
+ "panels": {
+  "pMeanwhile": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bMeanwhile"
+     ]
+    ],
+    "layer": [
+     [
+      "20"
+     ]
+    ],
+    "flags": [
+     [
+      "visible",
+      "d3d",
+      "refresh"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [],
  "skip_count": 1,
  "skipped": [
   "line 226: stray '}' at top level (skipped)"

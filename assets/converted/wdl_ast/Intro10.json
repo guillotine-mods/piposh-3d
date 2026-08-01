@@ -4925,6 +4925,8 @@
   "SearchSND": "SFX084.WAV"
  },
  "bmaps": {},
+ "panels": {},
+ "top_level_stmts": [],
  "skip_count": 1,
  "skipped": [
   "line 303: stray '}' at top level (skipped)"

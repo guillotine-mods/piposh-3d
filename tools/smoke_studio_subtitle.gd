@@ -45,5 +45,25 @@ func _run() -> void:
 	)
 
 	var ok: bool = crawl_active and kind == "studio" and som_visible and ovr_visible
-	print("OK" if ok else "FAIL: subtitle crawl not active for Studio")
-	quit(0 if ok else 1)
+	if not ok:
+		print("FAIL: subtitle crawl not active for Studio")
+		quit(1)
+		return
+
+	# Timing check (2026-08-01 fix): the horizontal slide (223 -(-310) =
+	# 533 units at 8*16=128 units/sec -> ~4.16s) must finish, then the
+	# line must HOLD in place for ~3.75s (my.skill34>60 in the source)
+	# before any downward scroll starts -- total ~7.9s before movement
+	# resumes. Previously missing, so the line started sliding away
+	# within under 2s of finishing its reveal. Check partway into the
+	# hold (6.5s -- comfortably past the slide, comfortably short of the
+	# ~7.9s scroll-start, avoiding a flaky right-at-the-boundary check)
+	# and confirm Y hasn't moved from its base yet.
+	var base_y: float = p_som.position.y
+	for i in 390:  # 6.5s @ 60fps
+		await process_frame
+	var y_after_hold_window: float = p_som.position.y
+	print("pSom.position.y: base=%.2f after~6.5s=%.2f" % [base_y, y_after_hold_window])
+	var held: bool = absf(y_after_hold_window - base_y) < 1.0
+	print("OK" if held else "FAIL: subtitle scrolled away before the ~3.75s hold finished")
+	quit(0 if held else 1)

@@ -26,6 +26,147 @@
  ],
  "globals": [
   {
+   "name": "MSG_DEFS",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "MSG_X",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 10.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "MSG_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 10.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "BLINK_TICKS",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 6.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "MSG_TICKS",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 64.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "msg_font",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "standard_font"
+   },
+   "init_list": false
+  },
+  {
+   "name": "PANEL_POSX",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 4.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "PANEL_POSY",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "unop",
+    "op": "-",
+    "expr": {
+     "t": "num",
+     "v": 20.0
+    }
+   },
+   "init_list": false
+  },
+  {
+   "name": "_HANDLE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 1.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_EXPLODE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 2.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_GUNFIRE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_WATCH",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 4.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_LIFTER",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 5.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "_KANONE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 6.0
+   },
+   "init_list": false
+  },
+  {
    "name": "indicator",
    "kind": "var",
    "array_size": null,
@@ -527,6 +668,56 @@
    "kind": "var",
    "array_size": null,
    "init": null,
+   "init_list": false
+  },
+  {
+   "name": "V640x480",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 6.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "V800x600",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 7.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "V1024x768",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 8.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "V1280x960",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 9.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "V1600x1200",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 10.0
+   },
    "init_list": false
   },
   {
@@ -22264,6 +22455,332 @@
   "sky1_map": "Sky01.pcx",
   "stern_map": "Stern01.pcx"
  },
+ "panels": {
+  "end_pan": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "end_map"
+     ]
+    ],
+    "layer": [
+     [
+      "20"
+     ]
+    ],
+    "pos_x": [
+     [
+      "0"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH"
+     ]
+    ]
+   }
+  },
+  "scala_pan": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "scala_map"
+     ]
+    ],
+    "layer": [
+     [
+      "1"
+     ]
+    ],
+    "pos_x": [
+     [
+      "0"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH"
+     ]
+    ],
+    "digits": [
+     [
+      "46",
+      "32",
+      "3",
+      "digi_font",
+      "1",
+      "angle_sat"
+     ]
+    ]
+   }
+  },
+  "radar_pan": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "scala2_map"
+     ]
+    ],
+    "layer": [
+     [
+      "1"
+     ]
+    ],
+    "pos_x": [
+     [
+      "0"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH"
+     ]
+    ],
+    "digits": [
+     [
+      "46",
+      "32",
+      "3",
+      "digi_font",
+      "1",
+      "angle_rad"
+     ]
+    ]
+   }
+  },
+  "pinwand_pan": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "pin1_map"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ],
+    "pos_x": [
+     [
+      "0"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH"
+     ]
+    ]
+   }
+  },
+  "ekran0_pan": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "ekran0_map"
+     ]
+    ],
+    "layer": [
+     [
+      "4"
+     ]
+    ],
+    "pos_x": [
+     [
+      "0"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH"
+     ]
+    ]
+   }
+  },
+  "ekran1_pan": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "ekran1_map"
+     ]
+    ],
+    "layer": [
+     [
+      "5"
+     ]
+    ],
+    "pos_x": [
+     [
+      "0"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH"
+     ]
+    ]
+   }
+  },
+  "ekran1a_pan": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "ekran1a_map"
+     ]
+    ],
+    "layer": [
+     [
+      "7"
+     ]
+    ],
+    "pos_x": [
+     [
+      "65"
+     ]
+    ],
+    "pos_y": [
+     [
+      "80"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH",
+      "TRANSPARENT"
+     ]
+    ]
+   }
+  },
+  "ekran3_pan": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "ekran3_map"
+     ]
+    ],
+    "layer": [
+     [
+      "8"
+     ]
+    ],
+    "pos_x": [
+     [
+      "0"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH",
+      "OVERLAY"
+     ]
+    ]
+   }
+  },
+  "ekran4_pan": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "ekran4_map"
+     ]
+    ],
+    "layer": [
+     [
+      "5"
+     ]
+    ],
+    "pos_x": [
+     [
+      "0"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "flags": [
+     [
+      "REFRESH"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "alles_ok_sk"
+    },
+    "value": {
+     "t": "num",
+     "v": 1.0
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "laser_sk"
+    },
+    "value": {
+     "t": "num",
+     "v": 0.0
+    }
+   }
+  }
+ ],
  "skip_count": 16,
  "skipped": [
   "line 178: expected a name, got 'number' ('5')",

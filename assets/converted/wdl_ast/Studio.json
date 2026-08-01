@@ -4259,6 +4259,71 @@
   "bSom": "Ami.pcx",
   "bOvr": "Someover.bmp"
  },
+ "panels": {
+  "pSom": {
+   "kind": "panel",
+   "fields": {
+    "layer": [
+     [
+      "2"
+     ]
+    ],
+    "bmap": [
+     [
+      "bSom"
+     ]
+    ],
+    "pos_x": [
+     [
+      "0"
+     ]
+    ],
+    "pos_y": [
+     [
+      "460"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d"
+     ]
+    ]
+   }
+  },
+  "pOvr": {
+   "kind": "panel",
+   "fields": {
+    "layer": [
+     [
+      "3"
+     ]
+    ],
+    "bmap": [
+     [
+      "bOvr"
+     ]
+    ],
+    "pos_x": [
+     [
+      "223"
+     ]
+    ],
+    "pos_y": [
+     [
+      "460"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [],
  "skip_count": 1,
  "skipped": [
   "line 247: stray '}' at top level (skipped)"

@@ -7845,6 +7845,30 @@
   "bShkufit1": "Shkufit1.pcx",
   "bShkufit2": "Shkufit2.pcx"
  },
+ "panels": {
+  "pShkufit": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bShkufit1"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh"
+     ]
+    ],
+    "layer": [
+     [
+      "10"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [],
  "skip_count": 5,
  "skipped": [
   "line 222: stray '}' at top level (skipped)",

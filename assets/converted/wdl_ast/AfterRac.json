@@ -4854,6 +4854,8 @@
   "clouds": "GolfCLD.pcx",
   "horizon_map": "horizon.pcx"
  },
+ "panels": {},
+ "top_level_stmts": [],
  "skip_count": 1,
  "skipped": [
   "line 353: stray '}' at top level (skipped)"

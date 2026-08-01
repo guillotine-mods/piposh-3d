@@ -4772,6 +4772,31 @@
   "btxt4": "txt4.pcx",
   "btxt5": "txt5.pcx"
  },
+ "panels": {
+  "pKtuvit": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "btxt1"
+     ]
+    ],
+    "pos_y": [
+     [
+      "461"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "transparent"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [],
  "skip_count": 1,
  "skipped": [
   "line 273: stray '}' at top level (skipped)"

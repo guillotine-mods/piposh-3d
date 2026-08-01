@@ -24877,6 +24877,8 @@
  },
  "sounds": {},
  "bmaps": {},
+ "panels": {},
+ "top_level_stmts": [],
  "skip_count": 1,
  "skipped": [
   "line 374: stray '}' at top level (skipped)"

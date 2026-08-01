@@ -13972,6 +13972,1087 @@
   "bCon_Quit": "con_quit.pcx",
   "bCon_Map": "con_map.pcx"
  },
+ "panels": {
+  "pConsole": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bCon_Save"
+     ]
+    ],
+    "layer": [
+     [
+      "10"
+     ]
+    ],
+    "pos_x": [
+     [
+      "220"
+     ]
+    ],
+    "pos_y": [
+     [
+      "380"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ],
+    "button": [
+     [
+      "-10",
+      "0",
+      "bar2",
+      "bar1",
+      "bar2",
+      "TurnRight",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "170",
+      "0",
+      "bar4",
+      "bar3",
+      "bar4",
+      "TurnLeft",
+      "NULL",
+      "NULL"
+     ]
+    ]
+   }
+  },
+  "pPause": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bPause"
+     ]
+    ],
+    "layer": [
+     [
+      "100"
+     ]
+    ],
+    "pos_x": [
+     [
+      "220"
+     ]
+    ],
+    "pos_y": [
+     [
+      "200"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "overlay"
+     ]
+    ]
+   }
+  },
+  "pLoading": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bLoading"
+     ]
+    ],
+    "layer": [
+     [
+      "20"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh",
+      "visible"
+     ]
+    ]
+   }
+  },
+  "pNoMap": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bNoMap"
+     ]
+    ],
+    "layer": [
+     [
+      "30"
+     ]
+    ],
+    "pos_x": [
+     [
+      "100"
+     ]
+    ],
+    "pos_y": [
+     [
+      "222"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d"
+     ]
+    ]
+   }
+  },
+  "pNoSave": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bNoSave"
+     ]
+    ],
+    "layer": [
+     [
+      "30"
+     ]
+    ],
+    "pos_x": [
+     [
+      "180"
+     ]
+    ],
+    "pos_y": [
+     [
+      "222"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d"
+     ]
+    ]
+   }
+  },
+  "pmenuhelp": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bmenuhelp"
+     ]
+    ],
+    "layer": [
+     [
+      "10"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "overlay"
+     ]
+    ]
+   }
+  },
+  "pRIP": {
+   "kind": "panel",
+   "fields": {
+    "layer": [
+     [
+      "20"
+     ]
+    ],
+    "bmap": [
+     [
+      "bRIP"
+     ]
+    ],
+    "button": [
+     [
+      "020",
+      "380",
+      "bRIPb1",
+      "bRIPb3",
+      "bRIPb1",
+      "fRIP1",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "140",
+      "380",
+      "bRIPb2",
+      "bRIPb4",
+      "bRIPb2",
+      "fRIP2",
+      "NULL",
+      "NULL"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "overlay"
+     ]
+    ]
+   }
+  },
+  "pRIPSlot": {
+   "kind": "panel",
+   "fields": {
+    "pos_x": [
+     [
+      "18"
+     ]
+    ],
+    "pos_y": [
+     [
+      "107"
+     ]
+    ],
+    "layer": [
+     [
+      "21"
+     ]
+    ],
+    "bmap": [
+     [
+      "bRIPSlot"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d"
+     ]
+    ]
+   }
+  },
+  "ptRIP1": {
+   "kind": "text",
+   "fields": {
+    "pos_x": [
+     [
+      "460"
+     ]
+    ],
+    "pos_y": [
+     [
+      "150"
+     ]
+    ],
+    "font": [
+     [
+      "standard_font"
+     ]
+    ],
+    "string": [
+     [
+      "strDOD1"
+     ]
+    ],
+    "layer": [
+     [
+      "21"
+     ]
+    ]
+   }
+  },
+  "ptRIP2": {
+   "kind": "text",
+   "fields": {
+    "pos_x": [
+     [
+      "455"
+     ]
+    ],
+    "pos_y": [
+     [
+      "170"
+     ]
+    ],
+    "font": [
+     [
+      "standard_font"
+     ]
+    ],
+    "string": [
+     [
+      "strDOD2"
+     ]
+    ],
+    "layer": [
+     [
+      "21"
+     ]
+    ]
+   }
+  },
+  "ShowFull": {
+   "kind": "panel",
+   "fields": {
+    "layer": [
+     [
+      "20"
+     ]
+    ],
+    "bmap": [
+     [
+      "full1"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d"
+     ]
+    ]
+   }
+  },
+  "SavePanel": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bSave"
+     ]
+    ],
+    "button": [
+     [
+      "090",
+      "070",
+      "slot1",
+      "slot1",
+      "slot1",
+      "xslot1",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "248",
+      "070",
+      "slot2",
+      "slot2",
+      "slot2",
+      "xslot2",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "406",
+      "070",
+      "slot3",
+      "slot3",
+      "slot3",
+      "xslot3",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "090",
+      "196",
+      "slot4",
+      "slot4",
+      "slot4",
+      "xslot4",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "248",
+      "196",
+      "slot5",
+      "slot5",
+      "slot5",
+      "xslot5",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "406",
+      "196",
+      "slot6",
+      "slot6",
+      "slot6",
+      "xslot6",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "090",
+      "322",
+      "slot7",
+      "slot7",
+      "slot7",
+      "xslot7",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "248",
+      "322",
+      "slot8",
+      "slot8",
+      "slot8",
+      "xslot8",
+      "NULL",
+      "NULL"
+     ],
+     [
+      "406",
+      "322",
+      "slot9",
+      "slot9",
+      "slot9",
+      "xslot9",
+      "NULL",
+      "NULL"
+     ]
+    ],
+    "flags": [
+     [
+      "d3d",
+      "refresh"
+     ]
+    ]
+   }
+  },
+  "txtSaveGame1": {
+   "kind": "text",
+   "fields": {
+    "pos_x": [
+     [
+      "120"
+     ]
+    ],
+    "pos_y": [
+     [
+      "180"
+     ]
+    ],
+    "string": [
+     [
+      "\"            \""
+     ]
+    ],
+    "layer": [
+     [
+      "22"
+     ]
+    ],
+    "font": [
+     [
+      "english_font"
+     ]
+    ]
+   }
+  },
+  "txtSaveGame2": {
+   "kind": "text",
+   "fields": {
+    "pos_x": [
+     [
+      "278"
+     ]
+    ],
+    "pos_y": [
+     [
+      "180"
+     ]
+    ],
+    "string": [
+     [
+      "\"            \""
+     ]
+    ],
+    "layer": [
+     [
+      "22"
+     ]
+    ],
+    "font": [
+     [
+      "english_font"
+     ]
+    ]
+   }
+  },
+  "txtSaveGame3": {
+   "kind": "text",
+   "fields": {
+    "pos_x": [
+     [
+      "436"
+     ]
+    ],
+    "pos_y": [
+     [
+      "180"
+     ]
+    ],
+    "string": [
+     [
+      "\"            \""
+     ]
+    ],
+    "layer": [
+     [
+      "22"
+     ]
+    ],
+    "font": [
+     [
+      "english_font"
+     ]
+    ]
+   }
+  },
+  "txtSaveGame4": {
+   "kind": "text",
+   "fields": {
+    "pos_x": [
+     [
+      "120"
+     ]
+    ],
+    "pos_y": [
+     [
+      "300"
+     ]
+    ],
+    "string": [
+     [
+      "\"            \""
+     ]
+    ],
+    "layer": [
+     [
+      "22"
+     ]
+    ],
+    "font": [
+     [
+      "english_font"
+     ]
+    ]
+   }
+  },
+  "txtSaveGame5": {
+   "kind": "text",
+   "fields": {
+    "pos_x": [
+     [
+      "278"
+     ]
+    ],
+    "pos_y": [
+     [
+      "300"
+     ]
+    ],
+    "string": [
+     [
+      "\"            \""
+     ]
+    ],
+    "layer": [
+     [
+      "22"
+     ]
+    ],
+    "font": [
+     [
+      "english_font"
+     ]
+    ]
+   }
+  },
+  "txtSaveGame6": {
+   "kind": "text",
+   "fields": {
+    "pos_x": [
+     [
+      "436"
+     ]
+    ],
+    "pos_y": [
+     [
+      "300"
+     ]
+    ],
+    "string": [
+     [
+      "\"            \""
+     ]
+    ],
+    "layer": [
+     [
+      "22"
+     ]
+    ],
+    "font": [
+     [
+      "english_font"
+     ]
+    ]
+   }
+  },
+  "txtSaveGame7": {
+   "kind": "text",
+   "fields": {
+    "pos_x": [
+     [
+      "120"
+     ]
+    ],
+    "pos_y": [
+     [
+      "423"
+     ]
+    ],
+    "string": [
+     [
+      "\"            \""
+     ]
+    ],
+    "layer": [
+     [
+      "22"
+     ]
+    ],
+    "font": [
+     [
+      "english_font"
+     ]
+    ]
+   }
+  },
+  "txtSaveGame8": {
+   "kind": "text",
+   "fields": {
+    "pos_x": [
+     [
+      "278"
+     ]
+    ],
+    "pos_y": [
+     [
+      "423"
+     ]
+    ],
+    "string": [
+     [
+      "\"            \""
+     ]
+    ],
+    "layer": [
+     [
+      "22"
+     ]
+    ],
+    "font": [
+     [
+      "english_font"
+     ]
+    ]
+   }
+  },
+  "txtSaveGame9": {
+   "kind": "text",
+   "fields": {
+    "pos_x": [
+     [
+      "436"
+     ]
+    ],
+    "pos_y": [
+     [
+      "423"
+     ]
+    ],
+    "string": [
+     [
+      "\"            \""
+     ]
+    ],
+    "layer": [
+     [
+      "22"
+     ]
+    ],
+    "font": [
+     [
+      "english_font"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_esc"
+    },
+    "value": {
+     "t": "call",
+     "name": "GoToOptions",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_enter"
+    },
+    "value": {
+     "t": "id",
+     "name": "RunIt"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_h"
+    },
+    "value": {
+     "t": "call",
+     "name": "Help",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_f1"
+    },
+    "value": {
+     "t": "null"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_f2"
+    },
+    "value": {
+     "t": "null"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_f3"
+    },
+    "value": {
+     "t": "null"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_f4"
+    },
+    "value": {
+     "t": "null"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_f5"
+    },
+    "value": {
+     "t": "call",
+     "name": "quicksave",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_f6"
+    },
+    "value": {
+     "t": "null"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_f7"
+    },
+    "value": {
+     "t": "call",
+     "name": "quickload",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_f8"
+    },
+    "value": {
+     "t": "null"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_f9"
+    },
+    "value": {
+     "t": "null"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_f10"
+    },
+    "value": {
+     "t": "call",
+     "name": "quickinn",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_mouse_right"
+    },
+    "value": {
+     "t": "call",
+     "name": "mouse_toggle",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_1"
+    },
+    "value": {
+     "t": "null"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_2"
+    },
+    "value": {
+     "t": "null"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_3"
+    },
+    "value": {
+     "t": "null"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_4"
+    },
+    "value": {
+     "t": "null"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_5"
+    },
+    "value": {
+     "t": "null"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_6"
+    },
+    "value": {
+     "t": "null"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_7"
+    },
+    "value": {
+     "t": "null"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_8"
+    },
+    "value": {
+     "t": "null"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_9"
+    },
+    "value": {
+     "t": "null"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_p"
+    },
+    "value": {
+     "t": "call",
+     "name": "togglepause",
+     "args": []
+    }
+   }
+  }
+ ],
  "skip_count": 1,
  "skipped": [
   "line 1052: stray '}' at top level (skipped)"

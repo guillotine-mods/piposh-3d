@@ -5274,6 +5274,80 @@
   "bCrack": "broke.pcx",
   "bEnd": "FIN.pcx"
  },
+ "panels": {
+  "pCrack": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bCrack"
+     ]
+    ],
+    "layer": [
+     [
+      "3"
+     ]
+    ],
+    "flags": [
+     [
+      "overlay",
+      "refresh",
+      "d3d"
+     ]
+    ]
+   }
+  },
+  "pSid": {
+   "kind": "panel",
+   "fields": {
+    "pos_y": [
+     [
+      "-480"
+     ]
+    ],
+    "bmap": [
+     [
+      "bSid"
+     ]
+    ],
+    "layer": [
+     [
+      "2"
+     ]
+    ],
+    "flags": [
+     [
+      "overlay",
+      "transparent",
+      "refresh",
+      "d3d"
+     ]
+    ]
+   }
+  },
+  "pEnd": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bEnd"
+     ]
+    ],
+    "layer": [
+     [
+      "20"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [],
  "skip_count": 1,
  "skipped": [
   "line 348: stray '}' at top level (skipped)"

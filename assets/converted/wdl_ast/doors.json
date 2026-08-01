@@ -270,6 +270,236 @@
    "init_list": false
   },
   {
+   "name": "_ENDPOS_X",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL1"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ENDPOS_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL2"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ENDPOS_Z",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL3"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ENDPOS",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL3"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_KEY",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL4"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_KEYTYPE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL4"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_PAUSE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL6"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_TRIGGER_RANGE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL7"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_SWITCH",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL8"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ENTROT_PAN",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL1"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ENTROT_TILT",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL2"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_ENTROT_ROLL",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL3"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_CURRENTPOS",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL9"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_TRIGGERFRAME",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL10"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_STARTPOS_X",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL27"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_STARTPOS_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL28"
+   },
+   "init_list": false
+  },
+  {
+   "name": "_STARTPOS_Z",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL29"
+   },
+   "init_list": false
+  },
+  {
+   "name": "__ROTATE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "FLAG1"
+   },
+   "init_list": false
+  },
+  {
+   "name": "__SILENT",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "FLAG2"
+   },
+   "init_list": false
+  },
+  {
+   "name": "__GATE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "FLAG5"
+   },
+   "init_list": false
+  },
+  {
+   "name": "__REMOTE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "FLAG6"
+   },
+   "init_list": false
+  },
+  {
+   "name": "__LID",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "FLAG7"
+   },
+   "init_list": false
+  },
+  {
+   "name": "__MOVING",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "FLAG8"
+   },
+   "init_list": false
+  },
+  {
    "name": "doorswitch_states",
    "kind": "var",
    "array_size": null,
@@ -8169,6 +8399,24 @@
   "teleport_snd": "beamer.wav"
  },
  "bmaps": {},
+ "panels": {},
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "RESULT"
+    },
+    "value": {
+     "t": "num",
+     "v": 0.0
+    }
+   }
+  }
+ ],
  "skip_count": 18,
  "skipped": [
   "line 103: unexpected token '=' ('=')",

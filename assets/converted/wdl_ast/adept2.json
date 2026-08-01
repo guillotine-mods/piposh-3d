@@ -34,6 +34,13 @@
    "init_list": false
   },
   {
+   "name": "ADV_DEF_ADVENTURE_TEXT",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
    "name": "wrong_key_str",
    "kind": "string",
    "array_size": null,
@@ -174,6 +181,300 @@
    "init_list": false
   },
   {
+   "name": "ADV_DEF_SAVE_LOAD",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PICSIZE_X",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PICSIZE_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PICSAVE_BKGD",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "picsavebk_map",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "picloadbk_map",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PICSAVE_TEXT",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PICSLOT1_X",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PICSLOT1_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PICSLOT2_X",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PICSLOT2_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PICSLOT3_X",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PICSLOT3_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PICSLOT4_X",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PICSLOT4_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PICEXIT_X",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "PICEXIT_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "ADV_DEF_INVENT_P",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "INVENT_P_invent_temp_item_DX",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "INVENT_P_X",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "INVENT_P_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "INVENT_P_WIN_DX",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "INVENT_P_WIN_DY",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "INVENT_P_ROW_1",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "INVENT_P_ROW_2",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "INVENT_P_ROW_3",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "INVENT_P_ROW_4",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "INVENT_P_ROW_5",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "INVENT_P_ROW_6",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "INVENT_P_COL_1",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "INVENT_P_COL_2",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "INVENT_P_LAYER",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "ADV_DEF_SCREEN_MAPS",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "SCREEN_STAT_HP_BAR_X",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "SCREEN_STAT_HP_BAR_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "SCREEN_STAT_STR_BAR_X",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "SCREEN_STAT_STR_BAR_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "SCREEN_STAT_MANA_BAR_X",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "SCREEN_STAT_MANA_BAR_Y",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "SCREEN_STAT_BAR_HEIGHT",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "SCREEN_STAT_BAR_FACTOR",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
+   "name": "ADV_DEF_CURSOR_MAP",
+   "kind": "define",
+   "array_size": null,
+   "init": null,
+   "init_list": false
+  },
+  {
    "name": "picsave_pos",
    "kind": "var",
    "array_size": {
@@ -219,6 +520,460 @@
    "init": {
     "t": "num",
     "v": 16.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "KEY",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "SKILL33"
+   },
+   "init_list": false
+  },
+  {
+   "name": "TRUE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 1.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "FALSE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "YES",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 1.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "NO",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "OPEN",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 1.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "CLOSED",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_MENU",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "unop",
+    "op": "-",
+    "expr": {
+     "t": "num",
+     "v": 2.0
+    }
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_KEY2",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 2.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_GEM",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_RUBY",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 4.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_BLATT",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 5.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_FISH",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 6.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_SWORD",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 7.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_WATEREMPTY",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 8.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_WATERFULL",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 9.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_ANGEL",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 21.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_SORC",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 23.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_DOOR1",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 46.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_DOOR2",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 47.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_BOOK",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 51.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_FIRE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 63.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_FOUNTAIN",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 64.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_VASE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 65.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_MOBILE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 66.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_CHAIN1",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 71.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_CHAIN2",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 72.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_CHAIN3",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 73.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_CHAIN4",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 74.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_CHAIN5",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 75.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_PYR1",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 81.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_PYR2",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 82.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_PYR3",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 83.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_PYR4",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 84.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "M_GLOW",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 85.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "S_BONUS",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 1.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "S_CHAR",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 2.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "S_INV",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 3.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "S_DIAL",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 4.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "S_START1",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 5.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "S_MENU",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 6.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "S_HELP",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 7.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "S_CREDIT",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 8.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "S_SAVE",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 9.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "S_LOAD",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 10.0
    },
    "init_list": false
   },
@@ -2315,6 +3070,88 @@
   "black_map": "blackf.pcx",
   "mouse_l_map": "curs_l.pcx"
  },
+ "panels": {
+  "console_text": {
+   "kind": "text",
+   "fields": {
+    "pos_x": [
+     [
+      "4"
+     ]
+    ],
+    "pos_y": [
+     [
+      "180"
+     ]
+    ],
+    "font": [
+     [
+      "standard_font"
+     ]
+    ],
+    "strings": [
+     [
+      "2"
+     ]
+    ],
+    "string": [
+     [
+      "enter_cmd"
+     ],
+     [
+      "exec_buffer"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "__HAS_DIAMOND"
+    },
+    "value": {
+     "t": "id",
+     "name": "FALSE"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "invent_temp_item"
+    },
+    "value": {
+     "t": "id",
+     "name": "M_GEM"
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "spelldoor_open"
+    },
+    "value": {
+     "t": "id",
+     "name": "TRUE"
+    }
+   }
+  }
+ ],
  "skip_count": 38,
  "skipped": [
   "line 198: expected a name, got 'number' ('2')",

@@ -200,6 +200,16 @@
    "init_list": false
   },
   {
+   "name": "health",
+   "kind": "define",
+   "array_size": null,
+   "init": {
+    "t": "id",
+    "name": "skill22"
+   },
+   "init_list": false
+  },
+  {
    "name": "cheatstring",
    "kind": "string",
    "array_size": null,
@@ -15071,6 +15081,117 @@
   "bMine11": "mine11.pcx",
   "bCongrat": "afri2.pcx"
  },
+ "panels": {
+  "GUI": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bMine01"
+     ]
+    ],
+    "pos_x": [
+     [
+      "0"
+     ]
+    ],
+    "pos_y": [
+     [
+      "0"
+     ]
+    ],
+    "layer": [
+     [
+      "4"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d",
+      "overlay",
+      "visible"
+     ]
+    ]
+   }
+  },
+  "pCongrat": {
+   "kind": "panel",
+   "fields": {
+    "bmap": [
+     [
+      "bCongrat"
+     ]
+    ],
+    "pos_x": [
+     [
+      "200"
+     ]
+    ],
+    "pos_y": [
+     [
+      "70"
+     ]
+    ],
+    "layer": [
+     [
+      "4"
+     ]
+    ],
+    "flags": [
+     [
+      "refresh",
+      "d3d"
+     ]
+    ],
+    "button": [
+     [
+      "0",
+      "0",
+      "bCongrat",
+      "bCongrat",
+      "bCongrat",
+      "C1",
+      "null",
+      "null"
+     ]
+    ]
+   }
+  }
+ },
+ "top_level_stmts": [
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_F1"
+    },
+    "value": {
+     "t": "call",
+     "name": "ToggleView",
+     "args": []
+    }
+   }
+  },
+  {
+   "t": "expr_stmt",
+   "expr": {
+    "t": "assign",
+    "op": "=",
+    "target": {
+     "t": "id",
+     "name": "on_tab"
+    },
+    "value": {
+     "t": "id",
+     "name": "cheat"
+    }
+   }
+  }
+ ],
  "skip_count": 0,
  "skipped": []
 }

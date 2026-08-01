@@ -13669,6 +13669,8 @@
   "Eating": "SFX118.WAV"
  },
  "bmaps": {},
+ "panels": {},
+ "top_level_stmts": [],
  "skip_count": 2,
  "skipped": [
   "line 675: stray '}' at top level (skipped)",
