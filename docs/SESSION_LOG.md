@@ -4312,3 +4312,82 @@ regression: `smoke_dispatch` 19/19, `smoke_range_shoot.gd`,
 `smoke_plane2_playtest.gd` all still clean -- confirms other `wait()`
 calls elsewhere in the same levels (ambiance loops, dialogue pacing,
 animation timing) are unaffected. `git status` zero asset deletions.
+
+## 2026-08-01 (thirteenth) — "the last commit made all levels stuck now"
+
+User reported the just-pushed commit broke every level. Headless testing
+(new `tools/smoke_regression_check.gd`, watching `_total_frames` and
+frame timing over a real 10s window) ruled out a true engine hang for
+Start/Shiks/AsyAct2/Plane2 -- all kept ticking at a normal frame rate
+the whole time, no crash, no script error. Asked the user what "stuck"
+actually looked like rather than keep guessing blind: "the page loads
+with the animation, but nothing starts playing, no voice no dialogue" +
+"the main image doesn't disappear (the Loading screen does)" +
+Studio's green subtitle HUD "shown twice, the newer one is more
+accurate."
+
+Root cause, found via a temporary per-statement trace of `main()`'s own
+execution (`my == null`) for Start.wdl: `WDL/IO.wdl`'s `function
+Initialize()` -- called by `VoiceInit(); Initialize();` near the top of
+*every* level's `main()`, since every level includes IO.wdl --
+unconditionally tail-calls `StartSaveLoad()`, a real `function
+StartSaveLoad { while(1) { if (entSaveLoadMenu.visible==on) {...}
+wait(1); } }` background loop that animates the save/load menu's vase
+pieces. `entSaveLoadMenu` is a documented, pre-existing gap (this port
+has no save/load menu UI), so this loop was always meaningless here --
+but harmless, because before this session's async-dispatch fix (eleventh
+entry), a bare top-level call to a real `while(1)` shared function was
+silently inert. Now that such calls genuinely run forever, `Initialize()`
+-- and by extension every level's `main()` -- got permanently absorbed
+into `StartSaveLoad()`'s loop the instant it ran, before ever reaching
+`Start = 1;`/hiding the splash screen/playing the intro movies. This is
+the *same shape* as the `perform_handle` fix two entries ago, just
+reachable from the shared startup path instead of one level's movement
+code, which is why it broke everything instead of one level. Confirmed
+live via new `tools/smoke_start_stuck.gd`: Start's `main()` re-executed
+`StartSaveLoad`'s own loop body forever, `Start` staying 0.0 for the
+full 20s test window. Fixed the same way as `perform_handle`: bridged
+`startsaveload` to a no-op builtin.
+
+Also fixed the "shown twice" HUD report while in the area: Studio/Start
+declare real WDL `panel pSom`/`panel pOvr` objects (green subtitle
+bitmaps), which this session's new generic panel system (tenth entry)
+now renders correctly and accurately for the first time. A much older,
+hand-wired `GameHud.setup_start_subtitles()`/`setup_studio_subtitles()`
+hook (built *before* generic panel support existed, to work around
+panels being silently discarded) was still firing from
+`_seed_subtitle_crawl()` on top of it, double-rendering the same
+overlay. Deleted the hook and the two now-fully-orphaned `GameHud`
+methods (plus the `SUBTITLE_TEXT`/`_log_subtitle_setup` debug scaffolding
+built only to feed them) -- the generic panel rendering is a strict,
+more accurate superset, confirmed by the user's own read of the two
+overlays ("the newer one is better and more accurate").
+
+Did not chase the "no voice/dialogue" and "main image doesn't disappear"
+symptoms as separate bugs: both are direct, expected consequences of
+`main()` never completing, and resolved automatically once
+`StartSaveLoad` stopped absorbing it (verified: `Start` reaches 1.0
+within under a second, `NoMovie` becomes 1.0, and voice/movie progress
+starts climbing, all previously stuck at their initial values forever).
+
+Also investigated and ruled out as unrelated during the search: a
+pre-existing (not new) ~2-6s `WmbLevelLoader.load_level()` cost for
+heavier levels like Plane2 (confirmed via diff against the previous
+commit -- `wmb_level_loader.gd`/`mdl_animator.gd` are functionally
+unchanged), and the `while-loop spinning without wait()` diagnostic
+added 2026-07-29 firing on dozens of entities in AsyAct2 after ~8.5s --
+confirmed a false positive: the diagnostic's `guard` counter doesn't
+reset per real frame, so it can't actually distinguish "hundreds of
+iterations in one frame" (a real busy loop) from "one iteration per
+frame for 512 real frames" (correct, expected behavior for any
+long-running `while(1){...wait(1);}` coroutine that's simply been alive
+long enough) -- left as-is (out of scope for this fix), noted here so
+the next investigation doesn't have to rediscover it.
+
+Verified: new `tools/smoke_start_stuck.gd` (`Start` reaches 1.0 within
+~40 frames, was never). Full regression: `smoke_dispatch` 19/19,
+`smoke_plane2_all_goals.gd` (all-4-goals branch still reached --
+confirms bridging `startsaveload` didn't disturb the `perform_handle`
+fix it sits right next to in the same const array),
+`smoke_wait_skip.gd`, `smoke_regression_check.gd` against Studio (clean,
+faster initial load too). `git status` zero asset deletions.

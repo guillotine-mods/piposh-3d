@@ -8,15 +8,6 @@ signal skip_line_pressed
 const DESIGN := Vector2(640, 480)
 const GFX := "res://assets/converted/gfx/"
 
-## Hand-transcribed from the raw source bitmaps (`pSom`'s `bmap`, viewed
-## directly -- there's no string data to extract, it's baked-in pixel
-## art), keyed by the texture filename `_set_tex()` loads. Debug-only, so
-## the "not showing on screen" report (2026-08-01) has something concrete
-## to check against besides node properties.
-const SUBTITLE_TEXT := {
-	"Ami.png": "אי שם בפאתי רחוב בוגרשוב בסמטוך למשחק של עמי הבמאי...",
-}
-
 var mouse_look := true  # mouse_mode==0 in WDL
 var show_debug := false
 
@@ -126,64 +117,6 @@ func set_debug_text(title: String, hint: String) -> void:
 func set_status(msg: String) -> void:
 	_debug_hint.text = msg
 	_debug_hint.visible = show_debug
-
-
-func setup_start_subtitles() -> void:
-	_subtitle_kind = "start"
-	_set_tex(_p_som, "Somewher.png")
-	_set_tex(_p_ovr, "Someover.png")
-	_p_som.visible = true
-	_p_ovr.visible = true
-	_p_shkufit.visible = false
-	_ovr_x = _ovr_base_x
-	_hold_t = 0.0
-	_blink_t = 0.0
-	_subtitle_heartbeat_t = 0.0
-	_logged_reveal_done = false
-	_logged_scroll_started = false
-	_crawl_active = true
-	_layout_subtitles()
-	_log_subtitle_setup("Somewher.png")
-
-
-func setup_studio_subtitles() -> void:
-	_subtitle_kind = "studio"
-	_set_tex(_p_som, "Ami.png")
-	_set_tex(_p_ovr, "Someover.png")
-	_p_som.visible = true
-	_p_ovr.visible = true
-	_p_shkufit.visible = false
-	_ovr_x = _ovr_base_x
-	_hold_t = 0.0
-	_blink_t = 0.0
-	_subtitle_heartbeat_t = 0.0
-	_logged_reveal_done = false
-	_logged_scroll_started = false
-	_crawl_active = true
-	_layout_subtitles()
-	_log_subtitle_setup("Ami.png")
-
-
-## Full lifecycle logging under one tag, all under PiposhDebug.ENABLED so
-## it can be switched off in one place -- see the "not showing on screen"
-## report (2026-08-01). Logs the actual text content (SUBTITLE_TEXT, hand-
-## transcribed from the raw bitmap -- there's no string to read from the
-## running game itself) plus every measurement needed to tell "not
-## rendering" apart from "rendering somewhere the eye isn't looking".
-func _log_subtitle_setup(som_file: String) -> void:
-	var text: String = SUBTITLE_TEXT.get(som_file, "(no transcription on file for %s)" % som_file)
-	PiposhDebug.log_msg(
-		"hud-event",
-		"subtitle START kind=%s text=\"%s\" pSom_tex=%s(%s) pOvr_tex=%s layer=%d root_scale=%s root_pos=%s viewport=%s"
-		% [
-			_subtitle_kind, text,
-			som_file, (_p_som.texture.get_size() if _p_som.texture else "MISSING"),
-			(_p_ovr.texture != null),
-			layer, _root.scale, _root.position,
-			get_viewport().get_visible_rect().size,
-		]
-	)
-	_log_subtitle_frame("setup")
 
 
 ## Position/visibility/z-order snapshot -- call at any point to see

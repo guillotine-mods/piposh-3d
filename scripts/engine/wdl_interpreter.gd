@@ -47,10 +47,6 @@ var _skip_next_main_wait := false
 var _loader: WmbLevelLoader
 var _camera: Camera3D
 var _hud: GameHud
-## Set once in setup(). Used only to scope the small number of hand-wired
-## HUD hooks below (_seed_subtitle_crawl()) to the exact level/action pair
-## they were built for -- some action names (e.g. "Ami") are reused across
-## levels for an unrelated, ordinary talk/blink loop.
 var _level_stem := ""
 ## Scratch VECTOR/ANGLE globals (`temp`, `my_angle`, ...) -- real Acknex
 ## structs, not entities. See _vec_get()/_vec_put().
@@ -457,6 +453,40 @@ func _update_panel_windows() -> void:
 			atlas.region = Rect2(0, 0, maxf(clamped, 0.01), float(w["height"]))
 
 
+const GFX_DIR := "res://assets/converted/gfx/"
+## lowercase filename -> real filename, built once and reused for the
+## process lifetime -- same caching rationale as `_ast_cache` (the GFX
+## folder's contents never change at runtime). Without this,
+## `_resolve_bmap_texture()`'s directory-scan fallback re-listed the
+## entire folder from scratch for every unresolved bmap; harmless for a
+## single lookup, but `_ensure_panels_built()` now runs for every panel
+## in the fully include-merged AST (every level pulls in IO.wdl's and
+## DIalog.wdl's shared panels too, most of whose bmaps were never
+## actually converted -- SDK template screens this game never uses),
+## so a level with dozens of merged panels could trigger dozens of full
+## rescans. Confirmed live (2026-08-01): Plane2's first 3 frames went
+## from ~1.6s (Start, fewer merged panels) to ~5.9s -- reported as "the
+## last commit made all levels stuck," which for a level with enough
+## unresolved panels a multi-second stall genuinely reads as.
+static var _gfx_dir_cache: Dictionary = {}
+static var _gfx_dir_cache_built := false
+
+
+static func _ensure_gfx_dir_cache() -> void:
+	if _gfx_dir_cache_built:
+		return
+	_gfx_dir_cache_built = true
+	var dir := DirAccess.open(GFX_DIR)
+	if dir == null:
+		return
+	dir.list_dir_begin()
+	var fn := dir.get_next()
+	while fn != "":
+		if not dir.current_is_dir():
+			_gfx_dir_cache[fn.to_lower()] = fn
+		fn = dir.get_next()
+
+
 ## `bmap`'s referenced file (e.g. `<Hit1.pcx>`) never matches a converted
 ## filename literally -- this corpus's GFX conversion always emits `.png`.
 ## Self-contained (not reusing GameHud._resolve_gfx()) so panel rendering
@@ -477,24 +507,18 @@ func _resolve_bmap_texture(bmap_var_name: String) -> Texture2D:
 	if file == "":
 		return null
 	var stem := file.get_basename()
-	const GFX := "res://assets/converted/gfx/"
-	var candidates := [GFX + stem + ".png", GFX + stem.to_lower() + ".png", GFX + file]
+	var candidates := [GFX_DIR + stem + ".png", GFX_DIR + stem.to_lower() + ".png", GFX_DIR + file]
 	for path in candidates:
 		if ResourceLoader.exists(path):
 			var tex := load(path) as Texture2D
 			if tex != null:
 				return tex
-	# Last resort: case-insensitive directory scan (mixed-case originals).
-	var dir := DirAccess.open(GFX)
-	if dir == null:
-		return null
+	# Last resort: cached case-insensitive filename lookup (mixed-case
+	# originals) -- see _ensure_gfx_dir_cache()'s docstring.
+	_ensure_gfx_dir_cache()
 	var want := (stem + ".png").to_lower()
-	dir.list_dir_begin()
-	var fn := dir.get_next()
-	while fn != "":
-		if fn.to_lower() == want:
-			return load(GFX + fn) as Texture2D
-		fn = dir.get_next()
+	if _gfx_dir_cache.has(want):
+		return load(GFX_DIR + _gfx_dir_cache[want]) as Texture2D
 	return null
 
 
@@ -577,7 +601,6 @@ func begin_level() -> void:
 		if resolved_action != "":
 			node.set_meta("wdl_skills", (node.get_meta("skills", []) as Array).duplicate())
 			_seed_look_at_me_flag1(node, action)
-			_seed_subtitle_crawl(action)
 			_seed_reveal_only_hidden(node, _actions[resolved_action].get("body", {}))
 			_seed_static_pose_if_never_animated(node, _actions[resolved_action].get("body", {}))
 			_run_coroutine(_actions[resolved_action].get("body", {}), node)
@@ -612,34 +635,6 @@ func begin_level() -> void:
 ## certainty, a stated inference pending real playtest confirmation.
 const LOOK_AT_ME_FLAG1_ON_PAN := 270.0
 const LOOK_AT_ME_FLAG1_PAN_TOLERANCE := 15.0
-
-
-## GameHud's `setup_start_subtitles()`/`setup_studio_subtitles()` (the
-## sliding-in bitmap "subtitle" panel -- `pSom`/`pOvr` in the original WDL,
-## a pre-rendered green-on-black bitmap TEXT graphic, not a live font) were
-## built with the exact slide/blink timings and thresholds these two real
-## actions use (`_update_crawl()`'s `stop_x` is -200 for Start, -310 for
-## Studio, matching `POvr.pos_x > -200`/`> -310` in the WDL source
-## byte-for-byte) but were never actually wired to anything -- confirmed
-## via `git log -S` showing zero commits ever called either function.
-## `pSom`/`pOvr` are WDL `panel` objects, which this interpreter has no
-## generic support for (docs/CONTRACT.md #4.1 known gap), so the
-## `pOvr.visible = on; pSom.visible = on;` statements that open both
-## actions silently no-op instead of ever reaching GameHud -- reported
-## 2026-07-31 as "green text... not showing" in Studio. Fixed with a
-## one-time hook at the exact two (level, action) pairs GameHud was built
-## for, since "action Ami"/"action DefineYachdel" are reused in OTHER
-## levels for an ordinary, unrelated talk/blink loop (confirmed via corpus
-## grep) -- this must not fire for those.
-func _seed_subtitle_crawl(action: String) -> void:
-	if _hud == null:
-		return
-	var low := action.to_lower()
-	var level_low := _level_stem.to_lower()
-	if level_low == "start" and low == "defineyachdel":
-		_hud.setup_start_subtitles()
-	elif level_low == "studio" and low == "ami":
-		_hud.setup_studio_subtitles()
 
 
 func _seed_look_at_me_flag1(node: Node3D, action: String) -> void:
@@ -1953,10 +1948,34 @@ func _assign(op: String, target: Dictionary, value_expr: Variant, my) -> Variant
 ## Run(Range.exe)" check lives. Confirmed via corpus grep
 ## (`^function perform_handle`) there is exactly one shared declaration,
 ## same rule as every other entry here.
+##
+## `StartSaveLoad` (2026-08-01, "the last commit made all levels stuck
+## now"): the SAME shape, but at global scale instead of one level.
+## `WDL/IO.wdl`'s `function Initialize() { ...; StartSaveLoad(); }` is
+## called by virtually every level's `main()` (every level includes
+## IO.wdl and calls `VoiceInit(); Initialize();` near the top), and
+## `StartSaveLoad`'s own body (`function StartSaveLoad { while(1) {
+## if (entSaveLoadMenu.visible==on) {...}; wait(1); } }`) is a real
+## per-tick save/load-menu vase-animation poll -- for a save/load menu
+## this port doesn't implement (`entSaveLoadMenu` is a documented,
+## pre-existing gap, see _resolve_entity()'s own comment). Before bare
+## top-level calls could really suspend, this was silently inert, same
+## as every other never-actually-run shared coroutine this session found
+## (perform_handle, player_move2). Now that it's a genuine `while(1)`,
+## calling it unconditionally from `Initialize()`'s tail statement
+## permanently absorbs `Initialize()` -- and everything after
+## `Initialize();` in `main()` (hiding the splash screen, playing the
+## intro movies, `Start = 1;`, unblocking the real dialogue loop gated on
+## `Start`) -- into a loop that never returns, for every level that calls
+## `Initialize()`. Confirmed via a live trace (tools/smoke_start_stuck.gd)
+## showing Start.wdl's main() stuck re-executing StartSaveLoad's own
+## `if (entSaveLoadMenu.visible==on) {...} wait(1);` body forever, having
+## never reached `Start = 1;`. Confirmed via corpus grep
+## (`^function StartSaveLoad`) there is exactly one shared declaration.
 const BRIDGE_OVER_SHARED_FUNCTIONS: Array[String] = [
 	"splay", "vplay", "play_sound", "play_entsound", "stop_sound",
 	"snd_playing", "getposition", "actor_move", "showdialog", "run",
-	"perform_handle",
+	"perform_handle", "startsaveload",
 ]
 
 
@@ -2280,6 +2299,11 @@ func _register_builtins() -> void:
 		# permanently block whatever bare-statement call site it's
 		# reached from.
 		"perform_handle": func(_a, _my): return 0.0,
+		# See BRIDGE_OVER_SHARED_FUNCTIONS' own comment: a real forever
+		# loop for a save/load menu this port doesn't implement, called
+		# unconditionally from the shared Initialize() every level's
+		# main() runs near the top.
+		"startsaveload": func(_a, _my): return 0.0,
 		"splay": func(a, _my): return _do_play_sfx(a, 0, true),
 		"vplay": func(a, _my): return _do_play_sfx(a, 0, true),
 		"play_sound": func(a, _my): return _do_play_sfx(a, 0, false),
