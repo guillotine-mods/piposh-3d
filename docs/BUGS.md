@@ -55,8 +55,8 @@ QOL item from being promoted to GB (or the reverse) by moving the row.
 | NB-4 | The green "overlay" HUD panel flickers. |
 | NB-5 | Loading text isn't centered — sits a bit too far right/down. |
 | NB-6 | "Sticker clicked/found" text isn't centered — sits a bit too far right/down. |
-| NB-7 | Shiks: after the 2nd dialogue, during the sequence where the camera cuts between several locations, Piposh isn't shown for 2 frames (likely each time the camera switches). |
+| NB-7 | Shiks: after the 2nd dialogue, during the sequence where the camera cuts between several locations, Piposh isn't shown for 2 of the shots (the phone-booth/bus shot and the pigeon shot). | Root cause found and fixed 2026-08-02: these WED placements start with the "invisible" flag set (hidden via `_hide_meshes()`, which hides the child mesh directly), and the WDL script reveals them later (`my.invisible = off;`) — but that write only ever toggled the entity's root node, never the actual mesh child, so the reveal silently did nothing. Fixed by making the write recursively match `_hide_meshes()`'s own shape. Needs in-game re-verification before closing. |
 
 ---
 
-_Last edited: 2026-08-02._
+_Last edited: 2026-08-02 (later)._

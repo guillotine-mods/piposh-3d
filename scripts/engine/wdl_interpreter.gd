@@ -1429,7 +1429,24 @@ func _set_field(obj_expr: Variant, field: String, value: Variant, my) -> void:
 			if anim:
 				anim.set_skin(int(_to_num(value)))
 		"invisible":
+			# NB-7 (2026-08-02, Shiks): WmbLevelLoader's own spawn-time
+			# WED-flag handling (`_hide_meshes()`, bit0=INVISIBLE) hides
+			# every child MeshInstance3D directly, leaving the entity's
+			# own root node (`node` here) at its default `visible=true`.
+			# This write only ever toggled THAT root node -- so an entity
+			# WED-authored to start invisible and get revealed later by
+			# script (a real, corpus-wide idiom: e.g. Shiks' `action Pipi`
+			# placements, hidden at spawn, `my.invisible = off;` once
+			# CamShow reaches the shot they belong in) had its root node
+			# correctly become "visible", while the actual mesh underneath
+			# stayed hidden forever -- confirmed live: "Piposh not shown"
+			# in exactly the camera shots whose WED-placed stand-in was
+			# spawned with the invisible flag set. Now toggles every
+			# MeshInstance3D descendant to match, the same recursive shape
+			# `_hide_meshes()` itself uses, so a later reveal actually
+			# reveals the mesh instead of just an already-visible empty node.
 			node.visible = not _truthy(value)
+			_set_mesh_visibility_recursive(node, node.visible)
 		"event":
 			# `my.event = HP;` -- the click-trigger target, captured as a
 			# name string by _assign()'s special case above. Read back by
@@ -1490,6 +1507,18 @@ func _set_field(obj_expr: Variant, field: String, value: Variant, my) -> void:
 				# Generic custom-field fallback -- see the matching comment
 				# in _get_field().
 				node.set_meta("wdl_custom_" + low, value)
+
+
+## See the "invisible" case in _set_field() above -- mirrors
+## WmbLevelLoader._hide_meshes()'s own recursive shape so a WDL-driven
+## reveal actually undoes what spawn-time flag-invisible hiding did,
+## instead of only toggling the (otherwise-unused) root node's own
+## `visible` property.
+func _set_mesh_visibility_recursive(node: Node, vis: bool) -> void:
+	if node is MeshInstance3D:
+		(node as MeshInstance3D).visible = vis
+	for c in node.get_children():
+		_set_mesh_visibility_recursive(c, vis)
 
 
 func _ensure_clickable_area(node: Node3D) -> bool:

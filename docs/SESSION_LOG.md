@@ -4671,3 +4671,56 @@ Also added (kept, throttled): `SPLAY`/`VOICE_POLL`/`SHOWDIALOG`/`CLICK`/
 useful general-purpose dialogue/voice diagnostics beyond just this bug,
 low-noise (once-per-call for discrete events, ~1/sec heartbeats for
 polling loops).
+
+## 2026-08-02 (NB-7) — Shiks: Piposh missing from 2 of the post-dialogue camera shots
+
+User confirmed GB-1 fixed, then reported a new one: after the 2nd
+dialogue's choice-2 branch (the long camera-cut sequence -- bus/window,
+phone, weasel, pigeon, driving away), Piposh isn't shown during 2 of the
+shots specifically: the phone-booth/bus one and the pigeon one (not the
+weasel or driving-away shots).
+
+Node-visibility tracing (`tools/smoke_shiks_camshow.gd`, driving both a
+forced-state and the real chase-triggered version of the full sequence)
+showed every visibility transition matching the WDL source exactly, with
+no unexpected pop-in/out -- ruled out a scripting-level race. Moved to
+checking camera framing instead: computed real bearings from each
+`action PipiCam` camera to its likely subject (using the project's own
+established `_gs_view_forward` pan convention, cos/sin(pan) in the GS
+XY plane) -- CamShow=6's camera pointed dead-on at Weasel (+2.3°) and
+CamShow=7's camera pointed dead-on at the far "Pipi"-action Piposh.MDL
+placement (+8.8°), both close range (~230/525 units) -- so the entities
+ARE correctly positioned and the cameras ARE correctly aimed at them.
+Confirmed via `tools/smoke_shiks_pipi_check.gd` (dumps mesh/spawn state
+for every "Pipi" placement) that this is a mesh-level bug instead: the
+far Piposh.MDL entity (meant for the pigeon shot) and the PipCell.MDL
+entity (the phone booth, meant for the phone shot) both spawn with WED's
+own "invisible" flag bit set (`flags=262145`, `invisible_meta=true`) --
+`WmbLevelLoader._hide_meshes()` hides their child `MeshInstance3D`
+directly at spawn, but the WDL script's later `my.invisible = off;`
+(Shiks.wdl's `action Pipi`, `if(CamShow==3){my.invisible=off;...}`,
+covering all three of its own placements uniformly) only ever toggled
+the entity's ROOT node's own `visible` -- never the mesh child
+`_hide_meshes()` actually hid. The root node correctly became
+"visible", but the mesh underneath stayed hidden forever, for any
+entity that starts flag-invisible and gets revealed later by script (a
+real, corpus-wide idiom, not unique to this one report). The near
+Piposh.MDL placement (used for the bus/window shots, CamShow 3/4)
+wasn't WED-authored invisible in the first place (`invisible_meta=
+false`), so it was never affected -- consistent with the user not
+reporting those two shots as broken.
+
+Fixed by making the "invisible" write in `_set_field()` recursively
+toggle every `MeshInstance3D` descendant to match, mirroring
+`_hide_meshes()`'s own recursive shape, instead of only the root node.
+
+Verified: new `tools/smoke_shiks_pipi_reveal.gd` -- before the fix,
+writing `my.invisible = off;` to the far Piposh.MDL entity left its
+mesh at `visible=false` despite the root node correctly reading
+`visible=true`; after the fix, the mesh itself becomes `visible=true`.
+Full regression: `smoke_dispatch` 19/19, `smoke_shiks_bumpin_proximity.gd`,
+`smoke_plane2_all_goals.gd`, `smoke_range_shoot.gd` all still `OK` --
+confirms the recursive mesh-visibility toggle doesn't disturb any of
+the corpus's existing invisible/passable/camera-marker hiding, which
+never gets a later reveal write and so never exercises this new code
+path. `git status` zero asset deletions.
