@@ -4467,3 +4467,64 @@ subtitle-panel text like Range/Studio/Start do, so a long silent wait
 reads exactly like "nothing is happening").
 `git status` zero asset deletions (no code changes from this
 investigation beyond the two new/renamed smoke tests).
+
+## 2026-08-01 (sixteenth) — Plane2 "character is lower than the plane so we can't move"
+
+User: "The height change also broke plane2 where now the character is
+lower than the plane so we can't move." The fourteenth entry's fix is
+strictly scoped (`if level_name == "Plane":`, only touches
+"PiposhWalk"/"Krup"/"ThePlaneMovie") and cannot execute for Plane2 at
+all -- confirmed by direct code inspection, and by reproducing the
+report on a *fresh* Plane2 load with zero connection to the Plane fix.
+Two real, separate, pre-existing bugs, coincidentally surfaced by the
+same report:
+
+1. **Wrong-deck floor snap.** `level_runner.gd`'s `_enable_first_person()`
+   calls `player.snap_to_floor()` (400-unit default search range) right
+   after placing the player at the FP spawn point. For Plane2's exact
+   spawn XZ, there's no collision surface between the WED spawn Y (108.35)
+   and a genuinely lower deck ~59 units below (49.5) -- the full-range
+   raycast's *closest* hit is that lower deck, snapping the player
+   straight into it. Confirmed via `tools/smoke_plane2_move.gd`: consistent
+   across 3 repeated runs (a real geometry gap, not timing/race flakiness).
+   Fixed by passing a tight `40.0` max_drop from this one call site (its
+   only caller) -- small enough to still correct a genuine minor gap, too
+   small to reach the wrong deck 59 units away.
+2. **Camera-authority deadlock, the real "can't move" cause.** Even after
+   fix 1, the player still didn't move. Traced via the existing
+   `[cam-write]` debug logging (PiposhDebug) already in `_set_camera_field`:
+   `player_move2()` -- Plane2's own, faithfully-ported real Acknex FPS
+   controller -- calls `Move_view_1st()` every single tick from its own
+   main loop (`if(VView==1){Move_view_1st();} ... wait(1);`).
+   `WDL/camera.wdl`'s real `move_view_1st()` writes `CAMERA.X/Y/Z/PAN/
+   TILT/ROLL` from `player.X/Y/Z/...` every tick -- exactly matching real
+   Acknex's own per-frame camera-attach idiom. But in this port `player`
+   resolves to the WDL-side FP proxy entity, which never actually moves
+   (`_player_force`/`scan_floor`/`move_gravity`, the real movement
+   builtins the rest of `player_move2()` calls, are deliberately
+   unbridged no-ops here -- the native CharacterBody3D controller owns
+   real FP movement instead, per the project's own "don't reimplement
+   Acknex's movement builtins" decision). So this wrote the SAME
+   stationary position into camera.* every tick, and
+   `CameraAuthority.update()` treats any camera.* write this frame as
+   "script wants control" -- permanently locking the (stale) script
+   camera as current and never handing control to the player's own
+   Camera3D. `player_controller.gd`'s own `_physics_process()` zeroes
+   `velocity` outright unless `camera.current == true`, so this silently
+   disabled all player movement, every tick, forever. Fixed the same way
+   as `perform_handle`/`actor_move`: bridged `move_view_1st`/
+   `move_view_3rd`/`move_view_3rd_2` to no-ops in
+   `BRIDGE_OVER_SHARED_FUNCTIONS` -- the native controller's own Camera3D
+   is the sole FP camera authority in this port, so the WDL script's own
+   camera-attach logic has nothing useful left to do.
+
+Verified: `tools/smoke_plane2_move.gd` (new) -- before fix 2,
+`player camera current=false`, viewport's actual camera stuck on
+`ScriptCamera`, 0.000 units of movement despite 2s of forward input;
+after both fixes, `camera current=true`, 163.8 units of real movement.
+Full regression: `smoke_dispatch` 19/19, `smoke_plane2_all_goals.gd`
+(all-4-goals branch and its own scripted end-camera handoff both still
+correct -- confirms the bridge doesn't disturb legitimate one-time
+cutscene camera writes from other actions, only the per-tick FP-camera-
+attach idiom), `smoke_plane_piposh_height.gd` (68.55 vs Krupnik's 68.39,
+unaffected by either fix). `git status` zero asset deletions.

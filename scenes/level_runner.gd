@@ -205,9 +205,19 @@ func _enable_first_person() -> void:
 		player_cam.current = true
 	_script_cam.current = false
 	# Land on brush collision (WED Y can sit under the walkable deck).
+	# max_drop kept small (not the 400-unit default): Plane2's own spawn
+	# point has no collision geometry between the WED spawn Y and the
+	# next surface straight down, which happens to be a lower deck ~59
+	# units below -- a full-range raycast finds that as its "closest
+	# hit" and snaps the player into it, embedded in collision and unable
+	# to move at all. Reported live (2026-08-01): "the character is lower
+	# than the plane so we can't move." A tight max_drop means a genuine
+	# small WED/collision gap still gets corrected, but a wrong deck this
+	# far away is out of range -- the raycast finds nothing and leaves
+	# the player at the original (trustworthy) WED spawn position instead.
 	if player.has_method("snap_to_floor"):
 		await get_tree().physics_frame
-		player.snap_to_floor()
+		player.snap_to_floor(40.0)
 	var use_touch := (
 		OS.has_feature("mobile")
 		or OS.get_name() == "Android"

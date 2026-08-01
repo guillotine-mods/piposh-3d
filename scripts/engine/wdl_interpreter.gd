@@ -1972,10 +1972,40 @@ func _assign(op: String, target: Dictionary, value_expr: Variant, my) -> Variant
 ## `if (entSaveLoadMenu.visible==on) {...} wait(1);` body forever, having
 ## never reached `Start = 1;`. Confirmed via corpus grep
 ## (`^function StartSaveLoad`) there is exactly one shared declaration.
+## `move_view_1st`/`move_view_3rd`/`move_view_3rd_2` (2026-08-01, Plane2):
+## `WDL/camera.wdl`'s real, faithfully-ported first/third-person camera
+## functions (`function move_view_1st() { ...; CAMERA.X=player.X; ...
+## CAMERA.PAN=player.PAN; ... }`) -- called every tick from
+## `player_move2()`'s own main loop (`if(VView==1){Move_view_1st();}
+## ...wait(1);`), exactly matching real Acknex's own per-frame camera-
+## attach idiom. In real Acknex there's only one camera, so this is
+## simply "the" camera update. In this port, the *native* CharacterBody3D
+## controller (scripts/game/player_controller.gd) already owns real FP
+## movement and its own Camera3D -- and `player` here resolves to the
+## WDL-side FP proxy entity (never moved by this port; `_player_force`/
+## `scan_floor`/`move_gravity`, the real movement builtins the rest of
+## `player_move2()` calls, are unbridged no-ops here on purpose, see the
+## project's own "keep the native controller, don't reimplement Acknex's
+## movement builtins" decision). So every tick, this wrote the WDL
+## script's *own* camera.* fields from a stationary entity -- and
+## CameraAuthority (scripts/engine/camera_authority.gd) treats ANY
+## camera.* write as "script wants control this frame", so a write EVERY
+## tick permanently locked camera ownership to the (stale, never-moving)
+## script camera and never handed it to the player's own Camera3D.
+## Since `_physics_process()`'s movement gate requires
+## `camera.current == true`, this silently zeroed the native controller's
+## velocity every physics tick too -- reported live (2026-08-01): "the
+## character is lower than the plane so we can't move" (the height half
+## of that report was a separate, already-fixed snap_to_floor() issue;
+## this is the "can't move" half). Bridged to no-ops, same precedent as
+## `perform_handle`/`actor_move`: the native controller's own Camera3D is
+## the sole source of truth for the FP camera in this port, so the WDL
+## script's own camera-attach logic has nothing useful left to do.
 const BRIDGE_OVER_SHARED_FUNCTIONS: Array[String] = [
 	"splay", "vplay", "play_sound", "play_entsound", "stop_sound",
 	"snd_playing", "getposition", "actor_move", "showdialog", "run",
 	"perform_handle", "startsaveload",
+	"move_view_1st", "move_view_3rd", "move_view_3rd_2",
 ]
 
 
@@ -2304,6 +2334,13 @@ func _register_builtins() -> void:
 		# unconditionally from the shared Initialize() every level's
 		# main() runs near the top.
 		"startsaveload": func(_a, _my): return 0.0,
+		# See BRIDGE_OVER_SHARED_FUNCTIONS' own comment: the native
+		# controller's Camera3D is the sole source of truth for the FP
+		# camera in this port, so the WDL script's own per-tick
+		# camera-attach logic has nothing useful left to do.
+		"move_view_1st": func(_a, _my): return 0.0,
+		"move_view_3rd": func(_a, _my): return 0.0,
+		"move_view_3rd_2": func(_a, _my): return 0.0,
 		"splay": func(a, _my): return _do_play_sfx(a, 0, true),
 		"vplay": func(a, _my): return _do_play_sfx(a, 0, true),
 		"play_sound": func(a, _my): return _do_play_sfx(a, 0, false),
