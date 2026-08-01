@@ -4528,3 +4528,69 @@ correct -- confirms the bridge doesn't disturb legitimate one-time
 cutscene camera writes from other actions, only the per-tick FP-camera-
 attach idiom), `smoke_plane_piposh_height.gd` (68.55 vs Krupnik's 68.39,
 unaffected by either fix). `git status` zero asset deletions.
+
+## 2026-08-01 (seventeenth) — Plane's missing walk animation; Shiks impact double-fire
+
+Two more fixes while still in the same area, both from live evidence the
+user provided directly.
+
+**Plane: no walking animation.** User pasted Plane.wdl's real source
+alongside the report and asked outright whether the parser was at
+fault. It wasn't -- `action PiposhWalk` genuinely never calls
+`ent_frame`/`ent_cycle` in its always-reached walk-in code (unlike
+Shiks' own walk block, which explicitly pairs `ent_cycle("Walk",
+skill1)` with `actor_move()`). Real Acknex's own `actor_move()` builtin
+auto-selects a walk cycle as a built-in convenience this port's
+straight-line `_do_actor_move()` never replicated, and
+`_seed_static_pose_if_never_animated()` (built for decorative,
+never-moving props) froze him to a static pose from the moment his
+coroutine started, since it never distinguished "doesn't animate
+itself" from "moves via actor_move() but doesn't animate itself".
+
+First attempt: skip the freeze and auto-drive a "Walk" cycle from
+`_do_actor_move()` only for actions with no `ent_frame`/`ent_cycle`
+call ANYWHERE in their body. Confirmed via `tools/smoke_plane_walk_anim.gd`
+that this still didn't work -- `PiposhWalk`'s body DOES contain one
+`ent_frame("Take",100)`, buried inside a `DialogChoice==3` response
+branch only reachable long after arrival, nowhere near the walk-in
+code the scan was meant to protect. Fixed by reordering: check for
+`actor_move()` FIRST, unconditionally driving a walk cycle for any
+action that calls it regardless of what else exists elsewhere in the
+body -- an action calling `actor_move()` is, by definition, meant to
+move, so it should always get walk-cycle treatment. Verified: MdlAnimator
+`_current_clip` reaches "walk" and stays `_playing=true` while he moves
+(was frozen on "Stand" before).
+
+**Shiks: `Bumped` firing twice.** The user's own real console capture
+(pasted directly, from a live playthrough) showed `[wdl-event] INVOKE
+my=Snail_mdl_043 event=Bumped` firing twice in quick succession.
+`_check_impact_proximity()` (the non-physics-body proximity check, for
+WDL-driven movers) already debounces this exact shape ("fire once on
+approach, not every frame spent overlapping") via `_impact_touching`,
+but its sibling `_on_impact_body_entered()` -- the REAL player's own
+Area3D `body_entered` signal path -- had no debounce at all. Godot's
+`body_entered` can genuinely fire, exit, and re-fire within a few
+frames from ordinary collision push-back/sliding along the trigger
+sphere's edge, and `action Bumped` (`Piposh.skill2 = 2;`) has no
+idempotency guard of its own, matching real WDL (a physical bump was
+never this trigger-happy in the original engine). A re-fire after
+`action MyCamera`'s chase had already completed (`skill2==4`) would
+restart the whole chase and call `ShowDialog()` again mid-flight,
+resetting `DialogChoice` to 0 while `action Piposh2` was still polling
+the ORIGINAL choice's voice line -- by the time it reached the real
+per-choice response block, `DialogChoice` would no longer match any of
+its 1/2/3 checks, and nothing would play. (This was investigated as a
+candidate cause for the fifteenth entry's still-unreproduced "2nd
+dialogue... total silence" report; not confirmed as THE cause, since
+reproducing the exact double-fire timing needs real physics jitter this
+session couldn't force headless -- but it's a real, verified bug either
+way and worth fixing regardless.) Fixed by giving `_on_impact_body_entered`
+the same `_impact_touching`-based debounce its NPC-mover sibling already
+has (paired with a new `body_exited` handler to clear it), so a
+continuous overlap only fires once, while a genuine walk-away-and-back
+still re-fires correctly.
+
+Full regression after both fixes: `smoke_dispatch` 19/19,
+`smoke_shiks_chase.gd`, `smoke_shiks_bumpin_proximity.gd` (both still
+"OK" -- confirms the debounce doesn't suppress the real, intended
+first trigger). `git status` zero asset deletions.

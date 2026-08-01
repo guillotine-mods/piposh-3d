@@ -736,6 +736,27 @@ func _scan_invisible_assignments(n: Variant) -> Array:
 ## before the first frame ever renders, so there's no visible flicker
 ## even though it corrects an already-started cycle.
 func _seed_static_pose_if_never_animated(node: Node3D, body: Dictionary) -> void:
+	# Checked BEFORE the ent_frame/ent_cycle scan below, not after: an
+	# action can call actor_move() in its always-reached walk loop while
+	# ALSO calling ent_frame() somewhere else entirely -- e.g. Plane.wdl's
+	# `action PiposhWalk` walks Piposh in via actor_move() alone, but its
+	# own body has an `ent_frame("Take",100)` buried inside a dialogue-
+	# choice branch only reachable much later, after he's already
+	# arrived and is talking. Scanning the WHOLE body for "any ent_frame/
+	# ent_cycle anywhere" found that unrelated later call and (wrongly)
+	# concluded this action handles its own animation, so it never got
+	# real walk-cycle treatment and froze to a static pose from level
+	# start instead -- moving with zero animation the whole way in.
+	# Real Acknex's own actor_move() auto-selects a walk cycle as a
+	# built-in convenience; this port's straight-line _do_actor_move()
+	# doesn't, so any action that calls actor_move() gets one driven
+	# for it instead (see _do_actor_move()'s own "wdl_auto_walk_anim"
+	# comment) -- regardless of what else is elsewhere in its body.
+	# Reported live (2026-08-01, Plane): "there's no walking animation
+	# when he enters the frame and walks."
+	if _scan_for_calls(body, ["actor_move"]):
+		node.set_meta("wdl_auto_walk_anim", true)
+		return
 	if _scan_for_calls(body, ["ent_frame", "ent_cycle"]):
 		return
 	var anim := node.get_node_or_null("MdlAnimator") as MdlAnimator
@@ -1494,15 +1515,41 @@ func _ensure_impact_area(node: Node3D) -> void:
 	node.add_child(area)
 	node.set_meta("wdl_impact_area", true)
 	area.body_entered.connect(_on_impact_body_entered.bind(node))
+	area.body_exited.connect(_on_impact_body_exited.bind(node))
 	_impact_zones.append({"node": node, "radius": radius, "offset": Vector3.ZERO})
 
 
+## `body_entered` has no debounce of its own: a CharacterBody3D sliding
+## along this Area3D's edge (common with collision push-back/momentum,
+## and confirmed live via a real player's own console capture --
+## 2026-08-01, Shiks) can genuinely fire body_entered/body_exited/
+## body_entered again within a handful of frames for what's really one
+## continuous approach. `_check_impact_proximity()`'s own NPC-mover twin
+## already debounces this exact shape ("fire once on approach, not every
+## frame spent overlapping") via `_impact_touching`; reusing the same
+## dict here (keyed the same way, `node -> {other: true}`) gives the
+## real player's own body_entered path the same guarantee, instead of
+## re-firing a one-time story trigger (e.g. Shiks' `action Bumped` ->
+## `Piposh.skill2 = 2;`, no idempotency guard of its own -- matching real
+## WDL, which never needed one since a physical bump was never this
+## trigger-happy) every time the player's collision capsule wobbles.
 func _on_impact_body_entered(body: Node3D, node: Node3D) -> void:
 	if not body.is_in_group("player"):
 		return
 	if not _entity_alive(node):
 		return
+	var touching: Dictionary = _impact_touching.get(node, {})
+	if touching.has(body):
+		return
+	touching[body] = true
+	_impact_touching[node] = touching
 	invoke_event(node, str(node.get_meta("wdl_event", "")))
+
+
+func _on_impact_body_exited(body: Node3D, node: Node3D) -> void:
+	var touching: Dictionary = _impact_touching.get(node, {})
+	touching.erase(body)
+	_impact_touching[node] = touching
 
 
 ## Per-frame distance check, the non-physics-body half of the impact
@@ -2446,7 +2493,19 @@ func _do_actor_move(my) -> float:
 	# Same pan->forward convention as _apply_acknex_view()/WdlDirector's
 	# entity-basis code (tilt=0, flat ground movement).
 	var dir := Vector3(cos(pan), 0.0, -sin(pan))
-	my.global_position += dir * (force * ACTOR_MOVE_BASE_SPEED * t)
+	var step := force * ACTOR_MOVE_BASE_SPEED * t
+	my.global_position += dir * step
+	# See _seed_static_pose_if_never_animated()'s own comment: only set
+	# for actions that call actor_move() but never ent_frame/ent_cycle
+	# themselves. Phase accumulates with distance moved (matching every
+	# other corpus idiom's own `skill1 = skill1 + N*time; ent_cycle
+	# ("Walk", skill1);` pairing, just driven from here instead of the
+	# WDL script) so the cycle actually advances instead of holding one
+	# frame, and stops advancing the instant movement does.
+	if my.get_meta("wdl_auto_walk_anim", false):
+		var phase := float(my.get_meta("wdl_auto_walk_phase", 0.0)) + absf(step)
+		my.set_meta("wdl_auto_walk_phase", phase)
+		_do_anim_cycle(["Walk", phase], my)
 	return 0.0
 
 
