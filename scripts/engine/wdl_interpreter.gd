@@ -131,6 +131,19 @@ func _check_mouse_click() -> void:
 	if not _mouse_left_clicked:
 		return
 	_mouse_left_clicked = false
+	# `_get_var()`'s generic fallback for a never-assigned identifier is
+	# `0.0`, and `str(0.0)` is a non-empty string -- so a plain "read
+	# on_mouse_left and check for empty" can't actually tell "never bound"
+	# apart from "bound to something," and fired invoke_event(null,"0")
+	# on every single click in every level that never assigns
+	# on_mouse_left (confirmed live via a real console capture, 2026-08-01,
+	# Shiks: `INVOKE my=<null> event=0.0` / `NOT FOUND`, once per click,
+	# alongside the real click this was investigating -- harmless on its
+	# own since it always fails to resolve, but real noise obscuring
+	# every other invoke_event() log line). Check the global actually
+	# exists first instead.
+	if _resolve_symbol(_globals, _globals_lower, "on_mouse_left") == "":
+		return
 	var bound := str(_get_var("on_mouse_left", null))
 	if bound != "":
 		invoke_event(null, bound)
@@ -164,6 +177,9 @@ func setup(level_stem: String, loader: WmbLevelLoader, camera: Camera3D, hud: Ga
 ## {...} ...}`, present in every level that calls ShowDialog) picks it up
 ## naturally on its next `wait(1)` iteration. See _do_show_dialog().
 func _on_dialog_choice(choice: int) -> void:
+	PiposhDebug.log_msg("dialog-choice", "CLICK choice=%d DialogIndex=%s (before set)" % [
+		choice, _get_var("DialogIndex", null)
+	])
 	_set_var("DialogChoice", float(choice), null)
 
 
@@ -2526,6 +2542,10 @@ func _do_actor_turnto(a: Array, my) -> float:
 
 
 func _do_show_dialog(my) -> float:
+	PiposhDebug.log_msg("dialog-choice", "SHOWDIALOG by=%s DialogIndex=%s" % [
+		(str(my.name) if (my != null and is_instance_valid(my)) else "<null>"),
+		_get_var("DialogIndex", my)
+	])
 	_set_var("DialogChoice", 0.0, my)  # matches the real ShowDialog's first statement
 	if _hud == null:
 		return 0.0
@@ -2846,9 +2866,11 @@ func _do_get_voice_position(my) -> float:
 	var progress := AudioChannels.get_voice_progress()
 	if progress >= 1.0:
 		var gen: int = AudioChannels.get_voice_generation()
+		var who := str(my.name) if (my != null and is_instance_valid(my)) else "<null>"
 		if _voice_finished_consumed_by.get(my, -1) == gen:
 			return 999999.0
 		_voice_finished_consumed_by[my] = gen
+		PiposhDebug.log_msg("dialog-choice", "VOICE_FINISHED first-seen-by=%s generation=%d" % [who, gen])
 	return progress * 1000000.0
 
 
