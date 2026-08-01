@@ -97,8 +97,10 @@ func _run() -> void:
 	print("Clicked choice 2 -- watching the full CamShow sequence now")
 
 	var last_visible := {}
+	var last_mesh_visible := {}
 	for n in watched:
 		last_visible[n] = n.visible
+		last_mesh_visible[n] = _find_mesh_visible(n)
 	for i in 7200:  # 120s @ 60fps -- the full chain is long, headless audio timing varies
 		await process_frame
 		var camshow = interp.call("_get_var", "CamShow", null)
@@ -106,14 +108,27 @@ func _run() -> void:
 		for n in watched:
 			if not is_instance_valid(n):
 				continue
-			if n.visible != last_visible.get(n, n.visible):
-				print("t=%.2fs %s visible: %s -> %s  (CamShow=%s Talking=%s)" % [
-					i / 60.0, n.name, last_visible.get(n), n.visible, camshow, talking
+			var mesh_vis: Variant = _find_mesh_visible(n)
+			if n.visible != last_visible.get(n, n.visible) or mesh_vis != last_mesh_visible.get(n):
+				print("t=%.2fs %s visible: %s -> %s  MESH: %s -> %s  (CamShow=%s Talking=%s)" % [
+					i / 60.0, n.name, last_visible.get(n), n.visible,
+					last_mesh_visible.get(n), mesh_vis, camshow, talking
 				])
 				last_visible[n] = n.visible
+				last_mesh_visible[n] = mesh_vis
 		if not interp.get("_running"):
 			print("interpreter stopped (Run() fired) at t=%.2fs" % (i / 60.0))
 			break
 
 	print("Done.")
 	quit(0)
+
+
+func _find_mesh_visible(n: Node) -> Variant:
+	if n is MeshInstance3D:
+		return (n as MeshInstance3D).visible
+	for c in n.get_children():
+		var r = _find_mesh_visible(c)
+		if r != null:
+			return r
+	return null

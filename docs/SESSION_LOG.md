@@ -4724,3 +4724,59 @@ confirms the recursive mesh-visibility toggle doesn't disturb any of
 the corpus's existing invisible/passable/camera-marker hiding, which
 never gets a later reveal write and so never exercises this new code
 path. `git status` zero asset deletions.
+
+## 2026-08-02 (NB-7 continued) — the real cause: a WED-flag teleport, not just visibility
+
+The mesh-visibility fix above was real and necessary, but the user
+reported the bus and pigeon shots still showed Piposh completely absent
+-- and, critically, shared two REAL Godot screenshots this time (not
+reference footage from the original game, which took a couple of
+exchanges to establish -- the first two screenshots the user sent were
+original-game captures showing the *intended* framing, not what this
+port renders). Those confirmed genuinely empty frames: just the bus/
+pigeon-window geometry, no character anywhere, not even cropped at the
+frame edge.
+
+Root-caused via a headless test using Godot's own `Camera3D.is_position_
+in_frustum()` at the real moment `CamShow==7` (`tools/smoke_shiks_
+pigeon_frustum.gd`) instead of manual trig: the target entity's
+`global_position.x` had moved from its authored `-14389` to `-754` --
+a ~13,600-unit jump, landing it 13,392 units from the camera, past the
+12,000-unit far-clip plane. Traced to `action Pipi`'s own body:
+`if((Talking==14)&&(my.flag1==off)){my.x=XX;...}`, where `XX` is set
+once by `action Dummy { XX = my.x; }` elsewhere in the level. Since all
+three "Pipi" placements (the near, scale=1.0 walking Piposh; the far,
+scale=3.65 pigeon-shot placement; and the scale=2.03 phone-booth
+PipCell.MDL) share the identical action body, ALL THREE independently
+teleport to Dummy's position once the shared global `Talking` reaches
+14 -- clearly meant to relocate only the one "real" walking-away
+placement, gated by `my.flag1` specifically so the other two dramatic
+cutaway props stay put for their own shots. `flag1` has no verified WED
+bit mapping in this port (the same documented gap `_seed_look_at_me_
+flag1` already works around for a different action) -- every entity's
+flag1 silently reads "off", so the gate never actually gates anything,
+and all three teleport together.
+
+Fixed the same way as the existing flag1 workaround: a new
+`_seed_pipi_flag1_stay_put()`, called once per "Pipi" placement at
+`begin_level()` time, seeds `flag1 = on` for any placement with a
+scale ≥1.5 (real, measured WED data -- see `_spawn_entity()`'s "preserve
+authored scales" comment -- not a guess) instead of leaving every
+placement able to teleport. The near, scale=1.0 placement is
+deliberately left alone (still teleports, matching its "real, moving
+Piposh" role); Dummy is untouched entirely.
+
+Verified: new `tools/smoke_shiks_pipi_stay_put.gd` confirms exactly the
+scale-based split (the two scaled-up placements get `flag1=1.0` and
+stay; the scale=1.0 one stays at `flag1=0.0` and still moves).
+`tools/smoke_shiks_pigeon_frustum.gd`, re-run after the fix: the far
+placement's `global_position` now matches its authored `-14389.0`
+exactly (no teleport), `is_position_in_frustum()` is `true`, and every
+AABB corner of its mesh is confirmed inside the frustum -- the entity
+is now genuinely on screen, not just theoretically visible. Full
+regression: `smoke_dispatch` 19/19, `smoke_shiks_chase.gd`,
+`smoke_shiks_bumpin_proximity.gd`, `smoke_plane2_all_goals.gd`,
+`smoke_range_shoot.gd` all still `OK` -- confirms the new flag1 seeding
+doesn't disturb the `action LookAtMe` one already using the same
+`wdl_custom_flag1` meta key, or anything else in the corpus that reads
+flag1. `git status` zero asset deletions.

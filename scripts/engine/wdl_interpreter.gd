@@ -617,6 +617,7 @@ func begin_level() -> void:
 		if resolved_action != "":
 			node.set_meta("wdl_skills", (node.get_meta("skills", []) as Array).duplicate())
 			_seed_look_at_me_flag1(node, action)
+			_seed_pipi_flag1_stay_put(node, action)
 			_seed_reveal_only_hidden(node, _actions[resolved_action].get("body", {}))
 			_seed_static_pose_if_never_animated(node, _actions[resolved_action].get("body", {}))
 			_run_coroutine(_actions[resolved_action].get("body", {}), node)
@@ -661,6 +662,43 @@ func _seed_look_at_me_flag1(node: Node3D, action: String) -> void:
 	var pan := float(node.get_meta("pan", 0.0))
 	var diff := absf(fposmod(pan - LOOK_AT_ME_FLAG1_ON_PAN + 180.0, 360.0) - 180.0)
 	node.set_meta("wdl_custom_flag1", 1.0 if diff <= LOOK_AT_ME_FLAG1_PAN_TOLERANCE else 0.0)
+
+
+## NB-7 follow-up (2026-08-02, Shiks): `action Pipi` (3 placements, one
+## per camera-cut shot) has `if((Talking==14)&&(my.flag1==off)){my.x=XX;
+## ...}` -- `XX` is set once by `action Dummy { XX = my.x; }`, so any
+## Pipi placement that reaches Talking==14 with flag1 off teleports its
+## own X coordinate to wherever Dummy sits (a totally different part of
+## the map, ~13600 units away for the far placements) -- clearly meant
+## to move only the ONE placement representing the "real" walking-away
+## Piposh (the near, scale=1.0 one, confirmed working) to where Dummy is,
+## not the far, dramatically-scaled cutaway placements meant to stay put
+## for their own shot (the bus/phone-booth PipCell.MDL and the pigeon-
+## shot Piposh.MDL, both reported/confirmed missing -- a real Godot
+## screenshot showed the camera correctly framing empty air where either
+## should be, ~13000+ units from where the entity actually ended up).
+## `flag1` has no verified WED bit mapping in this port (docs/CONTRACT.md
+## known gap, same one `_seed_look_at_me_flag1` above works around) --
+## every entity's flag1 silently defaults to "off", so this teleport
+## fires unconditionally for every Pipi placement instead of only the one
+## it was meant for. Same narrow, measured-signal approach as
+## `_seed_look_at_me_flag1`: a Pipi placement authored with a
+## significantly non-1.0 scale is, by construction, one of the special-
+## purpose cutaway props (Preserve authored scales -- see
+## `_spawn_entity()`'s own comment -- so this scale difference is itself
+## real, measured WED data, not a guess) rather than the ordinary,
+## scale=1.0 walking character, so it gets flag1 seeded on to skip the
+## teleport and stay in the shot it belongs to.
+const PIPI_STAY_PUT_SCALE_THRESHOLD := 1.5
+
+
+func _seed_pipi_flag1_stay_put(node: Node3D, action: String) -> void:
+	if action.to_lower() != "pipi":
+		return
+	if node.has_meta("wdl_custom_flag1"):
+		return  # already set (e.g. re-entrant setup) -- don't clobber a runtime write
+	if node.scale.x >= PIPI_STAY_PUT_SCALE_THRESHOLD:
+		node.set_meta("wdl_custom_flag1", 1.0)
 
 
 ## Generic fix for "reveal-only" actors: an action whose only
