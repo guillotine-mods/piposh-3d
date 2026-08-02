@@ -31,7 +31,6 @@ QOL item from being promoted to GB (or the reverse) by moving the row.
 | GB-3 | Plane2: Piposh spawns lower than the plane's surface, and the character can't move. | Fixed commit `b98470e` (two separate bugs: a wrong-deck floor snap, and a camera-authority deadlock that zeroed the native controller's movement every tick). Needs re-verification in-game before closing. |
 | GB-4 | Range: the upper HUD doesn't update when a citizen or terrorist is hit. | Not yet investigated. |
 | GB-5 | Range: after Piposh dies, animations keep playing instead of stopping, and the retry/skip buttons that should appear don't show. | Not yet investigated. |
-| GB-6 | Plane2 (first-person): a visible, rendered Piposh character appears in the level even though the player IS Piposh (first-person view) — shouldn't be rendered at all. It has no collision (walk through it) and clicking it produces an empty click, not a normal object-click event. | Fix shipped 2026-08-02, pending in-game confirmation. Root cause: `action A1`'s own coroutine writes `player.invisible = off;` every tick (harmless in the original engine, where FP rendering never draws your own body regardless of the flag) — but in this port that write directly undid the first-person proxy's spawn-time hide, every tick, forever. Fixed by making the FP proxy's visibility a fixed invariant, immune to WDL `invisible` writes, once first-person is active. See `docs/SESSION_LOG.md` 2026-08-02 (GB-6). |
 
 ## Quality of life
 
@@ -58,4 +57,4 @@ QOL item from being promoted to GB (or the reverse) by moving the row.
 
 ---
 
-_Last edited: 2026-08-02 (GB-2 confirmed fixed and closed; GB-6 fix shipped, pending confirmation)._
+_Last edited: 2026-08-02 (GB-2 and GB-6 confirmed fixed and closed)._
