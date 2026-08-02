@@ -1483,6 +1483,30 @@ func _set_field(obj_expr: Variant, field: String, value: Variant, my) -> void:
 			# MeshInstance3D descendant to match, the same recursive shape
 			# `_hide_meshes()` itself uses, so a later reveal actually
 			# reveals the mesh instead of just an already-visible empty node.
+			#
+			# GB-6 (2026-08-02, Plane2): the first-person player proxy is an
+			# exception to all of the above. WDL/move.wdl's real
+			# `player_move2()` (called every tick from `ACTION player_walk2`)
+			# has `if (MY.CLIENT == 0) { player = ME; }` as its own first
+			# statement -- a genuine, intentional binding (MY.CLIENT always
+			# reads 0 here, so this always fires), matching real Acknex's own
+			# built-in `player` pointer. Plane2.wdl's `action A1` (a Piposh
+			# stand-in used for a specific third-person cutscene) writes
+			# `player.invisible = off;` in its own default/non-cutscene
+			# branch -- harmless in the original engine, where first-person
+			# rendering never draws the player's own body regardless of this
+			# flag, but in this port `invisible` is the ONLY thing keeping
+			# the FP body hidden (`_hide_meshes()`, spawn-time only), so that
+			# write directly un-hid it: reported live as "a Piposh character
+			# there... shouldn't be there... no collision... empty click" --
+			# exactly the FP proxy's own already-passable, already-unwired
+			# mesh, now visible. Skip the toggle entirely for that one node;
+			# its visibility is a fixed port-owned invariant once first-
+			# person is active, same philosophy as the existing
+			# move_view_1st/move_view_3rd bridge-to-no-op fix.
+			var fp_node = _loader.first_person_spawn.get("node") if _loader != null else null
+			if node == fp_node:
+				return
 			node.visible = not _truthy(value)
 			_set_mesh_visibility_recursive(node, node.visible)
 		"event":

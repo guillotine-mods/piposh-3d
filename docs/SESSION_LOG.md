@@ -4920,3 +4920,64 @@ other real `actor_move()` user in the corpus) still `OK`. `git status`
 zero asset deletions. Kept the `[mdl-anim]` debug logging in place,
 scoped to `PiposhWalk` only, as permanent low-volume diagnostics rather
 than ripping it out now that it's proven useful.
+
+## 2026-08-02 (GB-6) — Plane2: a visible, non-colliding, non-clickable
+## "Piposh" appears even though the player IS Piposh (first-person)
+
+User confirmed both GB-2 fixes (floor placement + walk animation), then
+reported a new symptom on the very next level: opening Plane2 after
+Plane shows a rendered Piposh character that shouldn't be there, has no
+collision (walk straight through it), and clicking it produces an empty
+click instead of a normal object-click event.
+
+Investigated the two obvious "extra Piposh" candidates first (FPiposh.MDL/
+`action PiposhHit`, and a `Piposh.MDL`/`action A1` stand-in) via a new
+headless test -- both correctly stayed hidden (`my.invisible = on;` at
+spawn, matching their own WDL bodies). Widened the check to include the
+level's own first-person player proxy (`Piposh.MDL`/`action player_walk2`,
+hidden at spawn via `WmbLevelLoader._hide_meshes()`) and found it: hidden
+immediately at spawn, but VISIBLE by the time the level had run a few
+more frames.
+
+Traced it by adding a targeted debug log directly in `WdlInterpreter.
+_set_field()`'s `"invisible"` case (logging every write that targets the
+FP proxy node specifically) rather than guessing further from source
+reading alone -- immediately caught `action A1`'s own coroutine writing
+`invisible=off` to it, every tick, from two separate placements. `action
+A1`'s body: `if (Scene==1) {...} else { player.invisible = off; ...
+my.invisible = on; ... }` -- Scene defaults to 0 (a fresh `WdlInterpreter`
+instance is created per level load, ruled out via code read: globals
+don't carry over from Plane), so the ELSE branch always runs. The `my.
+invisible=on` part correctly hides `A1`'s own decoy Piposh; the `player.
+invisible=off` part was assumed to be inert (nothing in this port's own
+code binds the WDL `player` global to anything) until grep found the
+real cause: `WDL/move.wdl`'s actual `player_move2()` (called every tick
+from `ACTION player_walk2`, itself invoked by the FP proxy's own
+coroutine) has `if (MY.CLIENT==0) { player = ME; }` as its literal first
+statement -- `MY.CLIENT` always reads 0 here, so this always fires,
+genuinely binding `player` to the FP proxy every tick, matching real
+Acknex's own built-in `player` pointer. In the original engine this
+`player.invisible=off` write was harmless -- first-person rendering
+never draws the player's own body regardless of the flag -- but in this
+port `invisible` (via the NB-7 fix's `_set_mesh_visibility_recursive`)
+is the ONLY mechanism keeping the FP body hidden, so the write directly
+undid `_hide_meshes()`'s one-time spawn-time hide, every tick, forever.
+
+Fixed: `_set_field()`'s `"invisible"` case now checks whether the write
+target is `_loader.first_person_spawn["node"]` and, if so, skips the
+toggle entirely -- the FP proxy's visibility is a fixed, port-owned
+invariant once first-person is active, same philosophy as the existing
+`move_view_1st`/`move_view_3rd` bridge-to-no-op fix (the native
+controller's own Camera3D is the sole FP camera authority; by the same
+logic, its own mesh's hidden state shouldn't be WDL-scriptable either).
+"No collision" and "empty click" were both downstream symptoms of the
+same root cause (the FP proxy is deliberately passable/unwired, since
+it's never meant to be seen or clicked), not separate bugs -- fixing
+visibility resolves all three.
+
+Verified: new `tools/smoke_plane2_fpiposh_check.gd` lets `action A1`'s
+coroutine tick 30 times (enough for the bug to reproduce pre-fix) and
+confirms the FP proxy's own mesh stays hidden throughout. `smoke_dispatch`
+19/19, `smoke_shiks_pipi_stay_put.gd` and `smoke_plane2_all_goals.gd`
+(other real users of the same `_set_field()` "invisible" case) still
+`OK`. `git status` zero asset deletions.
