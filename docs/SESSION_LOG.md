@@ -4858,3 +4858,65 @@ spawns and walks at Y=92.16069 (matching `Pip`'s own computed height
 exactly), still zero drift during the walk. `smoke_dispatch` 19/19.
 `git status` zero asset deletions. Real in-game confirmation from the
 user still pending -- `docs/BUGS.md`'s GB-2 row stays open until then.
+
+## 2026-08-02 (GB-2 continued) — the height fix surfaced a second, real,
+## unrelated bug: Piposh's walk animation freezes mid-walk
+
+User confirmed the GB-2 height fix worked (he moves correctly now) but
+reported a NEW symptom: no walking animation while he crosses the
+cabin. Two headless investigations in a row missed it before real user
+data caught it:
+
+1. First smoke test (`tools/smoke_plane_walk_anim.gd`, only 2s long)
+   showed `current_clip=Walk`, `playing=true`, and `_percent` genuinely
+   varying across 12 samples -- looked fine, reported OK.
+2. Extended the same test to the FULL ~12s walk duration and found a
+   real ~5s stall, `current_clip=Stand playing=false`, stuck. Added
+   throttled `[mdl-anim]` debug logging (new, scoped to only the
+   `PiposhWalk` entity so it doesn't spam every other animated actor)
+   to `MdlAnimator.play_cycle()`/`play_blink()`/`_process()` to see the
+   real transition sequence.
+3. Traced it to Plane.wdl's own local `Blink()` function (`ent_frame
+   ("Stand",0)` unconditionally, every tick, whenever `Talking != 1`)
+   fighting every tick with `_do_actor_move()`'s auto-walk-cycle --
+   each tick's Blink() call knocks `_current_clip` to "Stand", and the
+   immediately-following `actor_move()` call successfully switches it
+   back to "Walk" (since `play_cycle()`'s own early-return guard only
+   fires when the clip is ALREADY current, which Blink() had just
+   defeated) -- self-resolving every tick, confirmed harmless.
+4. Asked the user directly whether the freeze was during the walk or
+   after arrival (during dialogue) -- headless data suggested "after
+   arrival", user said "during the walk", a real, confirmed
+   contradiction between headless and live play that needed real data,
+   not more guessing.
+5. Had the user capture their own REAL `[mdl-anim]` log from an actual
+   play session (told them to filter the Godot editor's log panel for
+   the tag, matching the established playtest-log-capture workflow from
+   earlier GB-1 debugging). Their log matched the headless trace
+   exactly -- `_percent` (well, the raw phase argument logged) climbing
+   past 100 continuously, then a permanent stall. That match was the
+   real clue: `MdlAnimator.play_cycle()` does `_percent = clampf(percent,
+   0.0, 100.0)` -- a CLAMP, not a wrap. `_do_actor_move()`'s own phase
+   accumulator (`wdl_auto_walk_phase`) grows by total distance moved,
+   unbounded, so it exceeds 100 after only ~100 units of walking (a
+   small fraction of the ~300-unit walk to Krupnik) -- and once it does,
+   `_percent` clamps to exactly 100.0 forever, freezing the render on
+   the cycle's last frame for the rest of the walk while `current_clip`/
+   `playing` state still looks completely normal. State-only checks
+   (both the original 2026-08-01 fix's own test and my own first,
+   shorter re-test) can't see this -- only sampling `_percent`'s actual
+   value over a long enough window catches it.
+
+Fixed: wrapped the phase with `fmod(..., 100.0)` in `_do_actor_move()`
+before storing/using it, so it cycles through the Walk clip repeatedly
+instead of growing past the clamp ceiling.
+
+Verified: extended `tools/smoke_plane_walk_anim.gd` to track whether
+`_percent` ever goes stuck WHILE he's still physically moving (a hold
+once he's legitimately arrived and a dialog opens is correct behavior,
+deliberately excluded) -- now `OK`, zero stuck frames across the full
+walk. `smoke_dispatch` 19/19, `smoke_shiks_bumpin_proximity.gd` (the
+other real `actor_move()` user in the corpus) still `OK`. `git status`
+zero asset deletions. Kept the `[mdl-anim]` debug logging in place,
+scoped to `PiposhWalk` only, as permanent low-volume diagnostics rather
+than ripping it out now that it's proven useful.

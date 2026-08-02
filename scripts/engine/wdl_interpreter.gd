@@ -2645,8 +2645,21 @@ func _do_actor_move(my) -> float:
 	# ("Walk", skill1);` pairing, just driven from here instead of the
 	# WDL script) so the cycle actually advances instead of holding one
 	# frame, and stops advancing the instant movement does.
+	#
+	# Wrapped via fmod, NOT left to grow unbounded: `MdlAnimator.play_cycle()`
+	# does `_percent = clampf(percent, 0.0, 100.0)` -- a clamp, not a loop --
+	# so an ever-growing phase value (as this was before) exceeds 100 after
+	# only ~100 units of walking (a small fraction of a longer walk) and
+	# then STAYS at exactly 100.0 forever: every subsequent call clamps to
+	# the same value, freezing the render on the cycle's last frame for the
+	# rest of the walk while `current_clip`/`playing` state still looks
+	# perfectly normal (state-only checks miss this -- reported live via
+	# Plane's PiposhWalk, 2026-08-02: walk animation "moves correctly but
+	# ... no walking animation", confirmed via `[mdl-anim]` debug logging
+	# showing `_percent` climbing straight past 100 without ever cycling
+	# back down).
 	if my.get_meta("wdl_auto_walk_anim", false):
-		var phase := float(my.get_meta("wdl_auto_walk_phase", 0.0)) + absf(step)
+		var phase := fmod(float(my.get_meta("wdl_auto_walk_phase", 0.0)) + absf(step), 100.0)
 		my.set_meta("wdl_auto_walk_phase", phase)
 		_do_anim_cycle(["Walk", phase], my)
 	return 0.0

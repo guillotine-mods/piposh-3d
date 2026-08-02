@@ -35,6 +35,28 @@ var _acknex_blink := false
 var _blink_hold := 0.0
 var _talk_frame_timer := 0.0
 
+## GB-2 follow-up: user reports Piposh's walk-in animation looks frozen in
+## real play even though headless tests show `_percent` genuinely advancing.
+## Temporary, tightly-scoped trace (only for the entity whose `action` meta
+## is "PiposhWalk", so this doesn't spam every other animated entity in
+## every level) to see the REAL play session's actual state transitions,
+## since headless couldn't reproduce the freeze after two separate attempts.
+var _debug_throttle := 0
+func _debug_scope() -> bool:
+	var host := get_parent()
+	return host != null and str(host.get_meta("action", "")) == "PiposhWalk"
+
+func _debug_log(msg: String) -> void:
+	if _debug_scope():
+		PiposhDebug.log_msg("mdl-anim", msg)
+
+func _debug_log_throttled(msg: String) -> void:
+	if not _debug_scope():
+		return
+	_debug_throttle += 1
+	if _debug_throttle % 30 == 1:  # ~2x/sec at 60fps
+		PiposhDebug.log_msg("mdl-anim", msg)
+
 
 func setup_from_stem(stem: String, host: Node) -> bool:
 	_mesh_instance = _find_mesh(host)
@@ -215,8 +237,10 @@ func _resolve_glb(stem: String) -> String:
 func play_cycle(clip: String, percent: float = 0.0) -> void:
 	var key := _resolve_clip(clip)
 	if key == "":
+		_debug_log("play_cycle NO-KEY clip=%s (not found in _clips, keys=%s)" % [clip, str(_clips.keys())])
 		return
 	if key == _current_clip and _playing:
+		_debug_log("play_cycle EARLY-RETURN clip=%s percent=%.2f (already current_clip=%s playing=true)" % [clip, percent, _current_clip])
 		return
 	_acknex_talk = false
 	_acknex_blink = false
@@ -226,6 +250,7 @@ func play_cycle(clip: String, percent: float = 0.0) -> void:
 	_playing = true
 	_talk_skins = _is_mouth_clip(key)
 	_apply_percent(_percent)
+	_debug_log("play_cycle APPLIED clip=%s percent=%.2f" % [clip, percent])
 
 
 func play_frame(clip: String, percent: float = 0.0) -> void:
@@ -286,6 +311,9 @@ func play_blink() -> void:
 		_blink_hold = 0.0
 		set_skin(1)
 		_apply_percent(0.0)
+		_debug_log("play_blink APPLIED -> current_clip=Stand playing=false acknex_blink=true")
+	else:
+		_debug_log("play_blink NO-OP (already acknex_blink=true, current_clip=Stand)")
 
 
 func skin_count() -> int:
@@ -340,6 +368,7 @@ func _process(delta: float) -> void:
 		return
 	# Blink(): Stand hold; rare skin 7 blink (~Acknex 1/100 per tick).
 	if _acknex_blink:
+		_debug_log_throttled("PROCESS stuck in acknex_blink hold (current_clip=%s)" % _current_clip)
 		if _blink_hold > 0.0:
 			_blink_hold -= delta
 			if _blink_hold <= 0.0:
@@ -353,6 +382,7 @@ func _process(delta: float) -> void:
 					_blink_hold = 0.35
 		return
 	if not _playing or _clip_frames.is_empty():
+		_debug_log_throttled("PROCESS not advancing: playing=%s clip_frames_empty=%s current_clip=%s" % [_playing, _clip_frames.is_empty(), _current_clip])
 		return
 	var speed := fps / maxf(float(_clip_frames.size()), 1.0)
 	_percent = fmod(_percent + delta * speed * 100.0, 100.0)
