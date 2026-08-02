@@ -4780,3 +4780,81 @@ regression: `smoke_dispatch` 19/19, `smoke_shiks_chase.gd`,
 doesn't disturb the `action LookAtMe` one already using the same
 `wdl_custom_flag1` meta key, or anything else in the corpus that reads
 flag1. `git status` zero asset deletions.
+
+## 2026-08-02 (GB-2) — Plane: Piposh's feet sunk under the cabin floor,
+## a cross-model feet-snap mismatch, not a real floor-height gap
+
+Continuing GB-2 (the earlier Krupnik-height spawn fix, commit `5540f00`,
+was confirmed correct at spawn on 2026-08-01, but the user later
+reported Piposh's feet visibly under the floor throughout the whole
+walk AND at the final stop, and confirmed via a real screenshot + a
+direct follow-up question that this is present standing still, not just
+mid-gesture). `tools/smoke_plane_walk_height.gd` (pre-existing) already
+confirmed his Y never drifts during the walk -- whatever's wrong is
+present from spawn onward, not something that develops en route.
+
+First approach tried and reverted: a real collision-geometry raycast
+straight down from Piposh's own position (new `tools/smoke_plane_floor_
+check.gd`), to measure any gap between his claimed Y and the actual
+floor. Two dead ends in a row, each caught before being trusted:
+1. A wide-range raycast (200 up / 500 down, fixed height) found a
+   suspicious ramp climbing from ~70 to ~263 as he "walked" -- looked
+   exactly like the level's real floor rising toward the cockpit, but
+   turned out to be the SAME failure mode already documented for the
+   reverted per-tick floor-snap attempt (`_spawn_entity()`'s own
+   PiposhWalk comment): snagging on overhead cabin clutter, not the
+   real floor.
+2. Narrowing to a close-range raycast (10 up / 100 down) gave a
+   suspiciously *stable* ~1.5-1.9 unit "gap" the whole walk -- until
+   logging the actual hit collider's path revealed it was
+   `.../Piposh_mdl_001/Piposh2/Piposh/Col`: Piposh's OWN body collider
+   (`_add_mesh_collision()` gives every non-passable entity, including
+   Piposh himself, a `StaticBody3D`). The "gap" was self-collision the
+   entire time, not a floor measurement. A version excluding the
+   entity's own `PhysicsBody3D` RIDs via `PhysicsRayQueryParameters3D.
+   exclude` finally found the real brush floor -- but at Y≈34 near
+   Krupnik, ~34.5 units *below* his actual Y=68.55, which would mean
+   floating too high, the opposite direction from the report. Traced
+   that gap to a second, pre-existing, already-documented issue (this
+   file's Plane2/Range-era entries and `_spawn_entity()`'s own comment:
+   `floor_y` "overshot Krupnik's real spawned height by ~24 Godot
+   units") -- raw brush-collision Y and post-pipeline entity Y aren't
+   directly comparable in this pipeline, so this reading couldn't be
+   trusted either. Also confirmed via a new one-off test (deleted after
+   use) that `direct_space_state.intersect_ray()` can't see freshly-
+   spawned colliders until at least one physics frame has elapsed, but
+   `load_level()` runs fully synchronously -- ruling out a live raycast
+   refinement inside `_snap_piposh_walk_to_krupnik()` without a larger,
+   disproportionate restructure.
+
+Abandoned raycasting entirely and went back to the `[feet-snap]` debug
+log (`_snap_mesh_feet_to_origin()`'s own per-entity output, already
+permanent instrumentation) for real, non-raycast ground truth. This
+immediately showed the real mismatch: Krupnik's models (Krup2.MDL /
+Krupnik.MDL) get a feet-to-origin correction of `min_y≈-33.4` to
+`-33.6`, while Piposh's own model (Piposh.MDL) gets `min_y≈-58.2` to
+`-58.4` -- a completely different, model-specific correction. Matching
+Piposh's height to Krupnik's (a different model's feet-snap result)
+was always going to leave him short by roughly that gap. Confirmed with
+a clean, same-model comparison: `action Pip` (Plane.wdl) is a *second*
+Piposh.MDL placement in the same room (the stand-in shown during the
+DialogChoice==3 cockpit-camera cutscene, toggled by `Pip2`), sitting at
+essentially the same raw floor height as Krupnik (WED Y=34 vs 35) --
+and its own independently-computed feet-snap height is `92.161`, not
+`68.55`. The ~24-unit gap between those two numbers was actually
+already visible in an earlier comment in this same file ("`floor_y`
+overshot Krupnik's real spawned height by ~24 Godot units even after
+matching Pip's own raw origin") but hadn't been traced to its root
+cause before.
+
+Fixed: renamed `_snap_piposh_walk_to_krupnik()` to `_snap_piposh_walk_
+to_pip()`, matching PiposhWalk's height to `action Pip`'s real,
+post-feet-snap `global_position.y` instead of Krupnik's -- keeps the
+match on the same model throughout, sidestepping the cross-model
+correction mismatch entirely rather than guessing at a numeric offset.
+
+Verified: `tools/smoke_plane_walk_height.gd` re-run -- Piposh now
+spawns and walks at Y=92.16069 (matching `Pip`'s own computed height
+exactly), still zero drift during the walk. `smoke_dispatch` 19/19.
+`git status` zero asset deletions. Real in-game confirmation from the
+user still pending -- `docs/BUGS.md`'s GB-2 row stays open until then.

@@ -103,7 +103,7 @@ func load_level(p_level_name: String) -> bool:
 			"light":
 				_spawn_light(obj)
 	if level_name == "Plane":
-		_snap_piposh_walk_to_krupnik()
+		_snap_piposh_walk_to_pip()
 	print(
 		"WmbLevelLoader: %s spawned=%d skipped=%d brush=%s floor_y=%.1f spawn=%s"
 		% [level_name, spawned, skipped, has_brush, floor_y, spawn_position]
@@ -114,24 +114,45 @@ func load_level(p_level_name: String) -> bool:
 
 ## See _spawn_entity()'s own PiposhWalk comment. Runs once, after every
 ## entity has actually finished spawning (feet-snap/scale/basis already
-## applied), so Krupnik's `global_position.y` here is his real, final
-## on-screen height -- copying it directly is the only way to guarantee
-## an exact match without reverse-engineering this pipeline's Y transform.
-func _snap_piposh_walk_to_krupnik() -> void:
+## applied).
+##
+## Originally matched PiposhWalk's height to Krupnik's real, final
+## `global_position.y` instead -- confirmed live 2026-08-01 as visually
+## correct at spawn ("should be the same height as Krupnik"). But a later
+## report (2026-08-02) found Piposh's feet visibly sunk under the cabin
+## floor throughout the whole walk and at the final stop too, even though
+## he numerically never left that Krupnik-matched height (no drift --
+## `tools/smoke_plane_walk_height.gd`). Root cause, found via the
+## `[feet-snap]` debug log (`_snap_mesh_feet_to_origin()`'s own per-entity
+## output): Krupnik's model (Krup2.MDL / Krupnik.MDL) and Piposh's own
+## model (Piposh.MDL) get very different feet-to-origin corrections --
+## Krupnik's ~-33.4 to -33.6, Piposh's own ~-58.2 to -58.4 -- so matching
+## Piposh's height to a DIFFERENT model's feet-snap result leaves him
+## ~24 units short of where his OWN model's geometry says his feet
+## should be for that same floor. Confirmed directly with a same-model
+## comparison: `action Pip` (Plane.wdl) is a second Piposh.MDL placement
+## in the same area (raw WED Y=34, essentially the same floor as
+## Krupnik's raw Y=35 -- it's the stand-in shown during the DialogChoice
+## ==3 cockpit-camera cutscene, toggled by `Pip2`), and its own
+## independently-computed feet-snap height is 92.161, not 68.55 --
+## exactly the size of the model-to-model correction gap. Matching
+## PiposhWalk to `Pip` instead of Krupnik keeps the fix on the same
+## model throughout, sidestepping the cross-model mismatch entirely.
+func _snap_piposh_walk_to_pip() -> void:
 	var piposh: Node3D = null
-	var krup: Node3D = null
+	var pip: Node3D = null
 	for node in _entities_root.get_children():
 		if not (node is Node3D):
 			continue
 		var action := str(node.get_meta("action", ""))
 		if action == "PiposhWalk":
 			piposh = node
-		elif action == "Krup" or action == "ThePlaneMovie":
-			krup = node
-	if piposh == null or krup == null:
+		elif action == "Pip":
+			pip = node
+	if piposh == null or pip == null:
 		return
 	var pos := piposh.global_position
-	pos.y = krup.global_position.y
+	pos.y = pip.global_position.y
 	piposh.global_position = pos
 
 
@@ -342,12 +363,23 @@ func _spawn_entity(obj: Dictionary) -> bool:
 	# ~24 Godot units even after matching Pip's own raw origin (reported
 	# live 2026-08-01 twice: first "lower than he should be", then, after
 	# the floor_y fix, "too high... should be the same height as
-	# Krupnik"). See `_snap_piposh_walk_to_krupnik()` (called once after
+	# Krupnik"). That ~24-unit figure turned out to be the real clue:
+	# matching Krupnik's own post-feet-snap height fixed the spawn report
+	# but a later one (2026-08-02) found Piposh still visibly sunk under
+	# the floor throughout the walk and at the stop, confirmed via the
+	# `[feet-snap]` debug log that Krupnik's model (Krup2.MDL/Krupnik.MDL)
+	# and Piposh's own model (Piposh.MDL) get very different feet-to-
+	# origin corrections (~-33.4 to -33.6 vs ~-58.2 to -58.4) -- matching
+	# a DIFFERENT model's feet-snap result left him exactly that ~24
+	# units short. See `_snap_piposh_walk_to_pip()` (called once after
 	# every entity has actually finished spawning, at the very end of
-	# `load_level()`): copies Krupnik's real, already-transformed
-	# `global_position.y` directly onto Piposh, the only way to guarantee
-	# an exact visual match without needing to reverse-engineer this
-	# pipeline's Y transform by hand.
+	# `load_level()`): copies `action Pip`'s real, already-transformed
+	# `global_position.y` onto Piposh instead -- `Pip` is the SAME
+	# Piposh.MDL model (a second placement used as the cockpit-cutscene
+	# stand-in, toggled by `Pip2`), sitting at essentially the same floor
+	# height as Krupnik (raw Y=34 vs 35), so this keeps the match on the
+	# same model throughout instead of borrowing a different one's
+	# geometry-dependent correction.
 
 	var scl := _vec3(obj.get("scale", [1, 1, 1]), Vector3.ONE)
 	# Preserve authored scales (Island=20). Only reject insane non-uniform junk.

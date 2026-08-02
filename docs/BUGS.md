@@ -28,7 +28,7 @@ QOL item from being promoted to GB (or the reverse) by moving the row.
 
 | ID | Description | Note |
 |---|---|---|
-| GB-2 | Plane: Piposh walks in on the floor *under* the plane instead of the plane's own (higher) floor. | In progress 2026-08-02. Earlier spawn-height fixes (commits `5540f00`, and a wrong first attempt before it) snapped his spawn point to match Krupnik's height, but the user's precise report is that he's walking on a floor level below the plane entirely — a different, more specific issue than a spawn-height offset. |
+| GB-2 | Plane: Piposh walks in on the floor *under* the plane instead of the plane's own (higher) floor. | Fix shipped 2026-08-02, pending in-game confirmation. Root cause: the spawn-height fix matched Piposh's height to Krupnik's, but Krupnik's model and Piposh's own model get very different feet-snap corrections (~-33 vs ~-58), so borrowing Krupnik's number left Piposh ~24 units short. Now matches `action Pip` instead (a same-model Piposh.MDL placement in the same room) — see `docs/SESSION_LOG.md` 2026-08-02 (GB-2). |
 | GB-3 | Plane2: Piposh spawns lower than the plane's surface, and the character can't move. | Fixed commit `b98470e` (two separate bugs: a wrong-deck floor snap, and a camera-authority deadlock that zeroed the native controller's movement every tick). Needs re-verification in-game before closing. |
 | GB-4 | Range: the upper HUD doesn't update when a citizen or terrorist is hit. | Not yet investigated. |
 | GB-5 | Range: after Piposh dies, animations keep playing instead of stopping, and the retry/skip buttons that should appear don't show. | Not yet investigated. |
@@ -58,4 +58,4 @@ QOL item from being promoted to GB (or the reverse) by moving the row.
 
 ---
 
-_Last edited: 2026-08-02 (GB-2 in progress)._
+_Last edited: 2026-08-02 (GB-2 fix shipped, pending confirmation)._
