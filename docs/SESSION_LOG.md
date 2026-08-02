@@ -4981,3 +4981,101 @@ confirms the FP proxy's own mesh stays hidden throughout. `smoke_dispatch`
 19/19, `smoke_shiks_pipi_stay_put.gd` and `smoke_plane2_all_goals.gd`
 (other real users of the same `_set_field()` "invisible" case) still
 `OK`. `git status` zero asset deletions.
+
+## 2026-08-03 (GB-4) — Range: hit-count HUD never updates (bmap values
+## silently evaluated to 0.0)
+
+User: "shooting a terrorist or civilian doesn't update the hurt count,
+so we can't win." Range's HUD is a real Acknex `PANEL` system (Terr1-15/
+Civ1-5 icon panels, `UpdatePanel()` swapping each one's `bmap` from
+`bTerr`/`bCiv` to `bTerrHit`/`bCivHit` as the `Terrorists`/`Civilians`
+globals drop) -- confirmed this port's PANEL support (`_ensure_panels_
+built`/`_build_panel`) already exists and `_set_panel_field()`'s "bmap"
+case already resolves and applies textures correctly, so the gap wasn't
+obviously in the panel-rendering code itself.
+
+Root-caused by direct isolation, not guessing: new `tools/smoke_range_
+hud_check.gd` forces one Terrorist entity into a hittable state and
+calls `action TargetHit` directly (bypassing aim/bullet-travel, already
+covered by the pre-existing `smoke_range_shoot.gd`), then checks both
+the `Terrorists` counter AND the panel's own rendered texture. First
+attempt gave a false alarm (test bug, not a game bug): `action
+Terrorist`'s own body sets `my.Type = typeCivilian` unconditionally at
+spawn and only randomly re-rolls it to `typeTerrorist` inside its own
+"pop up" RNG logic -- setting only `my.Pop` (not `my.Type`) meant
+`action TargetHit` correctly decremented `Civilians`, not `Terrorists`,
+exactly as authored. Corrected the test to set both fields (matching
+what a real pop-up does), which surfaced the real bug: the counter DID
+decrement correctly, but `Terr15.bmap = bTerrHit;` (the visual swap)
+silently did nothing. Direct one-line isolation (`_set_field({id:Terr15},
+"bmap", <value of bTerrHit>, null)`) showed `bTerrHit` itself evaluated
+to `0.0`, not a usable bmap name.
+
+`_get_var()`'s fallback chain already had a fix for the identical shape
+of gap for `sound` declarations (2026-07-30, `docs/CONTRACT.md` §5) but
+never got the equivalent for `bmap` declarations -- `_bmaps` was
+populated by `_merge_ast()` but never consulted by `_get_var()`, so
+every bare reference to a declared bmap name AS A VALUE (not as a
+`panel.bmap = X` field name being written, which already worked) fell
+through to the generic "unresolved identifier" 0.0 default. Wide blast
+radius: 38 corpus `.wdl` files declare `bmap` variables; this wasn't
+Range-specific.
+
+Fixed: added `_bmaps_lower` (same case-insensitive-index shape as
+`_sounds_lower`/`_actions_lower`/`_globals_lower`) and `_resolve_bmap()`,
+consulted in `_get_var()`'s fallback chain right after the sound check.
+Returns the bmap's canonical NAME (not its file, unlike the sound case)
+since `_resolve_bmap_texture()` looks its argument up by name.
+
+Verified: `smoke_range_hud_check.gd` now `OK` -- Terrorists decrements
+correctly AND Terr15's real rendered texture switches to Hit2.png.
+`smoke_dispatch` 19/19, `smoke_range_panels.gd`, `smoke_range_shoot.gd`
+still `OK`. `git status` zero asset deletions.
+
+## 2026-08-03 (GB-5) — Range: death-screen buttons invisible (never
+## drawn); "animation keeps playing" root-caused, not yet fixed
+
+Same report continued: "after Piposh dies... the retry/skip buttons
+that should appear don't show." `smoke_range_shoot.gd` already confirmed
+`pRIP` (the death-screen panel) becomes visible on `Health<=0`, so the
+panel container itself wasn't the gap.
+
+New `tools/smoke_range_rip_check.gd` checked pRIP's own BUTTON children
+(`fRIP1` "retry"/`fRIP2` "map", from `IO.wdl`'s shared `panel pRIP {
+BUTTON 020,380,bRIPb1,bRIPb3,bRIPb1,fRIP1,NULL,NULL; ... }`) directly:
+both existed as real Control nodes, correctly positioned, `visible=true`
+-- but neither had any texture at all. Root cause in `_build_panel_
+button()`: it resolves the button's icon texture via `_resolve_bmap_
+texture()` ONLY to read its `.size` for the click-zone dimensions --
+the resolved `Texture2D` is then discarded, never attached to any
+child node. Every panel BUTTON in the corpus (Range's own `pSkip`
+included) was a real, correctly-placed, correctly-clickable hotspot
+with nothing ever drawn on it.
+
+Fixed: `_build_panel_button()` now adds a child `TextureRect` showing
+the resolved icon, mirroring `_build_panel()`'s own existing background-
+bmap `TextureRect` pattern exactly.
+
+Verified: `smoke_range_rip_check.gd` -- both pRIP buttons now report
+`has_texture=true`. `smoke_dispatch` 19/19, `smoke_range_panels.gd`
+(pSkip's own button) still `OK`. `git status` zero asset deletions.
+
+**Not yet fixed, root cause only:** "animations keep playing in the
+background" instead of the game pausing on death. Grepped the corpus:
+nothing outside `Restart()` itself ever reads the `Death` global (unlike
+the `MoviePlaying` gate, e.g. `while (MoviePlaying==1) {wait(1);}`,
+which both `action CamTarget` and `action Terrorist` already use and
+this port already handles correctly). The real engine's own `ShowRIP()`
+calls `freeze_map bRIPSlot,2,0;` right before showing the panel --
+`freeze_map` is a real Acknex builtin (screenshot-into-a-bmap-slot, also
+used for save-file thumbnails elsewhere in `IO.wdl`) that this port has
+never implemented, and it's the most likely place the original engine's
+"the world visibly stops" effect actually came from. Deliberately not
+implemented yet: a literal screenshot-freeze is one option, but the
+user's actual ask is "stop the gameplay coroutines, let me only use the
+death-screen buttons" -- doing that generically (pausing whichever
+coroutines are running when a modal-style panel like `pRIP` becomes
+visible) is a real, separate, more architecturally-invasive change than
+today's other fixes, and needs to be scoped carefully so it doesn't
+also affect `freeze_map`'s OTHER, brief/non-pausing call sites
+(save-slot thumbnails) if that mechanism is ever generalized further.

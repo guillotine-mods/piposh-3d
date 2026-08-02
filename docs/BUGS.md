@@ -29,8 +29,8 @@ QOL item from being promoted to GB (or the reverse) by moving the row.
 | ID | Description | Note |
 |---|---|---|
 | GB-3 | Plane2: Piposh spawns lower than the plane's surface, and the character can't move. | Fixed commit `b98470e` (two separate bugs: a wrong-deck floor snap, and a camera-authority deadlock that zeroed the native controller's movement every tick). Needs re-verification in-game before closing. |
-| GB-4 | Range: the upper HUD doesn't update when a citizen or terrorist is hit. | Not yet investigated. |
-| GB-5 | Range: after Piposh dies, animations keep playing instead of stopping, and the retry/skip buttons that should appear don't show. | Not yet investigated. |
+| GB-4 | Range: the upper HUD doesn't update when a citizen or terrorist is hit. | Fix shipped 2026-08-03, pending in-game confirmation. Root cause: `bmap`-declared identifiers (e.g. `bTerrHit`) evaluated to `0.0` when read as a value (only sound declarations had this fallback, not bmaps) — every `panel.bmap = X;` write across the whole corpus was a silent no-op. See `docs/SESSION_LOG.md` 2026-08-03 (GB-4). |
+| GB-5 | Range: after Piposh dies, animations keep playing instead of stopping, and the retry/skip buttons that should appear don't show. | Partially fixed 2026-08-03: the retry/map buttons on the death screen are now visible (they were real, clickable hotspots with no icon ever drawn — `_build_panel_button()` computed the texture only to size the click zone, never displayed it; same gap likely affected every panel BUTTON in the corpus, e.g. Range's own pSkip). "Animations keep playing in the background" still open — root cause found (the original engine's `freeze_map` builtin, which pauses/freezes the scene on death, isn't implemented; nothing else in the WDL source gates on `Death`) but not yet fixed, since a real fix means pausing live gameplay coroutines generically and needs to be scoped carefully. See `docs/SESSION_LOG.md` 2026-08-03 (GB-5). |
 
 ## Quality of life
 
@@ -57,4 +57,4 @@ QOL item from being promoted to GB (or the reverse) by moving the row.
 
 ---
 
-_Last edited: 2026-08-02 (GB-2 and GB-6 confirmed fixed and closed)._
+_Last edited: 2026-08-03 (GB-4 fix shipped; GB-5 partially fixed, "animations keep playing" still open)._

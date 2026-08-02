@@ -23,6 +23,7 @@ var _actions_lower: Dictionary = {}  # lowercase name -> canonical name, see _re
 var _sounds: Dictionary = {}
 var _sounds_lower: Dictionary = {}  # lowercase name -> canonical name, same pattern as _actions_lower
 var _bmaps: Dictionary = {}  # bmap resource name -> file (e.g. "Hit1.pcx"), see _merge_ast()
+var _bmaps_lower: Dictionary = {}  # lowercase name -> canonical name, same pattern as _sounds_lower
 ## Raw parsed panel declarations (tools/parse_wdl.py's `panels` AST
 ## section) keyed by name, merged in setup() the same way functions/
 ## actions/etc. are -- see _merge_ast(). Turned into real Control nodes
@@ -270,6 +271,7 @@ func _merge_ast(ast: Dictionary, _ctx: Dictionary) -> void:
 	for k in ast.get("bmaps", {}):
 		if not _bmaps.has(k):
 			_bmaps[k] = ast["bmaps"][k]
+			_index_symbol(_bmaps_lower, String(k))
 	# Panel *names* are effectively global too (Dialog.wdl's own panels,
 	# Range's GUI/Terr*/Civ*, IO.wdl's pRIP/pSkip/pCongrat-shaped screens
 	# all get `include`d the same way functions/actions do) -- same
@@ -316,6 +318,10 @@ func _resolve_function(name: String) -> String:
 
 func _resolve_sound(name: String) -> String:
 	return _resolve_symbol(_sounds, _sounds_lower, name)
+
+
+func _resolve_bmap(name: String) -> String:
+	return _resolve_symbol(_bmaps, _bmaps_lower, name)
 
 
 # ---------------------------------------------------------------------------
@@ -445,6 +451,19 @@ func _build_panel_button(root: Control, args: Array) -> void:
 	btn.set_meta("wdl_onclick", onclick)
 	btn.gui_input.connect(_on_panel_button_input.bind(btn))
 	root.add_child(btn)
+	# GB-5 (2026-08-03, Range): `tex` was resolved only to size the click
+	# zone -- never actually drawn, so every panel BUTTON (pRIP's retry/
+	# map buttons, pSkip's skip button, ...) was a real, correctly-placed,
+	# correctly-clickable hotspot with NOTHING visibly rendered on it.
+	# Reported live as "the retry/skip buttons that should appear don't
+	# show". Mirrors _build_panel()'s own background-bmap TextureRect.
+	if tex != null:
+		var tr := TextureRect.new()
+		tr.name = "Icon"
+		tr.texture = tex
+		tr.size = tex.get_size()
+		tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		btn.add_child(tr)
 
 
 func _on_panel_button_input(event: InputEvent, btn: Control) -> void:
@@ -1232,6 +1251,23 @@ func _get_var(name: String, my) -> Variant:
 	var sound_canonical := _resolve_sound(name)
 	if sound_canonical != "":
 		return str(_sounds[sound_canonical])
+	# GB-4 (2026-08-03, Range): `bmap bTerrHit = <Hit2.pcx>;` declarations
+	# were parsed into `_bmaps` but never read here, same shape of gap as
+	# the `_sounds` one above -- every reference to a declared bmap name
+	# as a VALUE (not a `panel.bmap = X` field name, which _set_panel_field
+	# already handles fine, but the right-hand side X itself) silently
+	# evaluated to 0.0. Confirmed live: Range's `UpdatePanel()` does
+	# `Terr15.bmap = bTerrHit;` on every hit, but `bTerrHit` evaluated to
+	# 0.0, so `_resolve_bmap_texture(str(0.0))` found no texture named
+	# "0" and the write was a silent no-op -- the hit-count HUD icons
+	# never visually changed even though the underlying Terrorists/
+	# Civilians counters (and win/lose logic reading them) were correct
+	# the whole time. Returns the canonical bmap NAME (not the file, unlike
+	# the sound case above) since `_resolve_bmap_texture()` looks its
+	# argument up by name, not by file.
+	var bmap_canonical := _resolve_bmap(name)
+	if bmap_canonical != "":
+		return bmap_canonical
 	return 0.0
 
 
