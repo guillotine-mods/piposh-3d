@@ -877,6 +877,48 @@ func _scan_for_calls(n: Variant, names: Array) -> bool:
 	return false
 
 
+## Same shape as _scan_for_calls() but for a bare identifier reference
+## (`{"t":"id","name":X}`, e.g. `mickey` in `my.pan = my.pan - mickey.x /
+## SEN;` -- parsed as a field access whose `obj` is an "id" node, not a
+## "call") anywhere in the AST, not just as a function-call target.
+func _scan_for_identifier(n: Variant, name: String) -> bool:
+	if n is Dictionary:
+		if str(n.get("t", "")) == "id" and str(n.get("name", "")).to_lower() == name:
+			return true
+		for key in n.keys():
+			if _scan_for_identifier(n[key], name):
+				return true
+	elif n is Array:
+		for item in n:
+			if _scan_for_identifier(item, name):
+				return true
+	return false
+
+
+## GB-7 (2026-08-04, Range): "shots don't land where crosshair points."
+## `_enable_first_person()` is the only place `Input.mouse_mode` gets
+## captured (hidden + locked) -- but Range's own aiming is entirely
+## script-driven (`action CamTarget`: `my.pan = my.pan - mickey.x/SEN;
+## camera.pan = my.pan;`), a scripted-camera level, not a first-person
+## `player_walk*` one, so it never goes through that path. The OS cursor
+## stayed visible and free-roaming the whole time -- camera rotation is
+## driven by raw mouse DELTA (mickey), completely independent of the
+## cursor's own screen position, so a player naturally aiming with their
+## visible cursor (the only on-screen reference they have, since there's
+## no rendered crosshair sprite either -- Acknex's own `pan_cross_show()`
+## isn't implemented) would see shots consistently land away from it.
+## Used by level_runner.gd to decide whether a scripted-camera level
+## should ALSO capture the mouse, the same way first-person levels do.
+func uses_mickey_aiming() -> bool:
+	for a in _actions.values():
+		if _scan_for_identifier(a.get("body", {}), "mickey"):
+			return true
+	for f in _functions.values():
+		if _scan_for_identifier(f.get("body", {}), "mickey"):
+			return true
+	return false
+
+
 func _run_coroutine(body: Dictionary, entity) -> void:
 	exec_block(body, entity)
 

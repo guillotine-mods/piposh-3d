@@ -106,6 +106,17 @@ func _ready() -> void:
 		_disable_player_controller()
 		_script_cam.current = true
 		_director.ensure_scripted_view()
+		# GB-7 (2026-08-04, Range): scripted-camera levels that aim via
+		# raw mouse delta (`action CamTarget`'s own `mickey.x/y`, e.g.
+		# Range's shooting gallery) need the same captured/hidden cursor
+		# _enable_first_person() already gives real FP levels -- otherwise
+		# the OS cursor sits visible and free-roaming, giving the player a
+		# misleading "aim point" that has nothing to do with where the
+		# camera (and therefore shots) actually point. See
+		# WdlInterpreter.uses_mickey_aiming()'s own comment.
+		var interp: Node = _director.get("_wdl_interp")
+		if interp != null and bool(interp.call("uses_mickey_aiming")):
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	else:
 		_enable_free_player(loader.spawn_position)
 

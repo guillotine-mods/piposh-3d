@@ -5196,3 +5196,49 @@ more like a sensitivity/feel issue than a discrete bug from static
 review alone, and needs a sharper repro (does the crosshair visually
 line up with where shots land? too fast/slow/inverted?) before guessing
 at a numeric tune.
+
+## 2026-08-04 (GB-7) — Range: shots miss because the OS cursor is
+## visible and disconnected from the actual aim direction
+
+Asked the user to disambiguate: "shots don't land where crosshair
+points" (a real aim mismatch) vs. a sensitivity/feel issue. Confirmed
+the former.
+
+Traced it, not guessed: `_enable_first_person()` (`level_runner.gd`) is
+the ONLY place `Input.mouse_mode` gets set to `MOUSE_MODE_CAPTURED`
+(hidden + locked). Range doesn't go through that path -- `action
+CamTarget` drives the camera entirely from WDL script (`my.pan = my.pan
+- mickey.x/SEN; camera.pan = my.pan;`), so it's a scripted-camera level,
+not a first-person `player_walk*` one. The OS cursor therefore stays
+VISIBLE and free-roaming for the whole level, while camera rotation
+(and therefore where bullets fly, `CreateSpark()`'s `vec_rotate
+(shot_speed, my_angle)` using `player.pan/tilt`) is driven purely by
+raw mouse DELTA -- completely independent of the cursor's own screen
+position. A player naturally treats their visible cursor as "where I'm
+aiming" (there's no rendered crosshair sprite either -- confirmed
+Acknex's own `pan_cross_show()`/`cross_pos` mechanism isn't referenced
+anywhere in this port), so shots would consistently land away from it
+once the cursor drifted from center.
+
+Checked corpus-wide: `Desert.wdl`, `Final.wdl`, `Golf.wdl`, `Town.wdl`
+also use `mickey.x/y` for the same scripted mouse-look-aiming idiom, not
+just Range -- confirmed this needed a generic fix, not a Range-specific
+patch.
+
+Fixed: new `WdlInterpreter.uses_mickey_aiming()` (recursively scans
+every parsed action/function body, mirroring `_scan_for_calls()`'s own
+shape but for a bare identifier reference rather than a call target) --
+`level_runner.gd`'s scripted-camera branch now captures the mouse the
+same way `_enable_first_person()` already does, whenever this returns
+true.
+
+Verified: `Input.mouse_mode` assignment is a confirmed no-op in headless
+mode (no real window/cursor to capture -- checked directly, `before=0
+after=0` even right after assigning `CAPTURED`), so the mode-switch
+itself can't be verified headlessly. `tools/smoke_range_mouse_capture.gd`
+instead verifies the DETECTION logic that gates it: `uses_mickey_aiming()`
+returns true for Range and false for Start (negative control, so this
+isn't trivially always-true). `smoke_dispatch` 19/19, all five other
+Range regression tests still `OK`. `git status` zero asset deletions.
+Real confirmation that shots now land on-crosshair needs the user's own
+in-game check, same as the mouse-mode switch itself.
