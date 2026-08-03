@@ -2536,6 +2536,26 @@ func _register_builtins() -> void:
 		# (sound loop / camera reset / frozen entities) -- see
 		# docs/SESSION_LOG.md 2026-07-28.
 		"load_level": func(_a, _my): return 0.0,
+		# GB-5 continued (2026-08-03, Range): the REAL corpus spelling is
+		# `level_load(<X.WMB>)`, not `load_level` (the stub just above --
+		# registered under the reversed name, so it never actually matched
+		# any real call; left alone, harmless either way). Called by every
+		# level's own main() at normal startup too (WmbLevelLoader already
+		# loaded the level's geometry before main() ever runs, so a no-op
+		# is correct there), but Range's `fRIP1` ("retry") re-invokes
+		# main() a second time expecting a REAL reset -- and nothing else
+		# does one: `Death` (gates Restart()'s own guard) is set to 0 only
+		# once, at action CamTarget's initial coroutine start, never again,
+		# so a second death never showed the RIP screen at all ("doesn't
+		# let you die again even though you got fully hit"). Reset every
+		# declared global back to its initial value, mirroring setup()'s
+		# own one-time init loop exactly -- safe for the normal-startup
+		# call too (main()'s own subsequent explicit assignments, e.g.
+		# `Health=609;`, simply overwrite the same correct values again
+		# right after). Entity-level state (target positions, Pop/Dying/
+		# GoingUp flags) is NOT reset here -- a real fix for that is a
+		# separate, larger piece; flagged in BUGS.md, not guessed at here.
+		"level_load": func(_a, _my): return _do_level_load(),
 		"remove": func(a, my): return _do_remove(a, my),
 		"create": func(a, my): return _do_create(a, my),
 		"morph": func(a, my): return _do_morph(a, my),
@@ -3276,4 +3296,21 @@ func _do_run(a: Array) -> float:
 	# either coroutine's own check to see it) because Run() hadn't
 	# actually stopped anything yet when it was first (correctly) called.
 	_running = false
+	return 0.0
+
+
+## See _register_builtins()'s "level_load" comment.
+func _do_level_load() -> float:
+	for g in _globals.values():
+		g["value"] = _eval_init(g.get("init"), null, g.get("kind", "var"))
+	# setup()'s own one-time init is TWO steps, not one: the globals-init
+	# loop above, THEN _top_level_stmts (bare assignments like Range's own
+	# `on_mouse_left = Fire;` -- an event-handler binding, not a `var`
+	# declaration, so it lives in `_globals` with `init=null` and no
+	# record of its real value). Replaying only the first step reset it
+	# to `_default_for("var")` (0.0) and never restored it -- confirmed
+	# live: firing stopped working entirely after a retry
+	# (smoke_range_shoot.gd, "no Spark bullet entity found after firing").
+	for stmt in _top_level_stmts:
+		_exec_stmt_sync(stmt, null)
 	return 0.0

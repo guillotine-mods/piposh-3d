@@ -5122,3 +5122,77 @@ interpreter, so full-corpus dispatch regression mattered here more than
 usual), `smoke_range_panels.gd`, `smoke_range_shoot.gd`, `smoke_range_
 hud_check.gd`, `smoke_range_rip_check.gd` all still clean. `git status`
 zero asset deletions.
+
+## 2026-08-03 (GB-5 continued) — Range: retry doesn't reset the level,
+## and a second death never shows RIP again
+
+User confirmed the previous two fixes (bmap HUD, button icons, death
+freeze) but reported two more, on the retry flow specifically: "retry
+doesn't refresh the game, it continues un-freezed" and "after retrying,
+the game doesn't let you die again even though you got fully hit."
+
+Traced the "can't die again" report first, since it's concrete and
+directly testable: grepped the whole corpus for `Death = 0` -- found
+only two hits, the declaration (`var Death = 0;`) and ONE reset, inside
+`action CamTarget`'s own coroutine body, which only runs once, at level
+start. `Restart()`'s own guard (`if (Death==0) { Death=1; ShowRIP(); }`)
+is therefore permanently blocked after the first death, for the rest of
+that interpreter instance's lifetime -- explains both reports at once:
+retry (`fRIP1 { HideRIP(); main(); }`) unfreezes (`HideRIP()` correctly
+un-toggles `pRIP.visible`) but `Death` stays 1 forever, so nothing else
+about the level actually resets, and a second `Health<=0`/`Civilians<1`
+never fires `Restart()` again.
+
+Root cause: the real Acknex builtin is `level_load(<X.WMB>)`, called by
+literally every level's own `main()` (confirmed via corpus grep, 17
+files) as its own "(re)load my map" step -- in this port `WmbLevelLoader`
+already loads the level's geometry before `main()` ever runs, so a
+no-op is correct for that NORMAL first call. But Range's retry path
+calls `main()` a SECOND time expecting a real reset, and nothing
+provided one. Found an existing, already-reasoned no-op stub for this
+exact builtin (`_register_builtins()`, dated 2026-07-28) -- but
+registered under the reversed key `"load_level"`, not the real corpus
+spelling `"level_load"`, so it silently never matched any actual call
+this whole time (left it in place, harmless dead code either way, and
+registered the correct key fresh).
+
+Implemented `level_load()` for real: reset every declared global back
+to its initial value, mirroring `setup()`'s own one-time init loop
+exactly. Safe for the normal first-call case too, since `main()`'s own
+explicit follow-up assignments (`Health=609;` etc.) simply overwrite the
+same correct values again right after.
+
+**Caught a real regression in this fix before shipping, not after:**
+first version only replayed HALF of `setup()`'s own init sequence (the
+globals-init loop), and `smoke_range_shoot.gd` -- unrelated, pre-existing,
+not touched this session -- started failing 3/3 runs ("no Spark bullet
+entity found after firing"). Root-caused, not guessed: Range's own
+`on_mouse_left = Fire;` is a bare top-level assignment, not a `var`
+declaration, so it lives in `_globals` with `init=null` and no record of
+its real value -- `_eval_init(null, ...)` returns `_default_for("var")`
+(0.0), so my reset silently un-bound the click-to-fire handler.
+`setup()`'s real sequence is TWO steps (globals-init, THEN
+`_top_level_stmts`), and I'd only replayed the first. Fixed by replaying
+both.
+
+Verified: new `tools/smoke_range_retry_check.gd` -- first death shows
+RIP screen and freezes; simulated clicking "retry" for real
+(`invoke_event(null, "fRIP1")`) shows `Death`/`Health`/`Terrorists`/
+`Civilians`/`frozen` all correctly reset; a second forced death shows
+RIP again. `smoke_range_shoot.gd` re-confirmed fixed (Spark bullet found
+again, hits register). `smoke_dispatch` 19/19 (this touches `level_load`,
+called by 17 other levels' own `main()` too), `smoke_range_panels.gd`,
+`smoke_range_hud_check.gd`, `smoke_range_death_freeze.gd` all still
+`OK`. `git status` zero asset deletions.
+
+Also reported: "aiming and shooting works but it's not highly accurate,
+and the mouse and aim are a bit confusing to use." Checked `vec_rotate()`
+(the bullet's own spawn-direction math, `CreateSpark()`'s `vec_rotate
+(shot_speed, my_angle)` using `player.pan/tilt/roll`) against
+`_acknex_entity_basis()` -- the same shared basis function already used
+and validated elsewhere for camera/entity orientation -- found no
+obvious coordinate-mismatch bug. Logged as GB-7, not fixed: this reads
+more like a sensitivity/feel issue than a discrete bug from static
+review alone, and needs a sharper repro (does the crosshair visually
+line up with where shots land? too fast/slow/inverted?) before guessing
+at a numeric tune.
