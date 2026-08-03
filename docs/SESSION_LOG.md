@@ -5079,3 +5079,46 @@ visible) is a real, separate, more architecturally-invasive change than
 today's other fixes, and needs to be scoped carefully so it doesn't
 also affect `freeze_map`'s OTHER, brief/non-pausing call sites
 (save-slot thumbnails) if that mechanism is ever generalized further.
+
+## 2026-08-03 (GB-5 continued) — Range: gameplay now actually pauses on
+## death
+
+Asked the user directly how "animations keep playing" should behave,
+given the real fix (pausing live gameplay coroutines) is architecturally
+bigger than today's other changes and the corpus-wide `freeze_map`
+builtin's OTHER call sites (save-slot thumbnails, `IO.wdl`) are brief
+and clearly NOT meant to pause anything -- didn't want to guess and risk
+a wrong-scope fix. Chose "freeze everything": once the death screen
+shows, all Range gameplay should stop, leaving only the retry/map
+buttons interactive.
+
+Implemented at the one universal hook point virtually every coroutine
+in every level already passes through every tick: `exec_stmt()`'s async
+"wait"/"waitt" case. Added `_frozen: bool`, toggled by `_set_panel_field
+()`'s "visible" case specifically when the panel is the shared `Panel_
+pRIP` (IO.wdl's death-screen panel, not Range-specific -- toggled by the
+SAME `ShowRIP()`/`HideRIP()` calls already driving the panel's own
+visibility, so no new WDL-side hook was needed). While frozen, every
+`wait()` call blocks (spins on `process_frame`) before its own normal
+countdown runs, so each coroutine's progress halts exactly where it was
+and resumes exactly there once unfrozen -- no separate resume-tracking
+needed. Button clicks are untouched: they're Godot `Control.gui_input`
+signals (`_on_panel_button_input`), entirely independent of WDL
+coroutine scheduling, so the death-screen buttons stay clickable while
+everything else is frozen. The synchronous exec path (`_exec_stmt_sync`,
+used for mid-expression calls that can't truly suspend) already treats
+`wait()` as an unsupported no-op with its own warning -- untouched,
+correctly out of scope.
+
+Verified: new `tools/smoke_range_death_freeze.gd` forces a target into
+a live "going up" animation (its own `my.z` actively rising, a real,
+continuously-changing value to check against), confirms `_frozen`
+flips true on `Health=0` and z genuinely stops changing across 60
+further frames, then simulates the "retry" button's own real effect
+(`pRIP.visible = off`, matching `HideRIP()`) and confirms `_frozen`
+flips back and z resumes changing. `smoke_dispatch` 19/19 (this hook
+sits in the hottest, most universal per-tick path in the whole
+interpreter, so full-corpus dispatch regression mattered here more than
+usual), `smoke_range_panels.gd`, `smoke_range_shoot.gd`, `smoke_range_
+hud_check.gd`, `smoke_range_rip_check.gd` all still clean. `git status`
+zero asset deletions.

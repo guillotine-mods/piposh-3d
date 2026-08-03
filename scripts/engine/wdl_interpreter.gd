@@ -45,6 +45,14 @@ var _top_level_stmts: Array = []
 ## starts with one, e.g. `wait(3);`) is skipped, not any later wait()
 ## call anywhere else.
 var _skip_next_main_wait := false
+## GB-5 (2026-08-03, Range): set/cleared by _set_panel_field()'s "visible"
+## case whenever the shared IO.wdl `pRIP` death-screen panel toggles --
+## see its own comment. Consumed by exec_stmt()'s "wait"/"waitt" case,
+## the one yield point virtually every coroutine passes through every
+## tick, so every entity's own progress genuinely halts while frozen
+## (button clicks are Godot Control signals, entirely independent of WDL
+## coroutine scheduling, so the death-screen buttons stay clickable).
+var _frozen := false
 var _loader: WmbLevelLoader
 var _camera: Camera3D
 var _hud: GameHud
@@ -575,6 +583,19 @@ func _set_panel_field(node: Control, low: String, value: Variant) -> void:
 	match low:
 		"visible":
 			node.visible = _truthy(value)
+			# GB-5 (2026-08-03, Range): "animations keep playing in the
+			# background" after death. The real engine's own `ShowRIP()`
+			# calls `freeze_map` right before showing pRIP -- unimplemented
+			# here (a screenshot-into-a-bmap builtin also used for save-file
+			# thumbnails elsewhere in IO.wdl), and nothing in the WDL source
+			# reads the `Death` global outside `Restart()` itself, so no
+			# other coroutine ever knew to stop. `pRIP` is IO.wdl's shared,
+			# corpus-wide death-screen panel (not Range-specific), so this
+			# generically pauses gameplay for any level using it, mirroring
+			# `HideRIP()`'s existing `pRIP.visible = off;` for the resume
+			# side. See exec_stmt()'s "wait"/"waitt" case for the other half.
+			if String(node.name).to_lower() == "panel_prip":
+				_frozen = _truthy(value)
 		"pos_x":
 			node.position.x = _to_num(value)
 		"pos_y":
@@ -1048,6 +1069,12 @@ func exec_stmt(stmt: Dictionary, my) -> Variant:
 				# main() itself, is untouched.
 				_skip_next_main_wait = false
 				n = 1
+			# GB-5 (2026-08-03, Range): see _frozen's own declaration and
+			# _set_panel_field()'s "visible" case. Every coroutine's own
+			# progress genuinely halts here while the death screen is up --
+			# resumes exactly where it left off once unfrozen.
+			while _frozen and _running:
+				await get_tree().process_frame
 			for i in maxi(n, 1):
 				await get_tree().process_frame
 				if not _running:
