@@ -420,6 +420,21 @@ func _spawn_entity(obj: Dictionary) -> bool:
 	root.set_meta("pan", pan_a)
 	root.set_meta("tilt", tilt_a)
 	root.set_meta("roll", roll_a)
+	# GB-7 continued (2026-08-04, Range): "on retry we should restart the
+	# position of the cursor as well." `pan`/`tilt`/`roll` above are the
+	# LIVE, mutable per-tick values (Range's own `action CamTarget`
+	# accumulates into them every frame, `my.pan = my.pan - mickey.x/
+	# SEN;`) -- once that coroutine's spawn-time value is overwritten,
+	# the WED-authored starting orientation is gone. Its own coroutine
+	# never restarts on a WDL-level "retry" (only `main()` gets called
+	# again, not every entity's own action), so nothing else ever
+	# reset the player's look direction back to where the level actually
+	# started them facing. Preserved separately, immutable, so
+	# WdlInterpreter._do_level_load() (or anything else wanting a real
+	# "reset to spawn facing") has a real value to reset to.
+	root.set_meta("wdl_spawn_pan", pan_a)
+	root.set_meta("wdl_spawn_tilt", tilt_a)
+	root.set_meta("wdl_spawn_roll", roll_a)
 	# WED origin + local scale, then ang_to_matrix orientation (1:1 with A5).
 	root.transform = Transform3D(
 		_acknex_entity_basis(pan_a, tilt_a, roll_a) * Basis.from_scale(scl),

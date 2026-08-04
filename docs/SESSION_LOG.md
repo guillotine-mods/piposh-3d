@@ -5288,3 +5288,107 @@ retry via `invoke_event(null, "fRIP1")`, then forces a Terrorist into a
 hittable state and confirms `Terrorists` actually decrements afterward
 (15 -> 14). `smoke_dispatch` 19/19, all seven other Range regression
 tests still `OK`. `git status` zero asset deletions.
+
+## 2026-08-04 (GB-7 continued) — cursor-reset on retry, skip-button
+## layer, and the actual root cause of "aim is higher than the gun"
+
+User reported three more issues after the previous GB-7 mouse-capture
+fix: (1) retrying should reset the cursor/camera position, not carry
+over wherever it drifted; (2) shots still land higher than the crosshair
+-- "it's not a sensitivity issue, it genuinely misses"; (3) the pSkip
+button that appears after 3 losses should be clickable and rendered on
+top of the other HUD panels.
+
+**(1) Cursor/aim not reset on retry.** `WmbLevelLoader` already records
+each spawned entity's authored `pan`/`tilt`/`roll` into live `pan`/
+`tilt`/`roll` meta, but that meta is mutated in place every tick by
+`action CamTarget`, so by the time of a retry the original spawn
+orientation was already gone. Fixed by recording it a second time, under
+separate immutable keys (`wdl_spawn_pan/tilt/roll`) that nothing else
+ever writes to, and having `_do_level_load()` (GB-5's retry hook) look
+up the `player` WDL global (bound by `action CamTarget`'s own `player =
+my;` first line) and reset its live pan/tilt/roll back to those spawn
+values on every retry.
+
+**(3) pSkip not clickable / not on top.** `_build_panel()` computed
+`root.z_index` from the panel's own `layer` field, defaulting to `0`
+when absent -- same default every other HUD panel gets, so a
+button-bearing panel with no explicit `layer` had no guarantee of being
+above the panels it's meant to sit on top of. Fixed by defaulting any
+panel that declares at least one `BUTTON` to z-index 50 instead of 0
+when `layer` is unset (explicit `layer` values still win either way).
+
+**(2) The real aim bug -- multi-round investigation.** Went through
+several hypotheses before finding it, each ruled out by direct evidence
+rather than guesswork, because the previous mouse-capture fix (a real
+bug) wasn't enough to explain "consistently high," which pointed at
+something systematic in the math rather than input handling:
+  1. Camera-vs-bullet math mismatch: `_gs_view_forward(pan,tilt)` (what
+     renders) and `_acknex_entity_basis(pan,tilt,roll).x` (what
+     `vec_rotate` uses for the bullet direction) are two separate
+     implementations -- hand-derived both formulas algebraically and
+     confirmed they reduce to the exact same forward vector
+     `(cos(p)cos(t), sin(t), -sin(p)cos(t))` for identical pan/tilt/
+     zero-roll input. Ruled out.
+  2. `SEN` (Range's own mouse-sensitivity divisor) being 0, producing a
+     NaN/Inf tilt delta: grepped `Range.wdl`, `SEN=3`, a real non-zero
+     value. Ruled out.
+  3. `_binop`'s `/` operator silently returning `0.0` on division by
+     zero (rather than `Inf`): confirmed that IS the actual behavior,
+     but moot since `SEN` isn't zero. Ruled out as the trigger, kept in
+     mind as a real (if unrelated) behavior worth remembering.
+  4. AST parse shape: inspected the converted `Range.json` AST directly
+     for `my.tilt = my.tilt - mickey.y/SEN;` and confirmed it parses
+     with correct operator precedence, identical in shape to the
+     (working) `pan` assignment on the line above it. Ruled out.
+
+Built `tools/smoke_range_aim_check.gd` to stop guessing from code
+reading alone: mathematically solve, from a real Terrorist entity's own
+position, the exact pan/tilt that points the camera directly at it
+(inverting `_gs_view_forward`'s own formula), force `CamTarget`'s entity
+to that orientation, then read back `my.tilt` on the next frame instead
+of assuming the write held. It didn't: **`tilt` read back as `0.0`
+every single frame, no matter what it was set to.**
+
+Traced it to `_set_entity_pan(node, pan_deg)`: it unconditionally set
+`node.set_meta("tilt", 0.0)` and `set_meta("roll", 0.0)` on every call,
+then rebuilt `node.global_transform` from `_acknex_entity_basis(pan_deg,
+0.0, 0.0)` -- discarding whatever tilt/roll the entity already had,
+apparently on the assumption that an entity setting `pan` never also
+carries a tilt. `action CamTarget`'s own body sets `my.pan = ...;` and
+THEN `my.tilt = ...;`, every single tick -- so the pan write was wiping
+tilt back to exactly 0 immediately before the tilt line even ran. The
+tilt assignment itself (`my.tilt - mickey.y/SEN`, then clamped to
+`[-15,45]`) was executing correctly against a value that had already
+been zeroed a statement earlier, every tick, forever. This meant
+**vertical aim never worked at all in this port** -- the camera (and
+every bullet, since `CreateSpark()`'s `vec_rotate` reads `player.tilt`)
+could only ever point exactly horizontal, regardless of how far up or
+down the mouse moved, which is exactly "shots consistently land higher
+than the crosshair" for any target below the camera's own spawn height.
+
+`_set_entity_tilt_roll()` (the sibling function, used when a script sets
+`tilt`/`roll` instead of `pan`) already got this right -- it reads and
+preserves the entity's current `pan` from meta rather than zeroing it.
+Fixed `_set_entity_pan()` to be symmetric: read current `tilt`/`roll`
+from meta and preserve them instead of hardcoding `0.0`.
+
+Blast radius: `_set_entity_pan()` is the generic pan-write path used by
+every entity in every level that sets `.pan`, not just Range's
+`CamTarget` -- so this bug likely affected vertical aim/orientation
+corpus-wide wherever an entity combines `pan` writes with `tilt`, not
+only Range.
+
+Verified: `tools/smoke_range_aim_check.gd` -- `tilt` now correctly reads
+back `-15.0` (the real `[-15,45]` clamp floor for the computed aim angle
+of `-18.061`) instead of `0.0`, and the shot still registers a hit
+(`Terrorists` 15 -> 14). Full `smoke_dispatch` 19/19. All seven other
+Range regression tests (`smoke_range_panels`, `smoke_range_shoot`,
+`smoke_range_hud_check`, `smoke_range_death_freeze`,
+`smoke_range_retry_check`, `smoke_range_retry_hit_check`,
+`smoke_range_mouse_capture`) still `OK` after the `_set_entity_pan`
+change. `git status --short assets/` zero deletions. Temporary
+"aim-debug" trace logging added during the investigation (in `_get_field`'s
+tilt case and both `_set_entity_pan`/`_set_entity_tilt_roll`) was removed
+once the bug was confirmed and fixed. Real confirmation that shots now
+land accurately needs the user's own in-game check.

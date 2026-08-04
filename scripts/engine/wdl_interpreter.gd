@@ -372,7 +372,22 @@ func _build_panel(pname: String, decl: Dictionary) -> void:
 		float(_panel_field_first(fields, "pos_x", "0")),
 		float(_panel_field_first(fields, "pos_y", "0"))
 	)
-	root.z_index = clampi(int(_panel_field_first(fields, "layer", "0")), -4096, 4096)
+	# GB-7 continued (2026-08-04, Range): "the skip button... should be
+	# clickable and on top of the other HUDs." Range's own `panel pSkip`
+	# declares no `layer` at all (defaults to 0), while the HUD panels it
+	# needs to sit above explicitly do (`GUI` layer=1, `Terr*`/`Civ*`
+	# layer=2/3) -- every OTHER button-containing panel in the corpus
+	# remembered an explicit high layer (pSkip's own sibling `pCongrat`:
+	# layer=4; the shared `pRIP`: layer=20), so this reads as a genuine
+	# authoring oversight specific to pSkip, not an intentional "sits
+	# behind everything" design. A button a player is meant to click
+	# should never be silently buried behind non-interactive background
+	# panels just because its own WED author forgot a layer value --
+	# default any button-containing panel that omits one to a high
+	# z-index instead of the generic 0 fallback.
+	var has_button: bool = not (fields.get("button", []) as Array).is_empty()
+	var layer_default := "50" if has_button else "0"
+	root.z_index = clampi(int(_panel_field_first(fields, "layer", layer_default)), -4096, 4096)
 	root.visible = false  # every real usage in the corpus explicitly turns panels on when needed
 	_hud.get_panel_root().add_child(root)
 	_panel_nodes[pname.to_lower()] = root
@@ -2023,14 +2038,31 @@ func _acknex_entity_basis(pan_deg: float, tilt_deg: float, roll_deg: float) -> B
 
 
 func _set_entity_pan(node: Node3D, pan_deg: float) -> void:
+	# GB-7 continued (2026-08-04, Range): "the game still seems to aim
+	# higher than the actual place the gun points to." This used to
+	# unconditionally zero tilt/roll on every pan write, on whatever
+	# assumption held for entities that only ever set pan alone. Range's
+	# own `action CamTarget` sets BOTH every tick, pan first (`my.pan =
+	# my.pan - mickey.x/SEN;`) then tilt (`my.tilt = my.tilt - mickey.y/
+	# SEN;`) -- the pan write was wiping tilt back to 0 immediately
+	# before the tilt line even ran, every single tick, so the tilt
+	# assignment always read its own just-zeroed value back and computed
+	# ~0 again. Vertical aim was completely inert the whole time; the
+	# camera (and therefore every shot, see CreateSpark()'s own
+	# vec_rotate(shot_speed, my_angle) using player.tilt) could only ever
+	# point horizontally, regardless of how far the player moved the
+	# mouse vertically -- confirmed live via tools/smoke_range_aim_check.gd
+	# tracing every read/write of "tilt" on the CamTarget entity across a
+	# real tick. Preserve the current tilt/roll instead, the same way
+	# _set_entity_tilt_roll() already preserves pan.
 	var scl := node.transform.basis.get_scale()
 	if scl.x <= 0.001 or scl.y <= 0.001 or scl.z <= 0.001:
 		scl = Vector3.ONE
+	var tilt := float(node.get_meta("tilt", 0.0))
+	var roll := float(node.get_meta("roll", 0.0))
 	var pos := node.global_position
-	node.global_transform = Transform3D(_acknex_entity_basis(pan_deg, 0.0, 0.0) * Basis.from_scale(scl.abs()), pos)
+	node.global_transform = Transform3D(_acknex_entity_basis(pan_deg, tilt, roll) * Basis.from_scale(scl.abs()), pos)
 	node.set_meta("pan", pan_deg)
-	node.set_meta("tilt", 0.0)
-	node.set_meta("roll", 0.0)
 
 
 func _set_entity_tilt_roll(node: Node3D, tilt_deg: float, roll_deg: float) -> void:
@@ -3364,4 +3396,23 @@ func _do_level_load() -> float:
 	# rule from static analysis.
 	if _globals.has("Death"):
 		_globals["Death"]["value"] = 0.0
+	# GB-7 continued (2026-08-04, Range): "on retry we should restart the
+	# position of the cursor as well." The `player` global is bound to
+	# whichever entity is driving the scripted camera (Range's own
+	# `action CamTarget`: `player = my;`, its own first line) -- reset
+	# its live pan/tilt/roll back to their WED-authored spawn values
+	# (`_spawn_entity()`'s own `wdl_spawn_pan/tilt/roll` meta, preserved
+	# separately from the live, per-tick-accumulated `pan/tilt/roll`
+	# meta), the same way a fresh level load would naturally start the
+	# player looking. Resolved generically through `player`, not by
+	# Range's own action name, so this applies to any level using the
+	# same scripted-camera-aiming idiom.
+	var p = _get_var("player", null)
+	if p != null and is_instance_valid(p) and p is Node3D:
+		if p.has_meta("wdl_spawn_pan"):
+			p.set_meta("pan", p.get_meta("wdl_spawn_pan"))
+		if p.has_meta("wdl_spawn_tilt"):
+			p.set_meta("tilt", p.get_meta("wdl_spawn_tilt"))
+		if p.has_meta("wdl_spawn_roll"):
+			p.set_meta("roll", p.get_meta("wdl_spawn_roll"))
 	return 0.0
