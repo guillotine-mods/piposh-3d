@@ -122,7 +122,7 @@ func _ready() -> void:
 
 	_game_hud.set_debug_text(
 		level,
-		"script=%s | mode=%s | F1=Menu F3=Next F4=Levels F10=debug"
+		"script=%s | mode=%s | F1=Menu F3=Next F4=Levels F6=Range F10=debug"
 		% [
 			str(loader.last_level_data.get("script", "?")),
 			"FP" if use_fp else ("scripted" if use_scripted else "free"),
@@ -312,9 +312,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			LevelRouter.goto_level(DEBUG_LEVELS[idx])
 		elif event.keycode == KEY_F10:
 			_game_hud.show_debug = not _game_hud.show_debug
-			_game_hud.set_debug_text(GameState.current_level, "F1=Menu F3=Next F4=Levels F10=debug")
+			_game_hud.set_debug_text(GameState.current_level, "F1=Menu F3=Next F4=Levels F6=Range F10=debug")
 		elif event.keycode == KEY_F4:
 			_toggle_level_select()
+		elif event.keycode == KEY_F6:
+			LevelRouter.goto_level("Range")
 		elif event.keycode == KEY_ESCAPE and _level_select:
 			_toggle_level_select()
 

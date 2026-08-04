@@ -45,7 +45,13 @@ func _ready() -> void:
 
 	AudioChannels.play_music("SNG032.WAV", -8.0)
 	panel.visible = true
-	hud.text = "Menu — New Game → Studio | click ShowMov (bottom-right) | Esc quits look"
+	hud.text = "Menu — New Game → Studio | click ShowMov (bottom-right) | Esc quits look | F6=Range"
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_F6:
+			LevelRouter.goto_level("Range")
 
 
 func _process(_delta: float) -> void:
