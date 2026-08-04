@@ -354,6 +354,28 @@ func _ensure_panels_built() -> void:
 	_panels_built = true
 	for pname in _panels_ast:
 		_build_panel(String(pname), _panels_ast[pname])
+	_reorder_panels_by_layer()
+
+
+## GB-7 continued (2026-08-04, Range): pSkip (z_index=50, see _build_panel()'s
+## button-layer default) still rendered BENEATH pRIP (z_index=20) in-game,
+## confirmed live even after directly verifying both nodes' own z_index
+## values are correct in the built scene tree. z_index alone isn't a
+## reliable enough draw-order guarantee for this project's Control
+## hierarchy on its own -- GameHud's own show_dialog() already hedges the
+## same way, pairing a z_index with an explicit move_to_front() call rather
+## than trusting z_index in isolation. Belt-and-suspenders fix: once, right
+## after every panel is built, physically reorder them as tree siblings to
+## match their declared z_index (lowest first, highest last) -- Godot draws
+## later siblings on top by default, so this guarantees correct layering
+## regardless of whether z_index sorting alone takes effect, and needs no
+## re-sorting afterward since z_index is fixed at build time and never
+## changes at runtime.
+func _reorder_panels_by_layer() -> void:
+	var ordered: Array = _panel_nodes.values()
+	ordered.sort_custom(func(a, b): return a.z_index < b.z_index)
+	for node in ordered:
+		node.move_to_front()
 
 
 func _panel_field_first(fields: Dictionary, key: String, default: String = "") -> String:
