@@ -3,6 +3,9 @@ extends SceneTree
 ## coroutines should genuinely stop progressing (targets stop popping
 ## up/going down, updatepanel() stops running) -- only resuming once
 ## pRIP is hidden again (matching HideRIP()'s own `pRIP.visible = off;`).
+## Drives a real fRIP1 retry (not a direct pRIP.visible poke) so the
+## camera-pose reset added for GB-7 continued (2026-08-04) -- which fires
+## from the same "visible" write path -- gets exercised too.
 ##
 ## Run: godot --headless --path . -s res://tools/smoke_range_death_freeze.gd
 
@@ -67,11 +70,11 @@ func _run() -> void:
 	var z_after_wait: float = interp.call("_get_field", {"t": "id", "name": "my"}, "z", terrorist)
 	print("z: before_death=%.3f at_death=%.3f after_60_more_frames=%.3f" % [z_before_death, z_at_death, z_after_wait])
 
-	# Simulate clicking "retry" (fRIP1: HideRIP(); main();) via the real
-	# panel-node visibility write, matching what HideRIP() itself does --
-	# should unfreeze and let things move again.
-	interp.call("_set_field", {"t": "id", "name": "pRIP"}, "visible", 0.0, null)
-	for i in 10:
+	# Simulate clicking "retry" for real (fRIP1: HideRIP(); main();) --
+	# should unfreeze immediately and let things move again.
+	interp.call("_set_var", "MoviePlaying", 0.0, null)
+	interp.call("invoke_event", null, "fRIP1")
+	for i in 30:
 		await process_frame
 	print("frozen after unfreeze=%s" % interp.get("_frozen"))
 	var z_after_unfreeze: float = interp.call("_get_field", {"t": "id", "name": "my"}, "z", terrorist)

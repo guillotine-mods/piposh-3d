@@ -619,6 +619,7 @@ func _get_panel_field(node: Control, low: String) -> Variant:
 func _set_panel_field(node: Control, low: String, value: Variant) -> void:
 	match low:
 		"visible":
+			var was_visible := node.visible
 			node.visible = _truthy(value)
 			# GB-5 (2026-08-03, Range): "animations keep playing in the
 			# background" after death. The real engine's own `ShowRIP()`
@@ -628,11 +629,35 @@ func _set_panel_field(node: Control, low: String, value: Variant) -> void:
 			# reads the `Death` global outside `Restart()` itself, so no
 			# other coroutine ever knew to stop. `pRIP` is IO.wdl's shared,
 			# corpus-wide death-screen panel (not Range-specific), so this
-			# generically pauses gameplay for any level using it, mirroring
-			# `HideRIP()`'s existing `pRIP.visible = off;` for the resume
-			# side. See exec_stmt()'s "wait"/"waitt" case for the other half.
+			# generically pauses gameplay for any level using it.
 			if String(node.name).to_lower() == "panel_prip":
-				_frozen = _truthy(value)
+				var now_visible := _truthy(value)
+				if now_visible:
+					_frozen = true
+				elif was_visible:
+					# Unfreeze immediately -- matches `HideRIP()`'s own
+					# `pRIP.visible = off;`, which always runs synchronously
+					# BEFORE `main()`'s own `wait(3);` gap (fRIP1: `HideRIP();
+					# main();`). NOT deferred to `_do_level_load()` (tried
+					# that: `main()`'s own opening `wait(3);` is itself gated
+					# by this SAME `_frozen` flag, so `main()` could never
+					# reach `level_load()` to release a freeze it was itself
+					# blocked behind -- a self-deadlock).
+					_frozen = false
+					# GB-7 continued (2026-08-04, Range): "retry... messes
+					# with the view." Reset the camera's spawn pan/tilt/roll
+					# HERE too, synchronously, rather than waiting for
+					# `_do_level_load()` -- `action CamTarget` resumes
+					# ticking (unfrozen, above) well before `main()`'s own
+					# `wait(3);` gap clears, so leaving the camera reset
+					# behind that gap let CamTarget respond to live mouse
+					# input on the STALE pre-death orientation for that
+					# whole window, then SNAP once the deferred reset
+					# finally landed. Deliberately NOT resetting `Death`
+					# here too, even though it's the same "retry state"
+					# conceptually -- see `_do_level_load()`'s own comment
+					# for why that one specifically has to stay deferred.
+					_reset_camera_spawn_pose()
 		"pos_x":
 			node.position.x = _to_num(value)
 		"pos_y":
@@ -3395,46 +3420,77 @@ func _do_run(a: Array) -> float:
 	return 0.0
 
 
-## See _register_builtins()'s "level_load" comment.
+## See _register_builtins()'s "level_load" comment. Every level's own
+## main() calls this near its top as a "(re)load my map" step;
+## WmbLevelLoader already loaded the level once before main() ever runs,
+## so for a genuinely fresh level start this is correctly a no-op.
+##
+## GB-5 (2026-08-03, Range): `Death` (gates `Restart()`'s own guard) was
+## only ever reset once, at `action CamTarget`'s initial coroutine start
+## -- never again -- so a second death never showed RIP again. Reset it
+## alone, narrowly -- an earlier attempt at this reset EVERY declared
+## global back to its initial value (mirroring setup()'s own init loop)
+## and was confirmed live as too broad: `var MoviePlaying = 1;` is
+## Range's own declared default, only ever set to 0 once the intro
+## dialogue finishes, so a blanket reset re-triggered the ENTIRE intro
+## dialogue on every retry, rendered on top of the still-running
+## shooting-gallery view underneath (action CamTarget's own coroutine,
+## started once at level load, is never stopped or restarted by a second
+## main() call, so it keeps driving camera.pan/tilt throughout). Real
+## Acknex script globals are process-persistent across a level_load() by
+## design -- no shipped game would replay its own intro on every retry.
+##
+## GB-7 continued (2026-08-04, Range): tried also resetting the camera's
+## spawn pan/tilt/roll here (this call sits inside `main()`, right where
+## the ORIGINAL WDL's own `level_load("Range.wmb");` line sits) -- wrong
+## call site for that specifically: `main()` reaches this only AFTER its
+## own opening `wait(3);`, but `action CamTarget` resumes ticking (once
+## unfrozen -- see _set_panel_field()'s "visible" case) well BEFORE that
+## wait clears, so the camera reset landing here still left a stale/live
+## gap where CamTarget kept responding to live mouse input on the
+## pre-death orientation, then SNAPPED once this finally landed. Moved
+## camera-pose reset to `_reset_camera_spawn_pose()`, called synchronously
+## at the SAME moment `pRIP` hides (no gap, no snap) -- `Death` has to
+## stay HERE, deferred, though, for the opposite reason: resetting it that
+## early raced against `Health` (only reset by main()'s OWN subsequent
+## `Health = 609;` statement, further still behind the same wait(3) gap)
+## -- with `Death` reset back to 0 early but `Health` still <= 0`,
+## `action CamTarget`'s own `updatepanel()` -> `Restart()` call
+## (`if (Death==0) { Death=1; ShowRIP(); }`) would fire again immediately,
+## re-showing RIP right after the player had just retried. Keeping `Death`
+## reset in the same synchronous burst as `Health = 609;` (both inside
+## main()'s own single, non-yielding run of statements, no wait() between
+## them) is what makes the original WDL script itself race-free here --
+## reproducing that ordering natively is what keeps this port race-free
+## too.
 func _do_level_load() -> float:
-	# 2026-08-04, take two: the first version of this fix reset EVERY
-	# declared global back to its initial value (mirroring setup()'s own
-	# init loop) -- confirmed live as too broad: `var MoviePlaying = 1;`
-	# is Range's own declared default, only ever set to 0 once the intro
-	# dialogue finishes (DialogChoice==2's own body), so resetting it back
-	# to 1 on retry re-triggered the ENTIRE intro dialogue every time,
-	# rendered as a UI overlay on top of the still-running shooting-
-	# gallery view underneath (action CamTarget's own coroutine, started
-	# once at level load, is never stopped or restarted by a second
-	# main() call, so it keeps driving camera.pan/tilt throughout). Real
-	# Acknex script globals are process-persistent across a level_load()
-	# by design -- no shipped game would replay its own intro on every
-	# retry -- so a blanket reset was never the right model in the first
-	# place. `Death` is the one genuine gap: nothing else in the WDL
-	# source ever resets it (grepped the whole corpus), so Restart()'s
-	# own `if (Death==0)` guard stayed permanently blocked after the
-	# first death. Reset it alone, narrowly, rather than guessing at a
-	# broader "which globals are session state vs. per-attempt state"
-	# rule from static analysis.
 	if _globals.has("Death"):
 		_globals["Death"]["value"] = 0.0
-	# GB-7 continued (2026-08-04, Range): "on retry we should restart the
-	# position of the cursor as well." The `player` global is bound to
-	# whichever entity is driving the scripted camera (Range's own
-	# `action CamTarget`: `player = my;`, its own first line) -- reset
-	# its live pan/tilt/roll back to their WED-authored spawn values
-	# (`_spawn_entity()`'s own `wdl_spawn_pan/tilt/roll` meta, preserved
-	# separately from the live, per-tick-accumulated `pan/tilt/roll`
-	# meta), the same way a fresh level load would naturally start the
-	# player looking. Resolved generically through `player`, not by
-	# Range's own action name, so this applies to any level using the
-	# same scripted-camera-aiming idiom.
+	return 0.0
+
+
+## GB-7 continued (2026-08-04, Range): "on retry we should restart the
+## position of the cursor as well... [and] messes with the view." Called
+## synchronously the instant `pRIP` transitions from visible to hidden
+## (see _set_panel_field()'s "visible" case, and `_do_level_load()`'s own
+## comment for why `Death`'s reset has to stay separate/deferred instead
+## of also living here). The `player` global is bound to whichever entity
+## is driving the scripted camera (Range's own `action CamTarget`:
+## `player = my;`, its own first line) -- reset its live pan/tilt/roll
+## back to their WED-authored spawn values (`_spawn_entity()`'s own
+## `wdl_spawn_pan/tilt/roll` meta, preserved separately from the live,
+## per-tick-accumulated `pan/tilt/roll` meta). Resolved generically
+## through `player`, not by Range's own action name, so this applies to
+## any level using the same scripted-camera-aiming idiom. Goes through
+## `_set_entity_tilt_roll()`/`_set_entity_pan()` themselves (not a direct
+## `set_meta()` poke) so the node's actual `global_transform` snaps to the
+## spawn pose immediately, rather than staying stale until CamTarget's
+## own next `my.pan = ...` tick happens to rebuild it.
+func _reset_camera_spawn_pose() -> void:
 	var p = _get_var("player", null)
 	if p != null and is_instance_valid(p) and p is Node3D:
-		if p.has_meta("wdl_spawn_pan"):
-			p.set_meta("pan", p.get_meta("wdl_spawn_pan"))
-		if p.has_meta("wdl_spawn_tilt"):
-			p.set_meta("tilt", p.get_meta("wdl_spawn_tilt"))
-		if p.has_meta("wdl_spawn_roll"):
-			p.set_meta("roll", p.get_meta("wdl_spawn_roll"))
-	return 0.0
+		var spawn_pan: float = float(p.get_meta("wdl_spawn_pan", p.get_meta("pan", 0.0)))
+		var spawn_tilt: float = float(p.get_meta("wdl_spawn_tilt", p.get_meta("tilt", 0.0)))
+		var spawn_roll: float = float(p.get_meta("wdl_spawn_roll", p.get_meta("roll", 0.0)))
+		_set_entity_tilt_roll(p, spawn_tilt, spawn_roll)
+		_set_entity_pan(p, spawn_pan)
