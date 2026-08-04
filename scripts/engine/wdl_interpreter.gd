@@ -124,6 +124,31 @@ func _process(_delta: float) -> void:
 	_total_frames += 1
 	_check_impact_proximity()
 	_vectors["mickey"] = Vector3(_mouse_delta.x, _mouse_delta.y, 0.0)
+	# GB-7 continued (2026-08-04, Range): "shots don't land where crosshair
+	# points" / "the mouse and aim are confusing." `screen_size` was
+	# entirely unresolved (silently read back as (0,0) via the generic
+	# scratch-vector fallback -- see _get_field()'s own comment), and
+	# `WDL/weapons.wdl`'s real, portable `pan_cross_show()` (called by
+	# Range/Final/Shooter right where they switch into scripted-camera
+	# mouse-look aiming, all with the identical `cross_pos.x=-7;
+	# cross_pos.y=-7; pan_cross_show();` idiom) positions its crosshair
+	# panel as `cross_pan.pos_x = (screen_size.x/2) + cross_pos.x;` --
+	# with screen_size stuck at (0,0), the crosshair landed at (-7,-7),
+	# clipped almost entirely off the top-left corner of the screen
+	# instead of centered, so the player had no usable on-screen
+	# reference for where they were actually aiming (combined with the
+	# OS cursor being hidden by the mouse-capture fix, no reference at
+	# all) even though `pan_cross_show()` itself was already a real,
+	# already-executable WDL function needing no native bridging -- this
+	# was the only missing piece. This port's own panel design space is a
+	# fixed 640x480 regardless of real window size (`GameHud.DESIGN`,
+	# already what every panel's pos_x/pos_y is authored against), which
+	# is exactly what `video_mode=6` (640x480, Range's own declared video
+	# mode) means `screen_size` should read as in the original engine --
+	# same fixed value works for the OTHER corpus users of screen_size
+	# too (Golf's Booth/OnAir, Shooter's Overmap), so this isn't a
+	# Range-specific value.
+	_vectors["screen_size"] = Vector3(GameHud.DESIGN.x, GameHud.DESIGN.y, 0.0)
 	_mouse_delta = Vector2.ZERO
 	_check_mouse_click()
 	_update_panel_windows()
@@ -966,9 +991,10 @@ func _scan_for_identifier(n: Variant, name: String) -> bool:
 ## stayed visible and free-roaming the whole time -- camera rotation is
 ## driven by raw mouse DELTA (mickey), completely independent of the
 ## cursor's own screen position, so a player naturally aiming with their
-## visible cursor (the only on-screen reference they have, since there's
-## no rendered crosshair sprite either -- Acknex's own `pan_cross_show()`
-## isn't implemented) would see shots consistently land away from it.
+## visible cursor (at the time the only on-screen reference they had --
+## `pan_cross_show()`'s own crosshair panel wasn't rendering correctly
+## either yet, see `screen_size`'s own comment in `_process()`) would see
+## shots consistently land away from it.
 ## Used by level_runner.gd to decide whether a scripted-camera level
 ## should ALSO capture the mouse, the same way first-person levels do.
 func uses_mickey_aiming() -> bool:
