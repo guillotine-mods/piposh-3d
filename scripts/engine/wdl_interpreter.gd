@@ -99,6 +99,24 @@ var _mouse_delta := Vector2.ZERO
 ## entire firing mechanism for its shooting-gallery gameplay). See
 ## _assign()'s "on_" symbol-capture case and _check_mouse_click().
 var _mouse_left_clicked := false
+## GB-7 continued (2026-08-04, Range): "hard to control [the death
+## screen] with the mouse" / "the [aim] location doesn't reset when
+## retrying." `level_runner.gd` captures the mouse (hidden, locked,
+## relative-delta-only) for the whole time a scripted-camera-aiming level
+## is running, including while `pRIP` is showing -- meaning the player had
+## NO visible cursor at all to aim the Retry/Skip click with, only Godot's
+## own internal virtual cursor position (invisible, silently tracked from
+## accumulated relative motion), explaining "hard to control": clicking
+## the death-screen buttons meant blindly wiggling the mouse with no
+## visual feedback at all. Remembers whatever mouse mode was active right
+## before `pRIP` showed (see `_set_panel_field()`'s "visible" case) so it
+## can be restored exactly once the screen hides again, rather than
+## hardcoding CAPTURED (this freeze/unfreeze pairing is generic across any
+## level using the shared pRIP panel, not just scripted-camera-aiming
+## ones). `-1` (Godot's mouse-mode enum never returns/accepts a negative
+## value) means "nothing to restore" -- i.e. pRIP was never actually
+## visible when this would be read.
+var _mouse_mode_before_rip: int = -1
 
 
 # ---------------------------------------------------------------------------
@@ -659,6 +677,15 @@ func _set_panel_field(node: Control, low: String, value: Variant) -> void:
 				var now_visible := _truthy(value)
 				if now_visible:
 					_frozen = true
+					# GB-7 continued (2026-08-04, Range): "hard to
+					# control [the death screen] with the mouse." See
+					# `_mouse_mode_before_rip`'s own comment -- the
+					# player had no visible cursor to click Retry/Skip
+					# with at all while the mouse stayed captured.
+					# Mirrors GameHud.show_dialog()'s own existing
+					# "need a real OS cursor for hit-testing" handling.
+					_mouse_mode_before_rip = Input.mouse_mode
+					Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 				elif was_visible:
 					# Unfreeze immediately -- matches `HideRIP()`'s own
 					# `pRIP.visible = off;`, which always runs synchronously
@@ -669,6 +696,27 @@ func _set_panel_field(node: Control, low: String, value: Variant) -> void:
 					# reach `level_load()` to release a freeze it was itself
 					# blocked behind -- a self-deadlock).
 					_frozen = false
+					if _mouse_mode_before_rip != -1:
+						Input.mouse_mode = _mouse_mode_before_rip as Input.MouseMode
+						_mouse_mode_before_rip = -1
+					# GB-7 continued (2026-08-04, Range): "the [aim]
+					# location doesn't reset when we're restarting."
+					# Whatever mouse motion the player made clicking
+					# Retry (blind, while pRIP was visible -- `mickey`
+					# keeps accumulating every _process() tick
+					# regardless of `_frozen`, only CONSUMING it is
+					# gated) was still sitting in `mickey` the instant
+					# `action CamTarget` resumed, and its own very first
+					# post-resume statements (`my.pan = my.pan -
+					# mickey.x/SEN; my.tilt = ...;`) apply it BEFORE ever
+					# reaching `camera.pan = my.pan;` -- so a leftover
+					# click-motion delta nudged the aim away from the
+					# reset spawn pose within the same tick it was
+					# reset, making the reset below look like it never
+					# happened. Clear it here too, in the same
+					# synchronous burst as the reset itself.
+					_mouse_delta = Vector2.ZERO
+					_vectors["mickey"] = Vector3.ZERO
 					# GB-7 continued (2026-08-04, Range): "retry... messes
 					# with the view." Reset the camera's spawn pan/tilt/roll
 					# HERE too, synchronously, rather than waiting for
