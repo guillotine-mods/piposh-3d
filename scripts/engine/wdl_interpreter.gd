@@ -686,6 +686,15 @@ func _set_panel_field(node: Control, low: String, value: Variant) -> void:
 					# "need a real OS cursor for hit-testing" handling.
 					_mouse_mode_before_rip = Input.mouse_mode
 					Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+					# QOL (2026-08-04, Range): "reset the cursor to the
+					# middle." Making the OS cursor visible again after a
+					# long CAPTURED stretch leaves it wherever the OS last
+					# placed it (often a screen edge/corner, since it was
+					# never actually being watched) -- warp it to the
+					# window's own center so the player finds it right
+					# where the Retry/Skip buttons cluster, instead of
+					# having to go hunt for it first.
+					_warp_mouse_to_center()
 				elif was_visible:
 					# Unfreeze immediately -- matches `HideRIP()`'s own
 					# `pRIP.visible = off;`, which always runs synchronously
@@ -3568,3 +3577,38 @@ func _reset_camera_spawn_pose() -> void:
 		var spawn_roll: float = float(p.get_meta("wdl_spawn_roll", p.get_meta("roll", 0.0)))
 		_set_entity_tilt_roll(p, spawn_tilt, spawn_roll)
 		_set_entity_pan(p, spawn_pan)
+
+
+## See _set_panel_field()'s "visible" case and recenter_aim()'s own
+## comment for the two callers. `Input.warp_mouse()` expects window-local
+## pixel coordinates, not design-space -- unlike every panel's own
+## pos_x/pos_y, which is why this doesn't go through GameHud.DESIGN.
+func _warp_mouse_to_center() -> void:
+	var vp := get_viewport()
+	if vp == null:
+		return
+	Input.warp_mouse(vp.get_visible_rect().size / 2.0)
+
+
+## QOL (2026-08-04, Range): "adding a button - space - that resets the
+## cursor to the middle of the screen." A player who's turned all the way
+## around chasing a target has no way back to a known-good orientation
+## short of dying and retrying (which already resets it -- see
+## `_reset_camera_spawn_pose()`) -- exposed the same reset as an explicit,
+## anytime action instead. Public (no leading underscore, unlike this
+## file's internal helpers) since `level_runner.gd` calls it directly from
+## its own `_unhandled_input()`, the same way it already calls the public
+## `uses_mickey_aiming()` to decide whether Space should do anything here
+## at all -- only levels using the scripted-camera mouse-look idiom have a
+## meaningful "spawn pose" to recenter to. Also re-warps and clears any
+## in-flight mouse delta, same reasoning as the post-retry reset in
+## _set_panel_field()'s "visible" case: without clearing `mickey` too, a
+## Space press mid-mouse-motion would recenter the pose only to have it
+## immediately nudged again by whatever delta was still in flight that
+## same tick.
+func recenter_aim() -> void:
+	_reset_camera_spawn_pose()
+	_mouse_delta = Vector2.ZERO
+	_vectors["mickey"] = Vector3.ZERO
+	if Input.mouse_mode == Input.MOUSE_MODE_VISIBLE:
+		_warp_mouse_to_center()

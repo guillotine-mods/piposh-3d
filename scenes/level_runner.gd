@@ -122,7 +122,7 @@ func _ready() -> void:
 
 	_game_hud.set_debug_text(
 		level,
-		"script=%s | mode=%s | F1=Menu F3=Next F4=Levels F6=Range F10=debug"
+		"script=%s | mode=%s | F1=Menu F3=Next F4=Levels F6=Range Space=Recenter F10=debug"
 		% [
 			str(loader.last_level_data.get("script", "?")),
 			"FP" if use_fp else ("scripted" if use_scripted else "free"),
@@ -312,13 +312,28 @@ func _unhandled_input(event: InputEvent) -> void:
 			LevelRouter.goto_level(DEBUG_LEVELS[idx])
 		elif event.keycode == KEY_F10:
 			_game_hud.show_debug = not _game_hud.show_debug
-			_game_hud.set_debug_text(GameState.current_level, "F1=Menu F3=Next F4=Levels F6=Range F10=debug")
+			_game_hud.set_debug_text(GameState.current_level, "F1=Menu F3=Next F4=Levels F6=Range Space=Recenter F10=debug")
 		elif event.keycode == KEY_F4:
 			_toggle_level_select()
 		elif event.keycode == KEY_F6:
 			LevelRouter.goto_level("Range")
 		elif event.keycode == KEY_ESCAPE and _level_select:
 			_toggle_level_select()
+		elif event.keycode == KEY_SPACE:
+			_try_recenter_aim()
+
+
+## QOL (2026-08-04, Range): "adding a button - space - that resets the
+## cursor to the middle of the screen." Only meaningful for levels using
+## the scripted-camera mouse-look idiom (same `uses_mickey_aiming()` gate
+## the mouse-capture fix above already uses) -- other levels have no
+## "spawn pose" concept for Space to recenter to, and Space already does
+## something else project-wide (WdlDirector's own skip-dialogue-line
+## binding), so this stays a no-op everywhere else.
+func _try_recenter_aim() -> void:
+	var interp: Node = _director.get("_wdl_interp")
+	if interp != null and bool(interp.call("uses_mickey_aiming")):
+		interp.call("recenter_aim")
 
 
 func _toggle_level_select() -> void:
