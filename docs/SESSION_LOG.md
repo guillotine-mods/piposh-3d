@@ -5392,3 +5392,103 @@ change. `git status --short assets/` zero deletions. Temporary
 tilt case and both `_set_entity_pan`/`_set_entity_tilt_roll`) was removed
 once the bug was confirmed and fixed. Real confirmation that shots now
 land accurately needs the user's own in-game check.
+
+## 2026-08-04 (GB-7 continued, round 2) — the tilt fix wasn't enough:
+## panel draw order, a retry camera snap, and a missing crosshair
+
+User played the round-1 fixes and reported: aim still wrong ("no"),
+mouse still confusing ("no"), pSkip still under the death screen
+("yes, but..."), and retry "messes with the view" and still doesn't let
+you die again. Added an `F6` debug shortcut (`level_runner.gd`,
+`main_menu.gd`) to jump straight into Range for faster iteration, since
+the normal path is Studio -> Start -> ... -> Plane2 -> Range.
+
+**pSkip still under pRIP.** Directly queried the live built scene
+(`tools/smoke_range_skip_layer_check.gd`): `Panel_pSkip.z_index=50`,
+`Panel_pRIP.z_index=20` -- the values from round 1's fix were genuinely
+correct in the tree, yet the user still saw it rendered underneath.
+Ruled out several theories (parsing case-sensitivity on `BUTTON` vs
+`button`, a name collision overriding pSkip's own declaration, a
+duplicate/wrong-path panel build) before concluding z_index alone isn't
+a reliable enough draw-order guarantee for this project's Control
+hierarchy on its own -- `GameHud.show_dialog()` already independently
+arrived at the same conclusion, pairing its own z_index with an explicit
+`move_to_front()` call rather than trusting z_index in isolation. Fixed
+by adding `_reorder_panels_by_layer()`, run once right after all panels
+are built: sorts every panel by z_index and calls `move_to_front()` on
+each in that order, so tree position backs up whatever z_index sorting
+does or doesn't do on its own. Verified: pSkip's `index_in_parent` moved
+from 11 (before pRIP's 53) to 71 (after it).
+
+**Retry "messes with the view."** The round-1 camera-reset fix
+(`_do_level_load()`, reached via `main()`'s own `level_load()` call)
+sits behind `main()`'s own opening `wait(3);`. `action CamTarget` resumes
+ticking (unfrozen at `HideRIP()`'s own `pRIP.visible=off;`, well before
+that wait clears) and kept responding to live mouse input on the STALE
+pre-death orientation for that whole gap, then the deferred reset
+silently overwrote it out from under the still-running coroutine -- a
+jarring camera snap once `action CamTarget` next ticked. First attempt:
+keep `_frozen` true across that same gap and only release it once the
+reset actually lands in `_do_level_load()` -- this deadlocked instead,
+confirmed live via `smoke_range_death_freeze.gd` staying frozen forever:
+`main()`'s own opening `wait(3);` is itself gated by the SAME `_frozen`
+flag (every `wait()` is), so `main()` could never reach `level_load()`
+to release a freeze it was itself blocked behind. Second attempt: reset
+the camera pose AND `Death` synchronously, right when `pRIP` hides,
+before `main()`'s async gap even opens -- this also broke, differently:
+`Death` back at 0 while `Health` was still <= 0 (only reset by `main()`'s
+own LATER `Health=609;` statement) let `action CamTarget`'s own
+`updatepanel()` -> `Restart()` call (`if(Death==0){Death=1;ShowRIP();}`)
+re-trigger almost immediately, re-showing RIP right after the player
+retried -- confirmed live via the same test, "frozen after unfreeze"
+back to `true`. Final fix: split the two resets by their actual timing
+requirement instead of bundling them. Camera pose: reset synchronously
+at `pRIP` hide time (no gap, no snap, no deadlock risk -- nothing else
+depends on its timing). `Death`: stays deferred to `_do_level_load()`,
+in the same synchronous statement burst as `main()`'s own later
+`Health=609;` (matching the ORIGINAL WDL script's own ordering, which is
+what makes it race-free there too). `smoke_range_death_freeze.gd`
+rewritten to drive a real `fRIP1` retry (matching the new semantics)
+instead of poking `pRIP.visible` directly.
+
+**Aim/mouse still "no" -- the actual reason.** Re-examined `action
+CamTarget`'s own body: `cross_pos.x=-7; cross_pos.y=-7;
+pan_cross_show();` runs right where aiming starts, identically in
+Range/Final/Shooter. Initially assumed `pan_cross_show()` was an
+unbridged native engine builtin (like `actor_move`/`perform_handle`) and
+started hand-writing a native crosshair -- wrong assumption, caught
+before shipping: `_resolve_function("pan_cross_show")` already resolves
+it, because it's a REAL, portable WDL function, declared and fully
+implemented in `WDL/weapons.wdl` (`function pan_cross_show() {
+cross_pan.pos_x = (screen_size.x/2) + cross_pos.x; ...
+cross_pan.visible = ON; }`) using nothing but the generic `panel`/`bmap`/
+`pos_x`/`pos_y`/`visible` machinery this interpreter already runs
+correctly. Reverted the hand-written native version entirely. The ONLY
+actually-missing piece was `screen_size`: never implemented, so it fell
+through the generic scratch-vector fallback and read back as `(0,0)`
+forever -- `cross_pan.pos_x` computed to `(0/2)+(-7) = -7`, clipping the
+crosshair almost entirely off the top-left corner instead of centering
+it. Corpus grep confirmed `screen_size` is used the same way elsewhere
+too (Golf's `Booth`/`OnAir`, Shooter's `Overmap`), so this was never
+Range-specific. Combined with the earlier GB-7 mouse-capture fix (OS
+cursor hidden during scripted-camera aiming), the player had NO on-screen
+aim reference at all -- which is exactly what "shots don't land where
+crosshair points" and "confusing" would look like even with the
+underlying pan/tilt math already fully correct from round 1. Fixed by
+seeding `_vectors["screen_size"]` once per frame (alongside `mickey`) to
+this port's fixed 640x480 panel design space (`GameHud.DESIGN`) -- the
+same space every panel's own `pos_x`/`pos_y` is already authored
+against, so no unit-conversion needed. Verified via new
+`tools/smoke_range_crosshair_check.gd`: `cross_pan` now builds, becomes
+visible, and sits at `(313,233)` -- exactly `(320,240) + (-7,-7)`, dead
+center.
+
+Verified: `smoke_dispatch` 19/19. All Range regression tests
+(`smoke_range_panels`, `smoke_range_shoot`, `smoke_range_hud_check`,
+`smoke_range_death_freeze`, `smoke_range_retry_check`,
+`smoke_range_retry_hit_check`, `smoke_range_mouse_capture`,
+`smoke_range_aim_check`, `smoke_range_skip_layer_check`,
+`smoke_range_crosshair_check`) `OK`/consistent after every change in
+this round. `git status --short assets/` zero deletions throughout. Real
+confirmation of all four originally-reported symptoms still needs the
+user's own in-game check.
