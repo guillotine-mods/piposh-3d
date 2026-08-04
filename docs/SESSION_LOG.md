@@ -5242,3 +5242,49 @@ isn't trivially always-true). `smoke_dispatch` 19/19, all five other
 Range regression tests still `OK`. `git status` zero asset deletions.
 Real confirmation that shots now land on-crosshair needs the user's own
 in-game check, same as the mouse-mode switch itself.
+
+## 2026-08-04 (GB-5 take two) — the level_load() fix was too broad,
+## and a second, distinct-looking report turned out to be the same bug
+
+User confirmed GB-4/GB-5/GB-7 fixes but reported two NEW symptoms after
+retrying from a death: "dying is starting the dialogue again... showing
+the dialogue on top of the part where we're in 1st person shooting the
+terrorist" and, separately, "when shooting them there's no hit so we
+can't beat the stage."
+
+Root cause: my own previous fix for GB-5's `Death`-never-resets bug
+(`_do_level_load()`) reset EVERY declared global back to its initial
+value, mirroring `setup()`'s own init loop. Grepped `MoviePlaying`:
+`var MoviePlaying = 1;` is Range's own declared default, only ever set
+to 0 once (`DialogChoice==2`'s own body, once the intro dialogue
+finishes). My blanket reset put it back to 1 on every retry, so
+`main()`'s own `if (MoviePlaying==1) { DoDialog(4); ... }` re-triggered
+the WHOLE intro dialogue -- rendered as a UI overlay on top of the
+still-running shooting-gallery view underneath, since `action CamTarget`
+(started once at level load) is never stopped or restarted by a second
+`main()` call and keeps driving `camera.pan/tilt` the entire time.
+Real Acknex script globals are process-persistent across a level reload
+by design -- no shipped game replays its own intro on every retry --
+so a blanket "reset every global" was never the right model.
+
+The second report ("no hit registers") turned out to be the SAME bug,
+not a separate one: `action Terrorist`'s own coroutine has the identical
+`while (MoviePlaying == 1) { wait(1); }` gate before its "pop up" logic
+as `action CamTarget` does. With `MoviePlaying` incorrectly back at 1,
+every Terrorist entity re-blocked on that same gate, permanently unable
+to pop up or set `my.Pop = True` -- so `action TargetHit`'s own
+`if (my.Pop == True)` guard could never pass, and no shot could ever
+register, no matter how many terrorists the player clicked.
+
+Fixed: narrowed `_do_level_load()` to reset ONLY `Death` -- the one
+genuine, confirmed gap (grepped the whole corpus, nothing else ever
+resets it) -- instead of every declared global.
+
+Verified: `tools/smoke_range_retry_check.gd` extended to also assert
+`MoviePlaying` stays 0 after a real simulated retry (not reset to its
+declared default of 1). New `tools/smoke_range_retry_hit_check.gd`
+drives the EXACT reported sequence end to end -- first death, real
+retry via `invoke_event(null, "fRIP1")`, then forces a Terrorist into a
+hittable state and confirms `Terrorists` actually decrements afterward
+(15 -> 14). `smoke_dispatch` 19/19, all seven other Range regression
+tests still `OK`. `git status` zero asset deletions.

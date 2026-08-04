@@ -5,8 +5,15 @@ extends SceneTree
 ## Restart()'s own `if (Death==0)` guard permanently blocked any death
 ## after the first. Fixed by implementing `level_load()` (called by every
 ## level's own main(), including Range's retry path `fRIP1 { HideRIP();
-## main(); }`) to reset all globals to their declared initial values,
-## mirroring setup()'s own one-time init loop.
+## main(); }`) to reset `Death` specifically.
+##
+## Take two, narrower than the original fix: resetting ALL declared
+## globals (mirroring setup()'s own init loop) was confirmed live too
+## broad -- `var MoviePlaying = 1;` is Range's own declared default, only
+## ever set to 0 once the intro dialogue finishes, so a blanket reset
+## re-triggered the WHOLE intro dialogue on every retry, rendered on top
+## of the still-running shooting-gallery view underneath. This test now
+## also checks MoviePlaying stays untouched by the reset.
 ##
 ## Run: godot --headless --path . -s res://tools/smoke_range_retry_check.gd
 
@@ -39,6 +46,11 @@ func _run() -> void:
 	for i in 5:
 		await process_frame
 
+	# Match a real playthrough: intro dialogue already finished, so
+	# MoviePlaying is 0 (not its declared default of 1) by the time the
+	# player is actually shooting and can die.
+	interp.call("_set_var", "MoviePlaying", 0.0, null)
+
 	# First death.
 	interp.call("_set_var", "Health", 0.0, null)
 	for i in 15:
@@ -49,12 +61,13 @@ func _run() -> void:
 	interp.call("invoke_event", null, "fRIP1")
 	for i in 30:
 		await process_frame
-	print("after retry: Death=%s Health=%s Terrorists=%s Civilians=%s frozen=%s" % [
+	print("after retry: Death=%s Health=%s Terrorists=%s Civilians=%s frozen=%s MoviePlaying=%s (expect 0, NOT its declared default of 1 -- see GB-5 take-two)" % [
 		interp.call("_get_var", "Death", null),
 		interp.call("_get_var", "Health", null),
 		interp.call("_get_var", "Terrorists", null),
 		interp.call("_get_var", "Civilians", null),
 		interp.get("_frozen"),
+		interp.call("_get_var", "MoviePlaying", null),
 	])
 
 	# Second death -- should show RIP again now.
@@ -67,6 +80,11 @@ func _run() -> void:
 	var prip = panel_nodes.get("prip")
 	print("pRIP visible on second death=%s" % (prip.visible if prip else "MISSING"))
 
-	var ok: bool = interp.call("_get_var", "Death", null) == 1.0 and prip != null and prip.visible
-	print("OK" if ok else "FAIL: second death did not show RIP again")
+	var movie_playing_after_retry: float = interp.call("_get_var", "MoviePlaying", null)
+	var ok: bool = (
+		interp.call("_get_var", "Death", null) == 1.0
+		and prip != null and prip.visible
+		and movie_playing_after_retry == 0.0
+	)
+	print("OK" if ok else "FAIL: second death didn't show RIP again, or MoviePlaying got reset")
 	quit(0 if ok else 1)

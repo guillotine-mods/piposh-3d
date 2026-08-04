@@ -3343,16 +3343,25 @@ func _do_run(a: Array) -> float:
 
 ## See _register_builtins()'s "level_load" comment.
 func _do_level_load() -> float:
-	for g in _globals.values():
-		g["value"] = _eval_init(g.get("init"), null, g.get("kind", "var"))
-	# setup()'s own one-time init is TWO steps, not one: the globals-init
-	# loop above, THEN _top_level_stmts (bare assignments like Range's own
-	# `on_mouse_left = Fire;` -- an event-handler binding, not a `var`
-	# declaration, so it lives in `_globals` with `init=null` and no
-	# record of its real value). Replaying only the first step reset it
-	# to `_default_for("var")` (0.0) and never restored it -- confirmed
-	# live: firing stopped working entirely after a retry
-	# (smoke_range_shoot.gd, "no Spark bullet entity found after firing").
-	for stmt in _top_level_stmts:
-		_exec_stmt_sync(stmt, null)
+	# 2026-08-04, take two: the first version of this fix reset EVERY
+	# declared global back to its initial value (mirroring setup()'s own
+	# init loop) -- confirmed live as too broad: `var MoviePlaying = 1;`
+	# is Range's own declared default, only ever set to 0 once the intro
+	# dialogue finishes (DialogChoice==2's own body), so resetting it back
+	# to 1 on retry re-triggered the ENTIRE intro dialogue every time,
+	# rendered as a UI overlay on top of the still-running shooting-
+	# gallery view underneath (action CamTarget's own coroutine, started
+	# once at level load, is never stopped or restarted by a second
+	# main() call, so it keeps driving camera.pan/tilt throughout). Real
+	# Acknex script globals are process-persistent across a level_load()
+	# by design -- no shipped game would replay its own intro on every
+	# retry -- so a blanket reset was never the right model in the first
+	# place. `Death` is the one genuine gap: nothing else in the WDL
+	# source ever resets it (grepped the whole corpus), so Restart()'s
+	# own `if (Death==0)` guard stayed permanently blocked after the
+	# first death. Reset it alone, narrowly, rather than guessing at a
+	# broader "which globals are session state vs. per-attempt state"
+	# rule from static analysis.
+	if _globals.has("Death"):
+		_globals["Death"]["value"] = 0.0
 	return 0.0
