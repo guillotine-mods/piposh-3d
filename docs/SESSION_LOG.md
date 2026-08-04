@@ -5492,3 +5492,66 @@ Verified: `smoke_dispatch` 19/19. All Range regression tests
 this round. `git status --short assets/` zero deletions throughout. Real
 confirmation of all four originally-reported symptoms still needs the
 user's own in-game check.
+
+## 2026-08-04 (GB-7 continued, round 3) — the death screen was captured
+## the whole time: no visible cursor, and a hidden cause of the aim drift
+
+User re-tested round 2: "the crosshair is better, but still its hard to
+control it with the mouse, and the location doesn't reset when we're
+restarting."
+
+Root cause of both, traced to one thing: `level_runner.gd` captures the
+mouse (hidden, locked, relative-delta-only) for the ENTIRE time a
+scripted-camera-aiming level runs, and nothing ever switched it back
+while `pRIP` (the death screen) was showing. The player had zero visible
+cursor to click Retry/Skip with -- only Godot's own internal virtual
+cursor position, tracked silently from accumulated relative motion with
+nothing rendered on screen. Clicking the death screen meant blindly
+wiggling the mouse and hoping. `GameHud.show_dialog()` already solves
+this exact problem for regular dialogue choices (`Input.mouse_mode =
+Input.MOUSE_MODE_VISIBLE;`, with its own comment: "Dialog needs a real
+OS cursor for TextureButton hit-testing") -- `pRIP` never got the same
+treatment.
+
+That same blind mouse-hunting is ALSO what broke round 2's "aim resets
+on retry" fix, even though the reset code itself was correct: `mickey`
+(`_vectors["mickey"]`, mouse delta) gets recomputed from `_mouse_delta`
+every single `_process()` tick regardless of `_frozen` -- freezing only
+gates WDL coroutines from *consuming* it via `wait()`, not the
+underlying accumulation. So whatever motion the player made hunting for
+the Retry button (with no visual feedback) was still sitting in
+`mickey` the instant `action CamTarget` resumed. `CamTarget`'s own
+FIRST post-resume statements are `my.pan = my.pan - mickey.x/SEN;
+my.tilt = my.tilt - mickey.y/SEN;` -- run BEFORE `camera.pan = my.pan;`
+ever executes -- so that leftover delta got applied on top of the
+freshly-reset spawn pose within the same tick it was reset, immediately
+un-resetting it. The camera-pose reset genuinely worked; it just got
+overwritten one statement later by stale input the player never
+intended as a "look" command.
+
+Fixed both together in `_set_panel_field()`'s "visible" case for
+`panel_prip` (same site as every other GB-5/GB-7 pRIP-triggered fix, so
+this stays as generic as the shared panel itself): on show, remember
+whatever `Input.mouse_mode` was active (`_mouse_mode_before_rip`, `-1`
+sentinel for "nothing to restore") and switch to
+`MOUSE_MODE_VISIBLE`; on hide, restore the remembered mode AND clear
+both `_mouse_delta` and `_vectors["mickey"]` in the same synchronous
+burst as the existing camera-pose reset, so `action CamTarget`'s first
+resumed tick starts from a clean zero delta instead of whatever the
+Retry click's own mouse motion happened to leave behind.
+
+Verified: new `tools/smoke_range_retry_mouse_reset_check.gd` reproduces
+the actual reported sequence end to end -- aims away from spawn,
+dies, injects a real `InputEventMouseMotion` (300,-150) simulating
+hunting for the Retry button while pRIP is up, clicks retry for real via
+`invoke_event(null,"fRIP1")`, and confirms `my.pan`/`my.tilt` land back
+on the exact spawn pose afterward (not nudged by the injected motion).
+`smoke_dispatch` 19/19. All eight other Range regression tests
+(`smoke_range_panels`, `smoke_range_shoot`, `smoke_range_hud_check`,
+`smoke_range_death_freeze`, `smoke_range_retry_check`,
+`smoke_range_retry_hit_check`, `smoke_range_mouse_capture`,
+`smoke_range_crosshair_check`) still `OK`. `git status --short assets/`
+zero deletions. Real confirmation still needs the user's own in-game
+check -- this is the third round of fixes for the same underlying
+"aiming/mouse feel confusing" report, each round finding a real,
+distinct, previously-invisible-to-static-analysis cause.
