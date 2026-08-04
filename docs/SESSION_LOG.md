@@ -5555,3 +5555,42 @@ zero deletions. Real confirmation still needs the user's own in-game
 check -- this is the third round of fixes for the same underlying
 "aiming/mouse feel confusing" report, each round finding a real,
 distinct, previously-invisible-to-static-analysis cause.
+
+## 2026-08-04 (GB-7 round 4) — Space-to-recenter, and warping the
+## cursor to center whenever it becomes visible
+
+User: still not 100% working, but asked to push what's there and move
+on to two specific QOL additions instead of chasing the remaining feel
+issue further right now: recenter the cursor to the middle, and add a
+`Space` key that resets the cursor to the middle of the screen.
+
+Implemented both as one feature, reusing round-3's own reset/clear
+logic rather than duplicating it: `WdlInterpreter.recenter_aim()` (new,
+public -- no leading underscore, since `level_runner.gd` calls it
+directly the same way it already calls the public
+`uses_mickey_aiming()`) calls the existing `_reset_camera_spawn_pose()`,
+clears `_mouse_delta`/`_vectors["mickey"]` (same reasoning as the
+post-retry drift fix: a stale in-flight delta would otherwise nudge the
+pose right back off-center on the very next tick), and warps the OS
+cursor to the window center if it's currently visible. `level_runner.gd`
+wires `KEY_SPACE` in its own `_unhandled_input()` to
+`_try_recenter_aim()`, gated by `uses_mickey_aiming()` -- Space already
+does something else project-wide (`WdlDirector`'s own skip-dialogue-line
+binding, a no-op when nothing's playing, so no real conflict for Range),
+and only scripted-camera-aiming levels have a meaningful "spawn pose"
+for it to mean anything.
+
+Also applied the same cursor-warp to the existing pRIP-visible path
+(`_set_panel_field()`'s "visible" case, GB-7 round 3's mouse-visibility
+fix): making the cursor visible again after a long CAPTURED stretch
+previously left it wherever the OS silently placed it (often a corner,
+since nothing was rendering/watching it) -- now it's warped to center
+the same moment it becomes visible, so the player finds it right where
+the Retry/Skip buttons cluster instead of hunting for it first.
+
+Verified: new `tools/smoke_range_recenter_check.gd` aims away from
+spawn (no death involved), synthesizes a real `KEY_SPACE`
+`InputEventKey` through `level_runner._unhandled_input()`, and confirms
+`my.pan`/`my.tilt` land back on the spawn pose. `smoke_dispatch` 19/19.
+All nine other Range regression tests OK. `git status --short assets/`
+zero deletions.
