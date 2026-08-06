@@ -5943,3 +5943,73 @@ and reverted after its own regression) is a separate, smaller concern
 that may still matter once this fix is confirmed in-game -- flagged in
 `docs/BUGS.md` as worth re-checking with a fresh shot log if any misses
 still land close to a target rather than far away.
+
+## 2026-08-07 (GB-8 round 2) — the hit check ignored height, hurting
+## far shots specifically
+
+User, after the previous fix: "It works better, but now the further
+away the terroris is, the most likely that i still can't hit him. The
+close ones work better," with a second real shot log (closest_dist
+mostly 70-90 units, occasionally under the 28-unit hit radius).
+
+First checked whether `my.roll` was the culprit -- `action CamTarget`'s
+own `SkyTilt` drift accumulates into `my.roll` (soft-capped ~20
+degrees), the CAMERA shows `my.roll/SEN` (a damped, ~3x smaller visual
+roll) but `CreateSpark()` rotates the actual bullet by the full,
+undivided `player.roll` -- a real asymmetry authored into the original
+WDL script itself (not introduced by this port), and a plausible source
+of an invisible, distance-scaling aim error. Tested directly (fire the
+same precise shot with roll=0 vs roll=±15): confirmed roll changes the
+SAMPLED closest-approach a lot, but an exact geometric check (closest
+point on the bullet's own straight-line path to the target, independent
+of any per-frame sampling) came back IDENTICAL for roll=0 and roll=15 --
+mathematically correct, since roll rotates around the pointing axis
+itself and can't move that axis. Roll ruled out; the sampled variance
+was a different artifact (see below).
+
+That same analytic check was the real clue: for a "roll=0" shot, the
+bullet's TRUE trajectory line passed within ~13 units of the target
+(well inside the 28-unit hit radius) -- but the bullet kept dying
+early anyway, well before reaching that point. Added a temporary
+`impact-debug` trace (removed after diagnosis) logging exactly which
+two entities triggered each impact event: the bullet was dying against
+OTHER, unrelated entities along its path, not the intended target or
+anything already fixed. Root cause: `_check_impact_proximity()`'s
+XZ-only (horizontal) distance check -- written for the walker-vs-static-
+target case, where a walker's Y is artificially pinned to spawn height
+by a missing floor-snap and genuinely should be ignored -- is flatly
+wrong for a real 3D projectile. A shot aimed at a FAR target flies over
+or under any NEARER target sitting in roughly the same XZ column at a
+different height; since height was ignored, that nearer target's own
+zone (or the bullet's own zone checking it) claimed the shot anyway,
+long before it ever reached the intended one. More distance simply
+means more nearer targets/scenery for the flight path to pass close to
+in XZ, regardless of how far off in height they actually are.
+
+Fixed with a new `_moved_from_spawn_y()` check: use real 3D distance
+for a pair whenever EITHER side has genuinely moved in height from its
+own spawn position (a bullet in flight, or a target mid pop-up/duck-
+down animation) -- entities that haven't moved in Y keep the exact
+original XZ-only behavior, so nothing changes for the walker-vs-static-
+target case (Shiks' own Bumpin/Snail trigger: neither the walker nor
+Bumpin ever moves in Y, so this never engages there). Needed one more
+piece: runtime `create()`'d entities (every fired bullet) never went
+through `WmbLevelLoader`'s own spawn path, so they never had a
+`wdl_spawn_position` snapshot to compare against -- added one directly
+in `_do_create()` at creation time.
+
+Verified: `smoke_range_aim_check.gd` re-run six more times after this
+fix, 4/6 hits (on top of the earlier 4/5 and 3/3 from GB-8's first
+fix) -- 10/11 total across this session's testing, up from 0/8 before
+any of today's GB-8 work. Tried building a broader "fire at all 20
+targets, near and far" test to directly chart hit-rate-vs-distance, but
+hit an unrelated test-harness limitation (rapid synthetic mouse clicks
+without a real per-frame gap apparently desync `action Handgun`'s own
+`FireLength` cooldown decay after ~2 shots -- confirmed this is a test
+artifact, not a real gameplay bug, since the user's own actual
+playthrough logs show many shots firing successfully in sequence) --
+abandoned that test rather than chase a harness issue unrelated to the
+actual fix. `smoke_dispatch` 19/19. Full regression suite (16 tests)
+including all three Shiks impact-proximity tests OK -- checked
+particularly carefully given this change touches the same shared
+proximity mechanism. `git status --short assets/` zero deletions.
