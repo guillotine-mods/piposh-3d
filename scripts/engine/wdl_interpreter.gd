@@ -451,10 +451,27 @@ func _build_panel(pname: String, decl: Dictionary) -> void:
 	# default any button-containing panel that omits one to a high
 	# z-index instead of the generic 0 fallback.
 	var has_button: bool = not (fields.get("button", []) as Array).is_empty()
+	var has_explicit_layer: bool = not (fields.get("layer", []) as Array).is_empty()
 	var layer_default := "50" if has_button else "0"
 	root.z_index = clampi(int(_panel_field_first(fields, "layer", layer_default)), -4096, 4096)
 	root.visible = false  # every real usage in the corpus explicitly turns panels on when needed
-	_hud.get_panel_root().add_child(root)
+	# GB-7 continued (2026-08-06, Range): "the skip button is still beneath
+	# the graphic that's shown when we die." Two prior attempts at this
+	# (the z_index default above, then an explicit tree reorder --
+	# _reorder_panels_by_layer()) both should have put a button panel like
+	# this on top within GameHud's own shared CanvasLayer, and both were
+	# reported live as not actually fixing it. Moved to a mechanism this
+	# project already relies on and knows works reliably instead: any
+	# button-bearing panel that never claimed its own explicit layer (the
+	# exact same "author forgot a layer value" case as above) mounts on
+	# GameHud's dedicated overlay CanvasLayer instead, which always draws
+	# over everything in its normal one regardless of z_index/tree order --
+	# see GameHud._overlay_layer's own comment. A panel WITH an explicit
+	# layer (pRIP=20, pCongrat=4) keeps its author-intended position in the
+	# normal stack instead.
+	var use_overlay := has_button and not has_explicit_layer
+	var panel_root: Control = _hud.get_overlay_panel_root() if use_overlay else _hud.get_panel_root()
+	panel_root.add_child(root)
 	_panel_nodes[pname.to_lower()] = root
 
 	var bmap_name := _panel_field_first(fields, "bmap")
@@ -686,15 +703,6 @@ func _set_panel_field(node: Control, low: String, value: Variant) -> void:
 					# "need a real OS cursor for hit-testing" handling.
 					_mouse_mode_before_rip = Input.mouse_mode
 					Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-					# QOL (2026-08-04, Range): "reset the cursor to the
-					# middle." Making the OS cursor visible again after a
-					# long CAPTURED stretch leaves it wherever the OS last
-					# placed it (often a screen edge/corner, since it was
-					# never actually being watched) -- warp it to the
-					# window's own center so the player finds it right
-					# where the Retry/Skip buttons cluster, instead of
-					# having to go hunt for it first.
-					_warp_mouse_to_center()
 				elif was_visible:
 					# Unfreeze immediately -- matches `HideRIP()`'s own
 					# `pRIP.visible = off;`, which always runs synchronously
@@ -708,6 +716,15 @@ func _set_panel_field(node: Control, low: String, value: Variant) -> void:
 					if _mouse_mode_before_rip != -1:
 						Input.mouse_mode = _mouse_mode_before_rip as Input.MouseMode
 						_mouse_mode_before_rip = -1
+					# GB-7 continued (2026-08-06, Range): "the pointer
+					# should be reset after we click to restart the
+					# stage, not after we die." Moved from the `now_visible`
+					# (death) branch above to here -- warping right as pRIP
+					# shows meant the cursor jumped the instant the player
+					# died, before they'd even clicked anything; the player
+					# wanted the reset tied to the Retry click itself
+					# instead, the same moment gameplay actually resumes.
+					_warp_mouse_to_center()
 					# GB-7 continued (2026-08-04, Range): "the [aim]
 					# location doesn't reset when we're restarting."
 					# Whatever mouse motion the player made clicking

@@ -13,6 +13,8 @@ var show_debug := false
 
 var _scale := 1.0
 var _root: Control
+var _overlay_layer: CanvasLayer
+var _overlay_root: Control
 var _cursor: TextureRect
 var _p_som: TextureRect
 var _p_ovr: TextureRect
@@ -49,6 +51,32 @@ func _ready() -> void:
 	_root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_root)
+
+	# GB-7 continued (2026-08-06, Range): "the skip button is still beneath
+	# the graphic that's shown when we die." Two earlier fixes (a z_index
+	# default, then an explicit `move_to_front()` tree reorder -- see
+	# WdlInterpreter._reorder_panels_by_layer()) both should have put
+	# pSkip visually on top within this same CanvasLayer, and both were
+	# reported live as not actually fixing it. Rather than keep guessing
+	# at why intra-layer z_index/tree-order isn't winning here, moved to a
+	# mechanism this project already relies on and knows works reliably:
+	# a SEPARATE CanvasLayer with a strictly higher `layer` number always
+	# draws over everything in a lower one, unconditionally, regardless of
+	# z_index or tree position within either layer (the same guarantee
+	# already used for the loading screen (40) and level-select menu (30)
+	# sitting over ordinary gameplay/HUD (20) here). `_overlay_root` mirrors
+	# `_root`'s own scale/position every `_layout()` call so panels parented
+	# under it still use the identical 640x480 design-space coordinates as
+	# every other panel.
+	_overlay_layer = CanvasLayer.new()
+	_overlay_layer.name = "HudOverlay"
+	_overlay_layer.layer = 21
+	add_child(_overlay_layer)
+	_overlay_root = Control.new()
+	_overlay_root.name = "OverlayDesignRoot"
+	_overlay_root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_overlay_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_overlay_layer.add_child(_overlay_root)
 
 	_p_som = _tex("pSom", "")
 	_p_ovr = _tex("pOvr", "")
@@ -173,6 +201,14 @@ func set_zoom_digit(zoom: int) -> void:
 ## conversion.
 func get_panel_root() -> Control:
 	return _root
+
+
+## See `_overlay_layer`'s own comment in _ready(). Same 640x480 design
+## space and coordinate convention as `get_panel_root()` -- the only
+## difference is the CanvasLayer it's rendered through, which always
+## draws above everything from `get_panel_root()`, unconditionally.
+func get_overlay_panel_root() -> Control:
+	return _overlay_root
 
 
 func set_range_hud(text: String) -> void:
@@ -454,6 +490,9 @@ func _layout() -> void:
 		(vp.y - DESIGN.y * _scale) * 0.5
 	)
 	_root.size = DESIGN
+	_overlay_root.scale = _root.scale
+	_overlay_root.position = _root.position
+	_overlay_root.size = DESIGN
 	if _crawl_active:
 		PiposhDebug.log_msg(
 			"hud-event",
