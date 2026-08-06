@@ -494,6 +494,22 @@ func _spawn_entity(obj: Dictionary) -> bool:
 	# same way everywhere.
 	if _is_camera_action(action) or stem.to_lower() == "cam" or flag_invisible or action.to_lower() == "dummy":
 		_hide_meshes(root)
+		# GB-8 continued (2026-08-07, Range): "none of my shots were
+		# triggered even when they were accurate." A `Cam.MDL`-stem
+		# placeholder with action "CameraEngine" (unmatched -- no such
+		# action is declared anywhere Range.wdl includes, so it runs no
+		# script and just sits there) turned out to be positioned close
+		# enough to the shooter's own line of fire to catch a fired
+		# bullet within its first frame or two of travel almost every
+		# time, well before it ever reached a real target --
+		# `WdlInterpreter._check_impact_proximity()`'s own generic
+		# entity-vs-entity distance check has no notion of "this thing
+		# isn't really here," so an invisible camera-rig marker was just
+		# as solid an obstacle as any real target. Every marker hidden
+		# right here for the exact same reason (a pure logic/position
+		# helper, never meant to be a physical presence in the game
+		# world) gets flagged so that check can skip it too.
+		root.set_meta("wdl_non_physical", true)
 
 	if _is_trigger_action(action) or (is_wmb and action.to_lower().contains("door")):
 		var area := Area3D.new()

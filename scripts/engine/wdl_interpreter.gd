@@ -876,6 +876,17 @@ func begin_level() -> void:
 			_seed_reveal_only_hidden(node, _actions[resolved_action].get("body", {}))
 			_seed_static_pose_if_never_animated(node, _actions[resolved_action].get("body", {}))
 			_run_coroutine(_actions[resolved_action].get("body", {}), node)
+			# GB-7 continued (2026-08-07, Range): see `_reset_entity_to_spawn()`'s
+			# own comment -- captured HERE, after `_run_coroutine()` returns,
+			# so it reflects whatever the action's own synchronous init
+			# statements (everything before its first `wait()`) already
+			# computed, e.g. `action Terrorist`'s own `my.OriginalZ = my.z;`.
+			# `_run_coroutine()` only returns this early because coroutines
+			# run purely synchronously up to their first real yield point --
+			# by the time control comes back here, that init has already
+			# happened for real, not merely been scheduled.
+			node.set_meta("wdl_spawn_custom_fields", _snapshot_custom_fields(node))
+			node.set_meta("wdl_spawn_skills", (node.get_meta("wdl_skills", []) as Array).duplicate())
 			started += 1
 		else:
 			unmatched[action] = unmatched.get(action, 0) + 1
@@ -2016,6 +2027,44 @@ func _ensure_impact_area(node: Node3D) -> void:
 	area.body_entered.connect(_on_impact_body_entered.bind(node))
 	area.body_exited.connect(_on_impact_body_exited.bind(node))
 	_impact_zones.append({"node": node, "radius": radius, "offset": Vector3.ZERO})
+	# GB-8 continued (2026-08-07, Range): "none of my shots were
+	# triggered even when they were accurate," every logged shot dying
+	# within a near-constant, aim-independent distance of its target
+	# (matching "distance from the FIXED shooter position," not an
+	# actually-traveled bullet path). Root cause: Range's own `action
+	# Spark` sets `my.enable_impact=on;` as its own very FIRST statement,
+	# before it has moved at all -- and `CreateSpark()` spawns the bullet
+	# AT `player.x` (the shooter's own position). The zone created here
+	# is centered right on top of the shooter, so `_check_impact_proximity()`'s
+	# very next tick found the shooter itself already inside the bullet's
+	# own zone and fired `SparkHit` on it immediately, before its first
+	# `wait(1)` (and therefore its first real movement) ever ran -- the
+	# bullet never actually traveled anywhere. This is a generic gap, not
+	# Spark-specific: `_impact_touching` debounces re-firing for an
+	# entity that's STILL in range, but a brand new zone starts with an
+	# EMPTY touching set, so anything already overlapping at the exact
+	# moment `enable_impact` turns on reads as "just walked in" on the
+	# very first check -- matching real physics semantics only for
+	# entities that start apart and approach, never for one spawned
+	# already touching another (a projectile at its own shooter, or any
+	# entity created overlapping something else). Pre-seed `_impact_touching`
+	# with whatever is ALREADY in range right now, silently -- so only a
+	# genuinely NEW approach after this point can ever fire an event.
+	var pre_touching := {}
+	var entities: Node = _loader.get_node_or_null("Entities") if _loader != null else null
+	if entities != null:
+		for other in entities.get_children():
+			if other == node or not (other is Node3D) or not is_instance_valid(other):
+				continue
+			if not _entity_alive(other):
+				continue
+			if (other as Node3D).get_meta("wdl_non_physical", false):
+				continue
+			var dx := node.global_position.x - (other as Node3D).global_position.x
+			var dz := node.global_position.z - (other as Node3D).global_position.z
+			if dx * dx + dz * dz <= radius * radius:
+				pre_touching[other] = true
+	_impact_touching[node] = pre_touching
 
 
 ## `body_entered` has no debounce of its own: a CharacterBody3D sliding
@@ -2101,6 +2150,8 @@ func _check_impact_proximity() -> void:
 			if other == node or not (other is Node3D) or not is_instance_valid(other):
 				continue
 			if not _entity_alive(other):
+				continue
+			if (other as Node3D).get_meta("wdl_non_physical", false):
 				continue
 			# Horizontal-plane distance only (ignore Y). Movers in this port
 			# are plain Node3D translated by _do_actor_move() with no floor
@@ -3757,12 +3808,28 @@ func _reset_all_entities_to_spawn() -> void:
 ## named "Pop", which `_get_field()`/`_set_field()`'s generic fallback
 ## (see their own "Generic custom-field fallback" comments) stores as its
 ## own independent `wdl_custom_pop` meta key, completely disconnected
-## from the `skills`/`wdl_skills` array. This is how EVERY named-but-
-## undeclared field in the whole corpus already works here, not a
-## Range-specific gap -- so the actual fix is generic too: clear every
-## `wdl_custom_*` meta key the entity has accumulated, not just
-## `wdl_skills`, putting any field a script has ever named-written on
-## this entity back to its unset (0.0-reads-back) default.
+## from the `skills`/`wdl_skills` array.
+##
+## Second implementation blanket-ERASED every `wdl_custom_*` key instead
+## of restoring a snapshot, and was ALSO confirmed live as wrong, in the
+## opposite direction: "after the first reset, the character heads are
+## not moving up... as they were." `action Terrorist`'s own body sets
+## `my.OriginalZ = my.z;` (its resting height, read back by both the
+## "pop up" and "duck back down" branches every tick) as a genuine ONE-
+## TIME init, executed once, synchronously, before its first `wait()` --
+## the coroutine itself is never restarted on retry (only `main()` is),
+## so nothing ever runs that line again. Erasing `wdl_custom_originalz`
+## left it permanently reading back as the generic `0.0` default after
+## the first retry, so `if (my.z > my.OriginalZ+60)` / `if (my.z <
+## my.OriginalZ)` -- the pop-up/duck-down thresholds -- silently broke
+## for good. Fixed by capturing a real snapshot instead of guessing at
+## "erased == freshly spawned": `begin_level()` now records EVERY
+## `wdl_custom_*` key (and `wdl_skills`) right after `_run_coroutine()`
+## returns for each entity -- since coroutines run synchronously up to
+## their first real `wait()`, that snapshot reflects exactly what the
+## action's own one-time init already computed (`OriginalZ` included),
+## not a blind guess at what "reset" should mean. Reset now restores
+## from that snapshot; still generic, not Terrorist/Civilian-specific.
 func _reset_entity_to_spawn(node: Node3D) -> void:
 	if node.has_meta("wdl_spawn_position"):
 		node.global_position = node.get_meta("wdl_spawn_position")
@@ -3771,11 +3838,14 @@ func _reset_entity_to_spawn(node: Node3D) -> void:
 	var spawn_roll: float = float(node.get_meta("wdl_spawn_roll", node.get_meta("roll", 0.0)))
 	_set_entity_tilt_roll(node, spawn_tilt, spawn_roll)
 	_set_entity_pan(node, spawn_pan)
-	if node.has_meta("skills"):
-		node.set_meta("wdl_skills", (node.get_meta("skills", []) as Array).duplicate())
+	if node.has_meta("wdl_spawn_skills"):
+		node.set_meta("wdl_skills", (node.get_meta("wdl_spawn_skills", []) as Array).duplicate())
 	for key in node.get_meta_list():
 		if String(key).begins_with("wdl_custom_"):
 			node.remove_meta(key)
+	var snapshot: Dictionary = node.get_meta("wdl_spawn_custom_fields", {})
+	for key in snapshot:
+		node.set_meta(key, snapshot[key])
 	# `skin` (Range's own hit-reaction skin swap, `my.skin = my.base + 2;`)
 	# is its OWN dedicated meta key too, not a `wdl_custom_*` one -- see
 	# _get_field()/_set_field()'s own "skin" case. No level in the corpus
@@ -3786,6 +3856,18 @@ func _reset_entity_to_spawn(node: Node3D) -> void:
 	# spawned" value, not just a guess.
 	if node.has_meta("skin"):
 		node.remove_meta("skin")
+
+
+## See `_reset_entity_to_spawn()`'s own comment for why/when this is
+## captured. `{key: value}` for every `wdl_custom_*` meta currently on
+## `node` -- a generic, name-agnostic snapshot, not a Range-specific
+## field list.
+func _snapshot_custom_fields(node: Node3D) -> Dictionary:
+	var snapshot := {}
+	for key in node.get_meta_list():
+		if String(key).begins_with("wdl_custom_"):
+			snapshot[key] = node.get_meta(key)
+	return snapshot
 
 
 ## See _set_panel_field()'s "visible" case and recenter_aim()'s own
