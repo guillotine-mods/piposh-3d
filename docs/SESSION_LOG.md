@@ -5746,3 +5746,82 @@ tests) plus all three Shiks impact-proximity tests
 `smoke_shiks_walk_to_bumpin_real`) OK both before attempting the
 collision-radius change and after reverting it. `git status --short
 assets/` zero deletions throughout.
+
+## 2026-08-07 (GB-7 round 7 + GB-8 continued) — enemies now reset on
+## retry, and a real `define`-as-alias gap found along the way; shot-
+## tracking logs added for GB-8
+
+User: "restarting the stage after dying should reset the enemies on
+screen as well," and separately, "can you add click logs for this
+stage so I could tell you why shooting enemies doesn't 'hit' them?"
+
+**Entity reset on retry.** Nothing in the retry path (round 6's own
+camera/mickey reset included) ever touched the TARGET entities
+themselves -- an already-popped-up or already-hit Terrorist/Civilian
+kept its live position, tilt/roll, and Pop/Dying/GoingUp state exactly
+as it was through a retry, since real Acknex's own `level_load()`
+genuinely respawns every entity fresh and this port's own
+`level_load()` is a deliberate no-op (the level's already loaded).
+Added `wdl_spawn_position` (`wmb_level_loader.gd`, mirroring the
+existing `wdl_spawn_pan/tilt/roll`, captured AFTER `add_child()` so it
+reflects feet-snap and every other spawn-time adjustment already
+applied, not the raw pre-adjustment WED origin) and a new
+`_reset_all_entities_to_spawn()`/`_reset_entity_to_spawn()` pair, called
+from the same synchronous burst as the existing camera-pose reset in
+`_set_panel_field()`'s "visible" case, for every entity except `player`
+(which keeps its own dedicated reset).
+
+First implementation only reset `wdl_skills` (this file's storage for
+direct numeric `my.skillN` access) and, tested live (forced a Terrorist
+into a hit state, then retried), did NOTHING for `Pop`/`Dying`/
+`GoingUp`/`Type`/`OriginalZ` at all. Root cause, found by checking the
+actual pristine `skills` meta size (8 elements) against where `Pop`
+(`define Pop,skill20;`) would need to live (index 19): this port's own
+WDL parser (`tools/parse_wdl.py`'s "define" case) treats every
+`define NAME,VALUE;` as an ordinary GLOBAL VARIABLE declaration, not a
+real compile-time alias/macro table. Reasonable for the one case that
+motivated adding "define" support at all (`WDL/movement.wdl`'s
+`_MODE_WALKING`/`_MODE_STILL`, genuine constants), wrong for Range's
+own `define Pop,skill20;` idiom -- no alias resolution happens at parse
+time, so `my.Pop` never becomes `my.skill20` in the AST. It stays a
+field access literally named "Pop", which `_get_field()`/`_set_field()`'s
+existing generic custom-field fallback stores as its own independent
+`wdl_custom_pop` meta key, completely disconnected from the
+`skills`/`wdl_skills` array -- confirmed this is how EVERY named-but-
+undeclared field already works corpus-wide here, not a Range-specific
+gap. Fixed by also clearing every `wdl_custom_*` meta key on reset
+(plus `skin`, a separate dedicated key for Range's own hit-reaction
+skin swap). Verified via `tools/smoke_range_retry_entity_reset_check.gd`:
+forces a Terrorist into a live hit state (moved position, tilt/roll,
+`Pop`, `skin` all set), retries for real, confirms all four land back
+on their exact spawn values.
+
+**Shot-tracking logs for GB-8.** Added a `"range-shot"` tag (same
+`PiposhDebug.log_msg` convention as the existing `wdl-event`/
+`feet-snap` tags, kept in rather than removed after use since GB-8 is
+still open) that logs every bullet ("Spark") from spawn through
+removal: `_do_create()` logs `FIRED pos=...` the moment one's created,
+and `_check_impact_proximity()`'s own existing per-frame distance loop
+(piggybacked onto rather than duplicated) now also tracks each Spark's
+closest REAL 3D distance (not the XZ-only one the impact check itself
+uses) to any live Terrorist/Civilian, logging `REMOVED spawn_pos=...
+closest_dist=... closest_target=...` the moment the bullet is actually
+gone. Combined with the existing `wdl-event` log's own `TargetHit`
+lines, a real playthrough's log can now show, per shot, whether it hit
+(TargetHit appears), missed close (REMOVED with a small closest_dist --
+points at GB-8's own radius/precision theory), or missed by a lot
+(large closest_dist -- points at an aim problem instead) -- without
+needing to reproduce anything live in a headless test. Verified via new
+`tools/smoke_range_shot_log_check.gd` (fires a real shot, confirms
+`_spark_shot_log` gets populated) and by eye in this session's own
+test output: a real fired shot logged `FIRED pos=(-50.0,128.0,-326.0)`
+then `REMOVED spawn_pos=(-50.0,128.0,-326.0) closest_dist=96.7
+closest_target=Fakeguy_mdl_034`. Godot writes `print()`/`PiposhDebug`
+output to a rotating log file by default (`user://logs/godot.log`,
+project name "Piposh 3D Alpha" -> `%APPDATA%\Godot\app_userdata\Piposh
+3D Alpha\logs\godot.log` on Windows) -- told the user where to find it
+so they can send back a real in-game shot log.
+
+Verified: `smoke_dispatch` 19/19. Full Range regression suite (13
+tests) plus all three Shiks impact-proximity tests OK. `git status
+--short assets/` zero deletions.
