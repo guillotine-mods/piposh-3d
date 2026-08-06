@@ -6072,3 +6072,96 @@ it. Real confirmation from an actual playthrough still needed -- this
 was the third consecutive report on the same underlying "can't hit
 targets" theme, each round finding a real, distinct, previously-
 invisible-to-static-analysis contributor.
+
+## 2026-08-07 (GB-8 round 4) — replacing the whole bullet-travel model
+## with an instant hitscan raycast, per direct user request
+
+User, after round 3: "can we remove the bullets and just check if the
+mouse clicked on the target or not?" -- a request to abandon the
+physical-bullet-travel model entirely rather than keep refining its own
+approximations, which is exactly what every round of GB-8 so far had
+been chasing (self-kill at spawn, non-physical markers, ignored height,
+radius sizing).
+
+Range/Final/Shooter/InShrine's shared `ACTION Spark` (the bullet, once
+`CreateSpark()` spawns it) moves via `move()` every tick and relies on
+this port's own approximate impact-zone proximity check to detect a
+hit -- a deliberate reimplementation of Acknex's own physics-based
+projectile collision, necessarily approximate since this port has no
+real per-tick collision-response engine for moving entities the way
+Acknex's own physics does. Replaced it with a single INSTANT RAYCAST,
+fired the moment a "Spark" entity would have been created (`_do_create()`'s
+own dispatch), along the exact direction `CreateSpark()` already
+computed and rotated via `vec_rotate()` -- read directly from the
+`shot_speed` global vector, so this needs no per-level knowledge at
+all: Shooter's own extra crossbow-delay/animation logic all runs BEFORE
+`create()` and is completely untouched, only what happens once a
+"Spark" actually exists changes. The bullet entity itself is never kept
+around -- no coroutine started, `queue_free()`d immediately, matching
+"remove the bullets" literally.
+
+The raycast runs against Godot's own real physics, using the SAME real
+mesh collision shapes `_add_mesh_collision()` already builds for every
+solid entity and every wall (confirmed live: Range's own Terrorist
+targets already had real `StaticBody3D`/trimesh `CollisionShape3D`
+children from this pre-existing, general-purpose mechanism) -- pixel-
+precise against the actual visible model, not an approximation, so it's
+immune BY CONSTRUCTION to every issue rounds 1-3 spent so long finding
+and fixing.
+
+Needed two "skip past, don't stop" exceptions on top of a bare raycast,
+both found via a new dedicated test
+(`tools/smoke_range_hitscan_check.gd`) rather than guessed at:
+
+1. A bare raycast from the shooter's own position immediately hit
+   `action Handgun` -- the first-person weapon view-model, which (like
+   any ordinary MDL entity) gets a real collision shape too, but was
+   never meant to physically block its own gunfire. The same class of
+   problem the old bullet-travel model's own pre-seed fix (round 1)
+   solved for "whatever is already touching the shot at its own
+   origin." Generic fix, not Handgun-specific: an entity that never
+   called `enable_impact` (no `wdl_event`) never opted into interacting
+   with impacts at all -- skip past it and keep tracing, excluding what
+   was just hit each time.
+
+2. Even past the Handgun, several real (non-tilt-clamped) far targets
+   still came back hitting pure geometry partway there. The old
+   `move()`-based bullet never checked wall/brush collision AT ALL
+   (`_do_move_call()` is a bare position add, no physics), so nothing in
+   Range's own shooting booth (the counter/rail the player looks out
+   over) had EVER blocked a shot before -- switching to a real raycast
+   made that geometry suddenly solid for gunfire for the first time,
+   which would have made FAR targets specifically harder to hit all
+   over again (a shallow-angle shot toward a far target stays close to
+   the counter's own height for longer than a steep shot toward a near
+   one) -- not a bug in the raycast itself, but a real behavior change
+   from the system it replaced. Skipped past pure geometry too, matching
+   the old system's own permissiveness, so only an actual impact-enabled
+   entity (or running out of range/iteration budget, capped at 20) ever
+   stops a shot.
+
+Updated `tools/smoke_range_shoot.gd` and `tools/smoke_range_aim_check.gd`
+(this session's own primary Range verification tools throughout) for
+the new instant-resolution model -- both used to track a spawned
+`Spark` entity's own position over several frames, which no longer
+exists to track; now check the outcome directly (Terrorists count
+before/after a simulated click). Removed `tools/smoke_range_shot_log_check.gd`
+and `tools/smoke_range_spark_self_kill_check.gd` (tested mechanisms --
+`_spark_shot_log`, a returned `Spark` node from `_do_create()` -- that
+no longer exist post-replacement). Left the underlying `_ensure_impact_area()`/
+`_check_impact_proximity()` machinery and ALL of rounds 1-3's own fixes
+to it fully in place -- Range's own bullets no longer use it at all, but
+it's still the correct, active mechanism for everything else that
+shares it (Terrorist/Civilian/Window/TV/Barrel proximity, and Shiks' own
+Bumpin/Snail walk-into trigger).
+
+Verified: `smoke_range_aim_check.gd` 10/10 across two batches -- notably
+including the SAME target whose required tilt exceeds `CamTarget`'s own
+`[-15,45]` clamp (round 3's documented, deliberately-unfixed limitation)
+-- the real mesh collision shape's own actual size is forgiving enough
+that even a few degrees of unavoidable aim error still lands on the
+model. `smoke_dispatch` 19/19. Full Range regression suite (14 tests,
+each run with an individual timeout after `smoke_range_shot_log_check.gd`
+hung once mid-development on a stale, now-deleted API reference) plus
+all three Shiks impact-proximity tests OK. `git status --short assets/`
+zero deletions.
