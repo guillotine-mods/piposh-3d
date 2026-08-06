@@ -6013,3 +6013,62 @@ actual fix. `smoke_dispatch` 19/19. Full regression suite (16 tests)
 including all three Shiks impact-proximity tests OK -- checked
 particularly carefully given this change touches the same shared
 proximity mechanism. `git status --short assets/` zero deletions.
+
+## 2026-08-07 (GB-8 round 3) — safely re-widening the hit radius, and a
+## separate, noted-not-fixed tilt-clamp limitation
+
+User, after round 2's height-aware fix: "it still doens't hit far
+targets accuratley."
+
+First re-checked whether the tilt clamp (`action CamTarget`'s own
+`[-15,45]`) explained it -- computed the exact required tilt for all 20
+real targets from the fixed camera position. 4 fall outside the clamp
+(as low as -18°, meaning the player is physically unable to aim
+precisely enough at them no matter how they move the mouse) -- a real,
+genuine limitation, authored into the original WDL script itself (not
+introduced by this port). But the pattern was backwards from the
+report: required tilt gets SHALLOWER (less extreme, easier) the FARTHER
+a target is -- the 4 unreachable ones are among the CLOSER targets, not
+the far ones. Noted in `docs/BUGS.md` as a real, separate, unfixed
+limitation (fixing it would mean deviating from the original script's
+own authored clamp), but ruled out as the explanation for THIS report.
+
+Reconsidered the actual explanation instead: a precisely-computed aim
+(this session's own test harness, not real mouse control) already lands
+correctly most of the time -- the underlying aim/travel math is sound.
+A real player's own mouse aim is never as precise as a synthetic test's
+though, and any small angular imprecision (mouse feel, sensitivity, a
+few pixels of hand tremor) turns into a much bigger positional miss the
+farther the target is, purely from geometry -- meaning the flat 28-unit
+hit radius (sized for the unrelated "walked into it" mechanic this
+whole system was originally built for) leaves very little real-world
+margin at range even with genuinely correct aim math.
+
+This exact fix (scale the hit radius to each target's own mesh
+footprint, ~80 units for a `Fakeguy`) was tried once already
+(2026-08-06) and reverted after a real regression: an 80-unit sphere is
+wide enough that two nearby targets started falsely detecting each
+other with nothing shot. Recognized that BOTH root causes of that
+regression are already fixed as of this session's own rounds 1-2: a
+brand new impact zone firing against whatever it started already
+touching (round 1's pre-seed fix) would have been exactly what let two
+STATIC neighboring targets falsely "newly" detect each other at radius-
+widen time, and round 2's height-aware check would catch a differently-
+positioned neighbor that round 1 didn't. Re-enabled the mesh-based
+radius scaling with both fixes already in place, and this time
+`smoke_range_death_freeze.gd` -- the exact test that caught the original
+regression -- passed clean.
+
+Verified: full regression suite (16 tests) including all three Shiks
+impact-proximity tests OK. `smoke_range_aim_check.gd` run in two fresh
+batches of 5, 10/10 hits total -- several (70-90 unit closest-approach)
+that were misses immediately before this change now correctly register.
+`git status --short assets/` zero deletions.
+
+GB-8 now has three layered fixes (self-kill/pre-seed, height-awareness,
+and this radius widening) plus one genuinely separate, deliberately
+unfixed WDL-authored limitation (the tilt clamp) documented alongside
+it. Real confirmation from an actual playthrough still needed -- this
+was the third consecutive report on the same underlying "can't hit
+targets" theme, each round finding a real, distinct, previously-
+invisible-to-static-analysis contributor.
