@@ -83,6 +83,26 @@ var _impact_zones: Array = []
 ## node (the impact zone) -> Dictionary of {other_node: true} currently
 ## within range, so proximity firing is edge-triggered, not per-frame.
 var _impact_touching: Dictionary = {}
+## GB-8 (2026-08-07, Range): "add click logs for this stage so I could
+## tell you why shooting enemies doesn't hit them." Diagnostic, kept in
+## (not a one-shot trace removed after use, see `docs/SESSION_LOG.md`'s
+## "aim-debug" precedent for the alternative) since GB-8 -- the bullet-
+## vs-target impact radius being too small/imprecise for Range's own
+## targets -- is a real, still-open, hard-to-verify-without-live-play
+## bug (see `_ensure_impact_area()`'s own comment for the investigation
+## and the reverted fix). Every fired bullet (any entity spawned with
+## action "Spark", not hardcoded beyond that -- Final/Shooter/InShrine
+## share the same idiom) gets tracked here from `_do_create()`'s own
+## spawn point through to removal: `{spawn_pos, closest_dist,
+## closest_target}`, updated every tick by `_check_impact_proximity()`'s
+## own existing per-frame distance computation (piggybacked onto rather
+## than duplicated -- see its own loop) against every live Terrorist/
+## Civilian, and logged as one line (tag "range-shot") the moment the
+## bullet is actually removed. Answers, from the log alone and without
+## needing to reproduce live: did a "missed" shot ever get reasonably
+## close to its target (pointing at GB-8's own radius/precision theory)
+## or nowhere near one at all (pointing at an aim problem instead).
+var _spark_shot_log: Dictionary = {}
 ## Raw mouse motion accumulated since the last _process() tick, exposed as
 ## the `mickey.x`/`mickey.y` scratch vector (see _vec_field_slot()'s
 ## generic fallback in _get_field() -- `mickey` needs no special-case
@@ -785,6 +805,12 @@ func _set_panel_field(node: Control, low: String, value: Variant) -> void:
 					# conceptually -- see `_do_level_load()`'s own comment
 					# for why that one specifically has to stay deferred.
 					_reset_camera_spawn_pose()
+					# GB-7 continued (2026-08-07, Range): "restarting the
+					# stage after dying should reset the enemies on
+					# screen as well." Same trigger, same synchronous
+					# burst -- see _reset_all_entities_to_spawn()'s own
+					# comment.
+					_reset_all_entities_to_spawn()
 		"pos_x":
 			node.position.x = _to_num(value)
 		"pos_y":
@@ -2055,6 +2081,16 @@ func _check_impact_proximity() -> void:
 		var node = zone["node"]
 		if not is_instance_valid(node) or not _entity_alive(node):
 			_impact_touching.erase(node)
+			# See `_spark_shot_log`'s own comment -- log the shot's final
+			# outcome the moment its bullet is actually gone.
+			if _spark_shot_log.has(node):
+				var shot: Dictionary = _spark_shot_log[node]
+				PiposhDebug.log_msg(
+					"range-shot",
+					"REMOVED spawn_pos=%s closest_dist=%.1f closest_target=%s"
+					% [shot["spawn_pos"], shot["closest_dist"], shot["closest_target"]]
+				)
+				_spark_shot_log.erase(node)
 			continue
 		live_zones.append(zone)
 		var center: Vector3 = node.to_global(zone["offset"])
@@ -2080,6 +2116,21 @@ func _check_impact_proximity() -> void:
 			# XZ distance only. The real player's Area3D/body_entered path
 			# is untouched by this (CharacterBody3D floor-snaps for real).
 			var other_pos: Vector3 = (other as Node3D).global_position
+			# See `_spark_shot_log`'s own comment. Full 3D distance (not
+			# the XZ-only one the impact check itself uses below) --
+			# deliberately including Y here, unlike the impact check,
+			# since "how close did the bullet actually pass by in real
+			# space" is exactly the number needed to tell a height/aim
+			# problem apart from a detection-radius problem.
+			if _spark_shot_log.has(node):
+				var other_action := str((other as Node3D).get_meta("action", "")).to_lower()
+				if other_action in ["terrorist", "civilian"]:
+					var d3: float = node.global_position.distance_to(other_pos)
+					var shot: Dictionary = _spark_shot_log[node]
+					if d3 < shot["closest_dist"]:
+						shot["closest_dist"] = d3
+						shot["closest_target"] = str((other as Node3D).name)
+						_spark_shot_log[node] = shot
 			var dx := center.x - other_pos.x
 			var dz := center.z - other_pos.z
 			if dx * dx + dz * dz <= radius * radius:
@@ -3548,6 +3599,17 @@ func _do_create(a: Array, my) -> Node3D:
 	var resolved_action := _resolve_action(action) if action != "" else ""
 	if resolved_action != "":
 		_run_coroutine(_actions[resolved_action].get("body", {}), inst)
+	# See `_spark_shot_log`'s own comment.
+	if action.to_lower() == "spark":
+		_spark_shot_log[inst] = {
+			"spawn_pos": inst.global_position,
+			"closest_dist": INF,
+			"closest_target": "<none>",
+		}
+		PiposhDebug.log_msg(
+			"range-shot",
+			"FIRED pos=%s" % inst.global_position
+		)
 	return inst
 
 
@@ -3649,6 +3711,81 @@ func _reset_camera_spawn_pose() -> void:
 		var spawn_roll: float = float(p.get_meta("wdl_spawn_roll", p.get_meta("roll", 0.0)))
 		_set_entity_tilt_roll(p, spawn_tilt, spawn_roll)
 		_set_entity_pan(p, spawn_pan)
+
+
+## GB-7 continued (2026-08-07, Range): "restarting the stage after dying
+## should reset the enemies on screen as well." Real Acknex's own
+## `level_load()` genuinely respawns every entity fresh; this port's own
+## `level_load()` is a no-op (the level's already loaded, see
+## `_do_level_load()`'s own comment) and nothing else ever restarted an
+## already-popped-up Terrorist/Civilian's own `Pop`/`Dying`/`GoingUp`/
+## `OriginalZ` state or its live position -- once hit or mid-animation
+## at the moment of death, it stayed exactly that way through a retry.
+## Called alongside `_reset_camera_spawn_pose()` (same trigger, same
+## synchronous burst -- see `_set_panel_field()`'s "visible" case) for
+## every OTHER entity in the level (the `player`/camera entity keeps
+## going through its own dedicated reset above, not this one, so it
+## isn't double-handled). Generic, not Terrorist/Civilian-specific --
+## see `_reset_entity_to_spawn()`'s own comment for what actually gets
+## reset and why.
+func _reset_all_entities_to_spawn() -> void:
+	if _loader == null:
+		return
+	var entities: Node = _loader.get_node_or_null("Entities")
+	if entities == null:
+		return
+	var p = _get_var("player", null)
+	for node in entities.get_children():
+		if not (node is Node3D) or node == p or not is_instance_valid(node):
+			continue
+		_reset_entity_to_spawn(node)
+
+
+## See `_reset_all_entities_to_spawn()`'s own comment. First implementation
+## of this only reset `wdl_skills` (this file's storage for direct numeric
+## `my.skillN` access) and was confirmed live (via a real Terrorist forced
+## into a hit state, then retried) to do NOTHING for `Pop`/`Dying`/
+## `GoingUp`/`Type`/`OriginalZ` at all: `define Pop,skill20;` (Range.wdl's
+## own top, one line per named field) is Acknex's real compile-time
+## alias-macro convention, but this port's own parser (`tools/
+## parse_wdl.py`'s "define" case) treats every `define NAME,VALUE;` as an
+## ordinary GLOBAL VARIABLE declaration instead of an alias table --
+## reasonable for the one case that motivated it (`WDL/movement.wdl`'s
+## `_MODE_WALKING`/`_MODE_STILL`, genuine constants), wrong for this one.
+## Since no alias resolution happens at parse time, `my.Pop` never
+## becomes `my.skill20` in the AST -- it stays a field access literally
+## named "Pop", which `_get_field()`/`_set_field()`'s generic fallback
+## (see their own "Generic custom-field fallback" comments) stores as its
+## own independent `wdl_custom_pop` meta key, completely disconnected
+## from the `skills`/`wdl_skills` array. This is how EVERY named-but-
+## undeclared field in the whole corpus already works here, not a
+## Range-specific gap -- so the actual fix is generic too: clear every
+## `wdl_custom_*` meta key the entity has accumulated, not just
+## `wdl_skills`, putting any field a script has ever named-written on
+## this entity back to its unset (0.0-reads-back) default.
+func _reset_entity_to_spawn(node: Node3D) -> void:
+	if node.has_meta("wdl_spawn_position"):
+		node.global_position = node.get_meta("wdl_spawn_position")
+	var spawn_pan: float = float(node.get_meta("wdl_spawn_pan", node.get_meta("pan", 0.0)))
+	var spawn_tilt: float = float(node.get_meta("wdl_spawn_tilt", node.get_meta("tilt", 0.0)))
+	var spawn_roll: float = float(node.get_meta("wdl_spawn_roll", node.get_meta("roll", 0.0)))
+	_set_entity_tilt_roll(node, spawn_tilt, spawn_roll)
+	_set_entity_pan(node, spawn_pan)
+	if node.has_meta("skills"):
+		node.set_meta("wdl_skills", (node.get_meta("skills", []) as Array).duplicate())
+	for key in node.get_meta_list():
+		if String(key).begins_with("wdl_custom_"):
+			node.remove_meta(key)
+	# `skin` (Range's own hit-reaction skin swap, `my.skin = my.base + 2;`)
+	# is its OWN dedicated meta key too, not a `wdl_custom_*` one -- see
+	# _get_field()/_set_field()'s own "skin" case. No level in the corpus
+	# gives an entity a real spawn-time skin override (grepped: `skin` is
+	# only ever WRITTEN by scripts at runtime, never read from WED spawn
+	# data), so erasing it back to unset (reads back as the same `1.0`
+	# default every entity starts at) is the correct "as if freshly
+	# spawned" value, not just a guess.
+	if node.has_meta("skin"):
+		node.remove_meta("skin")
 
 
 ## See _set_panel_field()'s "visible" case and recenter_aim()'s own

@@ -509,6 +509,17 @@ func _spawn_entity(obj: Dictionary) -> bool:
 		root.add_child(area)
 
 	_entities_root.add_child(root)
+	# GB-7 continued (2026-08-07, Range): "restarting the stage after
+	# dying should reset the enemies on screen as well." Mirrors
+	# `wdl_spawn_pan/tilt/roll`'s own preservation (see that meta's own
+	# comment) but for position -- captured only now, after `add_child()`,
+	# so `global_position` reflects every adjustment already applied
+	# (feet-snap included, `_snap_mesh_feet_to_origin()` above), not the
+	# raw pre-adjustment WED origin. `WdlInterpreter._reset_entity_to_spawn()`
+	# uses this (alongside the pan/tilt/roll meta and a fresh copy of the
+	# entity's own pristine `skills` array) to put an entity back to
+	# exactly how it looked the moment the level first began.
+	root.set_meta("wdl_spawn_position", root.global_position)
 
 	# First-person player proxy (Plane2 player_walk2, Inn, Mansion, …).
 	# Record after feet-snap + enter tree so origin matches the standing pose.
