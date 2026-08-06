@@ -83,26 +83,6 @@ var _impact_zones: Array = []
 ## node (the impact zone) -> Dictionary of {other_node: true} currently
 ## within range, so proximity firing is edge-triggered, not per-frame.
 var _impact_touching: Dictionary = {}
-## GB-8 (2026-08-07, Range): "add click logs for this stage so I could
-## tell you why shooting enemies doesn't hit them." Diagnostic, kept in
-## (not a one-shot trace removed after use, see `docs/SESSION_LOG.md`'s
-## "aim-debug" precedent for the alternative) since GB-8 -- the bullet-
-## vs-target impact radius being too small/imprecise for Range's own
-## targets -- is a real, still-open, hard-to-verify-without-live-play
-## bug (see `_ensure_impact_area()`'s own comment for the investigation
-## and the reverted fix). Every fired bullet (any entity spawned with
-## action "Spark", not hardcoded beyond that -- Final/Shooter/InShrine
-## share the same idiom) gets tracked here from `_do_create()`'s own
-## spawn point through to removal: `{spawn_pos, closest_dist,
-## closest_target}`, updated every tick by `_check_impact_proximity()`'s
-## own existing per-frame distance computation (piggybacked onto rather
-## than duplicated -- see its own loop) against every live Terrorist/
-## Civilian, and logged as one line (tag "range-shot") the moment the
-## bullet is actually removed. Answers, from the log alone and without
-## needing to reproduce live: did a "missed" shot ever get reasonably
-## close to its target (pointing at GB-8's own radius/precision theory)
-## or nowhere near one at all (pointing at an aim problem instead).
-var _spark_shot_log: Dictionary = {}
 ## Raw mouse motion accumulated since the last _process() tick, exposed as
 ## the `mickey.x`/`mickey.y` scratch vector (see _vec_field_slot()'s
 ## generic fallback in _get_field() -- `mickey` needs no special-case
@@ -2195,16 +2175,6 @@ func _check_impact_proximity() -> void:
 		var node = zone["node"]
 		if not is_instance_valid(node) or not _entity_alive(node):
 			_impact_touching.erase(node)
-			# See `_spark_shot_log`'s own comment -- log the shot's final
-			# outcome the moment its bullet is actually gone.
-			if _spark_shot_log.has(node):
-				var shot: Dictionary = _spark_shot_log[node]
-				PiposhDebug.log_msg(
-					"range-shot",
-					"REMOVED spawn_pos=%s closest_dist=%.1f closest_target=%s"
-					% [shot["spawn_pos"], shot["closest_dist"], shot["closest_target"]]
-				)
-				_spark_shot_log.erase(node)
 			continue
 		live_zones.append(zone)
 		var center: Vector3 = node.to_global(zone["offset"])
@@ -2232,21 +2202,6 @@ func _check_impact_proximity() -> void:
 			# XZ distance only. The real player's Area3D/body_entered path
 			# is untouched by this (CharacterBody3D floor-snaps for real).
 			var other_pos: Vector3 = (other as Node3D).global_position
-			# See `_spark_shot_log`'s own comment. Full 3D distance (not
-			# the XZ-only one the impact check itself uses below) --
-			# deliberately including Y here, unlike the impact check,
-			# since "how close did the bullet actually pass by in real
-			# space" is exactly the number needed to tell a height/aim
-			# problem apart from a detection-radius problem.
-			if _spark_shot_log.has(node):
-				var other_action := str((other as Node3D).get_meta("action", "")).to_lower()
-				if other_action in ["terrorist", "civilian"]:
-					var d3: float = node.global_position.distance_to(other_pos)
-					var shot: Dictionary = _spark_shot_log[node]
-					if d3 < shot["closest_dist"]:
-						shot["closest_dist"] = d3
-						shot["closest_target"] = str((other as Node3D).name)
-						_spark_shot_log[node] = shot
 			# GB-8 continued (2026-08-07, Range): "the further away the
 			# terrorist is, the more likely I still can't hit him." Even
 			# after the self-kill fixes above, a bullet's own real
@@ -2272,6 +2227,14 @@ func _check_impact_proximity() -> void:
 			# original XZ-only behavior exactly as before (a walker
 			# approaching a static target, Shiks' own Bumpin/Snail case,
 			# never trips this: neither one's Y ever changes from spawn).
+			# GB-8 continued (2026-08-07, Range): bullets no longer reach
+			# this check at all -- `_do_create()`'s "Spark" case now
+			# resolves hits with a real raycast instead (see
+			# `_do_spark_hitscan()`'s own comment). Kept as-is anyway: it's
+			# still correct and still matters for the OTHER movers that
+			# use this same generic mechanism (a target's own pop-up/
+			# duck-down animation checked against a nearby target or
+			# piece of scenery, for instance).
 			var moved_y := _moved_from_spawn_y(node) or _moved_from_spawn_y(other as Node3D)
 			var touching_now: bool
 			if moved_y:
@@ -3750,21 +3713,122 @@ func _do_create(a: Array, my) -> Node3D:
 	inst.set_meta("action", str(a[2]) if a.size() > 2 else "")
 	inst.set_meta("wdl_skills", [])
 	var action := str(inst.get_meta("action", ""))
+	# GB-8 continued (2026-08-07, Range): "can we remove the bullets and
+	# just check if the mouse clicked on the target or not?" Replaces
+	# Range/Final/Shooter/InShrine's shared physical-bullet-travel model
+	# (`ACTION Spark`: `move()` every tick + this port's own approximate
+	# impact-zone proximity check, the whole thing this session's other
+	# GB-8 rounds spent so long making merely reliable) with a single,
+	# instant raycast along the exact direction `CreateSpark()` already
+	# computed. Reads the `shot_speed` global vector directly -- every
+	# one of those four levels' own `CreateSpark()` rotates it via
+	# `vec_rotate()` immediately before calling `create()`, so this needs
+	# no per-level knowledge (Shooter's own extra crossbow-delay/
+	# animation logic all runs BEFORE `create()` and is untouched; only
+	# what happens once a "Spark" actually exists changes). Uses Godot's
+	# own real physics raycast against the same real mesh collision
+	# shapes `_add_mesh_collision()` already builds for every solid
+	# entity and wall -- pixel-precise against the actual model, not an
+	# approximation, so it's naturally immune to every collision-
+	# precision issue this session chased (self-kill at spawn, non-
+	# physical markers, ignored height, radius sizing). The bullet
+	# entity itself is never kept around -- no coroutine, no visible
+	# presence, matching the request literally.
+	if action.to_lower() == "spark":
+		_do_spark_hitscan(inst)
+		inst.queue_free()
+		return null
 	var resolved_action := _resolve_action(action) if action != "" else ""
 	if resolved_action != "":
 		_run_coroutine(_actions[resolved_action].get("body", {}), inst)
-	# See `_spark_shot_log`'s own comment.
-	if action.to_lower() == "spark":
-		_spark_shot_log[inst] = {
-			"spawn_pos": inst.global_position,
-			"closest_dist": INF,
-			"closest_target": "<none>",
-		}
-		PiposhDebug.log_msg(
-			"range-shot",
-			"FIRED pos=%s" % inst.global_position
-		)
 	return inst
+
+
+## See `_do_create()`'s own "Spark" comment.
+func _do_spark_hitscan(inst: Node3D) -> void:
+	var dir_gs: Vector3 = _vec_get({"t": "id", "name": "shot_speed"}, null)
+	var dir: Vector3 = _gs_to_godot(dir_gs)
+	var origin: Vector3 = inst.global_position
+	PiposhDebug.log_msg("range-shot", "FIRED pos=%s" % origin)
+	if dir.length() < 0.01 or inst.get_world_3d() == null:
+		PiposhDebug.log_msg("range-shot", "MISS (no aim direction)")
+		return
+	dir = dir.normalized()
+	var space_state := inst.get_world_3d().direct_space_state
+	# GB-8 continued (2026-08-07, Range): confirmed live via
+	# smoke_range_hitscan_check.gd that a bare raycast from the shooter's
+	# own position immediately hits `action Handgun` -- the first-person
+	# weapon view-model, which (like any ordinary MDL entity) gets a real
+	# collision shape from `_add_mesh_collision()`, but was never meant
+	# to physically block its own gunfire (the same class of problem the
+	# old bullet-travel model's own pre-seed fix solved for "whatever is
+	# already touching the shot at its own origin"). Generic fix, not
+	# Handgun-specific: an entity that never called `enable_impact` (no
+	# `wdl_event`) never opted into interacting with impacts at all --
+	# skip past it and keep tracing.
+	#
+	# Also confirmed live: even past the Handgun, several real (non-
+	# clamped-tilt) far targets still came back "HIT geometry (no
+	# entity)" partway there -- the old `move()`-based bullet never
+	# checked wall/brush collision AT ALL (`_do_move_call()` is a bare
+	# position add, see its own comment), so nothing in Range's own
+	# shooting booth (the counter/rail the player looks out over) ever
+	# blocked a shot before, even though it's real, solid level geometry.
+	# Switching to a real raycast made that geometry suddenly solid for
+	# gunfire for the first time -- not a bug in the raycast itself, but
+	# a real behavior change from the system it replaced, and one that
+	# would make FAR targets specifically harder to hit again (a shallow-
+	# angle shot toward a far target stays close to the counter's own
+	# height for longer than a steep shot toward a near one). Skip past
+	# pure geometry too, matching the old system's own permissiveness,
+	# so only an actual impact-enabled entity (or running out of range)
+	# ever stops a shot -- same reasoning as skipping non-event entities
+	# above, just extended to non-entity colliders too. Capped iteration
+	# count as a safety net against a pathological chain of skippable
+	# colliders either way.
+	var exclude: Array[RID] = []
+	for _i in 20:
+		var query := PhysicsRayQueryParameters3D.create(origin, origin + dir * 5000.0)
+		query.collide_with_areas = false
+		query.collide_with_bodies = true
+		query.exclude = exclude
+		var result := space_state.intersect_ray(query)
+		if result.is_empty():
+			PiposhDebug.log_msg("range-shot", "MISS (no collision)")
+			return
+		var entity := _find_entity_ancestor(result.get("collider") as Node)
+		var dist: float = origin.distance_to(result.get("position"))
+		if entity == null:
+			PiposhDebug.log_msg("range-shot", "geometry at %s dist=%.1f (not solid for gunfire, skipping past)" % [
+				result.get("position"), dist,
+			])
+			exclude.append(result.get("rid"))
+			continue
+		var event_name := str(entity.get_meta("wdl_event", ""))
+		if event_name == "":
+			exclude.append(result.get("rid"))
+			continue
+		if _entity_alive(entity):
+			PiposhDebug.log_msg("range-shot", "HIT entity=%s event=%s dist=%.1f" % [entity.name, event_name, dist])
+			invoke_event(entity, event_name)
+		else:
+			PiposhDebug.log_msg("range-shot", "HIT entity=%s (not alive) dist=%.1f" % [entity.name, dist])
+		return
+	PiposhDebug.log_msg("range-shot", "MISS (too many non-impact colliders in the way)")
+
+
+## See `_do_spark_hitscan()`'s own comment. Walks up from a raycast
+## collider (a `_add_mesh_collision()`-built `StaticBody3D`, nested
+## under the mesh, under the entity root) to the entity root itself --
+## the node every other part of this file already keys off of, marked
+## by carrying `action` meta (see `WmbLevelLoader._spawn_entity()`).
+func _find_entity_ancestor(node: Node) -> Node3D:
+	var n := node
+	while n != null:
+		if n is Node3D and n.has_meta("action"):
+			return n as Node3D
+		n = n.get_parent()
+	return null
 
 
 func _do_run(a: Array) -> float:

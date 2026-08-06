@@ -1,8 +1,7 @@
 extends SceneTree
 ## End-to-end check of Range's shooting-gallery loop: aiming (mickey),
-## firing (on_mouse_left -> Fire -> CreateSpark -> Spark bullet), the
-## bullet actually traveling (move()/vec_rotate), hitting a Terrorist
-## target (enable_impact, already-working mechanism), Health/Health2
+## firing (on_mouse_left -> Fire -> CreateSpark -> instant hitscan
+## raycast, see WdlInterpreter._do_spark_hitscan()), Health/Health2
 ## updating, and the RIP (lose) screen showing once Health drops to 0.
 ##
 ## Run: godot --headless --path . -s res://tools/smoke_range_shoot.gd
@@ -58,36 +57,17 @@ func _run() -> void:
 	var pan_after: float = camtarget.get_meta("pan", 0.0)
 	print("CamTarget pan: before=%.2f after=%.2f (should differ if mickey is live)" % [pan_before, pan_after])
 
-	# -- fire a shot and see if a Spark bullet gets created and travels --
+	# -- fire a shot and confirm it resolves instantly, no lingering bullet --
 	var before_count: int = entities.get_child_count()
 	# Simulate a real left-click via the same _input() path the interpreter listens on.
 	var click := InputEventMouseButton.new()
 	click.button_index = MOUSE_BUTTON_LEFT
 	click.pressed = true
 	Input.parse_input_event(click)
-	await process_frame
-	await process_frame
+	for i in 3:
+		await process_frame
 	var after_count: int = entities.get_child_count()
-	print("entities before fire=%d after fire=%d (expect +1 for the Spark bullet)" % [before_count, after_count])
-
-	var spark: Node3D = null
-	for n in entities.get_children():
-		if str(n.get_meta("action", "")) == "Spark":
-			spark = n
-	if spark == null:
-		print("FAIL: no Spark bullet entity found after firing")
-	else:
-		print("found Spark entity, tracking position over 10 frames...")
-		var p0 := spark.global_position
-		for i in 10:
-			print("  frame %d..." % i)
-			await process_frame
-			if not is_instance_valid(spark):
-				print("  spark freed at frame %d (hit something)" % i)
-				break
-		if is_instance_valid(spark):
-			var p1 := spark.global_position
-			print("Spark pos t0=%s t+10frames=%s moved=%.2f" % [p0, p1, p0.distance_to(p1)])
+	print("entities before fire=%d after fire=%d (expect equal -- hitscan leaves nothing behind)" % [before_count, after_count])
 
 	# -- health bar / RIP screen: force Health to 0 and confirm Restart() -> ShowRIP() shows pRIP --
 	interp.call("_set_var", "Health", 0.0, null)
@@ -97,5 +77,6 @@ func _run() -> void:
 	var prip = panel_nodes.get("prip")
 	print("pRIP visible after Health=0: %s" % (prip.visible if prip else "MISSING"))
 
-	print("OK")
-	quit(0)
+	var ok: bool = pan_before != pan_after and after_count == before_count and prip != null and prip.visible
+	print("OK" if ok else "FAIL")
+	quit(0 if ok else 1)

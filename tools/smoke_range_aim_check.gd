@@ -1,14 +1,13 @@
 extends SceneTree
-## GB-7 continued: "the game still seems to aim higher than the actual
-## place the gun points to". Direct, empirical check: mathematically
-## compute the pan/tilt needed to point the camera EXACTLY at a known
+## GB-7/GB-8: direct, empirical aim-accuracy check. Mathematically
+## computes the pan/tilt needed to point the camera EXACTLY at a known
 ## Terrorist entity's own position (same atan2-based math the camera's
-## own _gs_view_forward() convention uses), force CamTarget's own
-## entity to that pan/tilt, fire, and measure the bullet's actual
-## closest approach to the target -- rather than guessing further from
-## static code comparison alone (already checked: _gs_view_forward() and
-## _acknex_entity_basis()'s own forward axis are algebraically identical
-## for the same pan/tilt/0-roll input).
+## own _gs_view_forward() convention uses), forces CamTarget's own
+## entity to that pan/tilt, fires, and confirms the shot registers as a
+## real hit (Terrorists count decrements). Firing is now an instant
+## raycast hitscan (see WdlInterpreter._do_spark_hitscan()), not a
+## traveling bullet, so this checks the outcome directly rather than
+## tracking a bullet's own position over time.
 ##
 ## Run: godot --headless --path . -s res://tools/smoke_range_aim_check.gd
 
@@ -79,53 +78,27 @@ func _run() -> void:
 	print("computed pan=%.3f tilt=%.3f (to aim exactly at target)" % [pan_deg, tilt_deg])
 
 	interp.call("_set_field", {"t": "id", "name": "my"}, "pan", pan_deg, camtarget)
-	interp.call("_set_field", {"t": "id", "name": "my"}, "tilt", tilt_deg, camtarget)
-	var immediate_tilt = interp.call("_get_field", {"t": "id", "name": "my"}, "tilt", camtarget)
-	print("tilt immediately after write, 0 frames elapsed=%s" % immediate_tilt)
-	for i in 5:
+	interp.call("_set_field", {"t": "id", "name": "my"}, "tilt", clampf(tilt_deg, -15.0, 45.0), camtarget)
+	for i in 2:
 		await process_frame
-		var t = interp.call("_get_field", {"t": "id", "name": "my"}, "tilt", camtarget)
-		var basis_tilt := asin(clampf(-camtarget.global_transform.basis.z.y, -1.0, 1.0))
-		print("  frame %d: tilt_meta=%s transform_basis_z=%s (real orientation)" % [i, t, camtarget.global_transform.basis.z])
 
 	var actual_pan = interp.call("_get_field", {"t": "id", "name": "my"}, "pan", camtarget)
 	var actual_tilt = interp.call("_get_field", {"t": "id", "name": "my"}, "tilt", camtarget)
 	print("actual pan/tilt right before firing: pan=%s tilt=%s (compare to computed pan=%.3f tilt=%.3f -- CamTarget's own [-15,45] tilt clamp may have overwritten it)" % [actual_pan, actual_tilt, pan_deg, tilt_deg])
 
-	var player_check = interp.call("_get_var", "player", null)
-	print("player global resolves to=%s (should be the CamTarget node)" % player_check)
+	var terr_before: float = interp.call("_get_var", "Terrorists", null)
 
 	# Simulate a real click, same proven mechanism as smoke_range_shoot.gd
-	# (on_mouse_left = Fire; -> action Fire -> CreateSpark()).
+	# (on_mouse_left = Fire; -> action Fire -> CreateSpark() -> hitscan).
 	var click := InputEventMouseButton.new()
 	click.button_index = MOUSE_BUTTON_LEFT
 	click.pressed = true
 	Input.parse_input_event(click)
-	for i in 2:
+	for i in 3:
 		await process_frame
 
-	var spark: Node3D = null
-	for n in entities.get_children():
-		if str(n.get_meta("action", "")) == "Spark":
-			spark = n
-	if spark == null:
-		print("FAIL: no Spark entity created")
-		quit(1)
-		return
-
-	# Track the bullet's closest approach to the target over its flight,
-	# not just after N frames -- it might already be past/through it.
-	var closest := INF
-	for i in 40:
-		if not is_instance_valid(spark):
-			print("spark freed at frame %d (hit something)" % i)
-			break
-		var dist: float = spark.global_position.distance_to(target_pos)
-		if dist < closest:
-			closest = dist
-		await process_frame
-
-	print("closest approach to target = %.2f units (target scale/AABB gives a sense of 'close enough')" % closest)
 	var terr_after: float = interp.call("_get_var", "Terrorists", null)
-	print("Terrorists after this shot=%s (15=no hit registered, 14=direct hit)" % terr_after)
-	quit(0)
+	print("Terrorists before=%s after=%s (15=no hit registered, 14=direct hit)" % [terr_before, terr_after])
+	var ok: bool = terr_after < terr_before
+	print("OK" if ok else "FAIL: shot didn't register as a hit")
+	quit(0 if ok else 1)
