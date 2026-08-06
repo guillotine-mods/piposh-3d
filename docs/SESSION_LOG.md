@@ -5662,3 +5662,87 @@ attempted for the same pSkip-vs-pRIP report, each theoretically sound
 and each verified as correct by every means available short of an
 actual render, so this round deliberately switched to a
 verification-independent mechanism rather than a fourth theory.
+
+## 2026-08-06 (GB-7 round 6) — a warp_mouse() side effect, and a real
+## but reverted collision-precision attempt
+
+User: "it spawns correctly in the middle but now 180 degrees back," and
+separately, broader doubt about the minigame's correctness: "the
+collision isn't working," plus a description of the expected feel
+("the mouse and the aim are always the same place, and... the click
+collides with the character it hits them") and a note that the camera
+sat farther from the gun than in the original.
+
+**The 180-degree spin.** Checked the spawn pose data first, not the
+reset code, in case round 5's own fix had somehow recorded the wrong
+value: wrote a throwaway test computing the bearing from the CamTarget
+entity's own spawn position to all 20 real Range targets and comparing
+against the recorded `wdl_spawn_pan` -- every one landed within ~30
+degrees, confirming the spawn pan genuinely does face the gallery, and
+the reset math (`_acknex_entity_basis` applied to that exact value) is
+provably a no-op relative to the entity's own original spawn transform.
+So the bug had to be in something happening AFTER the reset, not the
+reset itself. Found it: `Input.warp_mouse()` (used by both the retry-
+click cursor-center feature and the `Space` recenter) can generate its
+own synthetic `InputEventMouseMotion` reporting the jump it just
+caused, and Godot doesn't guarantee that event lands in the same frame
+the warp call was made. It arrived a frame or two later, after the
+existing same-frame `_mouse_delta`/`mickey` clear had already run, and
+`action CamTarget`'s own very next tick read it as a real, huge mouse
+movement (`my.pan = my.pan - mickey.x/SEN;`) -- a several-hundred-pixel
+warp divided by `SEN=3` easily spins most of the way around. Fixed with
+`_mouse_delta_suppress_frames`, armed by `_warp_mouse_to_center()`
+itself: for a few frames after any warp, incoming motion is discarded
+in `_process()` instead of accumulated, regardless of which frame the
+synthetic event actually lands on. Verified with a new test
+(`smoke_range_warp_artifact_check.gd`) that directly injects a 540px
+synthetic motion event one frame after a real retry-click warp and
+confirms the aim still lands exactly on the spawn pose.
+
+**Collision precision -- investigated, real finding, reverted fix.**
+"The collision isn't working" led to checking the actual numbers:
+Range's `Fakeguy` (Terrorist/Civilian) targets are ~77x207x60 units,
+and their own origin (used as the center of the generic 28-unit impact-
+detection sphere every `enable_impact` entity gets) sits ~40 units
+off-center from their own mesh's own AABB -- the farthest corner of the
+actual visible model is ~80 units out, nearly 3x the flat 28-unit
+radius. A bullet that visually strikes the model could plausibly land
+outside that sphere and register as a miss. Tried scaling the radius to
+each entity's own mesh footprint (`_impact_radius_for_mesh()`, farthest
+XZ AABB corner from origin) -- and caught a real regression before
+shipping it, via the existing `smoke_range_death_freeze.gd` suddenly
+failing: an ~80-unit sphere is wide enough that TWO NEARBY TARGETS (or
+a target and unrelated static scenery) started falsely detecting each
+other as "touching," firing `TargetHit` repeatedly with nothing having
+been shot. Root cause: `_check_impact_proximity()` treats ANY two
+impact-enabled entities within radius as touching -- it has no way to
+distinguish "a bullet hit me" from "another target happens to be
+nearby," and Range places 15+ targets within a comparable distance of
+each other in the gallery. Widening the radius enough to reliably cover
+one large mesh necessarily also reaches its neighbors. Reverted to the
+flat 28-unit radius (the original, proven-safe behavior) rather than
+ship a fix that trades "sometimes misses" for "sometimes hits nothing."
+A real fix needs the check itself to stay precise while still covering
+the full mesh (e.g. centering on the mesh's own AABB instead of the
+origin -- deliberately NOT done here even for JUST the radius change,
+since `_check_impact_proximity()`'s own existing comment already found
+recentering breaks Shiks' Bumpin/Snail case; unclear yet whether that
+constraint is real for Range's own use or just untested here -- plus
+excluding same-class entities from triggering each other) -- opened as
+`GB-8`, left as a dedicated follow-up rather than shipped half-verified.
+
+Did not investigate the camera-to-gun distance or the "mouse and aim
+should always be the same place" framing this round -- the latter
+actually already matches how `action CamTarget`/`CreateSpark()` work
+(mouselook camera, bullet fires along the current camera-forward
+direction, screen-center crosshair after the earlier `screen_size` fix)
+rather than a point-and-click raycast design; flagged to the user as
+worth confirming what specifically still feels off before changing
+anything there, rather than guessing at a redesign.
+
+Verified: `smoke_dispatch` 19/19. Full Range regression suite (11
+tests) plus all three Shiks impact-proximity tests
+(`smoke_shiks_bumpin`, `smoke_shiks_bumpin_proximity`,
+`smoke_shiks_walk_to_bumpin_real`) OK both before attempting the
+collision-radius change and after reverting it. `git status --short
+assets/` zero deletions throughout.
