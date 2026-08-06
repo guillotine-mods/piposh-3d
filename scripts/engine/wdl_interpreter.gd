@@ -1945,6 +1945,33 @@ func _clickable_center_offset(node: Node3D) -> Vector3:
 ## bumpin_proximity.gd` run that walks Piposh2 to within 0.2 units of
 ## Snail's own origin never fired, because the zone was centered ~100
 ## units away. Plain origin is correct for this check.
+## GB-7 continued (2026-08-06, Range): "the collision isn't working."
+## Investigated scaling this radius to each entity's own mesh footprint
+## -- Range's `Fakeguy` (Terrorist/Civilian) targets are ~77x207x60
+## units with their own origin sitting ~40 units off-center from their
+## own mesh AABB (a "feet"-style pivot, not torso-centered -- see the
+## feet-snap fix elsewhere in this file for the same offset), so the
+## flat 28-unit radius genuinely can miss a bullet that visually struck
+## the model but landed far from the origin. Tried it (farthest XZ AABB
+## corner from origin, ~80 units for a Fakeguy) and reverted: confirmed
+## live via `smoke_range_death_freeze.gd` failing that an 80-unit sphere
+## is large enough to make TWO NEARBY TARGETS falsely detect each other
+## (or unrelated static scenery) as "touching," firing `TargetHit`
+## repeatedly with nothing having actually been shot -- Range places its
+## 15+ targets within a comparable distance of each other in the
+## gallery. `_check_impact_proximity()` treats ANY two impact-enabled
+## entities within radius as touching, with no way to distinguish "a
+## bullet hit me" from "another target happens to be nearby" -- widening
+## the radius enough to reliably catch a fast-moving bullet anywhere on
+## a large mesh necessarily ALSO reaches neighboring entities that
+## should never trigger each other. Fixing this properly needs the
+## bullet-vs-target check to stay narrow/precise while still covering
+## the target's full mesh (e.g. centering on the mesh's own AABB instead
+## of the origin, PLUS excluding same-class entities from triggering
+## each other) -- a bigger change than a radius tweak, left for a
+## dedicated follow-up rather than shipped half-verified. Back to the
+## flat 28-unit radius for every impact zone, matching the original,
+## proven-safe behavior.
 func _ensure_impact_area(node: Node3D) -> void:
 	if node.has_meta("wdl_impact_area"):
 		return
