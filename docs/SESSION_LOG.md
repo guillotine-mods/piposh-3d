@@ -5594,3 +5594,71 @@ spawn (no death involved), synthesizes a real `KEY_SPACE`
 `my.pan`/`my.tilt` land back on the spawn pose. `smoke_dispatch` 19/19.
 All nine other Range regression tests OK. `git status --short assets/`
 zero deletions.
+
+## 2026-08-06 (GB-7 round 5) — abandoning render-based z-order
+## verification, and moving pSkip to its own CanvasLayer
+
+User: "still not 100% working... the skip button is still beneath the
+graphic that's shown when we die," and "the pointer should be reset
+after we click to restart the stage, not after we die."
+
+**pSkip vs pRIP, a third time.** Round 1 gave pSkip a higher z_index
+(50 vs pRIP's 20); round 2 added an explicit `move_to_front()` tree
+reorder after both were directly confirmed correct in the live scene
+(`smoke_range_skip_layer_check.gd`: z_index 50>20, pSkip after pRIP in
+tree order) yet the user still saw it rendered underneath both times.
+Before trying a third z_index/tree-order variant, tried to settle this
+empirically instead of theoretically: attempted a real render capture
+(`get_viewport().get_texture().get_image()`), first against the full
+Range 3D scene (as in the round-2 investigation), then against a
+minimal, 2D-only isolated scene (just `GameHud` plus two colored
+rectangles standing in for pRIP/pSkip, no 3D content at all, small
+viewport, no mid-test resize). BOTH hung indefinitely under
+`--headless` and had to be killed via `TaskStop` (confirmed no orphaned
+process survived either kill). Conclusion: `--headless` mode's dummy
+rendering driver genuinely cannot rasterize anything, 2D or 3D --
+`get_texture().get_image()` blocks forever waiting for a frame that
+will never render. This is very likely why "never attempt desktop/
+window screenshot capture" was already a standing rule for this
+project before this session; extending it here: viewport-texture
+capture is equally unusable in this headless environment, not just OS
+desktop capture -- do not retry either approach again.
+
+With visual verification confirmed impossible, moved to a mechanism
+that doesn't depend on trusting z_index/tree-order semantics at all:
+`GameHud` already reliably layers UI using separate `CanvasLayer`
+nodes with different `layer` numbers (20 for normal HUD/panels, 30 for
+the level-select menu, 40 for the loading screen) -- CanvasLayer
+ordering is a coarser, unconditional guarantee (a higher-layer
+CanvasLayer draws over a lower one regardless of anything inside
+either), and this project already demonstrably relies on it working
+correctly elsewhere. Added a second CanvasLayer to `GameHud`
+(`_overlay_layer`, layer 21) with its own design-space root
+(`_overlay_root`, kept scale/position-synced with the main `_root`
+every `_layout()` call) and a new `get_overlay_panel_root()` accessor.
+`WdlInterpreter._build_panel()` now mounts any button-bearing panel
+that never claimed its own explicit `layer` field (the exact same
+predicate as round 1's z_index-default fix -- pSkip qualifies, pRIP and
+pCongrat don't, since both declare their own `layer`) on this overlay
+CanvasLayer instead of the normal one, guaranteeing it draws over
+pRIP's full-screen background no matter what.
+
+**Cursor reset timing.** The round-4 QOL fix warped the cursor to
+center the moment `pRIP` became visible (i.e., the moment of death).
+User wanted it tied to the Retry click instead. Moved the
+`_warp_mouse_to_center()` call from the `now_visible` branch to the
+`was_visible` (hide) branch of `_set_panel_field()`'s "visible" case,
+alongside the existing mouse-mode restore and camera-pose reset --
+purely a relocation, no new logic.
+
+Verified: `smoke_range_skip_layer_check.gd` now shows `pSkip`'s parent
+as `OverlayDesignRoot` (index 2) vs `pRIP`'s `DesignRoot` (index 53) --
+two different Control trees under two different CanvasLayers, not
+siblings competing on z_index/tree-order at all. `smoke_dispatch`
+19/19. All ten other Range regression tests OK. `git status --short
+assets/` zero deletions. Real confirmation this finally holds still
+needs the user's own in-game check -- this is the third distinct fix
+attempted for the same pSkip-vs-pRIP report, each theoretically sound
+and each verified as correct by every means available short of an
+actual render, so this round deliberately switched to a
+verification-independent mechanism rather than a fourth theory.
