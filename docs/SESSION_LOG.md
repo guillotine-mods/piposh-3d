@@ -5825,3 +5825,121 @@ so they can send back a real in-game shot log.
 Verified: `smoke_dispatch` 19/19. Full Range regression suite (13
 tests) plus all three Shiks impact-proximity tests OK. `git status
 --short assets/` zero deletions.
+
+## 2026-08-07 (GB-7 round 8 + GB-8 fixed) — a regression in the entity
+## reset, and the real root cause of "shooting doesn't hit anything"
+
+User: "after the first reset, the character heads are not moving up and
+shown as they were" (a new regression from round 7's own fix), plus a
+real shot log from an actual playthrough:
+
+```
+[range-shot] FIRED pos=(-50.00037, 128.0, -325.9999)
+[range-shot] REMOVED spawn_pos=(-50.00037, 128.0, -325.9999) closest_dist=190.6 closest_target=Fakeguy_mdl_034
+[range-shot] FIRED pos=(-50.00037, 128.0, -325.9999)
+[range-shot] REMOVED spawn_pos=(-50.00037, 128.0, -325.9999) closest_dist=180.5 closest_target=Fakeguy_mdl_034
+... (ten shots total, closest_dist clustered 178.9-193.0 every time,
+    switching between two different closest_target entities, never
+    lower no matter where the player aimed)
+```
+
+**Round 8: targets stopped popping up after the first retry.** Round
+7's own entity-reset fix ERASED every `wdl_custom_*` meta key on
+retry, on the theory that "unset" was the same as "freshly spawned."
+It isn't, for one specific field: `action Terrorist`'s own body sets
+`my.OriginalZ = my.z;` (line 678, its resting/"down" height, read back
+by both the pop-up branch -- `if (my.z > my.OriginalZ+60) {
+my.GoingUp=False; }` -- and the duck-down branch -- `if (my.z <
+my.OriginalZ) { my.z=my.OriginalZ; my.Pop=False; }`) as a genuine ONE-
+TIME init, executed synchronously before its very first `wait()`. The
+entity's own coroutine is never restarted on retry (only `main()` is),
+so nothing ever runs that line a second time -- erasing
+`wdl_custom_originalz` left it reading back as the generic `0.0`
+default forever after the first retry, silently breaking both
+thresholds for good (a target could still technically move, but its
+own "have I gone up 60 units yet" and "have I come back down to rest"
+checks were now comparing against 0 instead of its real resting
+height).
+
+Fixed by capturing a REAL snapshot instead of guessing at "erased means
+fresh": `begin_level()` now records every `wdl_custom_*` key (and
+`wdl_skills`) on each entity right after `_run_coroutine()` returns for
+it -- since coroutines run purely synchronously up to their first real
+yield point, control only comes back to `begin_level()`'s own loop
+AFTER `action Terrorist`'s one-time init has genuinely already run, so
+the snapshot reflects the correct, computed `OriginalZ` (and `Type`,
+`Pop`, etc.), not a blind default. Reset now restores FROM that
+snapshot instead of erasing. Still fully generic -- no field names
+hardcoded, same mechanism works for any entity's own one-time init.
+
+**GB-8 fixed: bullets were self-killing at spawn, never reaching
+targets.** The shot log itself was the key: EVERY closest_dist clustered
+tightly around 180-193 units regardless of where the player aimed, and
+`closest_target` only ever alternated between two fixed names -- exactly
+what "the bullet died at/near its own spawn point, before ever
+traveling" would look like (the recorded "closest approach" is really
+just "distance from a fixed spawn point to a fixed target," unaffected
+by aim). Added a temporary `impact-debug` trace (removed after
+diagnosis, same "aim-debug" precedent as earlier sessions) logging
+exactly which two entities triggered each impact event, which named the
+actual culprits directly:
+
+1. `action Spark` sets `my.enable_impact=on;` as its own very FIRST
+   statement, before the bullet has moved at all -- and `CreateSpark()`
+   spawns it AT `player.x`, the shooter's own position.
+   `_ensure_impact_area()`'s own zone starts with an EMPTY "touching"
+   set regardless of what's already nearby, so `_check_impact_proximity()`'s
+   very next tick found the shooter itself already overlapping and read
+   it as "just walked in" -- firing `SparkHit` before the bullet's first
+   `wait(1)`, and therefore its first real movement, ever ran. Generic
+   root cause, not Spark-specific: this whole mechanism was built and
+   verified for "walker approaches from outside and enters" (Shiks'
+   Bumpin/Snail), which never considered "spawned already touching
+   something" at all -- true for any projectile, or any entity created
+   overlapping another. Fixed by pre-seeding `_impact_touching` with
+   whatever's already in range the moment a zone is created, silently
+   (no event fires for entities already there -- only a genuinely NEW
+   approach afterward counts).
+
+2. Even with that fixed, bullets kept dying almost immediately -- this
+   time against `@Node3D@90`, action `CameraEngine`, a `Cam.MDL`-stem
+   placeholder positioned close to the shooter's own line of fire.
+   Confirmed via the converted level JSON: this entity's own action
+   ("CameraEngine") isn't declared anywhere `Range.wdl` includes (only
+   `IO.wdl`), so it's a dead/unmatched entity with no running script at
+   all -- purely an inert marker, already correctly mesh-hidden by the
+   existing `stem.to_lower()=="cam"` rule in `wmb_level_loader.gd`, but
+   still fully "solid" to the impact-proximity check, which has no
+   notion of "this thing isn't really here." Fixed by flagging every
+   entity already hidden for being a pure logic/position marker (camera
+   placeholders, `action Dummy` -- the exact same condition already
+   used to hide their meshes) with `wdl_non_physical`, and skipping any
+   entity carrying that flag in impact checks.
+
+Verified: `smoke_range_aim_check.gd` (computes the exact pan/tilt to
+aim precisely at a real target, fires, tracks the outcome) now
+registers a real hit (`Terrorists` 15->14) on 3/3 consecutive runs --
+was 0/3 (closest_dist 246, no hit) immediately before this fix, and was
+the ORIGINAL, correct behavior from when this test was first written
+(GB-7 round 1, tilt-reset fix: closest approach 58 units, direct hit)
+-- meaning this exact self-kill bug was ALSO silently present back
+then and got lucky/unlucky between runs depending on where
+`CameraEngine` happened to sit relative to that test's own fixed aim
+angle, not something this session's earlier fixes introduced. New
+`tools/smoke_range_spark_self_kill_check.gd`: spawns a Spark directly
+on top of `CamTarget` (matching `CreateSpark()` exactly) and confirms
+it survives 3 frames instead of self-destructing immediately; also
+confirms the real `CameraEngine` entity in Range is correctly flagged
+`wdl_non_physical`. `tools/smoke_range_retry_entity_reset_check.gd`
+still `OK` after the round-8 snapshot-vs-erase fix. `smoke_dispatch`
+19/19. Full Range regression suite (14 tests) plus all three Shiks
+impact-proximity tests OK -- the pre-seed/non-physical changes touch
+the SAME generic mechanism Shiks' own Bumpin trigger depends on, so
+these were checked particularly carefully. `git status --short assets/`
+zero deletions.
+
+The original "GB-8 radius too small" theory (2026-08-06, investigated
+and reverted after its own regression) is a separate, smaller concern
+that may still matter once this fix is confirmed in-game -- flagged in
+`docs/BUGS.md` as worth re-checking with a fresh shot log if any misses
+still land close to a target rather than far away.
