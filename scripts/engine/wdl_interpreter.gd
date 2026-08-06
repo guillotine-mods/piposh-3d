@@ -117,6 +117,26 @@ var _mouse_left_clicked := false
 ## value) means "nothing to restore" -- i.e. pRIP was never actually
 ## visible when this would be read.
 var _mouse_mode_before_rip: int = -1
+## GB-7 continued (2026-08-06, Range): "it spawns correctly in the
+## middle but now 180 degrees back." Checked the spawn pose itself
+## first -- `wdl_spawn_pan`, run through the same
+## `_acknex_entity_basis()` math used everywhere else, faces every
+## Range target correctly (confirmed by bearing, every one within ~30
+## degrees), so the recorded spawn value and the reset math are both
+## fine. The actual cause: `_warp_mouse_to_center()`
+## (`Input.warp_mouse()`) can itself generate a synthetic
+## `InputEventMouseMotion` reporting the jump it just caused -- a known
+## Godot behavior, and that synthetic event isn't guaranteed to arrive
+## in the same frame the warp call was made. It landed in
+## `_mouse_delta`/`mickey` on a LATER frame, after the explicit same-
+## frame clear in `_set_panel_field()`'s "visible" case had already run
+## -- `action CamTarget`'s own next tick then read it as a huge real
+## mouse delta (`my.pan = my.pan - mickey.x/SEN;`) and spun the just-
+## reset spawn pose most of the way back around, matching "spawns in
+## the middle but 180 degrees back" (a several-hundred-pixel warp /
+## SEN=3 easily covers that). Set by `_warp_mouse_to_center()`, consumed
+## by `_process()` -- see both their own comments.
+var _mouse_delta_suppress_frames := 0
 
 
 # ---------------------------------------------------------------------------
@@ -141,6 +161,13 @@ func _input(event: InputEvent) -> void:
 func _process(_delta: float) -> void:
 	_total_frames += 1
 	_check_impact_proximity()
+	# See `_mouse_delta_suppress_frames`'s own comment -- discard whatever
+	# accumulated (including a synthetic post-warp motion event) instead
+	# of feeding it into `mickey` as if the player had actually moved the
+	# mouse that far.
+	if _mouse_delta_suppress_frames > 0:
+		_mouse_delta_suppress_frames -= 1
+		_mouse_delta = Vector2.ZERO
 	_vectors["mickey"] = Vector3(_mouse_delta.x, _mouse_delta.y, 0.0)
 	# GB-7 continued (2026-08-04, Range): "shots don't land where crosshair
 	# points" / "the mouse and aim are confusing." `screen_size` was
@@ -739,10 +766,11 @@ func _set_panel_field(node: Control, low: String, value: Variant) -> void:
 					# click-motion delta nudged the aim away from the
 					# reset spawn pose within the same tick it was
 					# reset, making the reset below look like it never
-					# happened. Clear it here too, in the same
-					# synchronous burst as the reset itself.
-					_mouse_delta = Vector2.ZERO
-					_vectors["mickey"] = Vector3.ZERO
+					# happened. `_warp_mouse_to_center()` above already
+					# clears `_mouse_delta`/`mickey` (and arms a multi-
+					# frame guard against its OWN synthetic motion event --
+					# see `_mouse_delta_suppress_frames`'s own comment),
+					# which covers this too.
 					# GB-7 continued (2026-08-04, Range): "retry... messes
 					# with the view." Reset the camera's spawn pan/tilt/roll
 					# HERE too, synchronously, rather than waiting for
@@ -3600,11 +3628,16 @@ func _reset_camera_spawn_pose() -> void:
 ## comment for the two callers. `Input.warp_mouse()` expects window-local
 ## pixel coordinates, not design-space -- unlike every panel's own
 ## pos_x/pos_y, which is why this doesn't go through GameHud.DESIGN.
+## Also arms `_mouse_delta_suppress_frames` -- see its own comment for
+## why a warp needs a multi-frame guard, not just a same-frame clear.
 func _warp_mouse_to_center() -> void:
 	var vp := get_viewport()
 	if vp == null:
 		return
 	Input.warp_mouse(vp.get_visible_rect().size / 2.0)
+	_mouse_delta_suppress_frames = 3
+	_mouse_delta = Vector2.ZERO
+	_vectors["mickey"] = Vector3.ZERO
 
 
 ## QOL (2026-08-04, Range): "adding a button - space - that resets the
