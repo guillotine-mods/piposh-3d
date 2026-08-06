@@ -2009,6 +2009,26 @@ func _clickable_center_offset(node: Node3D) -> Vector3:
 ## dedicated follow-up rather than shipped half-verified. Back to the
 ## flat 28-unit radius for every impact zone, matching the original,
 ## proven-safe behavior.
+## GB-8 continued (2026-08-07, Range): "it still doesn't hit far targets
+## accuratley." A precisely-computed aim (bypassing real mouse control
+## entirely) now lands the bullet's own true trajectory within a few
+## units of a target far more often than not (10/11 across this
+## session's own test runs) -- the underlying aim/travel math is sound.
+## A real player's own mouse aim is never perfectly precise the way a
+## synthetic test's is, though, and ANY small angular imprecision (mouse
+## feel, sensitivity, a few pixels of hand tremor) translates into a
+## MUCH bigger positional miss the farther the target is -- basic
+## trigonometry, not a bug, but it means the flat 28-unit hit radius
+## (originally sized for the unrelated "walked into it" mechanic, see
+## this function's own earlier history) leaves very little real-world
+## margin for error at range even once the aim math itself is correct.
+## The two things that made a bigger radius unsafe before -- a brand
+## new zone firing against whatever it started already overlapping (a
+## projectile at its own shooter), and the XZ-only check letting a
+## nearby-but-differently-positioned target claim a shot meant for
+## someone else -- are both fixed now (see this function's own pre-seed
+## block below, and `_moved_from_spawn_y()`), so re-attempted scaling
+## the radius to each entity's own mesh footprint instead of a flat 28.
 func _ensure_impact_area(node: Node3D) -> void:
 	if node.has_meta("wdl_impact_area"):
 		return
@@ -2018,7 +2038,7 @@ func _ensure_impact_area(node: Node3D) -> void:
 	area.monitoring = true
 	var cs := CollisionShape3D.new()
 	var shape := SphereShape3D.new()
-	var radius := 28.0
+	var radius := maxf(28.0, _impact_radius_for_mesh(node))
 	shape.radius = radius
 	cs.shape = shape
 	area.add_child(cs)
@@ -2065,6 +2085,36 @@ func _ensure_impact_area(node: Node3D) -> void:
 			if dx * dx + dz * dz <= radius * radius:
 				pre_touching[other] = true
 	_impact_touching[node] = pre_touching
+
+
+## See `_ensure_impact_area()`'s own comment. Farthest XZ distance from
+## the entity's own local origin to any corner of its merged mesh AABB --
+## a sphere at the origin with this radius provably reaches every point
+## the visible model occupies, regardless of how far off-center the
+## origin itself sits (Range's own `Fakeguy` targets: a "feet"-style
+## pivot ~40 units from their own mesh's own center, same offset the
+## feet-snap fix elsewhere in this file already accounts for). `0.0`
+## (falls back to the 28-unit floor) for entities with no mesh at all.
+func _impact_radius_for_mesh(node: Node3D) -> float:
+	var acc := AABB()
+	var has := false
+	var stack: Array[Node] = [node]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		if n is MeshInstance3D and (n as MeshInstance3D).mesh:
+			var mi := n as MeshInstance3D
+			var local: AABB = mi.transform * mi.mesh.get_aabb()
+			acc = local if not has else acc.merge(local)
+			has = true
+		for c in n.get_children():
+			stack.append(c)
+	if not has:
+		return 0.0
+	var max_r := 0.0
+	for dx in [acc.position.x, acc.position.x + acc.size.x]:
+		for dz in [acc.position.z, acc.position.z + acc.size.z]:
+			max_r = maxf(max_r, Vector2(dx, dz).length())
+	return max_r
 
 
 ## `body_entered` has no debounce of its own: a CharacterBody3D sliding
