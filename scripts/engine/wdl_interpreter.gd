@@ -2100,6 +2100,21 @@ func _on_impact_body_exited(body: Node3D, node: Node3D) -> void:
 	_impact_touching[node] = touching
 
 
+## See the "GB-8 continued" comment inside `_check_impact_proximity()`'s
+## own loop for why this exists. `15.0` is comfortably above ordinary
+## floor-snap/transform jitter but well below any real projectile's
+## per-tick vertical travel or a target's own pop-up/duck-down range
+## (60 units, Range's own `if (my.z > my.OriginalZ+60)`).
+const _AIRBORNE_Y_THRESHOLD := 15.0
+
+
+func _moved_from_spawn_y(entity: Node3D) -> bool:
+	if not entity.has_meta("wdl_spawn_position"):
+		return false
+	var spawn_y: float = (entity.get_meta("wdl_spawn_position") as Vector3).y
+	return absf(entity.global_position.y - spawn_y) > _AIRBORNE_Y_THRESHOLD
+
+
 ## Per-frame distance check, the non-physics-body half of the impact
 ## mechanism -- see _ensure_impact_area()'s comment. `_impact_touching`
 ## debounces per (zone, other) pair so this fires once on approach, not
@@ -2182,9 +2197,40 @@ func _check_impact_proximity() -> void:
 						shot["closest_dist"] = d3
 						shot["closest_target"] = str((other as Node3D).name)
 						_spark_shot_log[node] = shot
-			var dx := center.x - other_pos.x
-			var dz := center.z - other_pos.z
-			if dx * dx + dz * dz <= radius * radius:
+			# GB-8 continued (2026-08-07, Range): "the further away the
+			# terrorist is, the more likely I still can't hit him." Even
+			# after the self-kill fixes above, a bullet's own real
+			# trajectory line (computed analytically, independent of any
+			# per-frame sampling) landed well within a target's own
+			# radius -- but the bullet kept dying early anyway. Cause:
+			# the XZ-only check above was written for the walker-vs-
+			# target case (see its own comment), where the walker's own
+			# Y is artificially pinned to its spawn height regardless of
+			# real floor differences -- correct there, but a bullet in
+			# real 3D flight is the opposite case: its Y is genuinely,
+			# meaningfully different tick to tick as it travels, and a
+			# shot aimed at a FAR target flies OVER or UNDER any NEARER
+			# target sitting in roughly the same XZ column -- ignoring Y
+			# entirely made that nearer target (or the nearer target's
+			# own zone independently checking for the bullet) claim the
+			# shot anyway, well before it ever reached the intended one,
+			# and more distance simply means more nearer targets to fly
+			# past. Use real 3D distance instead of XZ-only whenever
+			# either side of the pair has genuinely moved in height from
+			# its own spawn position (a bullet in flight, or a target
+			# mid pop-up/duck-down) -- both sides being still keeps the
+			# original XZ-only behavior exactly as before (a walker
+			# approaching a static target, Shiks' own Bumpin/Snail case,
+			# never trips this: neither one's Y ever changes from spawn).
+			var moved_y := _moved_from_spawn_y(node) or _moved_from_spawn_y(other as Node3D)
+			var touching_now: bool
+			if moved_y:
+				touching_now = node.global_position.distance_to(other_pos) <= radius
+			else:
+				var dx := center.x - other_pos.x
+				var dz := center.z - other_pos.z
+				touching_now = dx * dx + dz * dz <= radius * radius
+			if touching_now:
 				still_touching[other] = true
 				if not touching.has(other):
 					invoke_event(node, str(node.get_meta("wdl_event", "")))
@@ -3640,6 +3686,13 @@ func _do_create(a: Array, my) -> Node3D:
 	# superset of the old behavior, not a narrowing).
 	var pos_source: Node3D = (a[1] if a.size() > 1 and a[1] is Node3D and is_instance_valid(a[1]) else my)
 	inst.global_transform = pos_source.global_transform if pos_source else Transform3D.IDENTITY
+	# See `_moved_from_spawn_y()`'s own comment -- WmbLevelLoader sets this
+	# for every level-placed entity, but a runtime `create()`'d one (e.g.
+	# every fired Spark bullet) never goes through that spawn path at all.
+	# Without it, a bullet's own real, meaningful vertical travel could
+	# never be told apart from a level-placed entity that simply never got
+	# the meta.
+	inst.set_meta("wdl_spawn_position", inst.global_position)
 	var anim := MdlAnimator.new()
 	anim.name = "MdlAnimator"
 	inst.add_child(anim)
