@@ -1868,6 +1868,36 @@ func _set_field(obj_expr: Variant, field: String, value: Variant, my) -> void:
 			# live as "dialogue is looping on the first part" (2026-07-31).
 			if _truthy(value):
 				_ensure_impact_area(node)
+		"near":
+			# `my.near = on;` -- Range/Final/Smash's shared first-person
+			# weapon-view idiom (`action Handgun`/`action Warty`: never
+			# touches my.x/y/z after this beyond, at most, Final's own
+			# explicit `my.x = player.x;`). Reported live (2026-08-07):
+			# "the gun view... in the orig game the gun is more closer and
+			# we don't see the rest of the hand." Confirmed via a headless
+			# transform/mesh-AABB dump: the WMB-authored placement and 0.2
+			# scale are faithfully preserved (not a conversion bug), but
+			# the model itself is a full forearm-sleeve + handgun mesh
+			# (confirmed from its own texture atlas) reaching from ~34 to
+			# ~173 units in front of the camera -- the SLEEVE end sits
+			# closest, so it's the biggest, most dominant thing on screen
+			# (at 34 units, the camera's own vertical FOV cone is barely
+			# wider than the model's own height), while the gun itself,
+			# farther away, reads as small and secondary. Godot has no
+			# per-entity near-clip override to lean on here (unlike
+			# whatever Acknex's own NEAR flag literally does), so instead
+			# `wdl_near` marks the entity for `_set_entity_pan()`/
+			# `_set_entity_tilt_roll()` (the only two places this idiom's
+			# own per-tick pan/roll writes ever touch its transform) to
+			# pull it toward the camera, once, by just enough that its
+			# OWN farthest mesh extent (the gun end) lands at a fixed
+			# close viewing distance -- see
+			# `_near_weapon_adjusted_position()`'s own comment for the
+			# full story, including why the pull is deferred past this
+			# exact frame rather than applied immediately.
+			if _truthy(value):
+				node.set_meta("wdl_near", true)
+				node.set_meta("wdl_near_activated_frame", Engine.get_process_frames())
 		_:
 			if low.begins_with("skill"):
 				var idx := int(low.substr(5)) - 1
@@ -2364,6 +2394,83 @@ func _acknex_entity_basis(pan_deg: float, tilt_deg: float, roll_deg: float) -> B
 	return Basis(x_g, y_g, z_g)
 
 
+## How far in front of the camera a `near`-flagged weapon's own farthest
+## mesh extent should end up once pulled close -- see the "near" case in
+## _set_field() for the full story. Comfortably past the main camera's
+## own near-clip (1.0, see player_controller.gd) even with the roll/pan
+## wobble these entities apply every tick, and small enough to read as a
+## genuine close-up rather than the original mid-distance framing.
+const NEAR_WEAPON_TARGET_DISTANCE := 40.0
+
+
+## Applies its own position pull EXACTLY ONCE per entity (guarded by
+## `wdl_near_applied`), not every tick -- two earlier versions both got
+## this wrong. A first attempt computed the shift once, synchronously,
+## the instant `near` turned on; a second recomputed it fresh every tick
+## from the entity's own LIVE (already-adjusted) position -- since that
+## output becomes next tick's input, feeding the result back into its
+## own `direction` calculation let the entity drift near/past the
+## camera, flip `direction`'s sign, and diverge outward instead of
+## converging. Fixed both of those (direction now comes from the fixed
+## `wdl_spawn_position`, never mutated; the shift applies once and then
+## leaves `pos` alone) -- but even then the ONE application could still
+## land wrong, and did (confirmed live, `smoke_range_hitscan_check`-style
+## direct dump): entity coroutines all start in the SAME synchronous
+## burst during `begin_level()`, each running up to its own first real
+## `wait()`. Range's own `action Handgun` sets `near = on` (triggering
+## this) BEFORE its first `wait(1)`, and if that happens to run before
+## `action CamTarget`'s own first `camera.x = my.x;` write (entity
+## iteration order, not guaranteed), `_camera.global_position` here is
+## still whatever stale/default pose the Camera3D node had, not
+## CamTarget's real spawn point -- computing "direction" from that reads
+## as a wildly different offset (confirmed: camera.y off by ~90 units
+## from its real spawn), throwing the whole pull hundreds of units in
+## the wrong place. Deferred past the synchronous startup burst entirely
+## by comparing frame numbers: skip (without marking applied) until
+## `Engine.get_process_frames()` has advanced past the frame `near` was
+## set on, guaranteeing every OTHER entity's coroutine -- including
+## CamTarget's -- has resumed via a real `wait()` at least once and
+## written its own real spawn position by the time this actually fires.
+func _near_weapon_adjusted_position(node: Node3D, pos: Vector3) -> Vector3:
+	if node.get_meta("wdl_near_applied", false):
+		return pos
+	var activated_frame := int(node.get_meta("wdl_near_activated_frame", -1))
+	if Engine.get_process_frames() <= activated_frame:
+		return pos
+	node.set_meta("wdl_near_applied", true)
+	if _camera == null:
+		return pos
+	var spawn_pos: Vector3 = node.get_meta("wdl_spawn_position", pos)
+	var raw_offset := spawn_pos - _camera.global_position
+	if raw_offset.length() < 0.01:
+		return pos
+	var direction := raw_offset.normalized()
+	var acc := AABB()
+	var has := false
+	var stack: Array[Node] = [node]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		if n is MeshInstance3D and (n as MeshInstance3D).mesh:
+			var mi := n as MeshInstance3D
+			var world_aabb: AABB = mi.global_transform * mi.mesh.get_aabb()
+			acc = world_aabb if not has else acc.merge(world_aabb)
+			has = true
+		for c in n.get_children():
+			stack.append(c)
+	if not has:
+		return pos
+	var max_depth := -INF
+	for dx in [0.0, acc.size.x]:
+		for dy in [0.0, acc.size.y]:
+			for dz in [0.0, acc.size.z]:
+				var corner: Vector3 = acc.position + Vector3(dx, dy, dz)
+				max_depth = maxf(max_depth, (corner - _camera.global_position).dot(direction))
+	var shift_amount := max_depth - NEAR_WEAPON_TARGET_DISTANCE
+	if shift_amount <= 0.0:
+		return pos
+	return pos - direction * shift_amount
+
+
 func _set_entity_pan(node: Node3D, pan_deg: float) -> void:
 	# GB-7 continued (2026-08-04, Range): "the game still seems to aim
 	# higher than the actual place the gun points to." This used to
@@ -2388,6 +2495,8 @@ func _set_entity_pan(node: Node3D, pan_deg: float) -> void:
 	var tilt := float(node.get_meta("tilt", 0.0))
 	var roll := float(node.get_meta("roll", 0.0))
 	var pos := node.global_position
+	if node.get_meta("wdl_near", false):
+		pos = _near_weapon_adjusted_position(node, pos)
 	node.global_transform = Transform3D(_acknex_entity_basis(pan_deg, tilt, roll) * Basis.from_scale(scl.abs()), pos)
 	node.set_meta("pan", pan_deg)
 
@@ -2398,6 +2507,8 @@ func _set_entity_tilt_roll(node: Node3D, tilt_deg: float, roll_deg: float) -> vo
 		scl = Vector3.ONE
 	var pan := float(node.get_meta("pan", 0.0))
 	var pos := node.global_position
+	if node.get_meta("wdl_near", false):
+		pos = _near_weapon_adjusted_position(node, pos)
 	node.global_transform = Transform3D(_acknex_entity_basis(pan, tilt_deg, roll_deg) * Basis.from_scale(scl.abs()), pos)
 	node.set_meta("tilt", tilt_deg)
 	node.set_meta("roll", roll_deg)

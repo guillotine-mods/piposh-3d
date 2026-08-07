@@ -6250,3 +6250,125 @@ impact-proximity tests (`smoke_shiks_bumpin`, `smoke_shiks_bumpin_proximity`,
 pre-seed fix and the `wdl_non_physical` exclusion -- the two fixes kept
 from rounds 1 -- remain correct for their own real, ongoing use.
 `git status --short assets/` zero deletions.
+
+## 2026-08-07 (GB-9) -- the first-person weapon view-model shows too
+much arm, not enough gun
+
+User, once GB-8 was confirmed fixed in-game: "the gun view better as it
+was in the orig game where the gun is more closer and we don't see the
+rest of the hand." No screenshot available either way (headless capture
+is confirmed broken this session already, and the user preferred to
+proceed on the text description alone) -- everything below was
+diagnosed from static data, then validated with a purpose-built headless
+transform/AABB dump (`tools/diag_range_handgun_view.gd`, deleted once
+the fix was confirmed working, since it was a one-off measurement tool
+not a regression test).
+
+Range's `action Handgun` (`original/piposh3d/Range.wdl:426`) does
+`my.invisible = on; while (MoviePlaying == 1) { wait(1); } my.invisible
+= off; my.near = on;` then loops forever setting `my.pan`/`my.roll` from
+mouse delta -- it never touches `my.x/y/z` itself. `my.near = on;` is
+the same idiom Final.wdl and Smash.wdl use for their own first-person
+weapon/tool view-models (`action Handgun`, `action Warty`) -- a
+corpus-wide pattern, not Range-specific. This port never implemented
+`near` at all (fell through the interpreter's generic custom-field
+fallback, a total no-op).
+
+First ruled out the obvious suspects, since the WMB-authored placement
+COULD have been the bug: `assets/converted/levels/Range.json`'s own
+Handgun entry confirms `origin_gs=(-52,288,103)`, `scale_gs=0.2` --
+exactly what this port renders, not a conversion bug. Read the model's
+own texture atlas directly (`assets/converted/mdl/Handgun_0.png`, via
+the Read tool's image support -- no headless rendering needed for a
+static texture) and it settled the anatomy question outright: two
+muzzle-flash frames, a blue forearm-sleeve cylinder (skin-toned hand at
+the top), and a separate black/gray pistol -- confirming this is a
+forearm+hand+gun assembly, not just an isolated gun mesh.
+
+`tools/diag_range_handgun_view.gd` (a headless script dumping the
+active camera's transform, the Handgun entity's transform, and its
+merged mesh AABB projected into camera-local space) then quantified the
+actual problem: the mesh spans camera-local depth ~34 to ~173 units,
+with the SLEEVE end closest to the camera and the GUN end farthest.
+Camera vertical FOV (46.8 deg, from Acknex's own 60 deg horizontal arc)
+means at 34 units the visible frustum height is only ~29 units -- almost
+exactly matching the sleeve's own ~33-unit height at that range, i.e.
+the sleeve very nearly fills the ENTIRE screen vertically on its own,
+while the gun, twice as far, reads as a small, secondary shape behind
+it. Exactly backwards from a normal FPS view-model, where the weapon
+itself should dominate.
+
+Godot has no per-entity near-clip override to reach for here (unlike
+whatever Acknex's own `NEAR` flag literally did at render time), so the
+fix pulls the whole entity toward the camera instead: enough that its
+OWN farthest mesh extent (the gun end) lands at a fixed close viewing
+distance (`NEAR_WEAPON_TARGET_DISTANCE = 40.0`), which pushes the
+sleeve end behind the camera entirely -- cropped from view the same way
+a tighter near-clip would have. Implemented as a new `"near"` case in
+`_set_field()` (previously silently absorbed by the generic custom-field
+fallback) that flags the entity (`wdl_near` meta), and
+`_near_weapon_adjusted_position()`, called from `_set_entity_pan()`/
+`_set_entity_tilt_roll()` -- the only two places this idiom's own
+per-tick pan/roll writes ever touch the entity's transform.
+
+Getting the pull calculation itself right took three attempts, each
+caught by re-running the diagnostic dump and finding the numbers
+obviously wrong:
+
+1. **Feedback loop.** First version derived the pull direction fresh
+   every tick from the entity's own LIVE position -- but that position
+   was itself last tick's OUTPUT, so the direction calculation fed back
+   into its own result. Once the pull moved the entity's origin near or
+   past the camera, the direction vector could flip sign outright, and
+   the "pull toward camera" correction started pushing it further away
+   instead. Confirmed live: the entity drifted to ~360 units from its
+   own spawn point, camera-local depth spanning -100 to +38 (partly
+   behind camera, partly still too far in front) instead of settling
+   anywhere near the 40-unit target.
+2. **Unbounded compounding.** Anchored the direction on the entity's
+   fixed `wdl_spawn_position` instead (never mutated, no feedback loop
+   possible) -- but `_set_entity_pan()` and `_set_entity_tilt_roll()`
+   both call this EVERY tick (Range's own script writes pan and roll
+   every tick), and the shift was still being applied to the entity's
+   live, already-shifted position each time, with no memory of "already
+   applied." A fixed shift applied repeatedly to a mutating base doesn't
+   converge, it accumulates linearly -- confirmed live: the entity ended
+   up over 4000 units from camera, off in the geometry outside the
+   level entirely.
+3. **Startup-order race.** Guarded the shift to apply exactly once
+   (`wdl_near_applied` meta) -- but the ONE application still landed
+   wrong, at ~-1092 Z instead of the hand-verified-correct ~-421.
+   Root cause: every entity's coroutine starts in the SAME synchronous
+   burst during `begin_level()`, each running up to its own first real
+   `wait()`. Handgun's `my.near = on;` fires before ITS first `wait()`;
+   `action CamTarget`'s own `camera.x = my.x; camera.y = my.y; camera.z
+   = my.z;` (Range.wdl:383-385) fires before ITS first `wait()` too --
+   but entity iteration order isn't guaranteed, and when Handgun's
+   coroutine happened to run first, `_camera.global_position` was still
+   whatever stale/default pose the Camera3D node had, not CamTarget's
+   real spawn point (confirmed: camera Y off by ~90 units from its real
+   spawn at the moment of the bad computation). Fixed by comparing frame
+   numbers: the shift records `Engine.get_process_frames()` at the
+   moment `near` turns on, and `_near_weapon_adjusted_position()` skips
+   (without marking itself as done) until the CURRENT frame number has
+   advanced past that -- guaranteeing at least one real frame boundary,
+   and therefore every other entity's own first `wait()`-resume,
+   including CamTarget's, has happened first.
+
+Final verification via the diagnostic dump: gun end at forward depth
+39.91 (target 40, near enough), sleeve end at forward depth -99.20
+(behind the camera, cropped from view). Deleted the diagnostic script
+once confirmed (a one-off measurement tool, not a regression test).
+
+Verified: `smoke_dispatch` 19/19. Full Range regression suite (all 15
+smoke tests, including `no_self_trigger_check` from the prior GB-8
+round 5 fix) OK. All three Shiks impact-proximity tests OK (near-flag
+handling doesn't touch that mechanism at all, but ran them anyway since
+`_set_entity_pan`/`_set_entity_tilt_roll` are shared, general-purpose
+functions touched by this change). `git status --short assets/` zero
+deletions. Final.wdl and Smash.wdl weren't separately playtested (no
+existing smoke test harness for either level) -- both dispatch cleanly
+under `smoke_dispatch`, and the fix is generic (keyed off the `near`
+field write itself, not any Range-specific state), but their own
+`near`-flagged weapon/tool view-models are worth a real in-game look
+if either level comes up.
