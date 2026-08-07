@@ -6372,3 +6372,85 @@ under `smoke_dispatch`, and the fix is generic (keyed off the `near`
 field write itself, not any Range-specific state), but their own
 `near`-flagged weapon/tool view-models are worth a real in-game look
 if either level comes up.
+
+## 2026-08-07 (GB-9 round 2 + GB-10) -- gun lower in frame, and a real
+mouse cursor loose during gameplay
+
+User, after confirming the GB-9 close-up pull worked: "Make the gun a
+bit lower on the screen, and that the mouse is always the 'center' like
+the aim cursor itself." Two requests bundled together; asked a
+clarifying multiple-choice question on the second one before touching
+any code, since "mouse is always the center" was genuinely ambiguous
+(a wandering real cursor? the crosshair graphic itself off-center? just
+a reassurance request with nothing actually broken?) and this session's
+prior gun-view investigation had already burned real effort chasing
+under-specified guesses -- the user picked "a real system cursor is
+visible and wanders."
+
+**Gun lower (GB-9 round 2):** straightforward. Added a second one-time
+offset, `NEAR_WEAPON_VERTICAL_DROP = 20.0`, applied in
+`_near_weapon_adjusted_position()` along the camera's own up vector
+(`_camera.global_transform.basis.y`) at the moment of the pull -- not a
+world-space -Y offset, so it reads as "lower on screen" regardless of
+which way the camera happens to be facing when the (still one-time,
+still frame-deferred) pull fires. Restructured the function so this
+drop always applies once a camera exists, even along the early-return
+paths that skip the depth pull itself (e.g. an entity with no mesh).
+Verified via the same headless transform/AABB dump used for round 1:
+camera-local AABB Y range moved from straddling center (-25 to +8) to
+fully below it (-45 to -12), a clean 20-unit drop with the depth
+framing (-99 to +40) unchanged.
+
+**Real mouse cursor loose during gameplay (GB-10):** traced by reading
+Range's own `main()` (`original/piposh3d/Range.wdl:260-324`) start to
+finish rather than guessing. Before any real gameplay begins, `main()`
+calls `DoDialog(4)` (a real dialogue choice, Krupnik's opening lines) --
+this is the SAME `GameHud.show_dialog()`/`hide_dialog()` mechanism used
+corpus-wide, not Range-specific. `show_dialog()` unconditionally forces
+`Input.mouse_mode = MOUSE_MODE_VISIBLE` so the player can actually click
+the TextureButton dialogue options with a real OS cursor -- correct and
+necessary. But `hide_dialog()` (called from `GameHud._emit_choice()`
+the instant a choice button is pressed) never put it back:
+```
+func hide_dialog() -> void:
+    if _dialog_root:
+        _dialog_root.visible = false
+```
+Nothing else in the per-level startup path re-asserts a captured/hidden
+mouse afterward either -- `level_runner.gd`'s own `Input.mouse_mode =
+MOUSE_MODE_CAPTURED` write (gated on `WdlInterpreter.uses_mickey_aiming()`,
+added for GB-7) runs ONCE at level setup, well BEFORE `main()`'s
+coroutine ever reaches `DoDialog(4)` (it's behind an opening `wait(3);`
+and a `while (total_frames == 0) { wait(1); }` gate) -- so that earlier
+write was already stale/overwritten by the time the dialogue's own
+VISIBLE mode landed, and nothing downstream ever revisited it. The real
+OS cursor -- not the WDL-drawn crosshair, a genuinely separate visual
+element -- stayed visible and freely movable by the physical mouse for
+the ENTIRE REST of the shooting-gallery phase, exactly matching "a real
+system cursor is visible and wanders."
+
+Fixed the same way this exact class of problem was already solved once
+this session, for the pRIP death panel: `WdlInterpreter`'s own
+`_mouse_mode_before_rip` (GB-7 round 3/5) saves whatever mouse mode was
+active before forcing VISIBLE, and restores it once pRIP hides.
+Mirrored that pattern directly in `GameHud`: added
+`_mouse_mode_before_dialog`, saved in `show_dialog()` (guarded so a
+DoDialog-after-DoDialog re-show inside the same "session" -- Range's own
+`while (DialogIndex == 4) { ...; DoDialog(4); }` re-show loop for
+choices 1/3 -- can't clobber the ORIGINAL pre-dialogue mode with the
+mid-dialogue VISIBLE one), restored in `hide_dialog()` -- along with
+`mouse_look` and the custom `_cursor` sprite's own visibility, derived
+from whatever mode got restored, so this stays correct for OTHER
+levels' own dialogue-during-cursor-mode cases too (Town/Studio's RMB
+cursor toggle), not just Range's captured-mode case.
+
+Verified: full Range regression suite (all 15 smoke tests) still green.
+`smoke_dispatch` 19/19. Shiks' own dialogue-choice tests --
+`smoke_shiks_dialog2`, `smoke_shiks_dialog2_choice`,
+`smoke_shiks_dialog2_choice3`, `smoke_shiks_dialog_choice` (these run
+several thousand simulated frames each -- Shiks' own dialogue/cutscene
+chains are long -- so needed a much longer per-test timeout than the
+Range suite, not actually hanging) -- all still pass, confirming the
+save/restore doesn't disturb dialogue-heavy levels that never
+special-cased mouse mode before. `git status --short assets/` zero
+deletions.

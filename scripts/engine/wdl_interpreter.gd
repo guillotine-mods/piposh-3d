@@ -2402,6 +2402,17 @@ func _acknex_entity_basis(pan_deg: float, tilt_deg: float, roll_deg: float) -> B
 ## genuine close-up rather than the original mid-distance framing.
 const NEAR_WEAPON_TARGET_DISTANCE := 40.0
 
+## User request (2026-08-07, Range), after confirming the close-up pull
+## itself worked: "make the gun a bit lower on the screen." The pull
+## above only fixes depth (how close/dominant the model is); this drops
+## it toward the bottom of frame too, matching a typical FPS view-model
+## instead of sitting at eye-level/screen-center. Applied along the
+## camera's OWN up vector at the moment of the (one-time, see this
+## function's own comment) pull, not a world-space -Y offset -- so it
+## reads as "lower on screen" regardless of which way the camera happens
+## to be facing when this fires.
+const NEAR_WEAPON_VERTICAL_DROP := 20.0
+
 
 ## Applies its own position pull EXACTLY ONCE per entity (guarded by
 ## `wdl_near_applied`), not every tick -- two earlier versions both got
@@ -2440,35 +2451,35 @@ func _near_weapon_adjusted_position(node: Node3D, pos: Vector3) -> Vector3:
 	node.set_meta("wdl_near_applied", true)
 	if _camera == null:
 		return pos
+	var result := pos
 	var spawn_pos: Vector3 = node.get_meta("wdl_spawn_position", pos)
 	var raw_offset := spawn_pos - _camera.global_position
-	if raw_offset.length() < 0.01:
-		return pos
-	var direction := raw_offset.normalized()
-	var acc := AABB()
-	var has := false
-	var stack: Array[Node] = [node]
-	while not stack.is_empty():
-		var n: Node = stack.pop_back()
-		if n is MeshInstance3D and (n as MeshInstance3D).mesh:
-			var mi := n as MeshInstance3D
-			var world_aabb: AABB = mi.global_transform * mi.mesh.get_aabb()
-			acc = world_aabb if not has else acc.merge(world_aabb)
-			has = true
-		for c in n.get_children():
-			stack.append(c)
-	if not has:
-		return pos
-	var max_depth := -INF
-	for dx in [0.0, acc.size.x]:
-		for dy in [0.0, acc.size.y]:
-			for dz in [0.0, acc.size.z]:
-				var corner: Vector3 = acc.position + Vector3(dx, dy, dz)
-				max_depth = maxf(max_depth, (corner - _camera.global_position).dot(direction))
-	var shift_amount := max_depth - NEAR_WEAPON_TARGET_DISTANCE
-	if shift_amount <= 0.0:
-		return pos
-	return pos - direction * shift_amount
+	if raw_offset.length() >= 0.01:
+		var direction := raw_offset.normalized()
+		var acc := AABB()
+		var has := false
+		var stack: Array[Node] = [node]
+		while not stack.is_empty():
+			var n: Node = stack.pop_back()
+			if n is MeshInstance3D and (n as MeshInstance3D).mesh:
+				var mi := n as MeshInstance3D
+				var world_aabb: AABB = mi.global_transform * mi.mesh.get_aabb()
+				acc = world_aabb if not has else acc.merge(world_aabb)
+				has = true
+			for c in n.get_children():
+				stack.append(c)
+		if has:
+			var max_depth := -INF
+			for dx in [0.0, acc.size.x]:
+				for dy in [0.0, acc.size.y]:
+					for dz in [0.0, acc.size.z]:
+						var corner: Vector3 = acc.position + Vector3(dx, dy, dz)
+						max_depth = maxf(max_depth, (corner - _camera.global_position).dot(direction))
+			var shift_amount := max_depth - NEAR_WEAPON_TARGET_DISTANCE
+			if shift_amount > 0.0:
+				result -= direction * shift_amount
+	result -= _camera.global_transform.basis.y * NEAR_WEAPON_VERTICAL_DROP
+	return result
 
 
 func _set_entity_pan(node: Node3D, pan_deg: float) -> void:

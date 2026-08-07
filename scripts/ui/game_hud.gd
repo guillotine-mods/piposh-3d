@@ -10,6 +10,9 @@ const GFX := "res://assets/converted/gfx/"
 
 var mouse_look := true  # mouse_mode==0 in WDL
 var show_debug := false
+## See show_dialog()/hide_dialog() -- mirrors WdlInterpreter's own
+## `_mouse_mode_before_rip` save/restore around the pRIP death panel.
+var _mouse_mode_before_dialog: int = -1
 
 var _scale := 1.0
 var _root: Control
@@ -250,6 +253,20 @@ func show_dialog(index: int) -> void:
 		_opt_btns[i].mouse_filter = Control.MOUSE_FILTER_STOP
 		_opt_btns[i].focus_mode = Control.FOCUS_ALL
 	# Dialog needs a real OS cursor for TextureButton hit-testing.
+	# Reported live (2026-08-07, Range): "a real system cursor is visible
+	# and wanders" during actual shooting-gallery aiming, well after the
+	# intro dialogue had closed. Root cause: this forced MOUSE_MODE_VISIBLE
+	# unconditionally and hide_dialog() never put it back -- Range's own
+	# `main()` (original/piposh3d/Range.wdl:290-311) shows a real DoDialog
+	# choice before gameplay starts, same as most levels, and nothing ever
+	# restored the captured/hidden mouse mode `action CamTarget`'s own
+	# mickey-based aiming depends on afterward, so the real OS pointer
+	# stayed visible and freely movable for the rest of the level --
+	# independent of, and confusing next to, the WDL-drawn crosshair.
+	# Saved/restored the same way WdlInterpreter's own
+	# `_mouse_mode_before_rip` already does around the pRIP death panel.
+	if _mouse_mode_before_dialog == -1:
+		_mouse_mode_before_dialog = Input.mouse_mode
 	mouse_look = false
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	_cursor.visible = false
@@ -258,6 +275,11 @@ func show_dialog(index: int) -> void:
 func hide_dialog() -> void:
 	if _dialog_root:
 		_dialog_root.visible = false
+	if _mouse_mode_before_dialog != -1:
+		Input.mouse_mode = _mouse_mode_before_dialog as Input.MouseMode
+		_mouse_mode_before_dialog = -1
+		mouse_look = Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
+		_cursor.visible = Input.mouse_mode == Input.MOUSE_MODE_HIDDEN
 
 
 func set_skip_visible(on: bool) -> void:
