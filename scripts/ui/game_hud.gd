@@ -225,6 +225,7 @@ func hide_range_hud() -> void:
 
 func set_mouse_look(enabled: bool) -> void:
 	mouse_look = enabled
+	PiposhDebug.log_msg("mouse-mode", "set_mouse_look(%s)" % [enabled])
 	if enabled:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		_cursor.visible = false
@@ -268,6 +269,7 @@ func show_dialog(index: int) -> void:
 	if _mouse_mode_before_dialog == -1:
 		_mouse_mode_before_dialog = Input.mouse_mode
 	mouse_look = false
+	PiposhDebug.log_msg("mouse-mode", "show_dialog(%d) saved=%s -> VISIBLE" % [index, _mouse_mode_before_dialog])
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	_cursor.visible = false
 
@@ -276,6 +278,7 @@ func hide_dialog() -> void:
 	if _dialog_root:
 		_dialog_root.visible = false
 	if _mouse_mode_before_dialog != -1:
+		PiposhDebug.log_msg("mouse-mode", "hide_dialog restoring -> %s" % [_mouse_mode_before_dialog])
 		Input.mouse_mode = _mouse_mode_before_dialog as Input.MouseMode
 		_mouse_mode_before_dialog = -1
 		mouse_look = Input.mouse_mode == Input.MOUSE_MODE_CAPTURED

@@ -729,6 +729,7 @@ func _set_panel_field(node: Control, low: String, value: Variant) -> void:
 					# Mirrors GameHud.show_dialog()'s own existing
 					# "need a real OS cursor for hit-testing" handling.
 					_mouse_mode_before_rip = Input.mouse_mode
+					PiposhDebug.log_msg("mouse-mode", "pRIP shown, saved=%s -> VISIBLE" % [_mouse_mode_before_rip])
 					Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 				elif was_visible:
 					# Unfreeze immediately -- matches `HideRIP()`'s own
@@ -741,6 +742,7 @@ func _set_panel_field(node: Control, low: String, value: Variant) -> void:
 					# blocked behind -- a self-deadlock).
 					_frozen = false
 					if _mouse_mode_before_rip != -1:
+						PiposhDebug.log_msg("mouse-mode", "pRIP hidden, restoring -> %s" % [_mouse_mode_before_rip])
 						Input.mouse_mode = _mouse_mode_before_rip as Input.MouseMode
 						_mouse_mode_before_rip = -1
 					# GB-7 continued (2026-08-06, Range): "the pointer

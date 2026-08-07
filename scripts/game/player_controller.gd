@@ -17,6 +17,7 @@ var touch_move := Vector2.ZERO
 func _ready() -> void:
 	add_to_group("player")
 	if capture_mouse_on_ready and not _prefer_touch_ui():
+		PiposhDebug.log_msg("mouse-mode", "player_controller _ready -> CAPTURED")
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
@@ -107,8 +108,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		apply_look_delta(event.relative.x, event.relative.y)
 	if event.is_action_pressed("pause_menu"):
 		if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+			PiposhDebug.log_msg("mouse-mode", "player_controller pause_menu -> VISIBLE")
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		else:
+			PiposhDebug.log_msg("mouse-mode", "player_controller pause_menu -> CAPTURED")
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 

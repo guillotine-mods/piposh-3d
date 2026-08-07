@@ -116,6 +116,7 @@ func _ready() -> void:
 		# WdlInterpreter.uses_mickey_aiming()'s own comment.
 		var interp: Node = _director.get("_wdl_interp")
 		if interp != null and bool(interp.call("uses_mickey_aiming")):
+			PiposhDebug.log_msg("mouse-mode", "level_runner setup -> CAPTURED (mickey aiming)")
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	else:
 		_enable_free_player(loader.spawn_position)
