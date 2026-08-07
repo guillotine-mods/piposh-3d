@@ -6165,3 +6165,88 @@ each run with an individual timeout after `smoke_range_shot_log_check.gd`
 hung once mid-development on a stale, now-deleted API reference) plus
 all three Shiks impact-proximity tests OK. `git status --short assets/`
 zero deletions.
+
+## 2026-08-07 (GB-8 round 5) — round 4's own hitscan left rounds 2-3's
+fixes active with nothing left to serve, and they turned harmful
+
+User, after round 4 shipped: "Now without clicking all the victims get
+'hit' when they go up and i get to the 'dying' screen very quickly,
+can't even play." A regression, and a bad one -- Terrorists/Civilians
+dropping with zero shots fired at all.
+
+Root cause: rounds 2 (`_moved_from_spawn_y()`, switch to real 3D
+distance whenever either side of a checked pair has moved >15 units in
+Y from its own spawn position) and 3 (`_impact_radius_for_mesh()`,
+widen each entity's own impact radius from a flat 28 units out to its
+own mesh footprint) both existed for exactly one reason: helping the
+OLD physical bullet (`ACTION Spark`'s own `move()`-every-tick travel,
+checked against this port's approximate impact-zone mechanism) reach a
+target reliably despite the mechanism's own coarseness. Round 4 deleted
+that whole reason by replacing Range's bullets with an instant raycast
+that resolves hits directly against real mesh collision and never
+touches `_check_impact_proximity()` at all -- but rounds 2-3's own code
+was left running anyway, still active for the mechanism's OTHER real
+use: Terrorist/Civilian proximity checks against each other and nearby
+scenery (originally the walker-vs-static-target case, e.g. Shiks' own
+Piposh-walks-into-Bumpin trigger).
+
+That combination was actively harmful for Range specifically. Range
+packs its own 20 targets only ~30 units apart -- well inside round 3's
+own widened radius (targets' own mesh footprints put this comfortably
+past 60-80 units). And a target's own `GoingUp`/`Dying` pop-up
+animation is real, ongoing vertical (Y) movement -- exactly what round
+2's `_moved_from_spawn_y()` check treated as "this side has genuinely
+moved in height, use full 3D distance instead of XZ-only" for. So: as a
+target popped up, its real 3D distance to an already-pre-seeded
+"touching" neighbor grew past whatever baseline had been recorded, then
+shrank back down again on the way back down -- and `_check_impact_proximity()`'s
+own debounce (`_impact_touching`, fires once per pair "newly entering,"
+not every frame of overlap) read that shrink-back-into-range as a fresh
+approach each time, invoking the popping target's OWN `wdl_event`
+(`TargetHit`) purely from its own animation, with literally no shot
+ever fired. The user's crosshair, aim, and clicks were never involved
+at all -- explains "very quickly," since with 20 targets packed this
+densely and popping up on independent timers, SOME pair was almost
+always transitioning in or out of the widened radius on any given
+frame.
+
+Fix: reverted both rounds 2 and 3 back to their original state. Deleted
+`_impact_radius_for_mesh()` entirely and reverted `_ensure_impact_area()`'s
+radius back to a flat `28.0`. Deleted `_moved_from_spawn_y()` and
+`_AIRBORNE_Y_THRESHOLD` entirely and reverted `_check_impact_proximity()`'s
+distance check back to plain XZ-only (`dx*dx+dz*dz <= radius*radius`,
+no branching). Left round 1's pre-seed fix (a zone starts with whatever's
+already in range at creation time pre-marked as "already touching," so
+it can't fire on its own first check) and the `wdl_non_physical` marker
+exclusion both fully in place -- neither was ever specific to the
+now-obsolete bullet-reach problem, and both remain correct and needed
+for every other user of this mechanism.
+
+New test, `tools/smoke_range_no_self_trigger_check.gd`: lets Range run
+for real (real coroutines, real random pop-up timing, no forced state,
+no shot ever fired) for 300 frames and confirms Terrorists/Civilians
+counts never change. First run genuinely failed on an unrelated
+assertion: Health dropped (609 -> -11) even though Terrorists/Civilians
+stayed exactly unchanged. Traced via grep to `action Terrorist`'s own
+authored script -- `if (my.Delay < 0) { if (my.Type == typeTerrorist)
+{ my.skin = my.base + 1; Health = Health - DMG; my.delay =
+DEFAULT_DELAY; } }` -- confirmed a real, intentional difficulty
+mechanic in the original WDL source (a terrorist left un-shot for too
+long shoots back), not a bug and not related to this round's fix.
+Narrowed the test's own pass/fail assertion to only Terrorists/Civilians
+(what this bug actually breaks) and removed an artificial `Rapidness`
+speed-up that had been biasing the test toward more pop-up cycles than
+real gameplay would see. Re-run confirmed clean: `before: Health=609.0
+Terrorists=15.0 Civilians=5.0` / `after 300 frames (no shots fired):
+Health=509.0 Terrorists=15.0 Civilians=5.0` -- Health legitimately
+dropped further (the real mechanic, unrelated), Terrorists/Civilians
+exactly unchanged (the actual bug, now fixed).
+
+Verified: `smoke_dispatch` 19/19. Full Range regression suite (all 14
+pre-existing smoke tests plus the new `no_self_trigger_check`, each run
+individually with its own timeout) all OK. All three Shiks
+impact-proximity tests (`smoke_shiks_bumpin`, `smoke_shiks_bumpin_proximity`,
+`smoke_shiks_walk_to_bumpin_real`) still OK, confirming round 1's
+pre-seed fix and the `wdl_non_physical` exclusion -- the two fixes kept
+from rounds 1 -- remain correct for their own real, ongoing use.
+`git status --short assets/` zero deletions.

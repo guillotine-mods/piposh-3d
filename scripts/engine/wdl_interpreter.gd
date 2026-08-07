@@ -2006,9 +2006,15 @@ func _clickable_center_offset(node: Node3D) -> Vector3:
 ## new zone firing against whatever it started already overlapping (a
 ## projectile at its own shooter), and the XZ-only check letting a
 ## nearby-but-differently-positioned target claim a shot meant for
-## someone else -- are both fixed now (see this function's own pre-seed
-## block below, and `_moved_from_spawn_y()`), so re-attempted scaling
-## the radius to each entity's own mesh footprint instead of a flat 28.
+## someone else -- were both fixed (see this function's own pre-seed
+## block below), so this got re-attempted scaling the radius to each
+## entity's own mesh footprint instead of a flat 28 -- and then GB-8's
+## own hitscan replacement (`_do_spark_hitscan()`) made the whole
+## question moot, since Range's shots stopped using this mechanism at
+## all. The widened radius, now with nothing left to serve, turned out
+## to be actively harmful for this function's OTHER remaining use
+## (targets popping up near each other) -- see this function's own
+## current body for the final, reverted-back-to-flat-28 state.
 func _ensure_impact_area(node: Node3D) -> void:
 	if node.has_meta("wdl_impact_area"):
 		return
@@ -2018,7 +2024,28 @@ func _ensure_impact_area(node: Node3D) -> void:
 	area.monitoring = true
 	var cs := CollisionShape3D.new()
 	var shape := SphereShape3D.new()
-	var radius := maxf(28.0, _impact_radius_for_mesh(node))
+	# GB-8 continued (2026-08-07, Range): "without clicking all the
+	# victims get 'hit' when they go up" -- reverted the mesh-based radius
+	# widening (and, below, the height-aware 3D-distance switch) back to
+	# the original flat 28-unit/XZ-only behavior. Both existed SOLELY to
+	# help a physical bullet reliably reach a target despite this port's
+	# own approximate collision -- moot now that GB-8's own hitscan
+	# replacement (see `_do_spark_hitscan()`) resolves Range's shots via
+	# a real raycast and never touches this mechanism at all. Left
+	# active, both were actively harmful for their OTHER, still-real use
+	# (Terrorist/Civilian's own impact zone checking nearby entities):
+	# Range packs its targets only ~30 units apart, well inside the
+	# widened ~80-unit radius, and a target's own `GoingUp`/`Dying`
+	# pop-up animation is real, ongoing vertical movement -- exactly what
+	# the height-aware check treats as "genuinely airborne, use full 3D
+	# distance" for. As a target popped up, the 3D distance to its still-
+	# resting neighbor grew past the (still nearby, pre-seeded) baseline
+	# and then shrank back on the way down, reading as a fresh "just
+	# walked in" approach each time -- so a target could fire its own
+	# `TargetHit` purely from POPPING UP near another target, with no
+	# shot ever fired. Back to the original, proven-safe flat-28/XZ-only
+	# behavior, matching every other still-live use of this mechanism.
+	var radius := 28.0
 	shape.radius = radius
 	cs.shape = shape
 	area.add_child(cs)
@@ -2067,36 +2094,6 @@ func _ensure_impact_area(node: Node3D) -> void:
 	_impact_touching[node] = pre_touching
 
 
-## See `_ensure_impact_area()`'s own comment. Farthest XZ distance from
-## the entity's own local origin to any corner of its merged mesh AABB --
-## a sphere at the origin with this radius provably reaches every point
-## the visible model occupies, regardless of how far off-center the
-## origin itself sits (Range's own `Fakeguy` targets: a "feet"-style
-## pivot ~40 units from their own mesh's own center, same offset the
-## feet-snap fix elsewhere in this file already accounts for). `0.0`
-## (falls back to the 28-unit floor) for entities with no mesh at all.
-func _impact_radius_for_mesh(node: Node3D) -> float:
-	var acc := AABB()
-	var has := false
-	var stack: Array[Node] = [node]
-	while not stack.is_empty():
-		var n: Node = stack.pop_back()
-		if n is MeshInstance3D and (n as MeshInstance3D).mesh:
-			var mi := n as MeshInstance3D
-			var local: AABB = mi.transform * mi.mesh.get_aabb()
-			acc = local if not has else acc.merge(local)
-			has = true
-		for c in n.get_children():
-			stack.append(c)
-	if not has:
-		return 0.0
-	var max_r := 0.0
-	for dx in [acc.position.x, acc.position.x + acc.size.x]:
-		for dz in [acc.position.z, acc.position.z + acc.size.z]:
-			max_r = maxf(max_r, Vector2(dx, dz).length())
-	return max_r
-
-
 ## `body_entered` has no debounce of its own: a CharacterBody3D sliding
 ## along this Area3D's edge (common with collision push-back/momentum,
 ## and confirmed live via a real player's own console capture --
@@ -2128,21 +2125,6 @@ func _on_impact_body_exited(body: Node3D, node: Node3D) -> void:
 	var touching: Dictionary = _impact_touching.get(node, {})
 	touching.erase(body)
 	_impact_touching[node] = touching
-
-
-## See the "GB-8 continued" comment inside `_check_impact_proximity()`'s
-## own loop for why this exists. `15.0` is comfortably above ordinary
-## floor-snap/transform jitter but well below any real projectile's
-## per-tick vertical travel or a target's own pop-up/duck-down range
-## (60 units, Range's own `if (my.z > my.OriginalZ+60)`).
-const _AIRBORNE_Y_THRESHOLD := 15.0
-
-
-func _moved_from_spawn_y(entity: Node3D) -> bool:
-	if not entity.has_meta("wdl_spawn_position"):
-		return false
-	var spawn_y: float = (entity.get_meta("wdl_spawn_position") as Vector3).y
-	return absf(entity.global_position.y - spawn_y) > _AIRBORNE_Y_THRESHOLD
 
 
 ## Per-frame distance check, the non-physics-body half of the impact
@@ -2202,48 +2184,30 @@ func _check_impact_proximity() -> void:
 			# XZ distance only. The real player's Area3D/body_entered path
 			# is untouched by this (CharacterBody3D floor-snaps for real).
 			var other_pos: Vector3 = (other as Node3D).global_position
-			# GB-8 continued (2026-08-07, Range): "the further away the
-			# terrorist is, the more likely I still can't hit him." Even
-			# after the self-kill fixes above, a bullet's own real
-			# trajectory line (computed analytically, independent of any
-			# per-frame sampling) landed well within a target's own
-			# radius -- but the bullet kept dying early anyway. Cause:
-			# the XZ-only check above was written for the walker-vs-
-			# target case (see its own comment), where the walker's own
-			# Y is artificially pinned to its spawn height regardless of
-			# real floor differences -- correct there, but a bullet in
-			# real 3D flight is the opposite case: its Y is genuinely,
-			# meaningfully different tick to tick as it travels, and a
-			# shot aimed at a FAR target flies OVER or UNDER any NEARER
-			# target sitting in roughly the same XZ column -- ignoring Y
-			# entirely made that nearer target (or the nearer target's
-			# own zone independently checking for the bullet) claim the
-			# shot anyway, well before it ever reached the intended one,
-			# and more distance simply means more nearer targets to fly
-			# past. Use real 3D distance instead of XZ-only whenever
-			# either side of the pair has genuinely moved in height from
-			# its own spawn position (a bullet in flight, or a target
-			# mid pop-up/duck-down) -- both sides being still keeps the
-			# original XZ-only behavior exactly as before (a walker
-			# approaching a static target, Shiks' own Bumpin/Snail case,
-			# never trips this: neither one's Y ever changes from spawn).
-			# GB-8 continued (2026-08-07, Range): bullets no longer reach
-			# this check at all -- `_do_create()`'s "Spark" case now
-			# resolves hits with a real raycast instead (see
-			# `_do_spark_hitscan()`'s own comment). Kept as-is anyway: it's
-			# still correct and still matters for the OTHER movers that
-			# use this same generic mechanism (a target's own pop-up/
-			# duck-down animation checked against a nearby target or
-			# piece of scenery, for instance).
-			var moved_y := _moved_from_spawn_y(node) or _moved_from_spawn_y(other as Node3D)
-			var touching_now: bool
-			if moved_y:
-				touching_now = node.global_position.distance_to(other_pos) <= radius
-			else:
-				var dx := center.x - other_pos.x
-				var dz := center.z - other_pos.z
-				touching_now = dx * dx + dz * dz <= radius * radius
-			if touching_now:
+			# GB-8 continued (2026-08-07, Range): "without clicking all
+			# the victims get 'hit' when they go up." A round-2 attempt
+			# at this switched to real 3D distance whenever either side
+			# of a pair had moved in height, specifically to help a
+			# physical bullet in real flight reach a target regardless of
+			# height -- moot now that GB-8's own hitscan replacement (see
+			# `_do_spark_hitscan()`) resolves Range's shots with a real
+			# raycast and never reaches this check at all. Left active,
+			# it was actively harmful for the check's OTHER, still-real
+			# use: Range packs its own targets only ~30 units apart, and
+			# a target's own `GoingUp`/`Dying` pop-up animation is real,
+			# ongoing vertical movement -- exactly what that switch
+			# treated as "genuinely airborne, use full 3D distance." As a
+			# target popped up, the 3D distance to its still-resting
+			# neighbor grew past the (pre-seeded, already-touching)
+			# baseline and then shrank back down on the way down, reading
+			# as a fresh "just walked in" approach each time -- so a
+			# target could fire its own `TargetHit` purely from popping
+			# up near another target, no shot ever fired. Back to plain
+			# XZ-only, matching every other still-live use of this
+			# mechanism (see the "walked into" comment above).
+			var dx := center.x - other_pos.x
+			var dz := center.z - other_pos.z
+			if dx * dx + dz * dz <= radius * radius:
 				still_touching[other] = true
 				if not touching.has(other):
 					invoke_event(node, str(node.get_meta("wdl_event", "")))
@@ -3699,12 +3663,10 @@ func _do_create(a: Array, my) -> Node3D:
 	# superset of the old behavior, not a narrowing).
 	var pos_source: Node3D = (a[1] if a.size() > 1 and a[1] is Node3D and is_instance_valid(a[1]) else my)
 	inst.global_transform = pos_source.global_transform if pos_source else Transform3D.IDENTITY
-	# See `_moved_from_spawn_y()`'s own comment -- WmbLevelLoader sets this
-	# for every level-placed entity, but a runtime `create()`'d one (e.g.
-	# every fired Spark bullet) never goes through that spawn path at all.
-	# Without it, a bullet's own real, meaningful vertical travel could
-	# never be told apart from a level-placed entity that simply never got
-	# the meta.
+	# See `_reset_entity_to_spawn()`'s own comment -- WmbLevelLoader sets
+	# this for every level-placed entity, but a runtime `create()`'d one
+	# never goes through that spawn path at all. Without it, a retry
+	# reset would have nothing to put a runtime-created entity back to.
 	inst.set_meta("wdl_spawn_position", inst.global_position)
 	var anim := MdlAnimator.new()
 	anim.name = "MdlAnimator"
