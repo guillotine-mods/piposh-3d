@@ -6532,3 +6532,102 @@ separate bug, just this same issue described in mouse-cursor terms.
 Left the `[mouse-mode]` debug logging in place (harmless,
 `PiposhDebug.ENABLED`-gated) in case a genuine mouse-capture issue
 surfaces later; it's no longer needed for this one.
+
+## 2026-08-08 (GB-12) -- Plane3 frozen on its first line, a silently
+rejected scale-cap entity
+
+User, moving on to the level after Range: "start working on the next
+stage - which is now stuck." `levels.json` confirms Range's own `run`
+target is Plane3. A clarifying question narrowed "stuck" down to "level
+loads but nothing moves/progresses" (not a black screen, not a crash,
+not a partial freeze after some initial progress) before touching any
+code, given how much this session had already spent chasing
+under-specified reports.
+
+Read `original/piposh3d/Plane3.wdl` cold to find the level's own
+progression mechanism, since nothing in `docs/BUGS.md`/`CONTRACT.md`
+mentioned Plane3 before. `main()` itself is short (`wait(3);
+load_level(...); VoiceInit(); Initialize(); SetVoice(); ...`) and never
+loops -- the actual scene driver is `action Dome`'s own `while(1)`
+loop: `if (Scene > -1) { if (GetPosition(Voice) >= 1000000) { Scene =
+Scene + 1; SetVoice(); } } ...` (checked against `DialogIndex==5`/`==6`
+branches too, but those are downstream of `Scene` ever moving at all).
+`SetVoice()` is a `Scene`-keyed dispatch table (`if (Scene==0) {
+sPlay("Wait.WAV"); } if (Scene==1) { sPlay("PIP046.WAV"); } ...`) that
+every camera cut (`action Cam`'s own `Stage`/`CamShow` gate) and every
+character's talk/blink state ultimately reads. So: ONE entity's
+coroutine is the sole heartbeat for the entire cutscene. If it never
+runs, nothing else can move -- exactly matching the report.
+
+First suspected the voice-completion tracking itself, since `Scene==0`
+plays `Wait.WAV` -- an oddly-named file -- and this session already has
+a well-documented history of GetPosition(Voice) debounce bugs (Start's
+LookAtMe race, Studio's ShikKlik starvation, both in
+`WdlInterpreter._do_get_voice_position()`'s own comment). Checked the
+file directly: 221 bytes vs. a normal voice line's ~177KB -- an ~8ms
+placeholder, not a real line. Loaded it standalone
+(`AudioStream.get_length()` = 0.008s, non-zero, so not the "stream_len
+<= 0.0 stays stuck at 0.0 forever" edge case in
+`AudioChannels.get_voice_progress()`) and drove it through
+`AudioChannels.play_voice()` directly in an isolated headless script:
+reached "finished" (progress >= 1.0) within about 14 frames. Not the
+cause on its own.
+
+Loaded the REAL level next and watched `Scene` directly: it never
+moved off `0.0` across 300 simulated frames (5 real seconds), even
+though `AudioChannels.get_voice_progress()` already read `1.0`
+("finished") from the very first frame checked. Voice tracking was
+fine; nothing was ever actually reading it. Went looking for the Dome
+entity itself and found nothing: `entities.get_children()` had zero
+nodes with `action` meta containing "dome" in any case, out of 489
+total children -- one short of the level JSON's own 490 `"type":
+"entity"` objects. `WmbLevelLoader`'s own per-level summary log
+confirmed it plainly: `spawned=489 skipped=1`.
+
+Root cause, in `WmbLevelLoader._spawn_entity()`
+(`scripts/engine/wmb_level_loader.gd:388-389`):
+```
+if maxf(scl.x, maxf(scl.y, scl.z)) > MAX_UNIFORM_SCALE:
+    return false
+```
+`MAX_UNIFORM_SCALE` was `64.0` ("Island.MDL uses scale 20; allow
+generous but reject skybox junk"). Plane3's own `BackDome.MDL`
+placement (`action Dome`) is WED-authored at scale `95.36` -- comfortably
+past that cap, so `_spawn_entity()` returned `false` before the node,
+its mesh, or its coroutine ever existed. No entity, no `while(1)` loop,
+no `Scene` advancement, ever. The level wasn't broken mid-cutscene; it
+never started ticking at all.
+
+Before just raising the number, surveyed every converted level's own
+entity scales (`assets/converted/levels/*.json`, `scale_gs`/`scale` >
+50) to understand what the cap was actually protecting against and
+pick a value with real justification rather than a guess:
+```
+197.82  Mount.json     BackDome_mdl_064   action=null
+95.36   Plane3.json    BackDome_mdl_1885  action=Dome
+67.87   Menu.json      Bus_mdl_010        action=
+59.64   Shiks.json     Rocks_mdl_212      action=
+```
+Only ONE other placement in the entire corpus sits above the old cap --
+Mount's own BackDome at 197.82, and its `action` is empty (`null`),
+meaning no script anywhere depends on it existing; excluding it (as
+happens today, unnoticed) changes nothing functionally, only omits a
+decorative sky mesh. Raised `MAX_UNIFORM_SCALE` to `100.0`: comfortably
+past Plane3's 95.36 with a little headroom, while leaving Mount's
+197.82 excluded exactly as before -- picks up the one entity that
+actually needed picking up, changes nothing else.
+
+Verified: a headless dump confirmed the Dome entity now spawns
+(`spawned=490 skipped=0`), its coroutine ticks (`my.pan += 0.1*time`
+measurably advancing frame to frame), and `Scene` climbs 0 -> 1 -> 2 ->
+3 over a 5-second simulated window, each transition tracking a real
+voice line playing to completion (`VOICE_FINISHED` -> `SPLAY` pairs in
+the existing `[dialog-choice]` debug log). New regression test,
+`tools/smoke_plane3_dome_scale_check.gd`, checks both halves: the Dome
+entity actually spawns, and `Scene` genuinely advances past its
+previously-permanent `0.0`. `smoke_dispatch --all` still 55/56
+(unchanged -- this fix doesn't add or remove which levels dispatch, it
+fixes what happens to ONE entity within one already-dispatching level).
+Spot-checked Range + Shiks too, since this touches the shared level
+loader used by every level, not a Plane3-only code path -- all still
+green. `git status --short assets/` zero deletions.

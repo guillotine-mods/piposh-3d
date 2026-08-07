@@ -10,7 +10,21 @@ const MDL_DIR := "res://assets/converted/mdl/"
 const WMB_DIR := "res://assets/converted/wmb/"
 const LEVEL_DIR := "res://assets/converted/levels/"
 ## Island.MDL uses scale 20; allow generous but reject skybox junk.
-const MAX_UNIFORM_SCALE := 64.0
+## Reported live (2026-08-08): Plane3 "loads but nothing ever
+## progresses" -- its own `action Dome` (`BackDome.MDL`, scale 95.36)
+## is the ONLY entity that polls `GetPosition(Voice)` and advances
+## `Scene`, the variable every camera cut/dialogue/character state in
+## the whole level gates on. At the old 64.0 cap this entity was
+## silently rejected by _spawn_entity()'s own scale check before ever
+## spawning -- no node, no coroutine, nothing to advance Scene, so the
+## level sat frozen on its very first line forever, matching the report
+## exactly. A corpus-wide survey of every level's own entity scales
+## (see docs/SESSION_LOG.md) found only one other placement above the
+## old cap -- Mount's own BackDome at 197.82, `action=null` (purely
+## decorative, no script depends on it existing) -- so raising this to
+## 100.0 picks up Plane3's real, functionally-required dome without
+## changing Mount's (already-excluded, unused-by-any-action) one at all.
+const MAX_UNIFORM_SCALE := 100.0
 ## CamPlane / far scenery can sit tens of thousands of quants out.
 const MAX_ORIGIN_DIST := 80000.0
 
