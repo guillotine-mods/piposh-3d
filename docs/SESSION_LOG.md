@@ -6454,3 +6454,81 @@ Range suite, not actually hanging) -- all still pass, confirming the
 save/restore doesn't disturb dialogue-heavy levels that never
 special-cased mouse mode before. `git status --short assets/` zero
 deletions.
+
+## 2026-08-08 (GB-9 round 3) -- "mouse cursor after retry" was actually
+the gun view resetting
+
+User: "The only thing not resetting correctly is the view of the
+gun/hand, that now we see the gun and the hand in front of us instead
+of first person POV like before the retry." This landed right after a
+whole investigation round (GB-11, logged separately below and now
+retired) chasing what the user's PRIOR message ("shows the cursor we
+had in the previous version" after Retry) described as a mouse-capture
+regression -- static review of the pRIP/dialogue mouse-mode save-restore
+logic found nothing wrong, and headless testing turned out to be unable
+to observe `Input.mouse_mode` at all (confirmed via a minimal script:
+setting `Input.mouse_mode = MOUSE_MODE_CAPTURED` under `--headless` and
+reading it straight back still reports `MOUSE_MODE_VISIBLE` -- no real
+display server to actually capture against), so debug logging was added
+and shipped instead of a fix, waiting on real playthrough data. This
+message clarifies what was actually meant: "the cursor" was the user's
+own way of describing the GUN VIEW, not the OS mouse pointer -- the
+weapon view-model itself was reverting to its pre-GB-9 framing (full
+arm/hand visible, not the close-up pull) specifically after Retry, not
+at level start.
+
+Root cause, found by reading `_reset_entity_to_spawn()`
+(`scripts/engine/wdl_interpreter.gd:4086`) against GB-9's own
+near-pull design: `_reset_all_entities_to_spawn()` (the GB-7-round-7
+"reset enemies on retry" feature) calls this for EVERY entity on retry,
+and its very first line puts the entity's position back at its raw WMB
+`wdl_spawn_position` -- correct for Terrorists/Civilians (that's their
+real resting spot), wrong for the Handgun, whose raw spawn point was
+NEVER meant to be rendered directly; it's only ever a starting point
+for `_near_weapon_adjusted_position()`'s own one-time pull (GB-9). That
+pull is deliberately guarded by `wdl_near_applied` so it can't reapply
+itself every tick and drift/compound (GB-9's own hard-won fix, see the
+2026-08-07 entry above) -- but nothing ever cleared that guard on
+retry. So the sequence on Retry was: reset puts the Handgun back at its
+raw, unpulled spawn position (undoing the pull) -> guard is still
+`true` from the FIRST pull, so `_near_weapon_adjusted_position()`
+short-circuits on every subsequent tick and never reapplies -> the
+weapon stays stuck at the raw spawn framing (full arm/hand visible) for
+the rest of that playthrough, exactly matching "we see the gun and the
+hand in front of us instead of first person POV."
+
+Fix: `_reset_entity_to_spawn()` now also clears `wdl_near_applied`
+(back to unset/false) and re-stamps `wdl_near_activated_frame` to the
+current frame whenever the entity carries `wdl_near` -- re-arming the
+pull exactly the same way a fresh level load does. `action Handgun`'s
+own coroutine is never restarted on retry (only unfrozen, same as every
+other entity -- GB-5/GB-7's own "freeze gameplay while pRIP is up"
+design), so its still-running `while(1) { ...; my.pan = ...; my.roll =
+...; wait(1); }` loop writes pan/roll on the very next tick regardless,
+which is what actually triggers `_set_entity_pan()`/
+`_set_entity_tilt_roll()` to call `_near_weapon_adjusted_position()`
+again -- no extra wiring needed beyond clearing the guard.
+
+New test, `tools/smoke_range_retry_near_weapon_check.gd`: records the
+Handgun's distance from camera once the initial pull has settled, kills
+the player, clicks Retry for real (`invoke_event(null, "fRIP1")`, the
+same mechanism the death-screen button itself uses), and confirms the
+distance afterward matches -- 97.55 units before AND after retry in
+this run, clearly distinct from the raw unpulled spawn distance (38.05)
+that the bug would have left it at. Unlike the mouse-mode question this
+whole investigation started from, entity POSITION is something headless
+testing can observe just fine (no display-server dependency), so this
+one didn't need real playthrough data to verify.
+
+Verified: full Range regression suite (all 16 smoke tests, including
+the new one) OK. `smoke_dispatch` 19/19. All three Shiks
+impact-proximity tests OK (`_reset_entity_to_spawn()` is generic,
+shared by every level using the retry-reset feature, not Range-only,
+even though Shiks itself doesn't have a near-flagged entity to
+exercise the new branch). `git status --short assets/` zero deletions.
+
+Retired GB-11 from `docs/BUGS.md` -- it never described a real,
+separate bug, just this same issue described in mouse-cursor terms.
+Left the `[mouse-mode]` debug logging in place (harmless,
+`PiposhDebug.ENABLED`-gated) in case a genuine mouse-capture issue
+surfaces later; it's no longer needed for this one.

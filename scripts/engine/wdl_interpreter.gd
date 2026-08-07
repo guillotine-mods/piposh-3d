@@ -4086,6 +4086,28 @@ func _reset_all_entities_to_spawn() -> void:
 func _reset_entity_to_spawn(node: Node3D) -> void:
 	if node.has_meta("wdl_spawn_position"):
 		node.global_position = node.get_meta("wdl_spawn_position")
+	# GB-9 continued (2026-08-08, Range): "after retry... we see the gun
+	# and the hand in front of us instead of first person POV like before
+	# the retry." This reset puts the entity's position back at its raw,
+	# un-pulled WMB spawn point (the line above) -- correct for every
+	# OTHER entity, but for a `near`-flagged weapon view-model that spawn
+	# point is deliberately wrong, only ever meant to be a STARTING point
+	# for `_near_weapon_adjusted_position()`'s own one-time pull. That
+	# pull is guarded by `wdl_near_applied` so it can't reapply itself
+	# every tick (see its own comment for why) -- but nothing ever
+	# cleared the guard on retry, so the pull didn't get a chance to
+	# reapply either: the reset undid the pull, and the guard then
+	# permanently blocked redoing it, leaving the weapon stuck at its
+	# far/full-view spawn position for the rest of that playthrough.
+	# Clearing both here re-arms it exactly like a fresh level load --
+	# `action Handgun`'s own still-running `while(1)` loop writes
+	# `my.pan`/`my.roll` every tick regardless of retry (its coroutine is
+	# never restarted, only unfrozen), so `_set_entity_pan()`/
+	# `_set_entity_tilt_roll()` will pull it close again on the very next
+	# tick.
+	if node.has_meta("wdl_near"):
+		node.set_meta("wdl_near_applied", false)
+		node.set_meta("wdl_near_activated_frame", Engine.get_process_frames())
 	var spawn_pan: float = float(node.get_meta("wdl_spawn_pan", node.get_meta("pan", 0.0)))
 	var spawn_tilt: float = float(node.get_meta("wdl_spawn_tilt", node.get_meta("tilt", 0.0)))
 	var spawn_roll: float = float(node.get_meta("wdl_spawn_roll", node.get_meta("roll", 0.0)))
