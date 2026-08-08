@@ -7104,3 +7104,79 @@ reports (no character/entity/moment named yet, and headless can't
 render for a visual check to guess from). Asked the user for either a
 screenshot or more specific repro details before continuing further,
 rather than auditing Smash.wdl's own ~25 actions blind.
+
+## 2026-08-08 (GB-15 continued) -- found the real distinguishing signal,
+fixed the vase-catch walk-cycle stomp without regressing PiposhWalk
+
+Picked back up per direct request ("keep digging on it now") after the
+first attempt was reverted for regressing `smoke_plane_walk_anim.gd`.
+Needed a signal that separates "this is the deliberate final pose for
+this tick" (PipFall's own `ent_frame("Fetch", my.skill1)`) from "this
+is a throwaway default meant to be overridden by movement" (Blink's
+own `ent_frame("Stand",0)`) -- same-tick ordering alone couldn't do it,
+both shapes are textually identical (a real anim call, then
+`actor_move()`, same tick).
+
+Ran a corpus-wide scan (`grep -B2 ent_frame original/piposh3d/*.wdl -i
+| grep -oiE 'ent_frame\s*\(\s*"[^"]+"' | sort | uniq -c | sort -rn`):
+"Stand"/"stand" (case variants) totals 105 occurrences, more than
+double the next most common name ("Talk", 91, but that's driven by
+dialogue-mouth-flap logic, a different call site entirely). Cross-
+checked several `Blink()` implementations directly (Smash/Range/
+Olympic/Plane all call `ent_frame("Stand",0)` as their own first
+statement; Plane3/Shiks/Golf's own local `Blink()` doesn't touch
+animation at all, just skin/blink-timer logic -- so PipFall's own
+Blink() call was never actually the source of contamination for THIS
+level specifically, but the general mechanism still needed to handle
+levels where it is). "Stand" reads unambiguously as the corpus's
+universal idle/default reset pose, and is semantically incoherent as
+a deliberately-held pose while `actor_move()` is actively translating
+the entity (standing still and being moved are contradictory) -- a
+safe, well-supported signal to exclude from "this is a real,
+intentional override" for auto-walk-fallback purposes.
+
+Reimplemented: `_do_anim_frame()`/`_do_anim_cycle()` now stamp a
+per-tick `wdl_last_real_anim_frame` marker (an `_total_frames`
+timestamp) on every call EXCEPT when the clip name is "stand"
+(case-insensitive) -- so Blink's own per-tick Stand reset is
+transparent to this mechanism, while any other named pose (PipFall's
+"Fetch"/"Fall"/"Write", or anything else corpus-wide) correctly
+marks "a real pose already won this tick." `_do_actor_move()`'s own
+`wdl_auto_walk_anim` fallback checks this marker against the current
+tick before applying its generic "Walk" cycle.
+
+Verified both sides explicitly:
+- `smoke_plane_walk_anim.gd`/`smoke_plane_walk_height.gd` (Plane's own
+  PiposhWalk, the ORIGINAL case this fallback exists for, driven by a
+  Blink() that DOES call ent_frame("Stand",0)): still pass,
+  `saw_walk_clip=true`.
+- New `smoke_pipfall_fetch_anim_check.gd` (Plane3's own PipFall, run
+  WITHOUT forcing Yoyo this time -- let it climb naturally so the real,
+  sustained flight window gets sampled, not just one forced instant):
+  `saw_fetch=true saw_walk=false` across the whole real flight,
+  correctly transitioning to "Write" once the vase is caught.
+
+Re-ran the full GB-15 targeted regression set afterward (`smoke_dispatch`,
+`smoke_remove_race`, `smoke_plane3_dome_scale_check`,
+`smoke_plane3_camera_static_check`, `smoke_plane3_vase_catch_check`,
+`smoke_dialog_text_check`, `smoke_range_skip_button_check`,
+`smoke_plane2_all_goals`, plus Shiks' `smoke_shiks_dialog2_choice3.gd`
+as a spot-check on another of the 24 corpus-wide affected actions) --
+all green, no observational-only test showed a behavior change either.
+
+Separately, confirmed (via `tools/smoke_dispatch.gd --all`, the full
+56-level roster) that Smash -- and by extension the general dispatch
+path every later level shares -- is not a parsing/dispatch gap: it
+reaches the interpreter (`has_ast=true interpreted=true`) exactly like
+every other level. The user's newly-reported Smash symptoms
+("character not moving/facing right", "shown before actually being
+there") are therefore expected to be further instances of real,
+shared interpreter-behavior bugs (in the same family as the fix
+above, or in `_seed_reveal_only_hidden()`'s visibility-authoring scan)
+rather than any level being skipped or mis-parsed -- consistent with,
+and now demonstrated by, this exact fix improving behavior across all
+24 corpus-wide actions that share the affected shape, not just
+Plane3's own PipFall. Asked the user directly for either specific
+repro details or a screenshot before auditing Smash.wdl's own ~25
+actions blind; they asked to keep auditing without one, picked up
+next.

@@ -3375,28 +3375,41 @@ func _do_actor_move(my) -> float:
 	# ... no walking animation", confirmed via `[mdl-anim]` debug logging
 	# showing `_percent` climbing straight past 100 without ever cycling
 	# back down).
-	# 2026-08-08 investigated (Plane3): "piposh character's animation to
-	# move isn't correct it looks like he's walking" during the vase-catch
-	# flight. `action PipFall`'s own script calls `ent_frame("Fetch",...)`
-	# and `actor_move()` in the SAME tick while flying toward the vase, so
-	# this fallback's generic "Walk" cycle runs right after PipFall's own
-	# "Fetch" pose and visibly wins. Tried suppressing the fallback
-	# whenever ANY real ent_frame/ent_cycle call already fired this same
-	# tick (via a meta timestamp) -- reverted: it broke Plane's own
-	# already-verified PiposhWalk case (smoke_plane_walk_anim.gd), whose
-	# `Blink()` helper calls `ent_frame("Stand",0)` unconditionally, every
-	# tick, before its own `actor_move()` call -- the exact same shape as
-	# PipFall's "real anim call, then actor_move(), same tick", but there
-	# the walk cycle calling this fallback IS the wanted outcome. Nothing
-	# in the WDL source itself distinguishes "this ent_frame call is the
-	# deliberate final pose for this tick" (PipFall's "Fetch") from "this
-	# is a throwaway default meant to be overridden by movement" (Blink's
-	# "Stand") -- a same-tick-ordering heuristic can't tell them apart,
-	# and picking one risks regressing the other's already-correct,
-	# tested behavior. Left as-is (unconditional walk fallback, matching
-	# the original 2026-08-01 PiposhWalk fix) until there's a real
-	# distinguishing signal to key off; see docs/BUGS.md GB-15 addendum.
-	if my.get_meta("wdl_auto_walk_anim", false):
+	# 2026-08-08 (Plane3): "piposh character's animation to move isn't
+	# correct it looks like he's walking" during the vase-catch flight.
+	# `action PipFall`'s own script calls `ent_frame("Fetch",...)` and
+	# `actor_move()` in the SAME tick while flying toward the vase, so
+	# this fallback's generic "Walk" cycle ran right after PipFall's own
+	# "Fetch" pose and visibly stomped it. First attempt (suppress the
+	# fallback whenever ANY real ent_frame/ent_cycle call already fired
+	# this same tick, via a meta timestamp) broke Plane's own already-
+	# verified PiposhWalk case (smoke_plane_walk_anim.gd): its `Blink()`
+	# helper calls `ent_frame("Stand",0)` UNCONDITIONALLY, every tick,
+	# before its own `actor_move()` call -- structurally the identical
+	# "real anim call, then actor_move(), same tick" shape as PipFall's,
+	# but there the walk cycle winning is the wanted outcome, so a plain
+	# same-tick-ordering rule can't tell the two apart.
+	#
+	# The actual distinguishing signal turned out to be the CLIP NAME
+	# itself, not ordering: a corpus-wide scan (`grep -B2 ent_frame
+	# original/piposh3d/*.wdl`) found "Stand"/"stand" used as an
+	# `ent_frame` target 105 times across the corpus -- by a wide margin
+	# the single most common clip name, and every `Blink()`/`Blink2()`
+	# variant that touches animation at all (Smash/Range/Olympic/etc.,
+	# confirmed by direct comparison) uses exactly this name as its own
+	# idle/default reset pose. "Stand" is semantically never a real
+	# character POSE choice a script would deliberately want to hold
+	# WHILE `actor_move()` is actively translating the entity -- standing
+	# still and being actively moved are contradictory -- so treating a
+	# same-tick "Stand" call as the low-priority default it actually is
+	# (not a deliberate override) and letting the walk fallback win over
+	# it, while still letting any OTHER named pose (PipFall's "Fetch",
+	# "Fall", "Write", ...) win over the fallback, correctly separates
+	# both cases without needing to touch the WDL source or guess at
+	# call-site structure. Not a Plane3-only fix: every other
+	# actor_move()-driven action found in the corpus that also animates
+	# itself gets this same, more accurate resolution.
+	if my.get_meta("wdl_auto_walk_anim", false) and int(my.get_meta("wdl_last_real_anim_frame", -1)) != _total_frames:
 		var phase := fmod(float(my.get_meta("wdl_auto_walk_phase", 0.0)) + absf(step), 100.0)
 		my.set_meta("wdl_auto_walk_phase", phase)
 		_do_anim_cycle(["Walk", phase], my)
@@ -3818,12 +3831,20 @@ func _resolve_arg_entity(a: Array, idx: int, my):
 	return my
 
 
+## See _do_actor_move()'s own "wdl_auto_walk_anim" comment for the full
+## story: "Stand" is excluded here because it's the corpus-wide idle/
+## default reset pose (Blink()'s own unconditional per-tick call), not a
+## deliberate override -- everything else stamps a per-tick marker so
+## actor_move()'s generic walk fallback knows a real, specific pose
+## already won this exact tick and shouldn't be stomped.
 func _do_anim_frame(a: Array, my) -> float:
 	if a.size() < 2 or not is_instance_valid(my):
 		return 0.0
 	var anim := my.get_node_or_null("MdlAnimator") as MdlAnimator
 	if anim:
 		anim.play_frame(str(a[0]), _to_num(a[1]))
+		if str(a[0]).to_lower() != "stand":
+			my.set_meta("wdl_last_real_anim_frame", _total_frames)
 	return 0.0
 
 
@@ -3833,6 +3854,8 @@ func _do_anim_cycle(a: Array, my) -> float:
 	var anim := my.get_node_or_null("MdlAnimator") as MdlAnimator
 	if anim:
 		anim.play_cycle(str(a[0]), _to_num(a[1]) if a.size() > 1 else 0.0)
+		if str(a[0]).to_lower() != "stand":
+			my.set_meta("wdl_last_real_anim_frame", _total_frames)
 	return 0.0
 
 
