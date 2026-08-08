@@ -6631,3 +6631,100 @@ fixes what happens to ONE entity within one already-dispatching level).
 Spot-checked Range + Shiks too, since this touches the shared level
 loader used by every level, not a Plane3-only code path -- all still
 green. `git status --short assets/` zero deletions.
+
+## 2026-08-08 (GB-13) -- the Skip button plays a sound and then goes
+nowhere
+
+User, right after confirming the Plane3 fix: "now the skip doesn't
+pass us to the next level." Ambiguous on its own (this project has at
+least three different "skip" concepts: F3's debug level-cycler,
+Space/the Skip-Line button that fast-forwards a dialogue line, and
+Range's own pSkip battle-skip button) -- two short clarifying questions
+narrowed it to the third: Range's pSkip (`if (NumTries > 3) { pSkip.
+visible = on; }`), clicked while the pRIP death screen is still up
+("a sound plays but nothing else... during the death screen").
+
+That last detail -- a sound plays -- ruled out a click-delivery/z-order
+problem outright: pSkip's own BUTTON target, `function D1 { sPlay(
+"SFX138.WAV"); while (GetPosition(Voice) < 1000000) { wait(1); } Run(
+"Plane3.exe"); }`, DOES get invoked (its own first statement runs), so
+the bug had to be somewhere inside D1 itself, past the sPlay call.
+
+First reproduction attempt used `interp.call("invoke_event", null,
+"D1")` directly, forcing `NumTries=4` without ever triggering a real
+death -- and it worked fine, reaching Plane3 in ~90 frames. That gap
+between "works in isolation" and "fails for real" turned out to be the
+whole bug: the isolated test never set `_frozen = true` (GB-5's own
+death-screen-pause flag), because it never actually showed pRIP. The
+real report is specifically about clicking Skip WHILE STILL on the
+death screen (confirmed by the second clarifying answer) -- i.e. WHILE
+`_frozen` is true.
+
+Found the actual deadlock reading `exec_stmt()`'s own `"wait"` case
+(`scripts/engine/wdl_interpreter.gd`, right after the existing `main()`-
+specific `_skip_next_main_wait` handling):
+```
+while _frozen and _running:
+    await get_tree().process_frame
+```
+This blanket gate (GB-5, meant to pause WORLD coroutines -- Terrorist/
+Civilian/CamTarget/Handgun animations -- while pRIP is up) has no
+notion of WHICH coroutine is waiting. D1's own `sPlay(...)` runs fine
+(synchronous, no wait yet), but the moment it hits its own `wait(1)`
+inside `while (GetPosition(Voice) < 1000000) { wait(1); }`, it blocks
+here -- and stays blocked, because nothing about clicking Skip ever
+sets `_frozen = false`. Retry's own `fRIP1 { HideRIP(); main(); }`
+never actually experiences this gate in practice: `HideRIP()` (`pRIP.
+visible = off;`) clears `_frozen` SYNCHRONOUSLY, as part of the SAME
+statement, before `main()`'s own first wait is ever reached -- so by
+the time Retry's own coroutine would hit this check, it's already
+false. Skip has no such step; pRIP staying visible IS the whole point
+of a Skip button that's an alternative to Retry, not something gated
+behind closing the death screen first. Confirmed the same shape exists
+in `fRIP2` too (pRIP's "return to map" button, `original/piposh3d/
+IO.wdl:301-321`: `waitt(60); ...; wait(1);`) -- not separately reported
+yet, but the same fix covers it.
+
+Fixed by exempting bare (`my == null`) coroutines from the freeze gate
+entirely: `while _frozen and _running and my != null: ...`. Every
+panel-button-invoked function in this corpus (D1, fRIP1, fRIP2, C1,
+`main()` itself) is a bare function -- `invoke_event(null, ...)` from
+`_on_panel_button_input()` never has an associated world entity, unlike
+every actual thing `_frozen` is meant to pause. This mirrors an
+existing, already-established distinction one case above it in the
+same match arm: `main()`'s own first `wait()` is already special-cased
+on `my == null` (`_skip_next_main_wait`) for the same underlying reason
+-- bare, UI/level-lifecycle-driven coroutines aren't part of the
+"world" this flag pauses. Double-checked this doesn't change `main()`'s
+own OBSERVED behavior: `HideRIP()` already clears `_frozen` before
+`main()`'s wait is ever reached in every real invocation, so `main()`
+was never actually blocked by this gate to begin with -- removing its
+(moot) exposure to it changes nothing.
+
+New regression test, `tools/smoke_range_skip_button_check.gd`,
+reproduces the exact reported scenario precisely (not the easier,
+non-representative "click without dying first" version): trigger a
+real death (`Health = 0`), confirm `_frozen == true`, click Skip
+WITHOUT clicking Retry, and confirm `GameState.current_level` actually
+becomes `Plane3` within a real simulated window. First diagnostic
+attempt at this (before the fix) reproduced the deadlock exactly as
+reported -- `sPlay` fired, `GameState.current_level` never changed
+across 300 simulated frames.
+
+Verified: full Range regression suite (all 18 smoke tests, including
+the new one) OK. `smoke_dispatch` 19/19. All three Shiks impact-
+proximity tests OK, plus a re-run of `smoke_plane3_dome_scale_check.gd`
+(unrelated to this fix, but this change touches the interpreter's own
+core `wait()` handling -- used by literally every level -- so worth
+confirming the prior round's fix stayed intact). `git status --short
+assets/` zero deletions.
+
+Also noted along the way, not yet separately tracked: simulating a
+REAL Godot mouse click (`Input.parse_input_event` + `gui_find_control`)
+at a Control's own screen position hung indefinitely under `--headless`
+-- consistent with this session's now well-established pattern that
+anything depending on real viewport rendering/hit-testing doesn't work
+headless (screenshot capture, `Input.mouse_mode` tracking, and now GUI
+hit-testing). Abandoned that approach in favor of `invoke_event()`
+called directly, which is how every other click-driven test in this
+suite already works.

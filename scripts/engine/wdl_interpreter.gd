@@ -1321,10 +1321,40 @@ func exec_stmt(stmt: Dictionary, my) -> Variant:
 				_skip_next_main_wait = false
 				n = 1
 			# GB-5 (2026-08-03, Range): see _frozen's own declaration and
-			# _set_panel_field()'s "visible" case. Every coroutine's own
-			# progress genuinely halts here while the death screen is up --
-			# resumes exactly where it left off once unfrozen.
-			while _frozen and _running:
+			# _set_panel_field()'s "visible" case. Every WORLD coroutine's
+			# own progress genuinely halts here while the death screen is
+			# up -- resumes exactly where it left off once unfrozen.
+			#
+			# GB-9 continued (2026-08-08, Range): "the skip [button]
+			# doesn't pass us to the next level" -- confirmed live the
+			# click DOES register (its own sPlay("SFX138.WAV") audibly
+			# plays) but never gets any further. pSkip's own button
+			# (function D1: `sPlay(...); while (GetPosition(Voice) <
+			# 1000000) { wait(1); } Run("Plane3.exe");`) is deliberately
+			# clickABLE while pRIP is still showing (this file's own
+			# "button clicks are Godot Control signals, entirely
+			# independent of WDL coroutine scheduling" design, same
+			# section as _frozen's declaration) -- but the coroutine IT
+			# STARTS still hit this SAME blanket freeze gate on its own
+			# first `wait(1)`, and unlike Retry's `fRIP1 { HideRIP();
+			# main(); }` (which clears `_frozen` synchronously, as part
+			# of the SAME statement, before `main()`'s own first wait is
+			# ever reached), nothing about clicking Skip ever unfreezes
+			# anything -- pRIP stays up by design, so D1's own wait
+			# blocked forever, and `Run()` was never reached. `fRIP2`
+			# ("return to map", pRIP's other button) has the identical
+			# shape (`waitt(60); ...; wait(1);`) and would deadlock the
+			# same way. Both -- and every other panel-button-invoked
+			# function in the corpus -- are bare functions, never tied to
+			# a world entity (`my` is always null for an `invoke_event(
+			# null, ...)` call from `_on_panel_button_input()`), unlike
+			# every actual WORLD coroutine `_frozen` is meant to pause
+			# (Terrorist/Civilian/CamTarget/Handgun, all started with
+			# their own entity as `my`). `main()`'s own `my == null` wait
+			# already gets special-cased just above (`_skip_next_main_
+			# wait`) for the same reason: bare, UI/level-lifecycle-driven
+			# coroutines aren't part of the "world" this freeze pauses.
+			while _frozen and _running and my != null:
 				await get_tree().process_frame
 			for i in maxi(n, 1):
 				await get_tree().process_frame
