@@ -393,50 +393,40 @@ func _emit_choice(idx: int) -> void:
 	dialog_choice.emit(idx)
 
 
+const DIALOG_TEXT_PATH := "res://assets/converted/dialog_text.json"
+## `{"<DialogIndex>": [line1, line2, line3]}`, extracted by
+## `tools/extract_dialog_text.py` from every `txt1.string = "...";//
+## <real hebrew text>` line in `WDL/DIalog.wdl` -- see that script's own
+## header for why the assignment's own string literal (a reversed,
+## per-letter-cipher placeholder Acknex's own text engine apparently
+## decoded at render time) isn't what's shown; the ALREADY-DECODED real
+## text sits in the trailing comment on the SAME line, put there by the
+## original developer, covering all 57 DialogIndex values used across
+## the whole game -- not just the 5 one prior hardcoded GDScript table
+## had hand-transcribed one at a time, leaving every level past Range
+## showing "…" placeholders for anything nobody had gotten around to yet
+## (reported live 2026-08-08, Plane3: "there's no text in the text box
+## choices just '...'"). Loaded once, lazily, cached for the process
+## lifetime -- this data never changes at runtime.
+var _dialog_text_cache: Dictionary = {}
+var _dialog_text_loaded := false
+
+
 func _dialog_lines(index: int) -> Array[String]:
-	# Hebrew from DIalog.wdl comments (DialogIndex)
-	match index:
-		0:
-			return [
-				"אז למתי אתה רושם לי את הצ'ק עמי?",
-				"עמי, רציתי לדבר איתך בעניין הסכום...",
-				"פוי....מישהו מוכן להוציא אותי מהשטומבה הזו?",
-			]
-		1:
-			return [
-				"שלום באתי בקשר למודעה",
-				"שלום אולי אתה רוצה לתרום לאגודת : \"איך אני מוציא את חזי מהשטומבה הזו?\"",
-				"תסלח לי על הפוני, בדרך כלל לא תראה אותי ככה..",
-			]
-		2:
-			return [
-				"אוייש תהרוג אותי! זו עטיפת פקפקים! לקח לי שנה להיגמל מזה",
-				"שאני אאסוף לך בזה קצוות של שמיר ממערת הנטיפים?",
-				"אוי, בוא תראה טריק שלמדתי בחוג קורדינציה לאפרסק בבית הספר ב.צבי..",
-			]
-		3:
-			# Plane.wdl DialogIndex 3 (DIalog.wdl)
-			return [
-				"בחורצ'יק...אתה עובד כאן לא?!",
-				"תן לי מקום להניח את הרגלים שלי! איפה אתה מושיב אותי?",
-				"בלבוסטע אכפת לך שאני אשים את האגרטל הזה על הראש שלך?",
-			]
-		4:
-			# Range.wdl DialogIndex 4 (DIalog.wdl) -- decoded 2026-08-01, was
-			# never transcribed (fell through to the "…" placeholder, see
-			# docs/SESSION_LOG.md). DIalog.wdl stores these reversed and run
-			# through a per-letter Hebrew-alphabet substitution (a→א, b→ב,
-			# c→ג, ... in alphabetical order -- NOT a keyboard layout, a
-			# straight a-z→א-ת cipher) instead of real Hebrew text, decoded
-			# by cross-referencing the already-solved DialogIndex 0-3 pairs
-			# above to recover the exact mapping, then applying it here.
-			return [
-				"ניחוש פרוע! אתה לא יודע איך להטיס מטוס",
-				"אוך! תן לי כבר אני אנהג במקומך",
-				"אגב קרופניק אולי תשפיע בשבילי לקבל סיכת קברניט מה?!",
-			]
-		_:
-			return ["…", "…", "…"]
+	if not _dialog_text_loaded:
+		_dialog_text_loaded = true
+		if FileAccess.file_exists(DIALOG_TEXT_PATH):
+			var f := FileAccess.open(DIALOG_TEXT_PATH, FileAccess.READ)
+			var parsed = JSON.parse_string(f.get_as_text())
+			if parsed is Dictionary:
+				_dialog_text_cache = parsed
+	var raw: Variant = _dialog_text_cache.get(str(index))
+	if raw is Array:
+		var out: Array[String] = []
+		for line in raw:
+			out.append(str(line))
+		return out
+	return ["…", "…", "…"]
 
 
 func _update_crawl(delta: float) -> void:

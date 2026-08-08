@@ -283,38 +283,41 @@ func _unhandled_input(event: InputEvent) -> void:
 				return
 			_try_click()
 
-	if event is InputEventMouseMotion and mouse_look and scripted_camera \
-			and not _is_start_level() and not _is_shiks_level() and not _is_plane_level() \
-			and not _is_range_level() and not _is_studio_level():
-		# Town.wdl / generic Cam: pan/tilt -= mickey/5 while mouse_mode==0.
-		# Studio excluded (2026-07-31): Studio.wdl's own script never reads
-		# or toggles mouse state at all (confirmed reading the full file) --
-		# its camera is entirely dictated by `TheCam`/`TheCam2` copying
-		# `my.pan`/`my.tilt` from whichever Cam entity's action currently
-		# matches `Talking`. This generic mouse-look-in-scripted-mode
-		# feature mutates that SAME `my.pan`/`my.tilt` meta via
-		# `cam.set_meta(...)` below, which `TheCam`/`TheCam2` then
-		# faithfully copy to the real camera every frame -- so mouse
-		# movement was silently corrupting the entity's own authored
-		# facing, not just failing to do anything. Reported live: "the
-		# mouse can actually move the camera while it shouldn't" during
-		# Naknik's dialogue.
-		var cam := _active_cam()
-		if cam:
-			var pan: float = float(cam.get_meta("pan", 0.0)) - event.relative.x / 5.0
-			var tilt: float = clampf(
-				float(cam.get_meta("tilt", 0.0)) - event.relative.y / 5.0, -45.0, 45.0
-			)
-			cam.set_meta("pan", pan)
-			cam.set_meta("tilt", tilt)
+	# GB-14 (2026-08-08, Plane3): "the camera can 'move' even though it
+	# should be static." This used to be a generic "mouse-look while
+	# scripted camera" feature here: on InputEventMouseMotion, mutate
+	# whichever Cam entity is currently active's own `pan`/`tilt` meta by
+	# `event.relative/5`, opted OUT for a hand-grown list of levels
+	# (Start/Shiks/Plane/Range/Studio) whose own reports showed it was
+	# actively wrong for them -- Studio's own 2026-07-31 fix (removed
+	# here) found its script "never reads or toggles mouse state at all
+	# ... this generic feature mutates that SAME my.pan/my.tilt meta via
+	# cam.set_meta(...), which TheCam/TheCam2 then faithfully copy to the
+	# real camera every frame -- so mouse movement was silently
+	# corrupting the entity's own authored facing." Plane3 hit the exact
+	# same bug shape and was simply the next level nobody had opted out
+	# yet -- an opt-out list can only ever catch levels AFTER someone
+	# notices and reports them, never levels ahead of time. Deleted
+	# entirely rather than adding a sixth exclusion, after confirming
+	# via a corpus-wide grep (`grep -l mickey original/piposh3d/*.wdl`)
+	# that this was always redundant with what the level's own script
+	# already does: Town.wdl, Golf.wdl, and Range.wdl all implement
+	# their OWN complete `my.pan = my.pan - mickey.x/N; my.tilt = ...`
+	# (or `camera.pan`/`camera.tilt` directly) INSIDE their own Cam-
+	# driving action -- already correctly executed by the interpreter,
+	# so this generic fallback never did anything for them that their
+	# own script hadn't already done (a leftover from before "interpret
+	# every level's own script" was the whole architecture, not a stopgap
+	# still filling a real gap). Every level with NO mickey reference at
+	# all (Plane3, and by the same Acknex convention -- free mouse-look
+	# is entirely script-authored, there is no separate engine-level
+	# toggle -- presumably others sharing the same "fully scripted, no
+	# free-look" design) never wanted this at all. `_active_cam()` stays;
+	# still used by `_snap_to_active_cam()` and view-switching.
 
 
 func _is_start_level() -> bool:
 	return _level_script.contains("start") or str(_loader.level_name).to_lower() == "start"
-
-
-func _is_studio_level() -> bool:
-	return _level_script.contains("studio") or str(_loader.level_name).to_lower() == "studio"
 
 
 func _is_town_level() -> bool:
@@ -323,16 +326,6 @@ func _is_town_level() -> bool:
 
 func _is_range_level() -> bool:
 	return _level_script.contains("range") or str(_loader.level_name).to_lower() == "range"
-
-
-func _is_shiks_level() -> bool:
-	return _level_script.contains("shik") or str(_loader.level_name).to_lower() == "shiks"
-
-
-func _is_plane_level() -> bool:
-	# Only Plane.wdl (not Plane2/Plane3 — different scripts).
-	var n := str(_loader.level_name).to_lower() if _loader else ""
-	return n == "plane" or _level_script == "plane.wdl"
 
 
 func _is_plane2_level() -> bool:

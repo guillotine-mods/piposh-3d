@@ -6728,3 +6728,144 @@ headless (screenshot capture, `Input.mouse_mode` tracking, and now GUI
 hit-testing). Abandoned that approach in favor of `invoke_event()`
 called directly, which is how every other click-driven test in this
 suite already works.
+
+## 2026-08-08 (GB-14) -- two genuine engine-wide fixes on Plane3, per
+direct request not to patch
+
+User: "graphics and animations are not running correctly. The camera
+can 'move' even though it should be static, and there's no text in the
+text box choices just '...' ... If you fix something here, make sure
+it fixes the engine as a wide-system fix and not just a patch. Make F6
+jump to the scene after Range that we are now working on. Notice also
+that the backgrounds in the 'outside world' don't look correct." Five
+things in one message; two (dialogue text, camera drift) had clean,
+verifiable root causes and got real engine-wide fixes; F6 was trivial;
+the other two ("graphics and animations," "outside-world backgrounds")
+turned up nothing conclusive from code/log inspection and are still
+open -- noted honestly rather than guessed at, given this session's own
+prior experience (the gun-view saga) with how expensive a wrong guess
+gets once several rounds of it stack up.
+
+**F6, trivial:** `scenes/level_runner.gd`'s own debug binding jumped to
+`"Range"` unconditionally (a leftover from when Range was the level
+under active development). Changed both the binding and its own debug-
+text hint string to `"Plane3"`.
+
+**Dialogue text ("..."):** `GameHud._dialog_lines()` was a hardcoded
+GDScript `match` statement, one hand-transcribed Hebrew string array
+per `DialogIndex` -- and only 5 of the corpus's 57 real indices had
+ever been transcribed (0-4, all from Plane/Range's own dialogues,
+built up incrementally across earlier session rounds as each one got
+reported broken). Every OTHER index -- including Plane3's own 5 and 6
+-- fell through to a literal `["…","…","…"]` placeholder, matching the
+report exactly. Rather than hand-transcribe indices 5/6 as a sixth and
+seventh entry (the literal "patch" the user asked NOT to do), read
+`original/piposh3d/WDL/DIalog.wdl` directly and found the REAL fix
+already sitting there: every `txtN.string = "<reversed cipher
+placeholder>";` assignment ALSO carries a trailing `// <real Hebrew
+text>` comment -- the original developer's own reference transcription,
+covering ALL 57 `DialogIndex` blocks, never previously read by this
+port (an earlier session round hand-decoded index 4's cipher from
+scratch via cross-referencing, apparently without noticing this
+comment was sitting right there the whole time). Confirmed the file's
+encoding is `windows-1255` (Hebrew Windows codepage) by decoding and
+cross-checking against the 5 already-known-correct hand-transcribed
+strings -- byte-identical.
+
+Built a new, generic pipeline step matching this project's existing
+`tools/parse_wdl.py`/`tools/extract_wmb_full.py`-style asset extraction
+convention: `tools/extract_dialog_text.py` regexes every `if
+(DialogIndex == N) { txt1.string = "...";// TEXT1 ... }` block out of
+DIalog.wdl and writes `assets/converted/dialog_text.json` --
+`{"<index>": [line1, line2, line3]}`, all 57 entries, zero gaps.
+Rewrote `_dialog_lines()` to load and cache that JSON at runtime
+instead of the hardcoded table (falling back to the same "…" placeholder
+only for a genuinely out-of-range index, which shouldn't happen given
+the extraction covers everything the game actually indexes). This
+fixes every level's dialogue at once, not just Plane3's -- and needs no
+further hand-transcription, ever, for any future level.
+
+**Camera drift ("can 'move' even though it should be static"):** traced
+to `WdlDirector._unhandled_input()`'s own generic "mouse-look while
+scripted camera" feature: on every `InputEventMouseMotion`, directly
+mutate whichever Cam entity `_active_cam()` currently returns' own
+`pan`/`tilt` META (`cam.set_meta("pan", ...)`) by `-= event.relative /
+5.0` -- gated on a hand-grown exclusion list (`not _is_start_level()
+and not _is_shiks_level() and not _is_plane_level() and not
+_is_range_level() and not _is_studio_level()`) that Plane3 simply
+hadn't been added to yet. The Studio exclusion's own existing comment
+(2026-07-31) already documents the EXACT same bug shape hitting a
+DIFFERENT level: "Studio.wdl's own script never reads or toggles mouse
+state at all ... this generic feature mutates that SAME my.pan/my.tilt
+meta via cam.set_meta(...), which TheCam/TheCam2 then faithfully copy
+to the real camera every frame -- so mouse movement was silently
+corrupting the entity's own authored facing." An opt-out list can only
+ever catch levels AFTER someone notices and reports them -- never ahead
+of time, which is exactly why Plane3 hit it.
+
+Rather than add a sixth exclusion (the literal patch the user asked not
+to do), ran a corpus-wide check: `grep -l mickey original/piposh3d/*.wdl`
+found five hits -- Desert, Final, Golf, Range, Town. Read each: Town.wdl's
+own `action Cam` (`original/piposh3d/Town.wdl:498-530`) implements the
+EXACT same formula itself, inline, gated on `mouse_mode==0`:
+`my.pan = my.pan - mickey.x/5; my.tilt = my.tilt - mickey.y/5;` then
+copies to `camera.pan`/`camera.tilt`. Golf.wdl does the same directly
+on `camera.pan`/`camera.tilt`. Both already execute correctly through
+the interpreter (this project's whole architecture is "interpret every
+level's own script," not "the interpreter plus assorted director-level
+guesses at what a script probably wants") -- meaning the generic
+director-level fallback never did anything for Town/Golf/Range that
+their own script hadn't ALREADY done; it was pure redundant duplication
+at best, silently doubling the mickey delta at worst. Desert's own
+mickey usage turned out to be for something else entirely (`camera.z`/
+`my.x`, a drag-style interaction, not pan/tilt look-around) -- no
+camera-rotation-from-mickey anywhere in its file either, same shape as
+Plane3. Given Acknex has no separate engine-level "enable mouse-look"
+toggle outside of what a script itself does with `mickey` -- a level
+with zero mickey references anywhere was, by construction, never
+authored to respond to mouse-driven camera movement at all.
+
+Deleted the whole feature (the `InputEventMouseMotion` branch in
+`_unhandled_input()`, replaced with a comment explaining why) rather
+than gating it more cleverly -- no currently-tested level needs it, and
+every level that legitimately wants free mouse-look already implements
+it correctly on its own. Also deleted `_is_shiks_level()`,
+`_is_plane_level()`, and `_is_studio_level()` -- confirmed via a
+corpus-wide grep these were referenced nowhere else at all, genuinely
+dead code once the block using them was gone (`_is_start_level()` and
+`_is_range_level()` stay; both are still used elsewhere -- the ESCAPE-
+to-menu binding and the right-click cursor-mode toggle's own Range
+exclusion, respectively). `_active_cam()` itself stays too; still used
+by `_snap_to_active_cam()` and Town's own V-key view switching.
+
+New tests: `tools/smoke_dialog_text_check.gd` (index 0 byte-identical
+to the old hardcoded table, indices 5/6 no longer "…", an out-of-range
+index still falls back gracefully) and
+`tools/smoke_plane3_camera_static_check.gd` (fires one deliberately
+huge `InputEventMouseMotion`, relative=(10000,10000) -- the old formula
+would have jumped pan/tilt by ~2000 in a single frame, dwarfing
+anything the level's own script does -- and confirms the camera barely
+moves at all: 0.00 position delta, 0.0000 rotation delta in the actual
+run). Verified: full Range regression suite, `smoke_dispatch`,
+`smoke_plane3_dome_scale_check` (GB-12, re-confirmed still passing),
+and both of Studio's own existing camera/dialogue diagnostic scripts
+(`smoke_studio_camswitch.gd`, `smoke_studio_shikklik.gd` -- neither
+asserts pass/fail, but both still complete cleanly with the SAME
+observed behavior as before, including Naknik's own dialogue-choice
+flow still correctly firing `Run()`). `git status --short assets/`
+shows only the new `dialog_text.json` (an addition, not a deletion).
+
+Left open, not guessed at: "graphics and animations are not running
+correctly" and "the backgrounds in the 'outside world' don't look
+correct." Checked for the obvious candidates -- Plane3's own
+`unmatched_actions` (`TV`: 1, `Window`: 7, `Intersection`: 84) turned
+out to be genuinely-unscripted static props in the ORIGINAL game too
+(grepped the whole corpus, including every include file, for `action
+TV`/`action Window`/`action Intersection` -- none exist anywhere, not
+a port gap), and the level's own unbridged-builtin warnings
+(`FRC`/`InitMP3Adv`/`Randomize`/`dll_open`/`file_*`) are all audio-init/
+file-I/O stubs unrelated to graphics or animation. Nothing else stood
+out from a code-only read, and headless can't render for a visual
+check -- need either a screenshot or a more specific description
+(which character, which background, what looks wrong about it) to
+chase either report further without guessing.
