@@ -6869,3 +6869,176 @@ out from a code-only read, and headless can't render for a visual
 check -- need either a screenshot or a more specific description
 (which character, which background, what looks wrong about it) to
 chase either report further without guessing.
+
+## 2026-08-08 (GB-15) -- Plane3's "bird catches the vase" cutscene
+permanently hung the game; root-caused to WDL's `my = X;` pointer
+reassignment being a silent no-op
+
+Reported live: "the 2nd part is working, now after the 2nd dialogue
+choice thesers a wrong animatino running when the bird hits the vase,
+and then piposh character's animation to move isn't correct it looks
+like he's walking, then he's getting stuck mid flight where the vase
+is and the game is stuck." Three reports bundled together; focused on
+the third (game-breaking, blocks `Run("Smash.exe")`) since it also
+blocks ever reliably observing the other two.
+
+Built two throwaway diagnostics (`tools/diag_plane3_vase_sequence.gd`,
+later `tools/diag_plane3_yoyo_block.gd`, both deleted once their job
+was done) to fast-forward past the level's own ~15s of real voice
+lines/Scene-climbing and land directly at the post-choice,
+`Yoyo > 40` catch-the-vase moment. First pass revealed `Dude` (the
+dialogue-resolution global) stuck at `3.0` forever.
+
+**Bug A -- voice-debounce collision within ONE entity's own
+coroutine.** `GetPosition(Voice)`'s existing debounce (added for a
+prior cross-entity starvation bug) keyed only on `(caller,
+generation)`. Plane3's own `action Dome` polls `GetPosition(Voice)` in
+TWO independent places in its own body: once to advance `Scene`
+(the level's master beat counter), and later in its own dialogue-wait
+loop. Both share the same caller (`Dome`), so the FIRST poll to see a
+given generation as "finished" permanently starved the second for
+that same generation -- confirmed via `[dialog-choice] VOICE_POLL/
+VOICE_FINISHED` log correlation showing `BackDome_mdl_1885` itself
+consuming generation 4 via its Scene-poll, starving its own later
+`Dude`-resolution wait. Fixed by stamping each `GetPosition(...)` call
+SITE in the parsed AST with a stable id the first time it's evaluated
+(`_call_site_id()`, exploiting that the AST is parsed once and never
+recreated) and keying the debounce dict as `(caller) -> {site_id ->
+generation}` instead of flat `(caller, generation)`. Verified: `Dude`
+correctly reaches `2.0` within the expected real-time window.
+
+Second pass (after Bug A) revealed `Yoyo` stuck at ~40-42 forever
+instead of climbing past 40 and triggering the catch.
+
+**Bug B -- `_do_create()` never checked `_functions` for its own 3rd
+(initial-action) argument.** `action BadBird`'s own catch sequence
+calls `_gib(20)` right before the catch resolves -- initially assumed
+an engine builtin, but `grep -rn "function _gib" original/piposh3d/
+WDL/war.wdl` confirmed it's a real, portable shared-library WDL
+function: `function _gib(numberOfParts) { temp=0; while(temp<
+numberOfParts) { create(<gibbit.mdl>, MY.POS, _gib_action); temp+=1;
+} }`, spawning debris entities that each run `_gib_action` (also
+declared with `function`, not `ACTION`) as their own coroutine.
+`_do_create()`'s own action-argument resolution only ever tried
+`_actions`, silently leaving each spawned gib tagged with an action
+name but no coroutine ever started. Fixed with a `_resolve_function()`
+fallback alongside the existing `_resolve_action()` check. Verified
+via a temporary trace showing all 20 gib entities correctly running
+their own `_gib_action` body (init phase + one loop tick before their
+own `wait(1)`).
+
+Third pass (after A+B) revealed the REAL blocker: BadBird itself got
+silently removed shortly after `_gib(20)` returned, permanently
+halting its own coroutine (see `_entity_alive()`'s guard at the top
+of every `exec_stmt`) and with it the level's only path to
+`Run("Smash.exe")`.
+
+**Investigation dead end, noted so it isn't re-walked:** first
+instinct was to trust `get_stack()`, captured at the exact
+`remove()` call inside `_do_remove()`. It showed `exec_stmt` at a
+"wait" statement's own trailing `return null` as the OUTERMOST frame,
+which looked like nonsense (a wait-case return doesn't itself call
+anything). Spent real time trying to reconcile this before recognizing
+it as a red herring: this interpreter runs many WDL coroutines
+concurrently, each suspended on its own `await get_tree().
+process_frame`; when that signal fires, Godot resumes each connected
+awaiter's continuation from within the SAME native call chain, so
+`get_stack()` at any one moment can show frames from a COMPLETELY
+DIFFERENT, unrelated coroutine's own resumption sitting on the native
+stack above the one actually being inspected. The call stack does not
+reliably describe "which WDL statement, in which entity's script,
+made this call" once more than one coroutine is in flight -- only the
+already-evaluated argument values and the live `my` parameter do.
+
+Re-approached by stamping a trace directly on the `remove(...)` call
+SITE in `_eval()`'s own "call" case (before evaluating the raw AST
+node's args), logging the *unevaluated* argument expression alongside
+`my`'s own identity. Result: `raw_arg0={"t":"id","name":"ME"},
+my=GaGa_mdl_045(BadBird)` -- i.e. some code, running with `my`
+genuinely bound to BadBird, executes a literal `remove(ME);`. Grepped
+the entire corpus (`grep -rniE "remove\s*\(\s*me\s*\)"`, excluding
+`ent_remove`) and found `WDL/weapons.wdl:1974`: `ACTION actor_explode
+{ ...; wait(1); remove(ME); }` -- a real, widely-reused shared library
+action (used by a dozen other levels for explosion effects), which
+`action BadBird`'s own script calls immediately after `_gib(20)`:
+
+```
+my = TheVase; _gib(20); actor_explode(); my = Birdy;
+```
+
+This is a completely standard Acknex idiom: reassign `MY` to a
+DIFFERENT entity, then invoke a generic library action so it operates
+on THAT entity instead of the caller. `_call()`'s own fallback for
+"an ACTION invoked like a bare function" (`_resolve_action()`, used
+since `actor_explode` isn't declared with `function`) already existed
+and correctly resolves and runs it. The break was one level up:
+
+**Bug C, the actual game-breaker -- `my = X;` (WDL's reassignable
+`MY`/`ME` pointer register) was a silent no-op.** `_get_var()`'s own
+"my"/"me" case has always correctly returned the real, live `my`
+GDScript parameter for the CURRENT coroutine frame, ignoring
+`_globals` entirely -- deliberately, so a dangling/aliased global
+could never corrupt "who is currently executing". But `_set_var()`
+(reached via a plain WDL assignment, `my = TheVase;`) has no matching
+special case: it just wrote into `_globals["my"]`, a key `_get_var()`
+never consults. The assignment silently did nothing observable, and
+`my` stayed bound to BadBird for the rest of its own script. So when
+`actor_explode()` ran (with its own several real `wait()`s, honored
+correctly since `exec_stmt`'s own "action invoked as bare function"
+path already awaits `exec_block()` properly) and reached its own
+`remove(ME);`, `ME` still resolved to BadBird -- removing BadBird
+itself instead of TheVase. `_entity_alive()`'s guard then silently
+no-ops every further statement in BadBird's OWN coroutine, including
+the `while (GetPosition(Voice) < 1000000) {...}` / `Run("Smash.exe")`
+tail that was the level's only way out of the cutscene -- exactly
+"stuck mid flight where the vase is."
+
+Fixed generically, at the one place a coroutine's own top-level
+statement list is actually walked (`exec_block()` for the awaitable
+path, `_exec_block_sync()` for the synchronous "action/function
+invoked as bare call" path): both now track a local, rebindable
+`current_my`, intercepting a bare `my = X;` / `me = X;` statement
+before it ever reaches `_set_var()`, and threading the new value
+through every SIBLING statement that follows in the same block (and
+anything they call) instead of letting the reassignment silently
+vanish. Scoped to the block it's written in -- a reassignment inside a
+nested `if`/`while` does not propagate back out to the block that
+contains it. An accepted, documented gap rather than a full
+per-coroutine mutable-`my`-cell rewrite (which would require changing
+`my`'s type across dozens of function signatures throughout this
+3,800+ line file): every real corpus usage found, including BadBird's
+own, reassigns and consumes `my` as direct siblings in one block.
+
+Verified end to end: forcing `Yoyo = 41` now keeps BadBird alive
+(`is_instance_valid()` stays true) through the whole `_gib(20)` /
+`actor_explode()` / voice-line sequence, and the level genuinely
+transitions `GameState.current_level` from `Plane3` to `Smash` at
+frame 137 of the new deterministic test -- previously stuck forever.
+Added `tools/smoke_plane3_vase_catch_check.gd` as the permanent
+regression test (deleted the two throwaway `diag_*` scripts once done
+with them, matching this session's own convention).
+
+Ran a broad spot-check of the existing suite against these changes
+(they touch `exec_block`/`_exec_block_sync`/`_do_create`/`_eval`'s
+"call" case -- shared by every level, not just Plane3):
+`smoke_dispatch` (19/19), `smoke_remove_race`,
+`smoke_plane3_dome_scale_check`, `smoke_plane3_camera_static_check`,
+`smoke_dialog_text_check`, `smoke_range_skip_button_check`,
+`smoke_plane2_all_goals`, `smoke_plane2_playtest`,
+`smoke_range_retry_check`, `smoke_range_hitscan_check`,
+`smoke_range_death_freeze`, and Shiks' three dialogue-choice tests
+(`smoke_shiks_dialog_choice`, `smoke_shiks_dialog2_choice`,
+`smoke_shiks_dialog2_choice3`) -- all green except
+`smoke_shiks_dialog2_choice.gd`, which failed identically
+(`run_fired=false ... FAIL: never reached Run("Plane.exe")`) when
+re-run against the pre-session baseline via `git stash`, confirming
+it's a pre-existing, unrelated issue, not a regression from today's
+changes. `git status --short assets/` shows no deletions.
+
+Left open, not yet investigated: the other two reports from the same
+message -- "a wrong animation running when the bird hits the vase"
+and Piposh's own movement animation "looks like he's walking" (when
+it should presumably be something else, e.g. a falling/reacting pose)
+during this same sequence. Blocked behind this fix until now, since
+the level never reached or lingered at that point in play to observe
+or compare either animation.

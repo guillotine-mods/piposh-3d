@@ -1145,9 +1145,46 @@ class ReturnSignal:
 		value = v
 
 
+## Acknex's `MY`/`ME` is a genuine reassignable pointer register, not just a
+## read-only "current entity" keyword -- `my = someOtherEntity;` followed by
+## a bare library-action call (`actor_explode();`, `_gib(20);`, etc.) is a
+## common corpus idiom for "run this generic helper action ON a different
+## entity than the one currently executing", e.g. WDL/weapons.wdl's
+## `ACTION actor_explode {...; remove(ME);}` is meant to explode and remove
+## WHATEVER entity `my` was pointing at when it was invoked, not always the
+## caller itself. `_get_var()`'s "my"/"me" case has always correctly
+## returned the real, live `my` parameter -- but `_set_var()` (reached via
+## plain assignment, `_assign()`'s "id" target case) has no matching
+## special-case, so `my = X;` silently wrote to a dead `_globals["my"]`
+## entry nothing ever reads back, leaving `my` pointing at the ORIGINAL
+## caller for the rest of the coroutine. Confirmed live (2026-08-08,
+## Plane3): `action BadBird`'s own catch-the-vase sequence does exactly
+## `my = TheVase; _gib(20); actor_explode(); my = Birdy;` -- with the
+## reassignment a no-op, `actor_explode()`'s own `remove(ME);` (after
+## several real wait()s) removed BadBird itself instead of the vase,
+## permanently halting BadBird's own coroutine (see _entity_alive()) and
+## blocking the level's `Run("Smash.exe")` transition -- exactly the
+## "he's getting stuck mid flight where the vase is" report. Intercepted
+## here, in the one place that already walks a block's own top-level
+## statement list, rather than in `_set_var()` itself: a real per-coroutine
+## pointer register needs `my` mutable for every statement AFTER the
+## reassignment within this same block (and everything they call), which
+## only this loop -- not a single assignment's own evaluation -- can thread
+## through. Scoped to this block: a reassignment inside a nested if/while
+## does not propagate back out to the enclosing block, an acceptable gap
+## given every real corpus usage found reassigns and consumes `my` as
+## direct siblings in one block, exactly like BadBird's own shape above.
 func exec_block(block: Dictionary, my) -> Variant:
+	var current_my = my
 	for stmt in block.get("body", []):
-		var sig = await exec_stmt(stmt, my)
+		if str(stmt.get("t", "")) == "expr_stmt":
+			var ex: Dictionary = stmt.get("expr", {})
+			if str(ex.get("t", "")) == "assign" and str(ex.get("op", "")) == "=":
+				var tgt: Dictionary = ex.get("target", {})
+				if str(tgt.get("t", "")) == "id" and str(tgt.get("name", "")).to_lower() in ["my", "me"]:
+					current_my = _eval(ex.get("value"), current_my)
+					continue
+		var sig = await exec_stmt(stmt, current_my)
 		if sig != null:
 			return sig
 	return null
@@ -1415,6 +1452,8 @@ func _eval(e: Variant, my) -> Variant:
 		"assign":
 			return _assign(str(d.get("op")), d.get("target"), d.get("value"), my)
 		"call":
+			if str(d.get("name", "")).to_lower() == "getposition":
+				return _do_get_voice_position(my, _call_site_id(d))
 			return _call(str(d.get("name", "")), d.get("args", []), my)
 		_:
 			return null
@@ -2977,9 +3016,20 @@ func _call_user_function_async(fname: String, arg_exprs: Array, my) -> Variant:
 ## which real WDL doesn't need: `wait()` only ever appears as a bare
 ## statement, never inside an expression). A `wait()` hit here is treated
 ## as an immediate no-op and warned once, rather than blocking eval.
+## Sync counterpart of exec_block()'s own `my`/`me` reassignment handling --
+## see its docstring for the full story. Same corpus idiom, same scoping
+## caveat (block-local, doesn't propagate out of a nested if/while).
 func _exec_block_sync(block: Dictionary, my) -> Variant:
+	var current_my = my
 	for stmt in block.get("body", []):
-		var sig = _exec_stmt_sync(stmt, my)
+		if str(stmt.get("t", "")) == "expr_stmt":
+			var ex: Dictionary = stmt.get("expr", {})
+			if str(ex.get("t", "")) == "assign" and str(ex.get("op", "")) == "=":
+				var tgt: Dictionary = ex.get("target", {})
+				if str(tgt.get("t", "")) == "id" and str(tgt.get("name", "")).to_lower() in ["my", "me"]:
+					current_my = _eval(ex.get("value"), current_my)
+					continue
+		var sig = _exec_stmt_sync(stmt, current_my)
 		if sig != null:
 			return sig
 	return null
@@ -3209,7 +3259,12 @@ func _register_builtins() -> void:
 		),
 		"setvoice": func(_a, _my): return 0.0,
 		"voiceinit": func(_a, _my): return 0.0,
-		"getposition": func(_a, my): return _do_get_voice_position(my),
+		# "getposition" is deliberately NOT registered here -- it's
+		# intercepted earlier, directly in _eval()'s "call" case, so it
+		# can pass the call-site's own AST node through to
+		# _do_get_voice_position() (see _call_site_id()'s comment for
+		# why). Reaching _call()'s generic _builtins dispatch for this
+		# name at all would mean that interception was bypassed somehow.
 		"ent_frame": func(a, my): return _do_anim_frame(a, my),
 		"ent_cycle": func(a, my): return _do_anim_cycle(a, my),
 		"talk": func(_a, my): return _do_talk(my),
@@ -3626,10 +3681,24 @@ func _do_stop_sound(a: Array) -> float:
 
 
 ## caller (the `my` that called GetPosition(Voice), or the literal `null`
-## key for calls with no entity, e.g. from `main()`) -> the voice
-## generation (AudioChannels.get_voice_generation()) that caller has
-## already observed as "finished". See _do_get_voice_position().
+## key for calls with no entity, e.g. from `main()`) -> {site_id ->
+## generation that (caller, call site) has already observed as
+## "finished"}. See _do_get_voice_position() and _call_site_id().
 var _voice_finished_consumed_by: Dictionary = {}
+## Assigns each distinct `GetPosition(...)` call SITE in the parsed AST
+## a stable integer id, stamped directly onto that call node's own
+## dictionary (`_site_id`) the first time it's evaluated -- the AST is
+## parsed once and never recreated, so every future `_eval()` of the
+## exact same node sees the same stamp. See _do_get_voice_position()'s
+## own comment for why one caller can have MULTIPLE independent sites.
+var _next_call_site_id := 0
+
+
+func _call_site_id(node: Dictionary) -> int:
+	if not node.has("_site_id"):
+		node["_site_id"] = _next_call_site_id
+		_next_call_site_id += 1
+	return int(node["_site_id"])
 ## GB-1 investigation heartbeat -- see _do_get_voice_position()'s own comment.
 var _voice_poll_heartbeat: Dictionary = {}
 ## GB-1 investigation heartbeat -- see _get_field()'s "Dialog"/"visible" comment.
@@ -3669,27 +3738,50 @@ var _dialog_visible_read_heartbeat: Dictionary = {}
 ## per real completion (idiom B stays correctly single-shot; idiom A exits
 ## the moment it sees its own first "yes", which is still guaranteed since
 ## nothing else can consume vs it -- consumption is per-caller, not shared).
-func _do_get_voice_position(my) -> float:
+## 2026-08-08 correction (Plane3, GB-15): "getting stuck mid flight...
+## the game is stuck." `action Dome`'s own perpetual Scene-progression
+## poll (`if (Scene > -1) { if (GetPosition(Voice) >= 1000000) {
+## Scene = Scene + 1; SetVoice(); } }`, runs unconditionally every tick)
+## and its OWN dialogue-choice resolution (`if (DialogIndex == 6) {
+## ...; while (GetPosition(Voice) < 1000000) { wait(1); } ...}`) are TWO
+## textually-distinct `GetPosition(Voice)` call sites -- but BOTH run on
+## the SAME entity (`my` = the Dome node), so the per-CALLER debounce
+## above still let them collide: once a NEW voice line (e.g. a picked
+## dialogue choice's own line) finished, whichever of the two happened
+## to be evaluated first that tick "consumed" the generation for BOTH,
+## permanently starving the other -- confirmed live via a headless
+## trace: `Dude` (only ever set once the second dialogue's own two-line
+## choice branch runs to completion) never changed from its default 3.0
+## across 70 simulated seconds, well past how long those two real voice
+## lines take to finish. Not Plane3-specific: any single entity with
+## more than one independent GetPosition(Voice) poll in its own
+## coroutine has the same exposure. Fixed by keying consumption per
+## (caller, call SITE, generation) -- see _call_site_id() -- instead of
+## per (caller, generation) alone, so two unrelated polls sharing a
+## caller no longer compete for the same single slot.
+func _do_get_voice_position(my, site_id: int) -> float:
 	var progress := AudioChannels.get_voice_progress()
 	# GB-1 heartbeat: once every ~60 calls (roughly 1/sec at 60fps) per
-	# caller, so a real session shows whether this is even being polled,
-	# and whether progress is climbing, frozen, or stuck at the
+	# (caller, site), so a real session shows whether this is even being
+	# polled, and whether progress is climbing, frozen, or stuck at the
 	# already-consumed 999999 sentinel -- without flooding the log every
 	# single tick.
 	var who_hb := str(my.name) if (my != null and is_instance_valid(my)) else "<null>"
-	var hb_count := int(_voice_poll_heartbeat.get(who_hb, 0)) + 1
-	_voice_poll_heartbeat[who_hb] = hb_count
+	var hb_key := "%s#%d" % [who_hb, site_id]
+	var hb_count := int(_voice_poll_heartbeat.get(hb_key, 0)) + 1
+	_voice_poll_heartbeat[hb_key] = hb_count
 	if hb_count % 60 == 1:
-		PiposhDebug.log_msg("dialog-choice", "VOICE_POLL by=%s progress=%.4f is_playing=%s generation=%d" % [
-			who_hb, progress, AudioChannels.is_voice_playing(), AudioChannels.get_voice_generation()
+		PiposhDebug.log_msg("dialog-choice", "VOICE_POLL by=%s site=%d progress=%.4f is_playing=%s generation=%d" % [
+			who_hb, site_id, progress, AudioChannels.is_voice_playing(), AudioChannels.get_voice_generation()
 		])
 	if progress >= 1.0:
 		var gen: int = AudioChannels.get_voice_generation()
-		var who := who_hb
-		if _voice_finished_consumed_by.get(my, -1) == gen:
+		var sites: Dictionary = _voice_finished_consumed_by.get(my, {})
+		if sites.get(site_id, -1) == gen:
 			return 999999.0
-		_voice_finished_consumed_by[my] = gen
-		PiposhDebug.log_msg("dialog-choice", "VOICE_FINISHED first-seen-by=%s generation=%d" % [who, gen])
+		sites[site_id] = gen
+		_voice_finished_consumed_by[my] = sites
+		PiposhDebug.log_msg("dialog-choice", "VOICE_FINISHED first-seen-by=%s site=%d generation=%d" % [who_hb, site_id, gen])
 	return progress * 1000000.0
 
 
@@ -3854,9 +3946,35 @@ func _do_create(a: Array, my) -> Node3D:
 		_do_spark_hitscan(inst)
 		inst.queue_free()
 		return null
+	# GB-15 continued (2026-08-08, Plane3): "getting stuck mid flight
+	# where the vase is." Traced past the earlier GetPosition(Voice)
+	# debounce fix to a second, independent bug in the SAME "bird catches
+	# the vase" sequence: `action BadBird`'s own resolution calls
+	# `_gib(20);` (WDL/war.wdl's shared, portable gib-debris helper --
+	# `function _gib(numberOfParts) { ...; create(<gibbit.mdl>, MY.POS,
+	# _gib_action); ... }`), passing `_gib_action` -- ALSO declared via
+	# `function`, not `action` -- as create()'s own 3rd argument. Only
+	# `_resolve_action()` was ever tried here, so a function used this
+	# way (a real, portable WDL idiom -- Acknex has no separate
+	# "action" vs. "callable" concept, either kind of named block can be
+	# create()'s own initial-action argument, matching how exec_stmt()'s
+	# own "expr_stmt" case already treats an ACTION invoked like a bare
+	# function call as equally valid the other way around) resolved to
+	# nothing, so the entity got no coroutine started at all -- not a
+	# crash, just a silently inert prop with an `action` meta pointing
+	# at nothing that ever ran. Confirmed this doesn't crash or block
+	# `_gib(20)`'s own calling coroutine on its own (BadBird's while
+	# loop's own `create()` calls all still return normally) -- but see
+	# `docs/SESSION_LOG.md` for why fixing this (alongside the earlier
+	# debounce fix) was needed before the whole sequence could reach
+	# `Run("Smash.exe")` at all.
 	var resolved_action := _resolve_action(action) if action != "" else ""
 	if resolved_action != "":
 		_run_coroutine(_actions[resolved_action].get("body", {}), inst)
+	elif action != "":
+		var resolved_fn := _resolve_function(action)
+		if resolved_fn != "":
+			_run_coroutine(_functions[resolved_fn].get("body", {}), inst)
 	return inst
 
 
