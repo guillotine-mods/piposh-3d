@@ -7180,3 +7180,78 @@ Plane3's own PipFall. Asked the user directly for either specific
 repro details or a screenshot before auditing Smash.wdl's own ~25
 actions blind; they asked to keep auditing without one, picked up
 next.
+
+## 2026-08-08 (GB-16 opened) -- audited all of Smash.wdl for the newly-
+reported "character wrong" symptoms; found one real gap (flag1-8), no
+safe fix without more ground truth
+
+Per direct request ("keep auditing" without a screenshot/specific
+repro), read all ~25 actions in `Smash.wdl` (1001 lines) end to end
+looking for instances of every bug shape already found/fixed this
+session.
+
+Checked and ruled out:
+- `GetPosition(Voice)` debounce collisions: `action PipTalk` alone has
+  ~8 independent `GetPosition(Voice)` call sites within its own single
+  coroutine (nested dialogue-choice nested Warty-encounter loops) --
+  exactly the shape GB-15's Bug A fix (`_call_site_id()`, per-site
+  debounce keys) targets, and since that fix is generic (keys on the
+  AST node itself, not per-level), this is already correctly handled,
+  confirmed by inspection (no code change needed).
+- The `actor_move()` + `ent_frame`/`ent_cycle` walk-stomp (GB-15's
+  second animation fix): none of Smash's own actions combine them the
+  way Plane3's `PipFall` does -- `action Actor` calls both `Blink()`
+  (ent_frame "Stand") and `ent_cycle("Stand",...)` together, but never
+  `actor_move()`, so the fallback mechanism doesn't even engage.
+- Reveal-only visibility gaps (`_seed_reveal_only_hidden()`): dumped
+  raw WED `flags` for every story-gated character
+  (`BigBad`/`Bads`/`PipRide`/`PipPee`/`PipSit`/`Mendy`/`Ami`, all of
+  which toggle `my.invisible` both directions based on `Quick1`/`Ride`/
+  `MoviePhase`) via a direct read of `assets/converted/levels/Smash.json`
+  -- all WED-authored *visible* (`flags & 1 == 0`), meaning they rely
+  entirely on their own script's first-tick `else { invisible=on; }`
+  branch to hide correctly (not the WED-authored-invisible + reveal-
+  only shape `_seed_reveal_only_hidden()` targets). Verified directly,
+  not just reasoned about, via a throwaway diagnostic
+  (`diag_smash_initial_visibility.gd`, deleted after use) that samples
+  every one of these entities' own `Node3D.visible` on frames 0-9 of a
+  fresh Smash load: all show `visible=false` from frame 1 onward --
+  `begin_level()`'s synchronous coroutine-priming (runs every entity's
+  action up to its own first real `wait()` before the scene ever
+  renders) is doing its job correctly here, no premature-visibility
+  flash for these specific characters.
+
+One real, structural finding, NOT fixed (deliberately): `action Dance`
+(Smash's dance-floor/party-crowd entities) branches its entire
+behavior -- which of 5 dance poses (Cheer/Dance/Jackson/Headspin/Cool),
+whether it faces the camera and talks, whether it sits until the music
+starts, whether it's doing a "Cling"/"Die" reaction pose -- on
+`my.flag1`/`flag2`/`flag3`/`flag5`. This port has never had a verified
+WED bit mapping for the `flag1`-`flag8` custom checkboxes (only
+bit0=INVISIBLE, bit10=PASSABLE are confirmed corpus-wide, per
+`docs/CONTRACT.md`'s own long-standing documented gap) -- every
+`my.flagN` read anywhere in the corpus silently evaluates to "off"
+except the two narrow, already-approved exceptions
+(`_seed_look_at_me_flag1`, `_seed_pipi_flag1_stay_put`). Confirmed via
+a direct read of Smash's own level JSON that this isn't hypothetical:
+11 `Dance` placements carry genuinely distinct raw flag values (mostly
+`1`, i.e. bit0-only/correctly-invisible reserve placements, but three
+with `2`/`4`/`16` -- bit0 CLEAR, i.e. WED-authored *visible*, meaning
+these three dancers' entire pose/behavior really does depend on bits
+this port can't decode). A very plausible source of "not facing/moving
+right" specifically for the party scene, but per `docs/CONTRACT.md`'s
+own explicit standing instruction, did NOT attempt a general flag1-8
+bit-mapping guess: "a wrong guess would apply corpus-wide to every
+level's own independent use of flag1-8, not just one." The one prior
+exception to this rule (`LookAtMe`'s own `flag1`) was scoped to a
+single action name and required explicit user sign-off after a
+documented dead end trying to find a real bit mapping -- not a
+precedent for guessing freely elsewhere.
+
+Left open: no other concrete, code-fixable bug found in Smash.wdl
+after a full read. Documented as GB-16. Still needs either specific
+repro details (which character, which moment, ideally a screenshot --
+headless can't render for a visual check) to identify what ELSE the
+user's report might refer to, or explicit sign-off on a narrowly-
+scoped `Dance`-only flag guess (mirroring the `LookAtMe` precedent)
+before attempting a fix in this specific direction.
