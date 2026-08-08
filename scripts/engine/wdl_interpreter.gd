@@ -3375,6 +3375,27 @@ func _do_actor_move(my) -> float:
 	# ... no walking animation", confirmed via `[mdl-anim]` debug logging
 	# showing `_percent` climbing straight past 100 without ever cycling
 	# back down).
+	# 2026-08-08 investigated (Plane3): "piposh character's animation to
+	# move isn't correct it looks like he's walking" during the vase-catch
+	# flight. `action PipFall`'s own script calls `ent_frame("Fetch",...)`
+	# and `actor_move()` in the SAME tick while flying toward the vase, so
+	# this fallback's generic "Walk" cycle runs right after PipFall's own
+	# "Fetch" pose and visibly wins. Tried suppressing the fallback
+	# whenever ANY real ent_frame/ent_cycle call already fired this same
+	# tick (via a meta timestamp) -- reverted: it broke Plane's own
+	# already-verified PiposhWalk case (smoke_plane_walk_anim.gd), whose
+	# `Blink()` helper calls `ent_frame("Stand",0)` unconditionally, every
+	# tick, before its own `actor_move()` call -- the exact same shape as
+	# PipFall's "real anim call, then actor_move(), same tick", but there
+	# the walk cycle calling this fallback IS the wanted outcome. Nothing
+	# in the WDL source itself distinguishes "this ent_frame call is the
+	# deliberate final pose for this tick" (PipFall's "Fetch") from "this
+	# is a throwaway default meant to be overridden by movement" (Blink's
+	# "Stand") -- a same-tick-ordering heuristic can't tell them apart,
+	# and picking one risks regressing the other's already-correct,
+	# tested behavior. Left as-is (unconditional walk fallback, matching
+	# the original 2026-08-01 PiposhWalk fix) until there's a real
+	# distinguishing signal to key off; see docs/BUGS.md GB-15 addendum.
 	if my.get_meta("wdl_auto_walk_anim", false):
 		var phase := fmod(float(my.get_meta("wdl_auto_walk_phase", 0.0)) + absf(step), 100.0)
 		my.set_meta("wdl_auto_walk_phase", phase)

@@ -7042,3 +7042,65 @@ it should presumably be something else, e.g. a falling/reacting pose)
 during this same sequence. Blocked behind this fix until now, since
 the level never reached or lingered at that point in play to observe
 or compare either animation.
+
+## 2026-08-08 (GB-15 follow-up) -- vase-impact animation still open;
+confirmed Smash isn't a parsing/dispatch gap
+
+User follow-up after the GB-15 stuck-game fix: the vase-impact
+animation is still wrong, Piposh's own "looks like walking" complaint
+was confirmed as a real fly/swim-vs-walk cycle mismatch, and -- new --
+Smash (the level `Run("Smash.exe")` now correctly reaches) and
+"potentially those that come after" show similar-sounding
+character movement/facing/premature-visibility symptoms. Asked
+directly: is this an under-parsed/under-implemented WDL gap?
+
+Checked with `tools/smoke_dispatch.gd --all` (loads every level in
+`levels.json`, not just the usual 19-level roster): Smash shows
+`has_ast=true interpreted=true`, identical to every other level, and
+`55/56 levels dispatched` / `OK: zero levels with an AST reached the
+inert branch` holds with Smash included. Not a parsing/dispatch gap --
+Smash's script genuinely runs through the interpreter. Symptoms
+recurring across levels is expected precisely because the interpreter
+is shared: a real bug in shared execution semantics (animation-cycle
+selection, visibility-reveal detection) shows up wherever a level's
+own script exercises that same shape, not because any level is being
+skipped or mis-parsed.
+
+Traced the walk-cycle report to its root: `action PipFall` calls
+`ent_frame("Fetch", my.skill1)` (own script, correct reach pose) and,
+in the same tick, `_do_actor_move()`'s `wdl_auto_walk_anim` fallback
+(added 2026-08-01 for Plane's own `PiposhWalk`, unconditionally plays
+a "Walk" cycle whenever an action that ever calls `actor_move()`
+anywhere in its body reaches that call) -- the fallback runs second in
+program order and overwrites "Fetch" every tick. Attempted a fix:
+stamp `wdl_last_real_anim_frame` in `_do_anim_frame()`/`_do_anim_cycle()`
+and have the fallback skip itself if a real anim call already fired
+the same engine tick. Regression-tested against `smoke_plane_walk_anim.gd`
+(the existing, already-shipped test for the ORIGINAL 2026-08-01 fix
+this fallback exists for) and it FAILED: `saw_walk_clip=false`, Piposh
+never showed a walk cycle while genuinely walking in Plane. Root cause
+of the regression: Plane's own `Blink()` helper (`function Blink() {
+ent_frame("Stand",0); ...}`) is called unconditionally, every tick,
+before `PiposhWalk`'s own `actor_move()` -- the EXACT SAME "real anim
+call, then actor_move(), same tick" shape as PipFall's own Fetch/
+actor_move pairing, but here the walk cycle winning is the CORRECT,
+already-verified outcome. Nothing in the WDL AST distinguishes "this
+ent_frame call is the deliberate final pose for this tick" from "this
+is a low-priority default meant to be overridden by movement" --
+same-tick ordering alone can't separate the two cases, and any fix
+built only on ordering will get one of them wrong. Reverted the
+attempt rather than ship a fix that trades one real, tested behavior
+for another; `wdl_interpreter.gd`'s only surviving change from this
+attempt is a documentation comment recording what was tried and why
+it didn't work, so a future session doesn't re-walk the same path
+blind. Full targeted regression re-run afterward (`smoke_plane3_vase_catch_check`,
+`smoke_plane_walk_height`, `smoke_dispatch`) all green.
+
+Left open, genuinely blocked without more specifics: the vase-impact
+animation itself (what plays when the bird hits the vase -- never
+identified which action/moment this refers to), and the Smash-level
+"not moving/facing right" / "shown before actually being there"
+reports (no character/entity/moment named yet, and headless can't
+render for a visual check to guess from). Asked the user for either a
+screenshot or more specific repro details before continuing further,
+rather than auditing Smash.wdl's own ~25 actions blind.
