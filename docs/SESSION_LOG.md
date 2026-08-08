@@ -7255,3 +7255,79 @@ headless can't render for a visual check) to identify what ELSE the
 user's report might refer to, or explicit sign-off on a narrowly-
 scoped `Dance`-only flag guess (mirroring the `LookAtMe` precedent)
 before attempting a fix in this specific direction.
+
+## 2026-08-09 (GB-15 closed) -- the vase-impact animation was debris
+that spawned but never flew apart; F7 added for Map, Map itself
+audited
+
+User follow-up: "The only issue now is the animation of the broken
+vase that's still incorrect. And then which level is played next? Lets
+make F7 start it, and fix it's animatinos and directions of characters
+as we already did in other ones."
+
+Traced Smash's own progression first: `SetVoice()`'s `Scene==15`
+branch calls the shared `ReturnToMap()` (`WDL/IO.wdl`), which
+`Run("Map.exe")`s -- the mission-select hub, not a linear "next
+chapter" (the game is non-linear from here: Map's own `pMap` panel
+lets the player pick Town/Olympic/Asylum/Village/Volcano/Mansion
+next). Added `KEY_F7 -> LevelRouter.goto_level("Map")` in
+`level_runner.gd`'s own `_unhandled_input()`, matching F6's existing
+precedent (`Plane3`), and updated the on-screen debug-key hint text.
+
+Re-examined "the broken vase animation" with fresh eyes, now that
+GB-15's earlier fixes (debris actually spawning, BadBird surviving,
+the Fetch-pose fix) are all in place -- what's left to look wrong at
+the exact moment of impact is `_gib(20)`'s own 20 debris entities.
+Confirmed via a throwaway diagnostic (`diag_gib_movement.gd`, deleted
+after use) that they spawn correctly (matching GB-15's earlier
+`_do_create()` fix) but sit completely motionless at TheVase's exact
+position instead of flying outward -- looking like "the vase
+instantly vanishes into a static pile" rather than a real explosion.
+
+Root cause: `WDL/war.wdl`'s own `_gib_action()` computes its own
+per-tick velocity into `abspeed[0]`/`[1]`/`[2]` (a plain 3-element
+array global, `var abspeed[3] = 0,0,0;` in `WDL/movement.wdl` --
+confirmed via corpus grep, the SAME idiom also used by `Desert.wdl`'s
+own debris action and `WDL/auftrag.wdl`'s `MY_SPEED`) and applies it
+via `MOVE ME,NULLSKILL,abspeed;`. `_vec_get()` -- the one function
+every vector-consuming builtin (`MOVE`, `vec_set`, `vec_sub`,
+`vec_to_angle`) reads a vector argument through -- only ever
+recognized Acknex's OTHER vector spelling: a scratch variable's own
+`.x`/`.y`/`.z` fields (`temp.x = ...`, tracked in the separate
+`_vectors` dict). A bare array-style vector identifier fell through
+to `Vector3.ZERO` regardless of what the script had actually written
+into its array slots, since array-index assignment (`abspeed[0]=...`)
+writes into the REAL `_globals["abspeed"]` array via a completely
+different code path (`_assign()`'s "index" case) that `_vec_get()`
+never consulted.
+
+Fixed by having `_vec_get()`'s "id" branch, after failing to resolve
+the identifier as an entity or a `_vectors`-tracked scratch var, check
+`_get_var()` for a plain Array value and build a Vector3 from its
+first 3 elements. Verified via `git stash` A/B comparison using a
+throwaway diagnostic that tracks 20 freshly-spawned gib entities' own
+position over ~40 frames: pre-fix baseline showed `moved=0/20`
+(exactly matching the reported symptom), post-fix shows `moved=20/20`.
+Added `smoke_gib_debris_movement_check.gd` as the permanent regression
+test. Re-ran the full targeted GB-15 regression set plus
+`smoke_dispatch.gd --all` (55/56, IO.wdl correctly skipped as a
+library-only file, not a real level) -- all still green, confirming
+this broadly-used function (`_vec_get()` backs `vec_set`/`vec_sub`/
+`vec_to_angle`/`MOVE` corpus-wide) didn't regress anything else.
+
+Read Map.wdl in full (414 lines) per the user's own request to "fix
+its animations and directions of characters as we already did in
+other ones." Turned out to be a poor match for that kind of fix: it's
+almost entirely 2D panel/button logic (the mission-select map UI,
+`SetLocations()`/`Goto1..6` picking which location icons/buttons show
+based on story-progress arrays) plus a handful of purely decorative
+spinning models (`entPhotoID`, `entVaseMenu1-5`) and one idle "Piposh
+bust" entity that just holds an `ent_frame("stand", ...)` pose while a
+menu movie plays -- no walking characters, no `GetPosition(Voice)`
+calls, no `actor_move()` calls anywhere in the file (confirmed via
+grep), so none of today's fixed bug shapes have anything to apply to
+here. Nothing further attempted on Map itself -- the real "next
+gameplay level with characters to fix" would be whichever mission the
+player picks from this hub (Town, by default, since `LocationGo()`'s
+own fallback for a player without an ID sends them to `Town.exe`), not
+Map itself.

@@ -3487,7 +3487,29 @@ func _vec_get(expr: Variant, my) -> Vector3:
 		if node != null and is_instance_valid(node):
 			var gs := _godot_to_gs(node.global_position)
 			return Vector3(gs.x, gs.y, gs.z)
-		return _vectors.get(name, Vector3.ZERO)
+		if _vectors.has(name):
+			return _vectors[name]
+		# Acknex has two equally real spellings for a scratch 3-vector:
+		# the `.x`/`.y`/`.z` field style (`temp.x = ...`, tracked in
+		# `_vectors` above) and a plain 3-element ARRAY global
+		# (`var abspeed[3]; abspeed[0] = ...;`), used corpus-wide (e.g.
+		# WDL/war.wdl's `_gib_action` -- `MOVE ME,NULLSKILL,abspeed;`,
+		# where `abspeed[0..2]` holds that tick's own computed velocity).
+		# Only the field style was ever read here; a bare array-style
+		# vector fell through to Vector3.ZERO regardless of what the
+		# script had actually written into it. Confirmed live (2026-08-09,
+		# Plane3): this is why `_gib(20)`'s own debris pieces never
+		# visibly flew apart after the vase-catch fix landed -- each
+		# gibbit's own per-tick `MOVE` call read a permanently-zero
+		# velocity, so they sat motionless at the vase's exact position
+		# instead of scattering, reading as "the vase just vanishes" with
+		# no real explosion. `_get_var()` already resolves `abspeed` to
+		# the real, live-mutated Array (index-assignment writes into it
+		# in place); just needed to be checked here too.
+		var v = _get_var(name, my)
+		if v is Array and v.size() >= 3:
+			return Vector3(_to_num(v[0]), _to_num(v[1]), _to_num(v[2]))
+		return Vector3.ZERO
 	if t == "field":
 		var fname := str(expr.get("name", "")).to_lower()
 		var is_angle := _vec_field_is_angle(fname)

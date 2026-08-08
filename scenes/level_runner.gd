@@ -123,7 +123,7 @@ func _ready() -> void:
 
 	_game_hud.set_debug_text(
 		level,
-		"script=%s | mode=%s | F1=Menu F3=Next F4=Levels F6=Plane3 Space=Recenter F10=debug"
+		"script=%s | mode=%s | F1=Menu F3=Next F4=Levels F6=Plane3 F7=Map Space=Recenter F10=debug"
 		% [
 			str(loader.last_level_data.get("script", "?")),
 			"FP" if use_fp else ("scripted" if use_scripted else "free"),
@@ -318,6 +318,13 @@ func _unhandled_input(event: InputEvent) -> void:
 			_toggle_level_select()
 		elif event.keycode == KEY_F6:
 			LevelRouter.goto_level("Plane3")
+		elif event.keycode == KEY_F7:
+			# Smash's own SetVoice() (Scene==15) calls the shared
+			# ReturnToMap() -> Run("Map.exe") -- the overworld hub the
+			# player returns to after finishing a mission, not a linear
+			# "next chapter". Matches F6's own precedent (jump straight to
+			# the level currently being worked on).
+			LevelRouter.goto_level("Map")
 		elif event.keycode == KEY_ESCAPE and _level_select:
 			_toggle_level_select()
 		elif event.keycode == KEY_SPACE:
