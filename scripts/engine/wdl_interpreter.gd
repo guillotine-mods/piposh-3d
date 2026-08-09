@@ -1380,9 +1380,16 @@ func exec_stmt(stmt: Dictionary, my) -> Variant:
 					# (including the real "all 4 side-quest goals done ->
 					# Run(Range.exe)" check, the actual report) never ran
 					# even once, let alone as an ongoing per-frame check.
+					#
+					# 2026-08-09 continued (Desert): see
+					# _call_user_function_async()'s own docstring for why
+					# this is now `_run_coroutine()`-style fire-and-forget
+					# (no `await`) instead of blocking this ENTIRE caller
+					# until the action's own body fully returns -- applies
+					# here too, same underlying mechanism, same reasoning.
 					var resolved_action := _resolve_action(fname)
 					if resolved_action != "":
-						await exec_block(_actions[resolved_action].get("body", {}), my)
+						exec_block(_actions[resolved_action].get("body", {}), my)
 						return null
 			_eval(top_expr, my)
 			return null
@@ -3104,6 +3111,52 @@ func _call_user_function(fname: String, arg_exprs: Array, my) -> Variant:
 ## every other function call in the corpus (the overwhelming majority --
 ## short helpers, called mid-expression, or never containing a real
 ## per-frame loop) is completely unaffected.
+## 2026-08-09 continued (Desert): "some of the world backgrounds are not
+## correct still" traced past both the earlier fixes (see docs/
+## SESSION_LOG.md) to a real, deeper bug here. `Desert.wdl`'s own
+## `main()` calls a weather helper (`let_it_rain()`, `WDL/Weather.wdl`)
+## as a bare, NON-tail statement -- more statements (including the
+## level's own `scene_map=...` lines) follow it in `main()`'s own body.
+## `let_it_rain()` itself calls `rain_akt()`, a genuine `while(weather==
+## weather_rain){...;WAITT(3);}` forever-loop explicitly meant to run as
+## an independent background task driving the rain effect for the rest
+## of the level. This function's own `await exec_block(...)` used to
+## block THIS SAME CALLER (`main()`) at that exact statement forever,
+## since `rain_akt()`'s loop never naturally returns -- so `scene_map`
+## (and everything else later in `main()`) never got set at all,
+## confirmed live via a temporary trace showing `WeatherSet` (set
+## unconditionally right after the weather calls) also never left its
+## own declared default.
+##
+## Real Acknex's own `wait()` yields to the engine's own cooperative
+## scheduler, which resumes the ORIGINAL CALLER too, not just the
+## callee that suspended -- the callee's own remaining body becomes an
+## independent background task from that point on. This function now
+## matches that: for a ZERO-PARAMETER callee, it calls `exec_block()`
+## WITHOUT `await` (the same `_run_coroutine()`-style fire-and-forget
+## already used to start every entity's own initial action) -- GDScript
+## still runs it synchronously up to its own first real suspension, but
+## does NOT block this caller past that point; whatever's left of the
+## callee's own body keeps running independently once Godot resumes it.
+##
+## Scoped to zero-parameter callees specifically, not applied
+## unconditionally: the param save/restore loop below assumes it's safe
+## to restore the instant the call "returns" -- true when there's
+## nothing to restore (empty `saved`), but NOT necessarily true for a
+## callee that's still genuinely running in the background and might
+## still need ITS OWN params. Verified this scoping doesn't regress the
+## two existing, already-verified callers of this exact "long-running
+## helper called as a bare statement" shape (2026-08-01, Plane2): traced
+## live and confirmed `perform_handle()` never actually reaches this
+## function at all (it's on `BRIDGE_OVER_SHARED_FUNCTIONS`, intercepted
+## earlier as an intentional no-op -- this port's own native player
+## controller handles input directly), and `player_move2()` -- an
+## `ACTION`, not a `function`, so it goes through exec_stmt's own
+## parallel action-invoked-as-function path, not this one, but the same
+## reasoning applies -- is called in TRUE tail position (`action
+## player_walk2`'s own literal last statement), where "block forever"
+## and "detach and let the caller reach its own end anyway" are
+## observably identical.
 func _call_user_function_async(fname: String, arg_exprs: Array, my) -> Variant:
 	var fn: Dictionary = _functions[fname]
 	var params: Array = fn.get("params", [])
@@ -3116,7 +3169,21 @@ func _call_user_function_async(fname: String, arg_exprs: Array, my) -> Variant:
 		_globals[pname] = {"kind": "var", "init": null, "value": v}
 		if not had_key:
 			_index_global(pname)
-	var sig = await exec_block(fn.get("body", {}), my)
+	var sig = null
+	if params.is_empty():
+		# GDScript's own compiler refuses to let a coroutine's return
+		# value be captured without `await` at the call site (a real,
+		# static check -- confirmed live, this failed to even compile
+		# once written as `sig = exec_block(...)`) -- called as a bare
+		# statement instead, discarding whatever it eventually returns,
+		# same as `_run_coroutine()`'s own identical fire-and-forget call
+		# just above. `sig` stays `null`, correctly producing a `null`
+		# result below for this shape (matching real Acknex: nothing
+		# meaningful to return from a call that hasn't necessarily
+		# finished yet).
+		exec_block(fn.get("body", {}), my)
+	else:
+		sig = await exec_block(fn.get("body", {}), my)
 	for pname in saved:
 		if saved[pname] == null:
 			_globals.erase(pname)

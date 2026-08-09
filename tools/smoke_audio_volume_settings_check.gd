@@ -46,7 +46,12 @@ func _run() -> void:
 	var toggled_ok: bool = settings.visible != was_visible
 	print("settings toggle: %s -> %s (expect flipped)" % [was_visible, settings.visible])
 
+	# Start from a known, fixed volume rather than "whatever the bus
+	# happened to be" -- user://audio_settings.cfg persists across runs
+	# (that's the whole point of it), so a prior run's own leftover
+	# setting would otherwise make "before < after" meaningless here.
 	var audio: Node = root.get_node("AudioChannels")
+	audio.call("set_sfx_volume", 1.0)
 	var before_db: float = AudioServer.get_bus_volume_db(AudioServer.get_bus_index("SFX"))
 	audio.call("set_sfx_volume", 0.3)
 	var after_db: float = AudioServer.get_bus_volume_db(AudioServer.get_bus_index("SFX"))

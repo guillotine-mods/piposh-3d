@@ -7691,3 +7691,112 @@ All fixes re-verified via the full targeted regression sweep
 two new tests -- `smoke_genia_walk_percent_check`,
 `smoke_file_io_scene_map_check`) -- all green. `git status --short
 assets/` clean, no deletions.
+
+## 2026-08-09 (GB-18 continued) -- fixed the deeper blocking-forever bug
+after confirming it was actually safe, not just documenting it
+
+Picked up directly where the prior round left off, per direct request
+("lets work on the backgrounds now"). The open item was `_call_user_
+function_async()`'s own "await the whole callee" semantics blocking
+Desert's own `main()` forever at `let_it_rain();` (a non-tail bare
+statement call whose own callee, `rain_akt()`, is a genuine `while(
+weather==weather_rain){...;WAITT(3);}` forever-loop by design), and
+the stated reason it was left open rather than fixed: risk of
+regressing `player_move2()`/`perform_handle()`'s own already-verified
+2026-08-01 fixes, which were believed to rely on the SAME "block
+forever" behavior.
+
+Verified that belief directly rather than trusting it secondhand,
+since the whole point of fixing this was contingent on it being wrong.
+Added a temporary trace to `_call_user_function_async()` (removed once
+the investigation was done) and ran the existing `smoke_plane2_all_
+goals.gd` test with it active. Result: `perform_handle` never once
+appears in the trace across the entire run. Traced why: `perform_
+handle` is listed in `BRIDGE_OVER_SHARED_FUNCTIONS` (the whitelist of
+names where this port's own native handling -- here, "this port's own
+player controller handles input directly, nothing sets `_SIGNAL`" --
+must win over the same-named shared WDL function) -- confirmed live via
+a second targeted trace at the exact call site
+(`in_bridge=true resolved_fn=perform_handle resolved_action=`),
+meaning `perform_handle()`'s own real, forever-looping WDL body is
+intentionally never reached at all; the call resolves to an inert
+no-op via the generic unbridged-builtin path instead. It was never
+actually exercising `_call_user_function_async()`'s own blocking
+behavior to begin with -- the earlier summary's own phrasing ("found
+once bare-call statements to user functions could genuinely run
+forever") described a hypothetical concern from when the mechanism was
+first built, not a confirmed, currently-exercised dependency.
+
+`player_move2()` -- re-read `Plane2.wdl` directly: it's declared with
+`ACTION`, not `function`, so it goes through the SEPARATE, parallel
+"action invoked as bare function" path in `exec_stmt`'s own "expr_stmt"
+case (`await exec_block(_actions[resolved_action].get("body",{}), my);
+return null;`), not `_call_user_function_async()` itself. Confirmed via
+direct source read that `player_move2();` is `action player_walk2`'s
+own literal LAST statement -- true tail position, where blocking
+forever and detaching-with-nothing-left-to-do-anyway produce
+identical observable behavior for the CALLER. (Its own internal call
+to `perform_handle();`, mid-body, non-tail, was the one call site that
+actually mattered for regression risk -- and that's the one already
+ruled out above.)
+
+With neither actual dependency at risk, implemented the real fix in
+both code paths: for a callee with ZERO parameters specifically (not
+unconditionally -- the existing param save/restore loop assumes
+"restore the instant this call returns" is safe, which stops being
+true once a callee's own execution can outlive its caller's), call the
+body without `await` instead of with it -- the exact same `_run_
+coroutine()`-style fire-and-forget already used everywhere else in
+this file to start a fresh, independent coroutine (confirmed by
+reading `_run_coroutine()`'s own one-line body: `exec_block(body,
+entity)`, no await). GDScript still runs the callee synchronously up
+to its own first real suspension point either way; the only change is
+that the CALLER no longer blocks past that point too.
+
+Hit one real implementation snag along the way: GDScript's own
+compiler statically REFUSES to compile `sig = exec_block(...)` (a
+coroutine's return value captured without `await` at the call site) --
+confirmed via `--check-only`, a hard parse error, not a runtime
+concern. Fixed by calling it as a bare statement instead (discarding
+the return value entirely, matching `_run_coroutine()`'s own exact
+shape) and leaving the local `sig` variable at its own `null` default
+for this branch -- correctly produces a `null` result for a callee
+that may not have actually finished yet, which is the honest answer
+(matching real Acknex: nothing meaningful to return from a call that
+hasn't necessarily completed).
+
+Verified concretely, not just "no crash": re-ran `smoke_plane2_all_
+goals.gd` (the existing, dedicated regression test for both `player_
+move2()`'s own tail-call shape and, indirectly, this whole mechanism)
+-- still passes unchanged, "all-4-goals branch entered=true". Then
+verified the actual fix: forced `Arrive.dat` to `_VILLAGE` (32) via the
+new file I/O bridge and traced Desert's own level load end to end --
+`WeatherSet` now correctly reaches `1.0` (was permanently stuck at its
+own declared default `0.0` before, proof `main()` was never getting
+past the weather call at all) and the applied scene texture now
+correctly resolves to `Horizon2.png` (was permanently stuck on the
+static `horizon6.png` fallback guess before, since the live value
+never became available for the polling mechanism to pick up).
+
+Also caught and fixed a real test-isolation bug in `smoke_audio_
+volume_settings_check.gd` (unrelated to this fix, found while
+re-running the full suite): it compared the SFX bus's own dB value
+"before" and "after" calling `set_sfx_volume(0.3)`, but `user://
+audio_settings.cfg` persists across headless test runs by design (the
+whole point of the file), so a PRIOR run's own leftover 0.3 setting
+made the "before" baseline meaningless on a subsequent run (both ended
+up near the same value, and the test's own `after < before` assertion
+correctly failed since `0.3` wasn't actually lower than an already-0.3
+"before"). Fixed by explicitly setting a known volume (1.0) before
+sampling "before", so the test no longer depends on whatever the
+persisted config file happens to contain.
+
+Full regression sweep re-run afterward: `smoke_dispatch --all`
+(55/56), `smoke_smash_visuals_check`, `smoke_plane3_vase_catch_check`,
+`smoke_pipfall_fetch_anim_check`, `smoke_plane_walk_anim`, `smoke_
+range_shoot`, `smoke_remove_race`, `smoke_genia_walk_percent_check`,
+`smoke_file_io_scene_map_check`, `smoke_audio_volume_settings_check`
+(now fixed), `smoke_emit_particles_check`, `smoke_plane2_all_goals`,
+`smoke_plane2_playtest`, `smoke_shiks_dialog2_choice3`, `smoke_range_
+retry_check`, `smoke_range_hitscan_check`, `smoke_range_death_freeze`
+-- all green. `git status --short assets/` clean, no deletions.
