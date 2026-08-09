@@ -88,6 +88,11 @@ func _ready() -> void:
 	var level := GameState.current_level
 	loader.entity_triggered.connect(_on_entity_triggered)
 	var ok := loader.load_level(level)
+	print("[level] starting level=%s script=%s source=%s" % [
+		level,
+		str(loader.last_level_data.get("script", "?")),
+		str(loader.last_level_data.get("source", "?")),
+	])
 	_apply_wdl_sky(level)
 
 	_director.setup(loader, _script_cam, loader.last_level_data, _game_hud)

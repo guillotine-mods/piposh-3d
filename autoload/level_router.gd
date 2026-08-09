@@ -65,8 +65,10 @@ func goto_level(level_name: String) -> void:
 	key = aliases.get(key, key)
 	GameState.current_level = key
 	if key.to_lower() == "menu":
+		print("[level] switching scene: %s (level=%s)" % [MENU_SCENE, key])
 		get_tree().change_scene_to_file(MENU_SCENE)
 		return
+	print("[level] switching scene: %s (level=%s)" % [LEVEL_SCENE, key])
 	get_tree().change_scene_to_file(LEVEL_SCENE)
 
 
