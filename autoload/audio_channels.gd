@@ -34,6 +34,27 @@ const SFX_POOL_SIZE := 6
 ## "not playing" instead of a false positive.
 const HANDLE_SLOT_SCALE := 1000000
 
+## Settings request (2026-08-09, mid-playtest, alongside "cars honking
+## too loud"): "let's have an FX / voice volume control in settings" --
+## also QOL-6's own long-standing backlog ask ("separate volume sliders
+## for SFX / Music / Voice"). Routes each channel's own player(s) to a
+## dedicated AudioServer bus (Voice/SFX/Music, all children of Master)
+## instead of hand-adjusting each individual play() call's volume_db --
+## the standard Godot mechanism, and the only way a single slider can
+## affect sounds already playing, not just future ones. Persisted to
+## user://audio_settings.cfg so a preference sticks across sessions.
+const VOICE_BUS := "Voice"
+const SFX_BUS := "SFX"
+const MUSIC_BUS := "Music"
+const SETTINGS_PATH := "user://audio_settings.cfg"
+## Linear 0..1 slider positions, converted to dB via linear_to_db() --
+## matches how every other volume slider in Godot (and most games) maps
+## a 0..1 UI position to perceived loudness; a raw dB slider would have
+## a huge, non-intuitive dead zone at its own quiet end.
+var _voice_volume := 1.0
+var _sfx_volume := 1.0
+var _music_volume := 0.6  # matches play_music()'s own pre-existing -6dB-ish default feel
+
 var _voice: AudioStreamPlayer
 var _music: AudioStreamPlayer
 var _sfx_pool: Array[AudioStreamPlayer] = []
@@ -54,23 +75,105 @@ var _voice_generation := 0
 
 
 func _ready() -> void:
+	_ensure_buses()
+	_load_volume_settings()
+
 	_voice = AudioStreamPlayer.new()
 	_voice.name = "Voice"
+	_voice.bus = VOICE_BUS
 	_voice.finished.connect(_on_voice_finished)
 	add_child(_voice)
 
 	_music = AudioStreamPlayer.new()
 	_music.name = "Music"
+	_music.bus = MUSIC_BUS
 	add_child(_music)
 
 	for i in SFX_POOL_SIZE:
 		var p := AudioStreamPlayer.new()
 		p.name = "SFX%d" % i
+		p.bus = SFX_BUS
 		add_child(p)
 		_sfx_pool.append(p)
 		_sfx_generation.append(0)
 
+	_apply_volume_settings()
 	_rebuild_index()
+
+
+## Creates the Voice/SFX/Music buses (children of Master) if this is the
+## first run, or finds them if a prior session already added them to the
+## default bus layout (Godot persists `res://default_bus_layout.tres`
+## across runs once buses are added at runtime in the editor, but a
+## fresh export/first launch never has -- either way this is idempotent).
+func _ensure_buses() -> void:
+	for bus_name in [VOICE_BUS, SFX_BUS, MUSIC_BUS]:
+		if AudioServer.get_bus_index(bus_name) == -1:
+			var idx := AudioServer.bus_count
+			AudioServer.add_bus(idx)
+			AudioServer.set_bus_name(idx, bus_name)
+			AudioServer.set_bus_send(idx, "Master")
+
+
+func _load_volume_settings() -> void:
+	var cfg := ConfigFile.new()
+	if cfg.load(SETTINGS_PATH) != OK:
+		return
+	_voice_volume = clampf(cfg.get_value("audio", "voice", _voice_volume), 0.0, 1.0)
+	_sfx_volume = clampf(cfg.get_value("audio", "sfx", _sfx_volume), 0.0, 1.0)
+	_music_volume = clampf(cfg.get_value("audio", "music", _music_volume), 0.0, 1.0)
+
+
+func _save_volume_settings() -> void:
+	var cfg := ConfigFile.new()
+	cfg.set_value("audio", "voice", _voice_volume)
+	cfg.set_value("audio", "sfx", _sfx_volume)
+	cfg.set_value("audio", "music", _music_volume)
+	cfg.save(SETTINGS_PATH)
+
+
+func _apply_volume_settings() -> void:
+	AudioServer.set_bus_volume_db(AudioServer.get_bus_index(VOICE_BUS), _linear_to_db(_voice_volume))
+	AudioServer.set_bus_volume_db(AudioServer.get_bus_index(SFX_BUS), _linear_to_db(_sfx_volume))
+	AudioServer.set_bus_volume_db(AudioServer.get_bus_index(MUSIC_BUS), _linear_to_db(_music_volume))
+
+
+## linear_to_db(0.0) is -inf, correctly reads as "muted" (AudioServer
+## treats a very negative dB as silent) rather than needing a special
+## case; clamped to a sane floor anyway since -inf can look alarming in
+## debug output.
+func _linear_to_db(v: float) -> float:
+	return maxf(linear_to_db(clampf(v, 0.0, 1.0)), -60.0) if v > 0.0 else -60.0
+
+
+func get_voice_volume() -> float:
+	return _voice_volume
+
+
+func get_sfx_volume() -> float:
+	return _sfx_volume
+
+
+func get_music_volume() -> float:
+	return _music_volume
+
+
+func set_voice_volume(v: float) -> void:
+	_voice_volume = clampf(v, 0.0, 1.0)
+	AudioServer.set_bus_volume_db(AudioServer.get_bus_index(VOICE_BUS), _linear_to_db(_voice_volume))
+	_save_volume_settings()
+
+
+func set_sfx_volume(v: float) -> void:
+	_sfx_volume = clampf(v, 0.0, 1.0)
+	AudioServer.set_bus_volume_db(AudioServer.get_bus_index(SFX_BUS), _linear_to_db(_sfx_volume))
+	_save_volume_settings()
+
+
+func set_music_volume(v: float) -> void:
+	_music_volume = clampf(v, 0.0, 1.0)
+	AudioServer.set_bus_volume_db(AudioServer.get_bus_index(MUSIC_BUS), _linear_to_db(_music_volume))
+	_save_volume_settings()
 
 
 ## sPlay(Voice, snd) / vPlay -- dialogue lines. Only this channel feeds

@@ -12,6 +12,7 @@ var _menu_cam: Node3D
 var _piposh: Node3D
 var _p_show: TextureRect
 var _show_idx := 1
+var _settings: SettingsPanel
 
 
 func _ready() -> void:
@@ -43,15 +44,21 @@ func _ready() -> void:
 	_script_cam.current = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
+	_settings = SettingsPanel.new()
+	_settings.name = "SettingsPanel"
+	add_child(_settings)
+
 	AudioChannels.play_music("SNG032.WAV", -8.0)
 	panel.visible = true
-	hud.text = "Menu — New Game → Studio | click ShowMov (bottom-right) | Esc quits look | F6=Range"
+	hud.text = "Menu — New Game → Studio | click ShowMov (bottom-right) | Esc quits look | F6=Range F9=Settings"
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_F6:
 			LevelRouter.goto_level("Range")
+		elif event.keycode == KEY_F9:
+			_settings.toggle_visible()
 
 
 func _process(_delta: float) -> void:

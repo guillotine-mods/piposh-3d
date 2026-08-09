@@ -161,6 +161,8 @@ func _input(event: InputEvent) -> void:
 func _process(_delta: float) -> void:
 	_total_frames += 1
 	_check_impact_proximity()
+	if not _particles.is_empty():
+		_update_particles(_delta)
 	# See `_mouse_delta_suppress_frames`'s own comment -- discard whatever
 	# accumulated (including a synthetic post-warp motion event) instead
 	# of feeding it into `mickey` as if the player had actually moved the
@@ -855,6 +857,7 @@ func begin_level() -> void:
 			node.set_meta("wdl_skills", (node.get_meta("skills", []) as Array).duplicate())
 			_seed_look_at_me_flag1(node, action)
 			_seed_pipi_flag1_stay_put(node, action)
+			_seed_genia_facing(node, action)
 			_seed_reveal_only_hidden(node, _actions[resolved_action].get("body", {}))
 			_seed_static_pose_if_never_animated(node, _actions[resolved_action].get("body", {}))
 			_run_coroutine(_actions[resolved_action].get("body", {}), node)
@@ -949,6 +952,33 @@ func _seed_pipi_flag1_stay_put(node: Node3D, action: String) -> void:
 		node.set_meta("wdl_custom_flag1", 1.0)
 
 
+## Reported live (2026-08-09, Smash): "The Genia model is walking to the
+## correct direction but facing the wrong way, he needs to be facing 90
+## degrees to his left." `action WalkGeniaWalk` (Smash.wdl) moves its own
+## entity purely via direct position writes (`my.y = my.y - 10*time;`) --
+## it never touches `my.pan` anywhere in its own body, so whatever facing
+## the model renders with is entirely WED's own static authored angle.
+## Confirmed via the level JSON: Genia's own placement has `angle_gs =
+## [0,0,0]` -- no rotation authored at all -- while its own movement is
+## along Acknex -Y, which this port's `_gs_to_godot()` maps to +Godot Z.
+## At pan=0, `_do_actor_move()`'s own established forward convention
+## (`Vector3(cos(pan),0,-sin(pan))`) points along +Godot X, not +Z --
+## the model was never actually facing its own direction of travel, WED's
+## authored angle notwithstanding. `pan=0 - 90` aims it at +Z instead,
+## matching the walk direction and the reported "off by 90°" correction.
+## Scoped to this one action, matching `_seed_look_at_me_flag1()`'s own
+## precedent, rather than a general re-interpretation of authored angles
+## (which would risk every other static, non-turning placement in the
+## corpus, not just this one).
+func _seed_genia_facing(node: Node3D, action: String) -> void:
+	if action.to_lower() != "walkgeniawalk":
+		return
+	if node.has_meta("wdl_genia_facing_seeded"):
+		return
+	node.set_meta("wdl_genia_facing_seeded", true)
+	_set_entity_pan(node, float(node.get_meta("pan", 0.0)) - 90.0)
+
+
 ## Generic fix for "reveal-only" actors: an action whose only
 ## `my.invisible = ...` assignments (anywhere in its body, however deeply
 ## nested in if/while) ever set it to `off` (visible), never `on` (hidden).
@@ -970,17 +1000,100 @@ func _seed_pipi_flag1_stay_put(node: Node3D, action: String) -> void:
 ## action/level name) so it transparently protects any other
 ## similarly-authored reveal-only actor in the corpus without needing a
 ## per-level special case.
+## 2026-08-09 extension (Smash): a SECOND, related shape reported live --
+## "standing Piposh... appears both falling and on the floor when the
+## game starts." `action PiposhFall` hides itself and sets
+## `MoviePhase = 1;` at the exact instant it "lands"; the separate,
+## already-on-the-ground `action PipTalk` entity is meant to reveal at
+## that same instant (`if ((MoviePhase==1)||(MoviePhase==3)) {
+## my.invisible=off; ...}`), a designer-intended entity swap. But
+## unlike every OTHER staged-reveal action in the corpus (`BigBad`/
+## `Bads`/`PipPee`/`PipSit`/`Mendy`/`Ami`, all a single exhaustive
+## `if(cond){invisible=off;...}else{invisible=on;...}` that
+## self-corrects the instant it's first reached, and Olympic's OWN,
+## differently-written `PipTalk`, same exhaustive shape), Smash's
+## `PipTalk` writes its reveal and its ONLY hide (`if (Ride>0)
+## {invisible=on;...}`) as two SEPARATE, non-complementary
+## `if`-statements -- both false on the very first tick (`MoviePhase`
+## and `Ride` both start at 0), so neither ever runs, and WED's own
+## raw "visible" authoring (confirmed via the level JSON's own `flags`
+## field, same 256/bit0-clear value already confirmed genuine for
+## Shiks' `Weasel` above) is left in effect the whole time PiposhFall
+## is also visible and falling. `_has_exhaustive_invisible_toggle()`
+## below distinguishes the two shapes structurally (does SOME if/else
+## pair in the body set `invisible` to opposite values in its two
+## branches, guaranteeing a correct, self-managed value on tick 1
+## regardless of the entity's raw WED state) rather than adding a
+## name-specific special case -- transparently covers any other
+## corpus action with this exact "two independent, non-exhaustive
+## show/hide conditions" gap too.
 func _seed_reveal_only_hidden(node: Node3D, body: Dictionary) -> void:
 	if bool(node.get_meta("invisible", false)):
 		return  # WED already starts it hidden -- nothing to fix.
+	if _has_exhaustive_invisible_toggle(body):
+		return  # self-corrects the instant its own if/else is first reached.
+	if _has_unconditional_leading_invisible_set(body):
+		# `action PIPI`/`action Handgun`-style: `my.invisible = on;` (or
+		# `off`) is the body's own literal FIRST statement, unconditional,
+		# guaranteed to run before anything else on this entity's own
+		# synchronous priming tick in begin_level() -- already correctly
+		# self-managing regardless of WED's raw flag, nothing to add here.
+		return
 	# [seen_show, seen_hide] as an Array, not two local bools: GDScript
 	# lambdas capture primitives by value, so a closure mutating outer
 	# `bool` locals silently never propagates back -- first version of
 	# this fix looked correct and did nothing. Recursing with explicit
 	# return values (no closure) instead.
 	var seen := _scan_invisible_assignments(body)
-	if seen[0] and not seen[1]:
+	if seen[0]:
 		node.visible = false
+
+
+## True if `body`'s own top-level statements (not nested inside any
+## if/while) include an unconditional `my.invisible = <bool>;` before the
+## first `wait()`/`waitt()` -- i.e. something genuinely guaranteed to run
+## during begin_level()'s own synchronous coroutine-priming pass, before
+## the level ever renders, same as `action PIPI`/`action Handgun`'s own
+## literal first statement.
+func _has_unconditional_leading_invisible_set(body: Dictionary) -> bool:
+	for stmt in body.get("body", []):
+		var t := str(stmt.get("t", ""))
+		if t == "wait" or t == "waitt":
+			return false  # nothing after this is guaranteed synchronous
+		if t != "expr_stmt":
+			continue
+		var ex: Dictionary = stmt.get("expr", {})
+		if str(ex.get("t", "")) != "assign" or str(ex.get("op", "")) != "=":
+			continue
+		var target: Dictionary = ex.get("target", {})
+		if str(target.get("t", "")) != "field" or str(target.get("name", "")).to_lower() != "invisible":
+			continue
+		var obj: Dictionary = target.get("obj", {})
+		if str(obj.get("t", "")) == "id" and str(obj.get("name", "")).to_lower() == "my":
+			return true
+	return false
+
+
+## True if `n` contains an "if" statement (however deeply nested) whose
+## "then" and "else" branches assign `my.invisible` to OPPOSITE values --
+## see _seed_reveal_only_hidden()'s own extended docstring for why this
+## (not just "does a hide exist anywhere") is the real self-correcting
+## signal.
+func _has_exhaustive_invisible_toggle(n: Variant) -> bool:
+	if n is Dictionary:
+		if str(n.get("t", "")) == "if" and n.get("else") != null:
+			var then_seen := _scan_invisible_assignments(n.get("then", {}))
+			var else_seen := _scan_invisible_assignments(n.get("else", {}))
+			if (then_seen[0] and else_seen[1]) or (then_seen[1] and else_seen[0]):
+				return true
+		for key in n.keys():
+			if _has_exhaustive_invisible_toggle(n[key]):
+				return true
+	elif n is Array:
+		for item in n:
+			if _has_exhaustive_invisible_toggle(item):
+				return true
+	return false
 
 
 ## Returns [seen_show, seen_hide] for `my.invisible = <bool>` assignments
@@ -2875,6 +2988,9 @@ func _call(name: String, arg_exprs: Array, my) -> Variant:
 	if low == "vec_rotate":
 		_do_vec_rotate(arg_exprs, my)
 		return 0.0
+	if low == "emit" and arg_exprs.size() >= 2:
+		_do_emit(_to_num(_eval(arg_exprs[0], my)), _vec_get(arg_exprs[1], my))
+		return 0.0
 	if not (low in BRIDGE_OVER_SHARED_FUNCTIONS):
 		# User-defined function call (not a builtin) -- run synchronously to
 		# completion this frame (no `wait()` support inside nested function
@@ -3306,6 +3422,19 @@ const SFX_VOLUME_TRIM_DB := {
 	# playback (see SFX_VOLUME_TRIM_DB's own docstring above) made it
 	# loud enough to mask PIP/KRP's voice lines during the intro dialogue.
 	"sfx091.wav": -14.0,  # Jet (Range background engine ambiance)
+	# Smash.wdl `action Traffic`: each spawned car has a flat 1%-per-tick
+	# chance to honk (Honk1/2/3), and `action Dummy` keeps spawning new
+	# traffic continuously via AddTraffic() -- with several cars alive at
+	# once, their honks frequently overlap and mix at full, un-attenuated
+	# volume each. Reported live (2026-08-09): "a very high volume of cars
+	# honking that shouldn't be so loud." Individually authored at the
+	# corpus' common 500-range, same as most other SFX, so this is a
+	# stacking/overlap loudness issue rather than a mislabeled-range one
+	# (unlike sHammer/Jet above) -- trimmed rather than left at full
+	# volume, same mechanism either way.
+	"sfx007.wav": -9.0,  # Honk1
+	"sfx008.wav": -9.0,  # Honk2
+	"sfx009.wav": -9.0,  # Honk3
 }
 
 
@@ -3576,6 +3705,117 @@ func _vec_put(expr: Variant, val: Vector3, my) -> void:
 			return
 		if typeof(obj_expr) == TYPE_DICTIONARY and obj_expr.get("t") == "id":
 			_vectors[str(obj_expr.get("name", "")).to_lower()] = val
+
+
+## Reported live (2026-08-09, Smash): "there's no animation of the pee
+## when piposh pees" -- `action PipPee` calls Acknex's own particle
+## builtin, `emit 2,temp.x,stream;`, entirely unbridged until now (zero
+## matches for "emit" anywhere in this file). Real Acknex particles are a
+## genuinely separate subsystem from ordinary WDL entities: `emit()`'s
+## own 3rd argument names a "particle function" (e.g. `function stream()
+## {...}`) that real Acknex re-invokes once PER PARTICLE PER FRAME, with
+## a dedicated set of MY_-prefixed pseudo-fields (MY_AGE, MY_SPEED,
+## MY_SIZE, MY_COLOR, MY_MAP, MY_ACTION, MY_FLARE, ...) that only make
+## sense in that per-particle context -- correctly interpreting that
+## function's own WDL body per-particle would need its own execution
+## context (parallel to `my`), its own field-resolution rules (`MY_
+## SPEED.X` is NOT the same thing as `my.x`), and a lifecycle model
+## (`MY_ACTION = NULL;` to self-remove) layered on top of the ordinary
+## entity/coroutine model this interpreter already has -- a genuinely
+## new subsystem, not a bug fix. Also used by Smash's own Vespa (exhaust
+## smoke) and PieceFall-adjacent dust effects, and almost certainly
+## elsewhere in the corpus (any `particlefade()`-style function).
+##
+## Scoped down deliberately rather than left unbridged or rushed:
+## renders a real, physically-reasonable particle burst (outward-and-up
+## scatter, gravity, fade-to-nothing) at the emit position instead of
+## genuinely interpreting the named particle function's own body -- the
+## visible outcome the report is actually about (something happens where
+## nothing did before) without the substantially larger, higher-risk
+## scope of a byte-faithful per-particle WDL execution model. The
+## specific per-particle physics constants below (speed/lifetime/gravity)
+## are a reasonable approximation, not measured from the original.
+const PARTICLE_LIFETIME_MIN := 0.5
+const PARTICLE_LIFETIME_MAX := 1.1
+const PARTICLE_SPEED_MIN := 20.0
+const PARTICLE_SPEED_MAX := 55.0
+const PARTICLE_GRAVITY := 200.0  # GS units/sec^2
+const PARTICLE_MAX_QUANTITY := 40  # guard against a runaway/misread quantity arg
+var _particles: Array[Dictionary] = []
+var _particle_texture: Texture2D
+var _particle_parent: Node3D
+
+
+func _do_emit(quantity: float, pos_gs: Vector3) -> void:
+	if _loader == null:
+		return
+	if _particle_parent == null or not is_instance_valid(_particle_parent):
+		_particle_parent = Node3D.new()
+		_particle_parent.name = "WdlParticles"
+		_loader.add_child(_particle_parent)
+	var origin := _gs_to_godot(pos_gs)
+	var n := clampi(int(quantity), 1, PARTICLE_MAX_QUANTITY)
+	for i in n:
+		var spr := Sprite3D.new()
+		spr.texture = _get_particle_texture()
+		spr.pixel_size = 0.5
+		spr.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		spr.shaded = false
+		spr.modulate = Color(0.8, 0.87, 1.0, 0.85)
+		_particle_parent.add_child(spr)
+		spr.global_position = origin
+		var dir := Vector3(randf_range(-1.0, 1.0), randf_range(0.3, 1.0), randf_range(-1.0, 1.0)).normalized()
+		_particles.append({
+			"node": spr,
+			"velocity": dir * randf_range(PARTICLE_SPEED_MIN, PARTICLE_SPEED_MAX),
+			"age": 0.0,
+			"lifetime": randf_range(PARTICLE_LIFETIME_MIN, PARTICLE_LIFETIME_MAX),
+		})
+
+
+func _update_particles(delta: float) -> void:
+	var i := _particles.size() - 1
+	while i >= 0:
+		var p: Dictionary = _particles[i]
+		var node: Sprite3D = p.get("node")
+		if node == null or not is_instance_valid(node):
+			_particles.remove_at(i)
+			i -= 1
+			continue
+		var age: float = p["age"] + delta
+		var lifetime: float = p["lifetime"]
+		if age >= lifetime:
+			node.queue_free()
+			_particles.remove_at(i)
+			i -= 1
+			continue
+		var vel: Vector3 = p["velocity"]
+		vel.y -= PARTICLE_GRAVITY * delta
+		node.global_position += vel * delta
+		node.modulate.a = 0.85 * (1.0 - age / lifetime)
+		p["velocity"] = vel
+		p["age"] = age
+		i -= 1
+
+
+## Small soft-dot sprite, generated once and reused for every particle --
+## real Acknex particles here are usually a small droplet/dust/smoke puff,
+## not something that needs a hard edge or the emitting function's own
+## specific texture (see this section's own docstring for why the named
+## particle function isn't actually interpreted).
+func _get_particle_texture() -> Texture2D:
+	if _particle_texture != null:
+		return _particle_texture
+	var size := 16
+	var img := Image.create(size, size, false, Image.FORMAT_RGBA8)
+	var center := Vector2(size, size) * 0.5
+	for y in size:
+		for x in size:
+			var d := Vector2(x, y).distance_to(center) / (size * 0.5)
+			var a := clampf(1.0 - d, 0.0, 1.0)
+			img.set_pixel(x, y, Color(1.0, 1.0, 1.0, a * a))
+	_particle_texture = ImageTexture.create_from_image(img)
+	return _particle_texture
 
 
 func _do_vector_call(low: String, arg_exprs: Array, my) -> float:

@@ -21,6 +21,7 @@ var _game_hud: GameHud
 var _touch: TouchControls
 var _acknex_sky: AcknexSky
 var _level_select: CanvasLayer
+var _settings: SettingsPanel
 
 ## Set once at setup(); used by _process()'s per-frame camera-authority
 ## arbitration. Only fp-mode levels need this: scripted/free modes already
@@ -66,6 +67,10 @@ func _ready() -> void:
 	_game_hud = GameHud.new()
 	_game_hud.name = "GameHud"
 	add_child(_game_hud)
+
+	_settings = SettingsPanel.new()
+	_settings.name = "SettingsPanel"
+	add_child(_settings)
 
 	_touch = TouchControls.new()
 	_touch.name = "TouchControls"
@@ -128,7 +133,7 @@ func _ready() -> void:
 
 	_game_hud.set_debug_text(
 		level,
-		"script=%s | mode=%s | F1=Menu F3=Next F4=Levels F6=Plane3 F7=Map Space=Recenter F10=debug"
+		"script=%s | mode=%s | F1=Menu F3=Next F4=Levels F6=Plane3 F7=Map F9=Settings Space=Recenter F10=debug"
 		% [
 			str(loader.last_level_data.get("script", "?")),
 			"FP" if use_fp else ("scripted" if use_scripted else "free"),
@@ -330,6 +335,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			# "next chapter". Matches F6's own precedent (jump straight to
 			# the level currently being worked on).
 			LevelRouter.goto_level("Map")
+		elif event.keycode == KEY_F9:
+			_settings.toggle_visible()
 		elif event.keycode == KEY_ESCAPE and _level_select:
 			_toggle_level_select()
 		elif event.keycode == KEY_SPACE:

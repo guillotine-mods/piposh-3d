@@ -128,6 +128,25 @@ func _spawn_scene_cylinder(scene_file: String, bounds: AABB) -> void:
 	mat.albedo_texture = tex
 	mat.uv1_scale = Vector3(SCENE_REPEAT, 1.0, 1.0)
 	mat.texture_repeat = true
+	# Reported live (2026-08-09, Smash): "the backgrounds... look like a
+	# weird cloud pattern with black background." These horizon strips
+	# (e.g. horizon1.png) are drawn as a building/scenery silhouette over
+	# a genuinely TRANSPARENT sky region -- confirmed via direct pixel
+	# inspection: ~27% of horizon1.png is alpha=0 with RGB=(0,0,0),
+	# meant to let the real sky dome show through above the skyline.
+	# StandardMaterial3D ignores a texture's own alpha channel entirely
+	# unless `transparency` is explicitly enabled, so those "transparent"
+	# pixels rendered as solid, opaque BLACK instead -- the sky dome
+	# behind them (a mostly-white sky.png blended with clds.png's own
+	# dark cloud silhouettes, see _make_sky_panorama()) only became
+	# visible in whatever gap the cylinder didn't cover at all, reading
+	# as "a weird cloud pattern" floating above a solid black skyline
+	# instead of the real sky showing cleanly through the silhouette.
+	# ALPHA_SCISSOR (not smooth ALPHA) since this mask is confirmed
+	# binary (every pixel checked was either fully 0 or fully 255, no
+	# partial values) -- a hard cutout avoids the transparency-sorting
+	# artifacts a large, mostly-opaque cylinder would otherwise risk.
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
 	mi.material_override = mat
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(mi)

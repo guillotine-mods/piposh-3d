@@ -7331,3 +7331,148 @@ gameplay level with characters to fix" would be whichever mission the
 player picks from this hub (Town, by default, since `LocationGo()`'s
 own fallback for a player without an ID sends them to `Town.exe`), not
 Map itself.
+
+## 2026-08-09 (GB-17) -- five fixes from a Smash playtest: duplicate
+Piposh, Genia's facing, black horizon backgrounds, volume settings,
+and a real (scoped-down) particle system
+
+Five separate reports arrived in one message from an active playtest:
+a standing Piposh visible at the same time as the falling one, Genia
+facing 90 degrees off from his own walk direction, horizon backgrounds
+rendering as a "weird cloud pattern with black background," traffic
+honking far too loud (with a direct ask for FX/Voice volume sliders in
+settings), and no visible animation when Piposh pees.
+
+**Duplicate Piposh.** Confirmed live via a headless trace: `action
+PipTalk`'s own entity (`Piposh_mdl_022`, WED-authored visible,
+`flags=256`) showed `visible=true` from frame 1, MoviePhase still 0,
+alongside `action PiposhFall`'s own falling entity also visible high
+overhead. `PipTalk`'s own script only reveals when `MoviePhase==1||3`
+and only hides when `Ride>0` -- two independent `if` statements, both
+false at level start, leaving WED's own raw "visible" flag in effect
+the whole time. The existing `_seed_reveal_only_hidden()` fix (added
+2026-08-01 for Shiks' own Weasel) only caught actions that NEVER hide
+at all; this is a different, related shape -- "shows and hides, but
+neither condition is guaranteed to fire on the very first tick."
+Generalized the detection with two new helpers:
+`_has_exhaustive_invisible_toggle()` (does some if/else pair set
+`invisible` to opposite values in its two branches -- if so, the
+action self-corrects the instant that if/else is first reached,
+regardless of WED's raw flag) and `_has_unconditional_leading_invisible_
+set()` (is there an unconditional `my.invisible = X;` as one of the
+body's own literal first statements, before any `wait()` -- guaranteed
+to run during `begin_level()`'s own synchronous coroutine-priming pass,
+same as `action PIPI`/`action Handgun`'s own literal first statement).
+Only an action with NEITHER of these -- like Smash's own `PipTalk` --
+now gets force-hidden at spawn.
+
+Verified the generalization's own safety before shipping it: wrote a
+throwaway corpus-wide scanner (deleted after use) that found about 13
+other actions this newly affects beyond the original Weasel-style case
+(`Final::Bullet`, `Shooter::Plane1`/`Plane2`, `InShrine::Miner`, and
+others). Spot-checked each by reading its own source rather than
+trusting the scan alone: `Final::Bullet`'s own reveal condition is
+literally gated on `my.invisible==on` itself (a self-referential read)
+-- without the fix, WED's own "visible" authoring meant this condition
+was NEVER true, so the bullet's own random-reposition logic never ran
+at all; `Shooter::Plane1` has a `wait(1);` as its own literal first
+statement, meaning even its OWN later `my.invisible=on;` never ran
+synchronously before the first render either way. Every case checked
+turned out to be a genuine additional fix, not a regression risk.
+
+**Genia's facing.** `action WalkGeniaWalk` moves via direct position
+writes (`my.y = my.y - 10*time;`) and never touches `my.pan` anywhere
+in its own body -- confirmed via the level JSON that WED authored
+`angle_gs=[0,0,0]`, no rotation at all. Worked out the coordinate math:
+`_gs_to_godot()` maps Acknex -Y to +Godot Z (Genia's own direction of
+travel), but `_do_actor_move()`'s own established pan convention
+(`Vector3(cos(pan),0,-sin(pan))`) puts pan=0 facing +Godot X instead --
+the model was never actually facing its own walk direction, regardless
+of what WED's own angle said. Fixed via a new, narrowly-scoped
+`_seed_genia_facing()` (pan -= 90 at spawn), matching the existing
+`_seed_look_at_me_flag1()`/`_seed_pipi_flag1_stay_put()` precedent
+(per-action, not a general re-interpretation of authored angles, which
+would risk every other static, non-turning placement in the corpus).
+
+**Black horizon backgrounds.** Read `horizon1.png` directly (the
+`scene_map` symbol Smash's own `main()` sets, confirmed correct in
+`assets/converted/wdl_meta.json` -- not a wrong-file issue) -- looks
+like a proper city skyline with water in the foreground, nothing like
+"a weird cloud pattern." Inspected its own alpha channel via PIL:
+about 27% of the image is `alpha=0` with `RGB=(0,0,0)`, meant to let
+the real sky dome show through above the skyline silhouette. Confirmed
+`acknex_sky.gd`'s own `_spawn_scene_cylinder()` never set
+`StandardMaterial3D.transparency` at all -- Godot ignores a texture's
+alpha channel entirely unless that's explicitly enabled, so those
+"transparent" pixels rendered as solid opaque black instead, and
+`sky.png` (nearly blank white) blended with `clds.png` (dark gray
+cloud silhouettes on transparent, via `_make_sky_panorama()`'s own
+lerp) was what showed through wherever the cylinder's own geometry
+didn't fully cover the view -- exactly "a weird cloud pattern with
+black background." Fixed with `TRANSPARENCY_ALPHA_SCISSOR` (not smooth
+alpha -- confirmed every alpha value in the texture is binary, 0 or
+255, no partial values, so a hard cutout avoids transparency-sorting
+artifacts on a large mostly-opaque cylinder). Checked `horizon.png`/
+`horizon2.png`/`horizon3.png` too -- all have the same 17-26 percent
+transparent-region convention, confirming this is a real, consistent
+art convention across the corpus, not a one-off, so the fix correctly
+applies to every level using a horizon-style scene_map.
+
+**Volume settings + honking.** Traffic's own honking (`action Traffic`,
+1%-per-tick chance, `action Dummy` continuously spawning new cars via
+`AddTraffic()`) stacks multiple cars' own full-volume horns since this
+port has no distance-based SFX attenuation at all (a known, larger gap
+noted in `_do_play_sfx`'s own docstring). Trimmed Honk1/2/3 (SFX007/
+008/009.wav) by -9dB in the existing `SFX_VOLUME_TRIM_DB` table,
+matching the established sHammer/Jet precedent exactly. Separately,
+built real volume control per the direct request: `autoload/
+audio_channels.gd` now creates three `AudioServer` buses (Voice/SFX/
+Music, all routed to Master) at `_ready()`, routes the `_voice`/
+`_sfx_pool[*]`/`_music` players to their own bus (`AudioStreamPlayer.bus`),
+and exposes `get_voice_volume()`/`set_voice_volume()` (and SFX/Music
+equivalents) that convert a 0..1 linear slider position to dB via
+`linear_to_db()` and persist to `user://audio_settings.cfg` via
+`ConfigFile`. New `scripts/ui/settings_panel.gd` (`SettingsPanel`,
+pure-code `CanvasLayer`, same convention as `GameHud`/`TouchControls`)
+renders one slider per channel; wired to `KEY_F9` in both
+`level_runner.gd` and `main_menu.gd`.
+
+**Pee animation.** `action PipPee` calls Acknex's own particle builtin,
+`emit 2,temp.x,stream;` -- confirmed via corpus grep that "emit" had
+zero matches anywhere in `wdl_interpreter.gd`, entirely unbridged.
+Also used by Smash's own Vespa exhaust and PieceFall dust, and almost
+certainly other `particlefade()`-style effects corpus-wide. Confirmed
+the WDL-level no-parens-comma-syntax parser rule (`tools/parse_wdl.py`,
+"a bare identifier followed by another token that isn't `;`/eof/`}`
+becomes a command-call") already handles `emit`'s own statement syntax
+for free -- no parser/asset-pipeline changes needed, purely an
+interpreter-side gap.
+
+Considered and explicitly rejected a byte-faithful implementation:
+real Acknex re-invokes the named particle function (`stream()`) once
+PER PARTICLE PER FRAME, with its own dedicated MY_-prefixed pseudo-
+fields (`MY_AGE`, `MY_SPEED`, `MY_SIZE`, `MY_COLOR`, `MY_MAP`,
+`MY_ACTION`) that only make sense in that context and would need their
+own execution model layered on top of the existing entity/coroutine
+system, plus careful field-resolution rules (`MY_SPEED.X` is NOT
+`my.x`) to avoid colliding with ordinary entity fields -- a genuinely
+new subsystem, and a much larger scope than one visual-polish report
+warranted this session. Shipped a scoped-down but real alternative
+instead: `_do_emit(quantity, position)` spawns `Sprite3D` particles
+(a small procedurally-generated soft-dot texture, generated once and
+reused) with randomized outward-and-up initial velocity, updated every
+`_process()` tick with real gravity and fade-to-transparent over a
+random 0.5-1.1s lifetime, cleaned up (`queue_free()`) once each
+particle's own age exceeds its lifetime. Not a faithful simulation of
+`stream()`'s own WDL body, but a real, physically-reasonable visual
+effect where there was previously nothing at all -- verified via a
+headless test that forcing `Quick2=1` (PipPee's own emit-gate) grows
+the active particle count over 60 frames, and that stopping it lets
+every particle fully age out and get removed with zero leaked nodes
+120 frames later.
+
+All five verified via three new tests (`smoke_smash_visuals_check.gd`,
+`smoke_emit_particles_check.gd`, `smoke_audio_volume_settings_check.gd`)
+plus the full regression sweep (`smoke_dispatch --all`, 55/56 correct;
+Range/Plane2/Plane3/Plane/Shiks spot-checks) -- all green, no
+regressions. `git status --short assets/` clean, no deletions.
