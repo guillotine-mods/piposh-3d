@@ -7476,3 +7476,218 @@ All five verified via three new tests (`smoke_smash_visuals_check.gd`,
 plus the full regression sweep (`smoke_dispatch --all`, 55/56 correct;
 Range/Plane2/Plane3/Plane/Shiks spot-checks) -- all green, no
 regressions. `git status --short assets/` clean, no deletions.
+
+## 2026-08-09 (GB-18) -- follow-up on GB-17: SFX slider actually usable,
+Genia's real animation bug, Desert's background needs a new file I/O
+bridge (and hits a deeper, deliberately-unfixed blocking bug), model
+quality inconclusive
+
+Follow-up playtest report on GB-17's own fixes: Genia's own animation
+still not playing (only the facing got fixed last round), the new SFX
+slider "isn't working for editing," some backgrounds still wrong, and
+low-quality/missing-geometry models ("the plane in the takeoff
+animation doesn't have wings") with a direct question about whether
+this is a systemic high-res/low-res asset issue.
+
+**SFX slider unusable.** Confirmed the mechanism directly:
+`player_controller.gd` sets `Input.mouse_mode = MOUSE_MODE_CAPTURED`
+for every FP level (Range, Plane2, ...) and keeps it there the whole
+time the level plays (only a "pause_menu" input action toggles it,
+unrelated to Settings). Opening `SettingsPanel` over that state left
+the OS cursor hidden and locked to screen center -- the slider was
+visually present but could never actually be clicked or dragged, only
+fought against camera-look. Fixed by having `SettingsPanel` itself
+save `Input.mouse_mode` the instant it opens, force `MOUSE_MODE_VISIBLE`
+so the slider is actually usable, and restore whatever it was the
+instant it closes (via a new `_open()`/`_close()` pair, both
+`toggle_visible()` and the Close button now route through them) --
+same pattern already established for `GameHud.show_dialog()`/
+`hide_dialog()` around the dialogue panel. Headless testing can't
+fully verify the CAPTURED state itself (`Input.mouse_mode` writes are
+documented silent no-ops under `--headless`, an existing known
+limitation), but the save/restore logic was verified structurally.
+
+**Genia's animation.** Re-investigated with a headless trace of
+`MdlAnimator`'s own internal state on Genia's entity specifically --
+confirmed the model genuinely HAS a "Walk" clip (`clip_names=Frame,
+Walk,Smash,Stand,Talk`) and `_current_clip`/`_playing` correctly said
+"Walk"/true the whole time, which looked like nothing was wrong.
+Traced further: `action WalkGeniaWalk` calls `Blink()` (Smash.wdl's
+own local function -> `ent_frame("Stand",0)` -> `MdlAnimator.
+play_frame()`, which unconditionally sets `_current_clip="Stand"`,
+`_playing=false`) at the TOP of its own per-tick body, immediately
+before its own `ent_cycle("Walk", my.skill1)` a few lines later --
+meaning `play_cycle()`'s own "already playing this clip, leave
+`_process()`'s natural per-frame fmod-based advance alone" early-return
+guard (`if key==_current_clip and _playing: return`) never actually
+fires for Genia: `_current_clip` is always "Stand" (Blink's own doing)
+the instant `ent_cycle("Walk",...)` runs, so every single tick
+force-resets `_percent` straight from `my.skill1` via
+`clampf(percent,0,100)`. `my.skill1` is a plain, ever-growing
+accumulator with no wrap-around of its own (`my.skill1 = my.skill1 +
+15*time;`, the standard corpus idiom -- assumes something downstream
+handles wrapping, which nothing did here) -- it first exceeds 100
+within well under a second of walking, and from that point on every
+tick clamps `_percent` to exactly 100.0, freezing the model on the
+cycle's own last frame for the rest of the walk. `_current_clip`/
+`_playing` both still correctly said "Walk"/true throughout, which is
+exactly why the first-pass diagnostic looked clean -- the STATE was
+right, only the actual rendered pose was frozen.
+
+This is the identical clamp-vs-wrap bug class already found and fixed
+once before (2026-08-02, Plane's own PiposhWalk -- "`_percent` climbing
+straight past 100 without ever cycling back down"), but that fix lives
+entirely inside `_do_actor_move()`'s own `wdl_auto_walk_anim` fallback,
+which only applies when an action calls `actor_move()` -- Genia's own
+script never does (moves via direct position writes and calls
+`ent_cycle()` itself), so that earlier fix never covered this exact
+shape. Fixed at the real, shared source this time instead of another
+per-caller workaround: `MdlAnimator.play_cycle()` now uses `fposmod`
+instead of `clampf` for its own `_percent` seed -- ANY caller's own
+ever-growing phase value now wraps and keeps animating instead of
+freezing at the clamp boundary, covering every corpus action with this
+"another `ent_frame` call interleaved every tick defeats the
+already-playing guard" shape, not just Genia. Verified via a headless
+trace sampling `_percent` over 30 real frames: it now climbs smoothly
+(45 -> 98.8) and visibly wraps (98.8 -> 1.5) instead of clamping flat
+at 100. Re-ran `smoke_plane_walk_anim.gd`/`smoke_pipfall_fetch_anim_
+check.gd` (the two existing tests already covering related animation
+fallback behavior) to confirm this shared-function change didn't
+regress either -- both still green.
+
+**Some backgrounds still wrong.** Re-examined `assets/converted/
+wdl_meta.json`'s own static `scene_map` extraction (`tools/
+extract_wdl_meta.py`): it picks whichever `scene_map = X;` assignment
+appears textually LAST in a level's own `.wdl` source ("last
+assignment in file wins (matches typical main())" -- correct for a
+level with exactly one unconditional assignment, like Smash, but wrong
+for a level that branches on runtime state. Confirmed live: Desert.wdl's
+own `main()` reads `Stage` from a save file ("Arrive.dat", written by
+Map.wdl's own `LocationGo(ID)` right before `Run("Desert.exe")`) and
+picks one of six different horizon textures based on it
+(`if(Stage==_TOWN){scene_map=bmapBack1;} ... if(Stage==_VOLCANO)
+{scene_map=bmapBack6;}`) -- the static extraction always landed on the
+last textual branch (`_VOLCANO`'s own horizon6.png) regardless of
+which location the player actually visited.
+
+The live value isn't available as early as it looks, either: reading
+`scene_map` immediately after `_director.setup()` returns (the
+obvious fix -- move the sky-application call to after setup instead of
+before it) still saw the pre-assignment default for BOTH Smash and
+Desert, because `main()`'s own opening `wait(3);` (present in both,
+and a corpus-wide convention per this session's own earlier notes)
+means everything after it -- including every one of Desert's own
+Stage-based branches -- only runs on a LATER real frame, never
+synchronously within `begin_level()` itself. Fixed by polling instead
+of a single read: `level_runner.gd`'s own `_process()` now checks the
+interpreter's own live `scene_map` value for a bounded window after
+level load (300 frames / 5s), re-applying the sky whenever it changes
+to something real. Verified Smash's own single-assignment case is
+unaffected (still correctly resolves to horizon1.png).
+
+Discovered and fixed as a genuine prerequisite along the way: `file_
+open_write`/`file_open_read`/`file_asc_write`/`file_asc_read`/`file_
+close` were entirely unbridged (confirmed via corpus grep -- zero
+matches anywhere in `wdl_interpreter.gd` before this) -- without them,
+Desert's own `Stage = file_asc_read(filehandle);` silently left
+`Stage` at its own declared default (0), matching none of the six
+`if(Stage==_X)` branches regardless of what the player actually
+clicked on the map. This turned out to be a real, corpus-wide pattern
+(grep found it used in Desert.wdl, Map.wdl, Start.wdl, Cardgame.wdl,
+and extensively in the shared `WDL/IO.wdl`'s own save/load-game
+system). Added a real, deliberately scoped-down bridge: plain-number
+values only (`file_asc_write`/`file_asc_read`, backed by real files
+under `user://`, a small handle table mapping WDL's own numeric
+handles to `FileAccess` objects), explicitly NOT the by-reference
+string variant (`file_str_read(handle, var)`, which writes directly
+into its own 2nd argument the same way `vec_set` does and would need
+the same kind of special-casing in `_call()` before generic argument
+evaluation), and explicitly NOT `WDL/IO.wdl`'s own much larger
+sequential save/load-game system (many `file_asc_write`/`file_asc_read`
+calls in a row through the same handle, writing/reading whole progress
+arrays like `Piece[]`/`Village[]`/`Volcano[]`) -- a separate, bigger,
+riskier undertaking (real save/load correctness) left untouched for
+now, even though the generic bridge should structurally support it.
+Verified the file I/O round-trip directly through the interpreter
+(write 42, close, reopen, read back, got 42.0 exactly) via new
+`smoke_file_io_scene_map_check.gd`.
+
+**Found but deliberately NOT fixed, and documented in detail instead**:
+even with the file I/O bridge working (`Stage` now correctly resolves
+to whatever the player chose), Desert's own background STILL doesn't
+update for most destinations. Traced this with a targeted `_set_var`
+print (added temporarily, removed once diagnosed): confirmed
+`scene_map` never gets assigned at all for `Stage=32` (`_VILLAGE`),
+even though `Stage` itself and the `_VILLAGE` constant both correctly
+resolve to 32. Root cause: Desert.wdl's own `main()`, for most `Stage`
+values, calls a weather helper (`let_it_rain()` for `_VILLAGE`,
+`storm()` for `_MANSION`, etc, all in `WDL/Weather.wdl`) BEFORE its own
+`scene_map=...` lines. `let_it_rain()` itself calls `rain_akt()`, a
+genuine `while(weather==weather_rain){...;WAITT(3);}` forever-loop
+explicitly meant to run as an independent background task for the rest
+of the level (driving the actual rain particle effect). Called as a
+bare, NON-TAIL statement inside `let_it_rain()`'s own body (more
+statements follow it), `_call_user_function_async()`'s own "await the
+whole callee" semantics (added 2026-08-01 for `player_move2()`/
+`perform_handle()`) block `main()` at that exact statement forever,
+since `rain_akt()`'s own loop never naturally exits. Confirmed via the
+same trace: `WeatherSet` (set unconditionally right after the weather
+calls, regardless of which branch fired) also never leaves its own
+declared default (0) -- proof `main()` genuinely never gets past this
+point, not just that `scene_map` specifically is skipped.
+
+The real, general fix needs `_call_user_function_async()` to stop
+awaiting PAST a callee's own first `wait()` -- matching real Acknex
+semantics (a `wait()` yields to the engine's own cooperative scheduler,
+which resumes the ORIGINAL CALLER too, not just the callee that
+suspended; the callee's own remaining body becomes an independent
+background task from that point on). This is architecturally identical
+to how `_run_coroutine()` already treats a fresh coroutine (run
+synchronously to its own first `wait()`, then continue independently
+in the background) -- just needs the same treatment applied through a
+NESTED function call, not just at the top-level entity/action dispatch.
+Deliberately NOT attempted this round: `player_move2()`/
+`perform_handle()`'s own existing, already-verified fixes rely on the
+CURRENT "block forever" behavior specifically because those calls are
+in TAIL position (the very last statement in their own caller, so
+whether the caller "continues" past them is moot -- there's nothing
+left to continue TO regardless). A change to this shared mechanism
+needs to correctly preserve that tail-position behavior while fixing
+the non-tail-position case (Desert's own `let_it_rain();`, followed by
+more statements) -- verifiable, but not something to rush alongside
+everything else fixed this round without real risk of a silent
+regression in code that's already confirmed working. Left open,
+documented in both `level_runner.gd`'s own `_apply_wdl_sky()` docstring
+and here, ready for a dedicated future pass.
+
+**Model quality ("plane doesn't have wings").** Investigated the
+user's own "high-res/low-res mode" hypothesis directly rather than
+guessing at a fix: grepped the entire asset-conversion pipeline
+(`tools/convert_mdl.py` and neighbors) for any LOD/quality-tier
+selection logic -- none exists at all, so a "picked the low-res
+variant by mistake" mechanism isn't structurally possible; whatever
+model a level's own placement data references is exactly what gets
+converted, unchanged. Found `original/piposh3d/MDL/BiPlane.MDL`,
+`BiPlane2.MDL`, and a separate `Wing1.MDL` in the original assets,
+raising a real alternate hypothesis (wings as a separate companion
+entity that might be failing to spawn) -- checked Plane2's own level
+JSON (the most likely "takeoff" level) directly: its own placements
+all use `BiPlane2.MDL` alone (`action Land`/`item_pickup`), no
+companion `Wing1` placement anywhere, so a missing-second-entity theory
+doesn't apply to this specific model either. Inspected the converted
+`BiPlane2.glb`'s own mesh structure directly (a single mesh, 3476
+verts, one node) -- no reference point to say whether that's "correct"
+or "missing wings" without an actual visual comparison, which headless
+Godot can't provide (rendering a real frame hangs headless, a
+documented, longstanding limitation this session's own earlier notes
+already established). Left open -- needs either a screenshot or more
+specific detail (which level, which exact moment) to make concrete
+progress rather than guessing further.
+
+All fixes re-verified via the full targeted regression sweep
+(`smoke_dispatch --all`, `smoke_smash_visuals_check`,
+`smoke_plane3_vase_catch_check`, `smoke_pipfall_fetch_anim_check`,
+`smoke_plane_walk_anim`, `smoke_range_shoot`, `smoke_remove_race`, plus
+two new tests -- `smoke_genia_walk_percent_check`,
+`smoke_file_io_scene_map_check`) -- all green. `git status --short
+assets/` clean, no deletions.

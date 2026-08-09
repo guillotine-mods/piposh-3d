@@ -234,6 +234,34 @@ func _resolve_glb(stem: String) -> String:
 	return ""
 
 
+## 2026-08-09 (Smash): "still the animation of genia is not walking."
+## `action WalkGeniaWalk` calls `Blink()` (-> `ent_frame("Stand",0)` ->
+## `play_frame()`, which unconditionally sets `_current_clip="Stand"`,
+## `_playing=false`) EVERY tick, immediately before its own
+## `ent_cycle("Walk", my.skill1)` -- so THIS function's own "already
+## playing this clip, leave `_process()`'s natural per-frame advance
+## alone" guard (`key == _current_clip and _playing`) never actually
+## fires: `_current_clip` is always "Stand" (Blink's own doing) the
+## instant this runs, so every single tick force-resets `_percent`
+## straight from the WDL script's own `my.skill1` -- a plain
+## `my.skill1 = my.skill1 + 15*time;` accumulator with no wrap-around of
+## its own (the corpus-wide idiom assumes SOMETHING downstream handles
+## that, same as every other `ent_cycle(name, my.skillN)` caller).
+## `clampf(percent, 0, 100)` meant that once `my.skill1` first exceeded
+## 100 (well under a second of walking), every further tick reset
+## `_percent` to exactly 100.0 -- frozen on the cycle's own last frame
+## for the rest of the walk, reading as "not walking" even though
+## `_current_clip`/`_playing` both correctly said "Walk"/true the whole
+## time. The identical clamp-vs-wrap bug already found and fixed once
+## before (2026-08-02, Plane's own PiposhWalk via `_do_actor_move()`'s
+## own auto-walk fallback) -- but that fix lives inside
+## `_do_actor_move()` itself, not here, so it never covered a WDL script
+## calling `ent_cycle()` directly (no `actor_move()` involved at all,
+## Genia's own case). Fixed at the real source instead: `fmod`, not
+## `clampf`, so ANY caller's own ever-growing phase value wraps and
+## keeps animating instead of freezing at the boundary -- covers every
+## corpus action with this exact "another ent_frame call interleaved
+## every tick defeats the already-playing guard" shape, not just Genia.
 func play_cycle(clip: String, percent: float = 0.0) -> void:
 	var key := _resolve_clip(clip)
 	if key == "":
@@ -246,7 +274,7 @@ func play_cycle(clip: String, percent: float = 0.0) -> void:
 	_acknex_blink = false
 	_current_clip = key
 	_clip_frames = _clips[key]
-	_percent = clampf(percent, 0.0, 100.0)
+	_percent = fposmod(percent, 100.0)
 	_playing = true
 	_talk_skins = _is_mouth_clip(key)
 	_apply_percent(_percent)

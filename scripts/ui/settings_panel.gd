@@ -12,6 +12,16 @@ class_name SettingsPanel
 ## screen's own input handling while hidden.
 
 var _panel: PanelContainer
+## Saved the instant the panel opens, restored the instant it closes --
+## same pattern as GameHud.show_dialog()/hide_dialog()'s own mouse-mode
+## save/restore around the dialogue panel. Reported live (2026-08-09):
+## "The SFX volume choice isn't working for editing" -- FP levels
+## (Range, Plane2, ...) keep `Input.mouse_mode` CAPTURED (cursor hidden
+## and locked to screen center, all motion read as camera-look) the
+## whole time they're playing; opening this panel over that state left
+## the OS cursor invisible and unusable, so the slider could never
+## actually be clicked or dragged, only fought against camera-look.
+var _mouse_mode_before_open := Input.MOUSE_MODE_VISIBLE
 
 
 func _ready() -> void:
@@ -52,12 +62,26 @@ func _ready() -> void:
 
 	var close_btn := Button.new()
 	close_btn.text = "Close"
-	close_btn.pressed.connect(func(): visible = false)
+	close_btn.pressed.connect(_close)
 	vbox.add_child(close_btn)
 
 
 func toggle_visible() -> void:
-	visible = not visible
+	if visible:
+		_close()
+	else:
+		_open()
+
+
+func _open() -> void:
+	_mouse_mode_before_open = Input.mouse_mode
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	visible = true
+
+
+func _close() -> void:
+	visible = false
+	Input.mouse_mode = _mouse_mode_before_open
 
 
 func _make_slider_row(label_text: String, initial: float, changed_cb: Callable) -> Control:

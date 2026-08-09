@@ -3257,6 +3257,41 @@ func _register_builtins() -> void:
 		# (sound loop / camera reset / frozen entities) -- see
 		# docs/SESSION_LOG.md 2026-07-28.
 		"load_level": func(_a, _my): return 0.0,
+		# 2026-08-09 (Smash/Desert): "some of the world backgrounds are
+		# not correct still." Root cause traced past the AcknexSky-level
+		# fix (see level_runner.gd's own _apply_wdl_sky() docstring) to a
+		# real, previously-unbridged subsystem: `file_open_write`/
+		# `file_open_read`/`file_asc_write`/`file_asc_read`/`file_close`
+		# were entirely absent (confirmed via corpus grep -- zero
+		# matches anywhere in this file before this). `Map.wdl`'s own
+		# `LocationGo(ID)` writes the chosen destination's ID to
+		# "Arrive.dat" before `Run("Desert.exe")`; `Desert.wdl`'s own
+		# `main()` reads it straight back into `Stage`, which then picks
+		# BOTH the correct horizon texture (see the six `if(Stage==_X)
+		# {scene_map=bmapBackN;}` branches) AND the correct music/weather
+		# for wherever the player actually clicked -- with these unbridged,
+		# `Stage` silently stayed at its own declared default (0),
+		# matching none of the six branches, so `scene_map` (and music,
+		# and weather) never changed AT ALL regardless of destination.
+		# Scoped deliberately to the plain-number (`_asc_`) variant only,
+		# not the by-reference string variant (`file_str_read(handle,
+		# var)`, which writes directly into its own 2nd argument the same
+		# way `vec_set` does and would need the same kind of special-
+		# casing in `_call()` before generic arg evaluation) -- covers
+		# this exact "hand a small number to the next level" idiom
+		# (also used by Map.wdl's own "Depart.dat" and Start.wdl's own
+		# "Movie.dat") without the added scope/risk of touching
+		# `WDL/IO.wdl`'s own much larger sequential save/load-game system
+		# (Piece[]/Village[]/Volcano[]/... arrays through the same
+		# handle), which is a separate, bigger undertaking left
+		# untouched. Real files under `user://` -- persist across level
+		# loads within a run and across app restarts, matching what a
+		# real saved-to-disk file would do.
+		"file_open_write": func(a, _my): return _do_file_open(str(a[0]) if a.size() > 0 else "", true),
+		"file_open_read": func(a, _my): return _do_file_open(str(a[0]) if a.size() > 0 else "", false),
+		"file_asc_write": func(a, _my): return _do_file_asc_write(a),
+		"file_asc_read": func(a, _my): return _do_file_asc_read(a),
+		"file_close": func(a, _my): return _do_file_close(a),
 		# GB-5 continued (2026-08-03, Range): the REAL corpus spelling is
 		# `level_load(<X.WMB>)`, not `load_level` (the stub just above --
 		# registered under the reversed name, so it never actually matched
@@ -4392,6 +4427,65 @@ func _do_run(a: Array) -> float:
 	# either coroutine's own check to see it) because Run() hadn't
 	# actually stopped anything yet when it was first (correctly) called.
 	_running = false
+	return 0.0
+
+
+## See _register_builtins()'s own "file_open_write" comment for the full
+## story. `_file_handles` isn't cleared on level teardown -- a handle is
+## just a float key into a small Dictionary of `FileAccess` objects, and
+## a leftover entry after a level ends is harmless (nothing will ever
+## reuse that exact handle number once `_next_file_handle` has moved
+## past it, and the interpreter instance itself is freed with its own
+## level anyway).
+var _file_handles: Dictionary = {}
+var _next_file_handle := 1.0
+
+
+func _do_file_open(filename: String, write: bool) -> float:
+	if filename == "":
+		return 0.0
+	# Acknex paths are corpus-authored with backslashes (`"Prefs\\Flag.txt"`)
+	# -- real on this port's own target platforms (Windows/Android/etc)
+	# too, but `user://` always wants forward slashes.
+	var rel := filename.replace("\\", "/")
+	var path := "user://" + rel
+	if write:
+		var dir_path := path.get_base_dir()
+		if dir_path != "user:/" and dir_path != "user://":
+			DirAccess.make_dir_recursive_absolute(dir_path)
+	var f := FileAccess.open(path, FileAccess.WRITE if write else FileAccess.READ)
+	if f == null:
+		return 0.0
+	var handle := _next_file_handle
+	_next_file_handle += 1.0
+	_file_handles[handle] = f
+	return handle
+
+
+func _do_file_asc_write(a: Array) -> float:
+	if a.size() < 2 or not _file_handles.has(a[0]):
+		return 0.0
+	var f: FileAccess = _file_handles[a[0]]
+	f.store_line(str(_to_num(a[1])))
+	return 0.0
+
+
+func _do_file_asc_read(a: Array) -> float:
+	if a.size() < 1 or not _file_handles.has(a[0]):
+		return 0.0
+	var f: FileAccess = _file_handles[a[0]]
+	if f.eof_reached():
+		return 0.0
+	var line := f.get_line().strip_edges()
+	return float(line) if line.is_valid_float() else 0.0
+
+
+func _do_file_close(a: Array) -> float:
+	if a.size() < 1 or not _file_handles.has(a[0]):
+		return 0.0
+	var f: FileAccess = _file_handles[a[0]]
+	f.close()
+	_file_handles.erase(a[0])
 	return 0.0
 
 

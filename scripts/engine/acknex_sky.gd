@@ -10,7 +10,22 @@ const SCENE_REPEAT := 6.0
 var _meta: Dictionary = {}
 
 
-func apply(level_name: String, bounds: AABB, env: Environment) -> void:
+## `live_scene_map`, when non-empty, overrides the static
+## `wdl_meta.json` guess for this level's own `scene_map`. Reported live
+## (2026-08-09): "some of the world backgrounds are not correct still."
+## `wdl_meta.json`'s own extraction takes whichever `scene_map = X;`
+## assignment appears textually LAST in a level's own source -- correct
+## for a level with one unconditional assignment, but wrong for one that
+## branches on runtime state (Desert.wdl picks one of six horizon
+## textures based on `Stage`, read from a save file at level start) --
+## the static guess always landed on the last `if` branch in the file
+## regardless of which one actually ran. `level_runner.gd`'s own
+## `_apply_wdl_sky()` now runs AFTER `_director.setup()` (previously
+## before it) specifically so it can pass the REAL WDL interpreter's own
+## live `scene_map` global here once that setup's own synchronous init
+## has actually run it -- see that call site's own comment for why this
+## is safe to rely on.
+func apply(level_name: String, bounds: AABB, env: Environment, live_scene_map: String = "") -> void:
 	_clear_children()
 	_ensure_meta()
 	var key := level_name.to_lower()
@@ -25,7 +40,7 @@ func apply(level_name: String, bounds: AABB, env: Environment) -> void:
 
 	var indoor := bool(level_meta.get("indoor", false)) \
 		or key in ["studio", "menu", "credits", "vilend"]
-	var scene_file := str(level_meta.get("scene_map", ""))
+	var scene_file := live_scene_map if live_scene_map != "" else str(level_meta.get("scene_map", ""))
 	if scene_file == "" and not indoor:
 		scene_file = str(defaults.get("scene_map", "horizon.png"))
 	if indoor or scene_file == "":

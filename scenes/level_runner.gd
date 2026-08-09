@@ -31,6 +31,14 @@ var _use_fp := false
 var _player_cam: Camera3D
 var _camera_authority := CameraAuthority.new()
 
+## See _apply_wdl_sky()'s own docstring -- polled for this many frames
+## after level load (5s @ 60fps, generous enough for main()'s own
+## opening wait(3) plus a few more statements/frames before its own
+## scene_map assignment, without polling for the level's entire runtime).
+const SCENE_MAP_POLL_FRAMES := 300
+var _scene_map_poll_frames_left := SCENE_MAP_POLL_FRAMES
+var _last_applied_scene_map := ""
+
 
 func _ready() -> void:
 	# Level load (WMB/GLB parsing, entity spawn, every action coroutine
@@ -98,9 +106,9 @@ func _ready() -> void:
 		str(loader.last_level_data.get("script", "?")),
 		str(loader.last_level_data.get("source", "?")),
 	])
-	_apply_wdl_sky(level)
-
 	_director.setup(loader, _script_cam, loader.last_level_data, _game_hud)
+
+	_apply_wdl_sky(level)
 
 	# Plane2.wdl Vview=1 → move_view_1st. Any WMB with player_walk* wins over cams.
 	var use_fp := loader.has_first_person() and not _is_cutscene(level)
@@ -174,6 +182,11 @@ func _is_cutscene(level: String) -> bool:
 ## affects what the player sees. Delegated to CameraAuthority (see
 ## docs/CONTRACT.md §4.1.1); fixed-camera-mode levels never call update().
 func _process(_delta: float) -> void:
+	if _scene_map_poll_frames_left > 0:
+		_scene_map_poll_frames_left -= 1
+		var live := _live_scene_map_file()
+		if live != "" and live != _last_applied_scene_map:
+			_apply_wdl_sky(GameState.current_level)
 	if not _use_fp:
 		return
 	_camera_authority.update()
@@ -302,12 +315,88 @@ func _ensure_environment() -> void:
 	add_child(we)
 
 
+## 2026-08-09: "some of the world backgrounds are not correct still."
+## `assets/converted/wdl_meta.json`'s own static extraction takes
+## whichever `scene_map = X;` assignment appears LAST, textually, in a
+## level's own source -- correct for a level with exactly one
+## unconditional assignment (Smash), but WRONG for one that branches on
+## runtime state: Desert.wdl's own `main()` reads `Stage` from a save
+## file and picks one of six different horizon textures based on it
+## (`if(Stage==_TOWN){scene_map=bmapBack1;} ...
+## if(Stage==_VOLCANO){scene_map=bmapBack6;}`) -- the static extraction
+## always picked the LAST textual branch (_VOLCANO's own horizon6.png)
+## regardless of which location was actually visited.
+##
+## The real, live value isn't available as soon as it looks, either:
+## `main()`'s own opening `wait(3);` (a corpus-wide convention, present
+## in BOTH Desert's and Smash's own main()) means everything after it --
+## including every one of Desert's own Stage-based branches -- only runs
+## on a LATER real frame, never synchronously within `begin_level()`
+## itself (confirmed live: reading `scene_map` immediately after
+## `_director.setup()` returns still saw the pre-assignment default,
+## 0.0, for both levels). So this polls for a bounded window after
+## level load (`_scene_map_poll_frames`, in `_process()`) instead of a
+## single read, re-applying whenever the interpreter's own live value
+## changes to something real -- correctly picks up Desert's own
+## Stage-based choice whenever main() actually reaches it, without
+## polling forever once a level has settled.
+##
+## Known remaining gap, found chasing this exact report and deliberately
+## NOT fixed here (separate, riskier issue -- see docs/SESSION_LOG.md
+## 2026-08-09 for the full trace): Desert.wdl's own `main()`, for most
+## `Stage` values, calls a weather helper (`let_it_rain()`/`storm()`)
+## BEFORE its own `scene_map=...` lines -- and those helpers call their
+## own `_akt()` companion (`rain_akt()`/etc), a genuine forever-loop
+## (`while(weather==...){...wait();}`) meant to run as an independent
+## background task for the rest of the level. Called as a bare, NON-TAIL
+## statement, `_call_user_function_async()`'s own "await the whole
+## callee" semantics block `main()` at that exact statement forever,
+## since the callee never naturally returns -- so `scene_map` (along
+## with everything else later in `main()`) never gets set at all for
+## Village/Asylum/Olympic destinations. This needs `_call_user_function_
+## async()` to stop awaiting PAST a callee's own first `wait()` (matching
+## real Acknex: a `wait()` yields to the engine's own scheduler, which
+## resumes the ORIGINAL caller too, not just the callee) -- but
+## `player_move2()`/`perform_handle()`'s own existing, verified fixes
+## (2026-08-01) rely on the CURRENT "block forever" behavior when the
+## call is in tail position (nothing after it in the caller anyway, so
+## blocking is harmless there). Changing this safely needs its own
+## careful pass, not a rushed fix alongside everything else today.
 func _apply_wdl_sky(level: String) -> void:
 	## IO.wdl / Level.wdl sky_map + scene_map (not solid placeholder colors).
 	var we := get_node_or_null("WorldEnvironment") as WorldEnvironment
 	if we == null or we.environment == null or _acknex_sky == null:
 		return
-	_acknex_sky.apply(level, loader.level_bounds, we.environment)
+	_last_applied_scene_map = _live_scene_map_file()
+	_acknex_sky.apply(level, loader.level_bounds, we.environment, _last_applied_scene_map)
+
+
+## See _apply_wdl_sky()'s own docstring. Returns "" (meaning "no live
+## value yet, fall back to the static wdl_meta.json guess") until the
+## level's own WDL script has actually assigned a real `bmap` symbol to
+## `scene_map`.
+func _live_scene_map_file() -> String:
+	var interp: Node = _director.get("_wdl_interp") if _director else null
+	if interp == null:
+		return ""
+	# `scene_map = bmapBack1;` -- the RHS is a bare `bmap` symbol name,
+	# not a string; `_get_var()` already resolves it to that symbol's own
+	# canonical name (GB-4, 2026-08-03), not the actual filename, so it
+	# still needs one more lookup through the interpreter's own `_bmaps`
+	# table (symbol name -> real file, e.g. "Horizon1.pcx") to get
+	# something AcknexSky._load_tex() can actually open.
+	var raw = interp.call("_get_var", "scene_map", null)
+	if raw == null or typeof(raw) != TYPE_STRING or str(raw) == "":
+		return ""
+	var sym := str(raw)
+	var bmaps: Dictionary = interp.get("_bmaps")
+	if bmaps.has(sym):
+		return str(bmaps[sym])
+	var low := sym.to_lower()
+	for k in bmaps:
+		if String(k).to_lower() == low:
+			return str(bmaps[k])
+	return ""
 
 
 func _unhandled_input(event: InputEvent) -> void:
