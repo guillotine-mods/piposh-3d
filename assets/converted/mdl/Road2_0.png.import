@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://j58taojx71fq"
-path.s3tc="res://.godot/imported/Road2_0.png-84d92ea31a77c1a170c41a92359c8bac.s3tc.ctex"
-path.etc2="res://.godot/imported/Road2_0.png-84d92ea31a77c1a170c41a92359c8bac.etc2.ctex"
+path="res://.godot/imported/Road2_0.png-84d92ea31a77c1a170c41a92359c8bac.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "21ab99800b8c6e5f60b57c9a258f915a"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Road2_0.png"
-dest_files=["res://.godot/imported/Road2_0.png-84d92ea31a77c1a170c41a92359c8bac.s3tc.ctex", "res://.godot/imported/Road2_0.png-84d92ea31a77c1a170c41a92359c8bac.etc2.ctex"]
+dest_files=["res://.godot/imported/Road2_0.png-84d92ea31a77c1a170c41a92359c8bac.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

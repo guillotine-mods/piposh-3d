@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b66tsfxa1yfjn"
-path.s3tc="res://.godot/imported/Phone1_0.png-f06daca5a96daff6aaa6426ef7f4c254.s3tc.ctex"
-path.etc2="res://.godot/imported/Phone1_0.png-f06daca5a96daff6aaa6426ef7f4c254.etc2.ctex"
+path="res://.godot/imported/Phone1_0.png-f06daca5a96daff6aaa6426ef7f4c254.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "95aee3b3e3775a66a28dd310d2ad45a3"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Phone1_0.png"
-dest_files=["res://.godot/imported/Phone1_0.png-f06daca5a96daff6aaa6426ef7f4c254.s3tc.ctex", "res://.godot/imported/Phone1_0.png-f06daca5a96daff6aaa6426ef7f4c254.etc2.ctex"]
+dest_files=["res://.godot/imported/Phone1_0.png-f06daca5a96daff6aaa6426ef7f4c254.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

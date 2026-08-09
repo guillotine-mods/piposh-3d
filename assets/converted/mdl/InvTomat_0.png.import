@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://djqic77enqwgr"
-path.s3tc="res://.godot/imported/InvTomat_0.png-08e62cfce144bd03f7c891f3b50b40ed.s3tc.ctex"
-path.etc2="res://.godot/imported/InvTomat_0.png-08e62cfce144bd03f7c891f3b50b40ed.etc2.ctex"
+path="res://.godot/imported/InvTomat_0.png-08e62cfce144bd03f7c891f3b50b40ed.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "f58b37f894802878368049ba873ab82c"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/InvTomat_0.png"
-dest_files=["res://.godot/imported/InvTomat_0.png-08e62cfce144bd03f7c891f3b50b40ed.s3tc.ctex", "res://.godot/imported/InvTomat_0.png-08e62cfce144bd03f7c891f3b50b40ed.etc2.ctex"]
+dest_files=["res://.godot/imported/InvTomat_0.png-08e62cfce144bd03f7c891f3b50b40ed.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

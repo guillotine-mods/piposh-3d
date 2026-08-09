@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c3w0xm6r16m0u"
-path.s3tc="res://.godot/imported/warlock_0.png-1c0f6167d417141a6214e763aec12099.s3tc.ctex"
-path.etc2="res://.godot/imported/warlock_0.png-1c0f6167d417141a6214e763aec12099.etc2.ctex"
+path="res://.godot/imported/warlock_0.png-1c0f6167d417141a6214e763aec12099.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "01ebc535fe844e5208a099fd553e01f6"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/warlock_0.png"
-dest_files=["res://.godot/imported/warlock_0.png-1c0f6167d417141a6214e763aec12099.s3tc.ctex", "res://.godot/imported/warlock_0.png-1c0f6167d417141a6214e763aec12099.etc2.ctex"]
+dest_files=["res://.godot/imported/warlock_0.png-1c0f6167d417141a6214e763aec12099.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

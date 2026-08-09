@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://i55nxtjnc3lu"
-path.s3tc="res://.godot/imported/Buttfac3_0.png-a1373d447c4b6c7fd9d2e583f6827601.s3tc.ctex"
-path.etc2="res://.godot/imported/Buttfac3_0.png-a1373d447c4b6c7fd9d2e583f6827601.etc2.ctex"
+path="res://.godot/imported/Buttfac3_0.png-a1373d447c4b6c7fd9d2e583f6827601.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "ec4899b5012aef527f04cc1e65e9e3f0"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Buttfac3_0.png"
-dest_files=["res://.godot/imported/Buttfac3_0.png-a1373d447c4b6c7fd9d2e583f6827601.s3tc.ctex", "res://.godot/imported/Buttfac3_0.png-a1373d447c4b6c7fd9d2e583f6827601.etc2.ctex"]
+dest_files=["res://.godot/imported/Buttfac3_0.png-a1373d447c4b6c7fd9d2e583f6827601.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cib8c3udsk07v"
-path.s3tc="res://.godot/imported/InvMasor_0.png-4cc4c21a2d478153a4f551c5dc16fcfc.s3tc.ctex"
-path.etc2="res://.godot/imported/InvMasor_0.png-4cc4c21a2d478153a4f551c5dc16fcfc.etc2.ctex"
+path="res://.godot/imported/InvMasor_0.png-4cc4c21a2d478153a4f551c5dc16fcfc.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "f1bade0ffd67d9bde02d7ada10bcaab7"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/InvMasor_0.png"
-dest_files=["res://.godot/imported/InvMasor_0.png-4cc4c21a2d478153a4f551c5dc16fcfc.s3tc.ctex", "res://.godot/imported/InvMasor_0.png-4cc4c21a2d478153a4f551c5dc16fcfc.etc2.ctex"]
+dest_files=["res://.godot/imported/InvMasor_0.png-4cc4c21a2d478153a4f551c5dc16fcfc.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

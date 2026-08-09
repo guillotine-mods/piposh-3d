@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ddx8wu4jgtl5k"
-path.s3tc="res://.godot/imported/Bad2Int_0.png-b8b4986a6984cbdaea4eb78a4de2ea9f.s3tc.ctex"
-path.etc2="res://.godot/imported/Bad2Int_0.png-b8b4986a6984cbdaea4eb78a4de2ea9f.etc2.ctex"
+path="res://.godot/imported/Bad2Int_0.png-b8b4986a6984cbdaea4eb78a4de2ea9f.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "888f6a198e98a799f6517703327f7729"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Bad2Int_0.png"
-dest_files=["res://.godot/imported/Bad2Int_0.png-b8b4986a6984cbdaea4eb78a4de2ea9f.s3tc.ctex", "res://.godot/imported/Bad2Int_0.png-b8b4986a6984cbdaea4eb78a4de2ea9f.etc2.ctex"]
+dest_files=["res://.godot/imported/Bad2Int_0.png-b8b4986a6984cbdaea4eb78a4de2ea9f.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

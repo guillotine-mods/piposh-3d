@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bnsffrhvgsv33"
-path.s3tc="res://.godot/imported/ZigSign_0.png-cf0eb963de9fbee54e93f1e6487f02c7.s3tc.ctex"
-path.etc2="res://.godot/imported/ZigSign_0.png-cf0eb963de9fbee54e93f1e6487f02c7.etc2.ctex"
+path="res://.godot/imported/ZigSign_0.png-cf0eb963de9fbee54e93f1e6487f02c7.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "09e8aac122e53022afc1e80ae9cf74c1"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/ZigSign_0.png"
-dest_files=["res://.godot/imported/ZigSign_0.png-cf0eb963de9fbee54e93f1e6487f02c7.s3tc.ctex", "res://.godot/imported/ZigSign_0.png-cf0eb963de9fbee54e93f1e6487f02c7.etc2.ctex"]
+dest_files=["res://.godot/imported/ZigSign_0.png-cf0eb963de9fbee54e93f1e6487f02c7.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

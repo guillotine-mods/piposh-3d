@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://sr6lo8h678hu"
-path.s3tc="res://.godot/imported/Passn_0.png-3db24186a2ca1abd03dca0502bff67f7.s3tc.ctex"
-path.etc2="res://.godot/imported/Passn_0.png-3db24186a2ca1abd03dca0502bff67f7.etc2.ctex"
+path="res://.godot/imported/Passn_0.png-3db24186a2ca1abd03dca0502bff67f7.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "38defcf0f44e89b5386fd4ad48028034"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Passn_0.png"
-dest_files=["res://.godot/imported/Passn_0.png-3db24186a2ca1abd03dca0502bff67f7.s3tc.ctex", "res://.godot/imported/Passn_0.png-3db24186a2ca1abd03dca0502bff67f7.etc2.ctex"]
+dest_files=["res://.godot/imported/Passn_0.png-3db24186a2ca1abd03dca0502bff67f7.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

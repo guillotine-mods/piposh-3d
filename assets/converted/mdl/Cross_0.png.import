@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dgssjl0wjw2tl"
-path.s3tc="res://.godot/imported/Cross_0.png-29b606dfc2eb2cd07062703b40f37a74.s3tc.ctex"
-path.etc2="res://.godot/imported/Cross_0.png-29b606dfc2eb2cd07062703b40f37a74.etc2.ctex"
+path="res://.godot/imported/Cross_0.png-29b606dfc2eb2cd07062703b40f37a74.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "f89cece310e4a331dad996afa2efc6d4"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Cross_0.png"
-dest_files=["res://.godot/imported/Cross_0.png-29b606dfc2eb2cd07062703b40f37a74.s3tc.ctex", "res://.godot/imported/Cross_0.png-29b606dfc2eb2cd07062703b40f37a74.etc2.ctex"]
+dest_files=["res://.godot/imported/Cross_0.png-29b606dfc2eb2cd07062703b40f37a74.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dgos5da1v62my"
-path.s3tc="res://.godot/imported/Card_0.png-4e86a5b22ec4b4edae07d3ab367aa515.s3tc.ctex"
-path.etc2="res://.godot/imported/Card_0.png-4e86a5b22ec4b4edae07d3ab367aa515.etc2.ctex"
+path="res://.godot/imported/Card_0.png-4e86a5b22ec4b4edae07d3ab367aa515.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "d4a399c7378d102a1db8588ab3e0e04d"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Card_0.png"
-dest_files=["res://.godot/imported/Card_0.png-4e86a5b22ec4b4edae07d3ab367aa515.s3tc.ctex", "res://.godot/imported/Card_0.png-4e86a5b22ec4b4edae07d3ab367aa515.etc2.ctex"]
+dest_files=["res://.godot/imported/Card_0.png-4e86a5b22ec4b4edae07d3ab367aa515.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

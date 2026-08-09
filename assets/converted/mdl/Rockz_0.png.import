@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://brhm61o1yapgb"
-path.s3tc="res://.godot/imported/Rockz_0.png-0fd7529067e75c8e921019ff1d53fe17.s3tc.ctex"
-path.etc2="res://.godot/imported/Rockz_0.png-0fd7529067e75c8e921019ff1d53fe17.etc2.ctex"
+path="res://.godot/imported/Rockz_0.png-0fd7529067e75c8e921019ff1d53fe17.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "62ca2a94d561bff4f5a3676189df1802"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Rockz_0.png"
-dest_files=["res://.godot/imported/Rockz_0.png-0fd7529067e75c8e921019ff1d53fe17.s3tc.ctex", "res://.godot/imported/Rockz_0.png-0fd7529067e75c8e921019ff1d53fe17.etc2.ctex"]
+dest_files=["res://.godot/imported/Rockz_0.png-0fd7529067e75c8e921019ff1d53fe17.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

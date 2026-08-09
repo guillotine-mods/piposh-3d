@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://67xdrct8dbxg"
-path.s3tc="res://.godot/imported/AFG_0.png-afd9bee16be011e28ac69b5b73f037a1.s3tc.ctex"
-path.etc2="res://.godot/imported/AFG_0.png-afd9bee16be011e28ac69b5b73f037a1.etc2.ctex"
+path="res://.godot/imported/AFG_0.png-afd9bee16be011e28ac69b5b73f037a1.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "3327ade0e227b08ac18f60506f24bcae"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/AFG_0.png"
-dest_files=["res://.godot/imported/AFG_0.png-afd9bee16be011e28ac69b5b73f037a1.s3tc.ctex", "res://.godot/imported/AFG_0.png-afd9bee16be011e28ac69b5b73f037a1.etc2.ctex"]
+dest_files=["res://.godot/imported/AFG_0.png-afd9bee16be011e28ac69b5b73f037a1.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

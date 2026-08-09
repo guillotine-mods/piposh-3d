@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cfuwhjyel7w8o"
-path.s3tc="res://.godot/imported/Cactus_0.png-8ac7e6a226f66565b8faf3eb6b878703.s3tc.ctex"
-path.etc2="res://.godot/imported/Cactus_0.png-8ac7e6a226f66565b8faf3eb6b878703.etc2.ctex"
+path="res://.godot/imported/Cactus_0.png-8ac7e6a226f66565b8faf3eb6b878703.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "3bf723be4587ba7dd7fe180c2b6c913d"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Cactus_0.png"
-dest_files=["res://.godot/imported/Cactus_0.png-8ac7e6a226f66565b8faf3eb6b878703.s3tc.ctex", "res://.godot/imported/Cactus_0.png-8ac7e6a226f66565b8faf3eb6b878703.etc2.ctex"]
+dest_files=["res://.godot/imported/Cactus_0.png-8ac7e6a226f66565b8faf3eb6b878703.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

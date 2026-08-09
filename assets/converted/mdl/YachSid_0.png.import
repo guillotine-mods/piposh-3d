@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bhoe52dbj1hv7"
-path.s3tc="res://.godot/imported/YachSid_0.png-4d14e2b0e2c41365b287ea48eccb87b5.s3tc.ctex"
-path.etc2="res://.godot/imported/YachSid_0.png-4d14e2b0e2c41365b287ea48eccb87b5.etc2.ctex"
+path="res://.godot/imported/YachSid_0.png-4d14e2b0e2c41365b287ea48eccb87b5.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "981822cff52753ccff000a3b730b720f"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/YachSid_0.png"
-dest_files=["res://.godot/imported/YachSid_0.png-4d14e2b0e2c41365b287ea48eccb87b5.s3tc.ctex", "res://.godot/imported/YachSid_0.png-4d14e2b0e2c41365b287ea48eccb87b5.etc2.ctex"]
+dest_files=["res://.godot/imported/YachSid_0.png-4d14e2b0e2c41365b287ea48eccb87b5.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

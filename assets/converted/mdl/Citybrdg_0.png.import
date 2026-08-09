@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://pirpo7m2ldto"
-path.s3tc="res://.godot/imported/Citybrdg_0.png-75d7812f6f8f826342e7795eeee6b488.s3tc.ctex"
-path.etc2="res://.godot/imported/Citybrdg_0.png-75d7812f6f8f826342e7795eeee6b488.etc2.ctex"
+path="res://.godot/imported/Citybrdg_0.png-75d7812f6f8f826342e7795eeee6b488.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "552998f375a1daee2553c51d2975adfd"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Citybrdg_0.png"
-dest_files=["res://.godot/imported/Citybrdg_0.png-75d7812f6f8f826342e7795eeee6b488.s3tc.ctex", "res://.godot/imported/Citybrdg_0.png-75d7812f6f8f826342e7795eeee6b488.etc2.ctex"]
+dest_files=["res://.godot/imported/Citybrdg_0.png-75d7812f6f8f826342e7795eeee6b488.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

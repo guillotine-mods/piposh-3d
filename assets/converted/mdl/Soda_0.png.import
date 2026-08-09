@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bmt0vudb21lfm"
-path.s3tc="res://.godot/imported/Soda_0.png-0b8255f7066ed02c30f2b97966225a17.s3tc.ctex"
-path.etc2="res://.godot/imported/Soda_0.png-0b8255f7066ed02c30f2b97966225a17.etc2.ctex"
+path="res://.godot/imported/Soda_0.png-0b8255f7066ed02c30f2b97966225a17.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "1ad8334b3ad0fd4fb563e7b67563f89c"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Soda_0.png"
-dest_files=["res://.godot/imported/Soda_0.png-0b8255f7066ed02c30f2b97966225a17.s3tc.ctex", "res://.godot/imported/Soda_0.png-0b8255f7066ed02c30f2b97966225a17.etc2.ctex"]
+dest_files=["res://.godot/imported/Soda_0.png-0b8255f7066ed02c30f2b97966225a17.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

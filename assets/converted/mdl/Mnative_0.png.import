@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://5g7g85ya7h2c"
-path.s3tc="res://.godot/imported/Mnative_0.png-41316b6e42a1d47a148894c3a28ee796.s3tc.ctex"
-path.etc2="res://.godot/imported/Mnative_0.png-41316b6e42a1d47a148894c3a28ee796.etc2.ctex"
+path="res://.godot/imported/Mnative_0.png-41316b6e42a1d47a148894c3a28ee796.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "317ae6b83b585cff86e419fe2fa86d88"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Mnative_0.png"
-dest_files=["res://.godot/imported/Mnative_0.png-41316b6e42a1d47a148894c3a28ee796.s3tc.ctex", "res://.godot/imported/Mnative_0.png-41316b6e42a1d47a148894c3a28ee796.etc2.ctex"]
+dest_files=["res://.godot/imported/Mnative_0.png-41316b6e42a1d47a148894c3a28ee796.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

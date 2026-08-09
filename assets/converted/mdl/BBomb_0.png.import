@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ugrfinfb3gjq"
-path.s3tc="res://.godot/imported/BBomb_0.png-2ee92df0d7b45a919b4abe007dc321d3.s3tc.ctex"
-path.etc2="res://.godot/imported/BBomb_0.png-2ee92df0d7b45a919b4abe007dc321d3.etc2.ctex"
+path="res://.godot/imported/BBomb_0.png-2ee92df0d7b45a919b4abe007dc321d3.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "9c0f59e10e581a21edaa202ff2a1da25"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/BBomb_0.png"
-dest_files=["res://.godot/imported/BBomb_0.png-2ee92df0d7b45a919b4abe007dc321d3.s3tc.ctex", "res://.godot/imported/BBomb_0.png-2ee92df0d7b45a919b4abe007dc321d3.etc2.ctex"]
+dest_files=["res://.godot/imported/BBomb_0.png-2ee92df0d7b45a919b4abe007dc321d3.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

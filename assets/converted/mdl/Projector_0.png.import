@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bmqlr0hfs6msy"
-path.s3tc="res://.godot/imported/Projector_0.png-9029e7ffa7fbc91d21a1ade9e4f8c60b.s3tc.ctex"
-path.etc2="res://.godot/imported/Projector_0.png-9029e7ffa7fbc91d21a1ade9e4f8c60b.etc2.ctex"
+path="res://.godot/imported/Projector_0.png-9029e7ffa7fbc91d21a1ade9e4f8c60b.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "f0dbe8df677a4dd6e6930069f1d0a207"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Projector_0.png"
-dest_files=["res://.godot/imported/Projector_0.png-9029e7ffa7fbc91d21a1ade9e4f8c60b.s3tc.ctex", "res://.godot/imported/Projector_0.png-9029e7ffa7fbc91d21a1ade9e4f8c60b.etc2.ctex"]
+dest_files=["res://.godot/imported/Projector_0.png-9029e7ffa7fbc91d21a1ade9e4f8c60b.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

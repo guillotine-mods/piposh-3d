@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://f03qotycp3s2"
-path.s3tc="res://.godot/imported/FCap_0.png-32e6466ae7e6ae1cadf9a1a7fa2685d8.s3tc.ctex"
-path.etc2="res://.godot/imported/FCap_0.png-32e6466ae7e6ae1cadf9a1a7fa2685d8.etc2.ctex"
+path="res://.godot/imported/FCap_0.png-32e6466ae7e6ae1cadf9a1a7fa2685d8.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "206a1405d5f3343da91540cb0c36d2c7"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/FCap_0.png"
-dest_files=["res://.godot/imported/FCap_0.png-32e6466ae7e6ae1cadf9a1a7fa2685d8.s3tc.ctex", "res://.godot/imported/FCap_0.png-32e6466ae7e6ae1cadf9a1a7fa2685d8.etc2.ctex"]
+dest_files=["res://.godot/imported/FCap_0.png-32e6466ae7e6ae1cadf9a1a7fa2685d8.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

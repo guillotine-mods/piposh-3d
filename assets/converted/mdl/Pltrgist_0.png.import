@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://drh5ykducjorn"
-path.s3tc="res://.godot/imported/Pltrgist_0.png-5e42400ef28f1f0dd1e4b7419c65429d.s3tc.ctex"
-path.etc2="res://.godot/imported/Pltrgist_0.png-5e42400ef28f1f0dd1e4b7419c65429d.etc2.ctex"
+path="res://.godot/imported/Pltrgist_0.png-5e42400ef28f1f0dd1e4b7419c65429d.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "893ea1456c46492ca3243bcb5891fb6e"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Pltrgist_0.png"
-dest_files=["res://.godot/imported/Pltrgist_0.png-5e42400ef28f1f0dd1e4b7419c65429d.s3tc.ctex", "res://.godot/imported/Pltrgist_0.png-5e42400ef28f1f0dd1e4b7419c65429d.etc2.ctex"]
+dest_files=["res://.godot/imported/Pltrgist_0.png-5e42400ef28f1f0dd1e4b7419c65429d.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

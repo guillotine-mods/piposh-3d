@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bepggqsfhlw2p"
-path.s3tc="res://.godot/imported/Dragon_0.png-6760c8e0344ce4a737d98fb4388579e4.s3tc.ctex"
-path.etc2="res://.godot/imported/Dragon_0.png-6760c8e0344ce4a737d98fb4388579e4.etc2.ctex"
+path="res://.godot/imported/Dragon_0.png-6760c8e0344ce4a737d98fb4388579e4.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "0337cee4a4317fbe4c95107751af7511"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Dragon_0.png"
-dest_files=["res://.godot/imported/Dragon_0.png-6760c8e0344ce4a737d98fb4388579e4.s3tc.ctex", "res://.godot/imported/Dragon_0.png-6760c8e0344ce4a737d98fb4388579e4.etc2.ctex"]
+dest_files=["res://.godot/imported/Dragon_0.png-6760c8e0344ce4a737d98fb4388579e4.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

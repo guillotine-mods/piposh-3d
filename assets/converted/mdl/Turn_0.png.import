@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dx665pcw0nepo"
-path.s3tc="res://.godot/imported/Turn_0.png-c9bf70dd748b871dcec18532de2f1968.s3tc.ctex"
-path.etc2="res://.godot/imported/Turn_0.png-c9bf70dd748b871dcec18532de2f1968.etc2.ctex"
+path="res://.godot/imported/Turn_0.png-c9bf70dd748b871dcec18532de2f1968.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "94ebea443c66e1004661d9fa2ad0bb75"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Turn_0.png"
-dest_files=["res://.godot/imported/Turn_0.png-c9bf70dd748b871dcec18532de2f1968.s3tc.ctex", "res://.godot/imported/Turn_0.png-c9bf70dd748b871dcec18532de2f1968.etc2.ctex"]
+dest_files=["res://.godot/imported/Turn_0.png-c9bf70dd748b871dcec18532de2f1968.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

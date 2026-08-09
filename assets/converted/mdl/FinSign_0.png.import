@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bthyk53yiwe1f"
-path.s3tc="res://.godot/imported/FinSign_0.png-b5109c743ee87fa1bb9198e8fda97367.s3tc.ctex"
-path.etc2="res://.godot/imported/FinSign_0.png-b5109c743ee87fa1bb9198e8fda97367.etc2.ctex"
+path="res://.godot/imported/FinSign_0.png-b5109c743ee87fa1bb9198e8fda97367.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "89c8b3fe9024c99d5822097338a7530c"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/FinSign_0.png"
-dest_files=["res://.godot/imported/FinSign_0.png-b5109c743ee87fa1bb9198e8fda97367.s3tc.ctex", "res://.godot/imported/FinSign_0.png-b5109c743ee87fa1bb9198e8fda97367.etc2.ctex"]
+dest_files=["res://.godot/imported/FinSign_0.png-b5109c743ee87fa1bb9198e8fda97367.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

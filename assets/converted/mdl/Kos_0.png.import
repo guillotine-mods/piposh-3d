@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://l1f4cakuk1xi"
-path.s3tc="res://.godot/imported/Kos_0.png-b2fb6ad60bf7431df9902df2685c24ef.s3tc.ctex"
-path.etc2="res://.godot/imported/Kos_0.png-b2fb6ad60bf7431df9902df2685c24ef.etc2.ctex"
+path="res://.godot/imported/Kos_0.png-b2fb6ad60bf7431df9902df2685c24ef.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "4ab4b247031f45e9dbb0c83f4ffc7c88"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Kos_0.png"
-dest_files=["res://.godot/imported/Kos_0.png-b2fb6ad60bf7431df9902df2685c24ef.s3tc.ctex", "res://.godot/imported/Kos_0.png-b2fb6ad60bf7431df9902df2685c24ef.etc2.ctex"]
+dest_files=["res://.godot/imported/Kos_0.png-b2fb6ad60bf7431df9902df2685c24ef.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bkbr6y0ian33v"
-path.s3tc="res://.godot/imported/BitTurn_0.png-c86b264f8c949e54bc81ab4c92ec8bbb.s3tc.ctex"
-path.etc2="res://.godot/imported/BitTurn_0.png-c86b264f8c949e54bc81ab4c92ec8bbb.etc2.ctex"
+path="res://.godot/imported/BitTurn_0.png-c86b264f8c949e54bc81ab4c92ec8bbb.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "a365d6f9384ba89266a59fde9c0b27ac"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/BitTurn_0.png"
-dest_files=["res://.godot/imported/BitTurn_0.png-c86b264f8c949e54bc81ab4c92ec8bbb.s3tc.ctex", "res://.godot/imported/BitTurn_0.png-c86b264f8c949e54bc81ab4c92ec8bbb.etc2.ctex"]
+dest_files=["res://.godot/imported/BitTurn_0.png-c86b264f8c949e54bc81ab4c92ec8bbb.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

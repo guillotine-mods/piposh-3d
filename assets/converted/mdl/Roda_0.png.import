@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cahkxvj3acnmy"
-path.s3tc="res://.godot/imported/Roda_0.png-750cb6febbe09638e59f1f6d2dd3d204.s3tc.ctex"
-path.etc2="res://.godot/imported/Roda_0.png-750cb6febbe09638e59f1f6d2dd3d204.etc2.ctex"
+path="res://.godot/imported/Roda_0.png-750cb6febbe09638e59f1f6d2dd3d204.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "fe52e3ab6381cf6cc34d57bd28a6b2e0"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Roda_0.png"
-dest_files=["res://.godot/imported/Roda_0.png-750cb6febbe09638e59f1f6d2dd3d204.s3tc.ctex", "res://.godot/imported/Roda_0.png-750cb6febbe09638e59f1f6d2dd3d204.etc2.ctex"]
+dest_files=["res://.godot/imported/Roda_0.png-750cb6febbe09638e59f1f6d2dd3d204.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

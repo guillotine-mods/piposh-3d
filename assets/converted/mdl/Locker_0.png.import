@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://d0njq8rxpyxhq"
-path.s3tc="res://.godot/imported/Locker_0.png-ac7f68a77a750ba2b2eff4b1d54973df.s3tc.ctex"
-path.etc2="res://.godot/imported/Locker_0.png-ac7f68a77a750ba2b2eff4b1d54973df.etc2.ctex"
+path="res://.godot/imported/Locker_0.png-ac7f68a77a750ba2b2eff4b1d54973df.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "c790e52a9cb3df9260042737eadca166"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Locker_0.png"
-dest_files=["res://.godot/imported/Locker_0.png-ac7f68a77a750ba2b2eff4b1d54973df.s3tc.ctex", "res://.godot/imported/Locker_0.png-ac7f68a77a750ba2b2eff4b1d54973df.etc2.ctex"]
+dest_files=["res://.godot/imported/Locker_0.png-ac7f68a77a750ba2b2eff4b1d54973df.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://d18sr8xe41wvr"
-path.s3tc="res://.godot/imported/Glass_0.png-b4cf551b3e6bacecf16777bcdcffa90e.s3tc.ctex"
-path.etc2="res://.godot/imported/Glass_0.png-b4cf551b3e6bacecf16777bcdcffa90e.etc2.ctex"
+path="res://.godot/imported/Glass_0.png-b4cf551b3e6bacecf16777bcdcffa90e.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "d85d209d0e3639c65b092a6054dbaea0"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Glass_0.png"
-dest_files=["res://.godot/imported/Glass_0.png-b4cf551b3e6bacecf16777bcdcffa90e.s3tc.ctex", "res://.godot/imported/Glass_0.png-b4cf551b3e6bacecf16777bcdcffa90e.etc2.ctex"]
+dest_files=["res://.godot/imported/Glass_0.png-b4cf551b3e6bacecf16777bcdcffa90e.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

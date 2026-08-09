@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b3fbankk36lgw"
-path.s3tc="res://.godot/imported/ZimPhoto_0.png-af8dde3d5f8fb5976adddaa7af21f188.s3tc.ctex"
-path.etc2="res://.godot/imported/ZimPhoto_0.png-af8dde3d5f8fb5976adddaa7af21f188.etc2.ctex"
+path="res://.godot/imported/ZimPhoto_0.png-af8dde3d5f8fb5976adddaa7af21f188.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "0f74e9ad64097827b418a6ae76e0eca4"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/ZimPhoto_0.png"
-dest_files=["res://.godot/imported/ZimPhoto_0.png-af8dde3d5f8fb5976adddaa7af21f188.s3tc.ctex", "res://.godot/imported/ZimPhoto_0.png-af8dde3d5f8fb5976adddaa7af21f188.etc2.ctex"]
+dest_files=["res://.godot/imported/ZimPhoto_0.png-af8dde3d5f8fb5976adddaa7af21f188.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

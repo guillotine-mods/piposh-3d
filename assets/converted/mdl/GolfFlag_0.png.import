@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bkf4p1ci8gdb"
-path.s3tc="res://.godot/imported/GolfFlag_0.png-44d5ce1294ed766925c8659699c8e13a.s3tc.ctex"
-path.etc2="res://.godot/imported/GolfFlag_0.png-44d5ce1294ed766925c8659699c8e13a.etc2.ctex"
+path="res://.godot/imported/GolfFlag_0.png-44d5ce1294ed766925c8659699c8e13a.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "79e8920786544f7e10c008f0e40ffbbb"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/GolfFlag_0.png"
-dest_files=["res://.godot/imported/GolfFlag_0.png-44d5ce1294ed766925c8659699c8e13a.s3tc.ctex", "res://.godot/imported/GolfFlag_0.png-44d5ce1294ed766925c8659699c8e13a.etc2.ctex"]
+dest_files=["res://.godot/imported/GolfFlag_0.png-44d5ce1294ed766925c8659699c8e13a.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

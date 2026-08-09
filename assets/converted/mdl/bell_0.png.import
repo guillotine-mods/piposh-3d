@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://sqy6rpa4a1nx"
-path.s3tc="res://.godot/imported/bell_0.png-03497386c5412318055c286079c1ed66.s3tc.ctex"
-path.etc2="res://.godot/imported/bell_0.png-03497386c5412318055c286079c1ed66.etc2.ctex"
+path="res://.godot/imported/bell_0.png-03497386c5412318055c286079c1ed66.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "a83218aa3a21b3dfebe8d82594381a03"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/bell_0.png"
-dest_files=["res://.godot/imported/bell_0.png-03497386c5412318055c286079c1ed66.s3tc.ctex", "res://.godot/imported/bell_0.png-03497386c5412318055c286079c1ed66.etc2.ctex"]
+dest_files=["res://.godot/imported/bell_0.png-03497386c5412318055c286079c1ed66.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://qw11yodlkdiv"
-path.s3tc="res://.godot/imported/MadDance_0.png-2fe8ee34cf6526a72a49d1c77147acc9.s3tc.ctex"
-path.etc2="res://.godot/imported/MadDance_0.png-2fe8ee34cf6526a72a49d1c77147acc9.etc2.ctex"
+path="res://.godot/imported/MadDance_0.png-2fe8ee34cf6526a72a49d1c77147acc9.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "f932c6f7bea06806092c1017c23e1a43"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/MadDance_0.png"
-dest_files=["res://.godot/imported/MadDance_0.png-2fe8ee34cf6526a72a49d1c77147acc9.s3tc.ctex", "res://.godot/imported/MadDance_0.png-2fe8ee34cf6526a72a49d1c77147acc9.etc2.ctex"]
+dest_files=["res://.godot/imported/MadDance_0.png-2fe8ee34cf6526a72a49d1c77147acc9.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

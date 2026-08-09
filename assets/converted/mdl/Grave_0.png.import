@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://fljsnsdxaxti"
-path.s3tc="res://.godot/imported/Grave_0.png-0591bd06005365d0e5a2a00d0eb04066.s3tc.ctex"
-path.etc2="res://.godot/imported/Grave_0.png-0591bd06005365d0e5a2a00d0eb04066.etc2.ctex"
+path="res://.godot/imported/Grave_0.png-0591bd06005365d0e5a2a00d0eb04066.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "70141c036b83dff60db8a017b506e568"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Grave_0.png"
-dest_files=["res://.godot/imported/Grave_0.png-0591bd06005365d0e5a2a00d0eb04066.s3tc.ctex", "res://.godot/imported/Grave_0.png-0591bd06005365d0e5a2a00d0eb04066.etc2.ctex"]
+dest_files=["res://.godot/imported/Grave_0.png-0591bd06005365d0e5a2a00d0eb04066.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

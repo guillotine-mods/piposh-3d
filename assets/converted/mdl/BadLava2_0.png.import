@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ergbtwxpsvwg"
-path.s3tc="res://.godot/imported/BadLava2_0.png-cdacbdb424f75cd8f03c68778b113764.s3tc.ctex"
-path.etc2="res://.godot/imported/BadLava2_0.png-cdacbdb424f75cd8f03c68778b113764.etc2.ctex"
+path="res://.godot/imported/BadLava2_0.png-cdacbdb424f75cd8f03c68778b113764.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "9e03ff64240307f9dd8d77bc1a7c670a"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/BadLava2_0.png"
-dest_files=["res://.godot/imported/BadLava2_0.png-cdacbdb424f75cd8f03c68778b113764.s3tc.ctex", "res://.godot/imported/BadLava2_0.png-cdacbdb424f75cd8f03c68778b113764.etc2.ctex"]
+dest_files=["res://.godot/imported/BadLava2_0.png-cdacbdb424f75cd8f03c68778b113764.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

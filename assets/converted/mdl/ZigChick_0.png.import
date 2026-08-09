@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b5l3n8jrif8pk"
-path.s3tc="res://.godot/imported/ZigChick_0.png-2dccc9811e49ab731130fbef60b89140.s3tc.ctex"
-path.etc2="res://.godot/imported/ZigChick_0.png-2dccc9811e49ab731130fbef60b89140.etc2.ctex"
+path="res://.godot/imported/ZigChick_0.png-2dccc9811e49ab731130fbef60b89140.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "cd2a4a1b873597e30657704916b25e88"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/ZigChick_0.png"
-dest_files=["res://.godot/imported/ZigChick_0.png-2dccc9811e49ab731130fbef60b89140.s3tc.ctex", "res://.godot/imported/ZigChick_0.png-2dccc9811e49ab731130fbef60b89140.etc2.ctex"]
+dest_files=["res://.godot/imported/ZigChick_0.png-2dccc9811e49ab731130fbef60b89140.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b01esivw2juml"
-path.s3tc="res://.godot/imported/Falafel_0.png-98c3bf014e4398ccadfe1db9d414ba3b.s3tc.ctex"
-path.etc2="res://.godot/imported/Falafel_0.png-98c3bf014e4398ccadfe1db9d414ba3b.etc2.ctex"
+path="res://.godot/imported/Falafel_0.png-98c3bf014e4398ccadfe1db9d414ba3b.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "000e924e95ebb380f9c94e74467cb375"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Falafel_0.png"
-dest_files=["res://.godot/imported/Falafel_0.png-98c3bf014e4398ccadfe1db9d414ba3b.s3tc.ctex", "res://.godot/imported/Falafel_0.png-98c3bf014e4398ccadfe1db9d414ba3b.etc2.ctex"]
+dest_files=["res://.godot/imported/Falafel_0.png-98c3bf014e4398ccadfe1db9d414ba3b.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

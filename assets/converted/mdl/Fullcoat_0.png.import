@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://obwmb53h7qlo"
-path.s3tc="res://.godot/imported/Fullcoat_0.png-22b1a2dc8d01255b0c1b30072070a92b.s3tc.ctex"
-path.etc2="res://.godot/imported/Fullcoat_0.png-22b1a2dc8d01255b0c1b30072070a92b.etc2.ctex"
+path="res://.godot/imported/Fullcoat_0.png-22b1a2dc8d01255b0c1b30072070a92b.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "e72e5e65cdbfdf8a02a9987e7d20f221"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Fullcoat_0.png"
-dest_files=["res://.godot/imported/Fullcoat_0.png-22b1a2dc8d01255b0c1b30072070a92b.s3tc.ctex", "res://.godot/imported/Fullcoat_0.png-22b1a2dc8d01255b0c1b30072070a92b.etc2.ctex"]
+dest_files=["res://.godot/imported/Fullcoat_0.png-22b1a2dc8d01255b0c1b30072070a92b.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

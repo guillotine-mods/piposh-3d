@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://di0fefdlej4c1"
-path.s3tc="res://.godot/imported/Tom_0.png-01f0906296590f2de4e6ed61d504a17b.s3tc.ctex"
-path.etc2="res://.godot/imported/Tom_0.png-01f0906296590f2de4e6ed61d504a17b.etc2.ctex"
+path="res://.godot/imported/Tom_0.png-01f0906296590f2de4e6ed61d504a17b.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "d70d774f9a72f774687073a580725250"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Tom_0.png"
-dest_files=["res://.godot/imported/Tom_0.png-01f0906296590f2de4e6ed61d504a17b.s3tc.ctex", "res://.godot/imported/Tom_0.png-01f0906296590f2de4e6ed61d504a17b.etc2.ctex"]
+dest_files=["res://.godot/imported/Tom_0.png-01f0906296590f2de4e6ed61d504a17b.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

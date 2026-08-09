@@ -7800,3 +7800,100 @@ range_shoot`, `smoke_remove_race`, `smoke_genia_walk_percent_check`,
 `smoke_plane2_playtest`, `smoke_shiks_dialog2_choice3`, `smoke_range_
 retry_check`, `smoke_range_hitscan_check`, `smoke_range_death_freeze`
 -- all green. `git status --short assets/` clean, no deletions.
+
+## 2026-08-09 (GB-19) -- fixed a real, corpus-wide texture-compression
+bug, and thoroughly ruled out an asset-level cause for "plane missing
+wings"
+
+Follow-up per direct request ("lets work on the backgrounds now and
+the graphics"), after clarifying scope: "textures look wrong/low-res"
+(a broader concern) plus the specific "plane missing wings" report,
+now pinpointed to Plane2's own takeoff cutscene.
+
+**Texture compression.** Compared `.import` settings across the two
+texture directories directly: every file under `assets/converted/gfx/`
+(535 files, 2D UI/panel/background art) already uses `compress/
+mode=0` (lossless), but every file under `assets/converted/mdl/` (648
+files, 3D model/character skin textures) used `compress/mode=2`
+(lossy VRAM/S3TC-ETC2 compression) -- Godot's own default for a
+texture it detects as attached to a 3D material. Checked actual
+texture dimensions for a sample: mostly 320x200 or smaller, several
+non-power-of-2 (152x200, 500x150). Block-based VRAM compression
+(4x4-pixel blocks) on textures this small produces disproportionately
+visible artifacts relative to the overall image size, especially on
+character faces/clothing with sharp color boundaries -- exactly what
+"low-res" would read as, and clearly the same reasoning the `gfx/`
+folder's own convention was already built around; the `mdl/` folder
+had just never been brought in line with it.
+
+Bulk-edited all 648 `assets/converted/mdl/*.png.import` files
+(scripted, not hand-edited) changing `compress/mode=2` to `compress/
+mode=0`, then ran `godot --headless --import` to regenerate the actual
+cached texture files. Confirmed Godot correctly regenerated the
+derived `[remap]` section to match the new mode (single `path=...`
+instead of separate `path.s3tc=`/`path.etc2=` variants, `metadata=
+{"vram_texture": false}`) and left unrelated settings alone (`mipmaps/
+generate=true` stayed correctly untouched, still needed for 3D
+minification filtering regardless of compression mode).
+
+Verified this introduces no functional regression via a real A/B
+comparison, not just "no crash": `git stash` the 648 changed `.import`
+files, re-import to regenerate the lossy-baseline cache, run `smoke_
+dispatch.gd --all` and record the "Parameter material is null" error
+count (a pre-existing, headless-rendering-specific noise pattern, 19
+occurrences) -- then `git stash pop`, re-import with the lossless
+fix restored, and confirm the same test still shows the same
+pre-existing noise (18-19, within run-to-run variance) with no NEW
+errors and the same "55/56 dispatched, OK" result. Also re-ran `smoke_
+plane2_all_goals.gd` (unrelated to textures, but a broad functional
+smoke test) to confirm nothing about level loading broke.
+
+**Plane wings.** User confirmed the specific location: Plane2's own
+takeoff cutscene. First lead (`BiPlane`/`BiPlane2.MDL`, matched by name
+alone in the previous round) turned out to be the wrong model -- these
+are small, ground-level decoration planes (`action Land`/`item_
+pickup`), not the takeoff sequence. Found the real model by reading
+`action CamPlane` (Plane2.wdl line 117): a camera-follow action that
+tracks an entity's own position/rotation and stores it in a global
+`B` vector -- `action B747` (line 144) is the entity being tracked,
+confirming `B747.MDL` (a Boeing 747) is the actual takeoff plane.
+
+Verified the model's own integrity directly, working around headless
+Godot's own inability to render a frame (a known, longstanding
+limitation this session has hit repeatedly): parsed `B747.glb`'s own
+binary glTF buffers directly with a short Python script (no Godot
+involved at all), extracted the real vertex positions and triangle
+indices, and rendered an actual top-down wireframe projection via
+PIL. Result: a complete, correctly-proportioned 747 silhouette --
+wings, all four engine pods (two per side, matching a real 747's own
+layout), fuselage, and tail all clearly present, 4358 triangles total.
+Read the texture (`B747_0.png`) directly too -- a complete side-view
+livery, wings clearly painted in.
+
+Checked the level's own placement data (`assets/converted/levels/
+Plane2.json`): seven `B747.MDL` placements total (one with `action=
+"B747"`, the live/animated one; six with `action=""`, decorative
+static background copies scattered around the airport), all sharing
+the identical uniform scale (7.026 on all three axes -- no distortion
+on any single axis that could visually compress the wingspan). Read
+`action B747`'s own full runtime body: it only moves the entity's
+position (`my.y += my.skill1*time;`, ascending and accelerating once
+a voice line crosses 95% played) -- no `morph()`, no scale writes, no
+geometry manipulation of any kind during the whole sequence.
+
+With mesh, texture, placement, and runtime behavior all directly
+verified correct, this doesn't reproduce as an asset-pipeline or
+interpreter bug at all. Left open, honestly: the most plausible
+remaining explanation is a camera-framing issue -- `action CamPlane`
+positions the camera directly AT the tracked plane's own origin every
+tick (`camera.x=my.x; camera.y=my.y; camera.z=my.z;`), which could
+plausibly frame the 747 from an angle where the wings read as thin/
+foreshortened/out of frame rather than genuinely absent -- but this is
+a hypothesis, not a confirmed finding, and would need an actual
+rendered screenshot to verify or rule out, which isn't available in
+this environment.
+
+Full regression sweep re-run one final time after both fixes: `smoke_
+dispatch --all` (55/56), `smoke_plane2_all_goals`, both green. `git
+status --short` outside `assets/converted/mdl/` clean -- only the 648
+intentional `.import` changes and doc updates.

@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bv4o5axt1o8xv"
-path.s3tc="res://.godot/imported/WTower_0.png-6799876da0f66c766e11a2b8b0b382c4.s3tc.ctex"
-path.etc2="res://.godot/imported/WTower_0.png-6799876da0f66c766e11a2b8b0b382c4.etc2.ctex"
+path="res://.godot/imported/WTower_0.png-6799876da0f66c766e11a2b8b0b382c4.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "40fa6639284613573997a5026330a8d9"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/WTower_0.png"
-dest_files=["res://.godot/imported/WTower_0.png-6799876da0f66c766e11a2b8b0b382c4.s3tc.ctex", "res://.godot/imported/WTower_0.png-6799876da0f66c766e11a2b8b0b382c4.etc2.ctex"]
+dest_files=["res://.godot/imported/WTower_0.png-6799876da0f66c766e11a2b8b0b382c4.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

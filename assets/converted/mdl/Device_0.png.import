@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cyahps5hqwwc"
-path.s3tc="res://.godot/imported/Device_0.png-9df0b5bfe099e3c282a70d4cb63c7f02.s3tc.ctex"
-path.etc2="res://.godot/imported/Device_0.png-9df0b5bfe099e3c282a70d4cb63c7f02.etc2.ctex"
+path="res://.godot/imported/Device_0.png-9df0b5bfe099e3c282a70d4cb63c7f02.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "0a6e9cec5683e30e292799b5ae2163f9"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Device_0.png"
-dest_files=["res://.godot/imported/Device_0.png-9df0b5bfe099e3c282a70d4cb63c7f02.s3tc.ctex", "res://.godot/imported/Device_0.png-9df0b5bfe099e3c282a70d4cb63c7f02.etc2.ctex"]
+dest_files=["res://.godot/imported/Device_0.png-9df0b5bfe099e3c282a70d4cb63c7f02.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

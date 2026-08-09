@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b30y23xkyief3"
-path.s3tc="res://.godot/imported/Vespa_0.png-b4caf9b1029f8751752570450b1311ac.s3tc.ctex"
-path.etc2="res://.godot/imported/Vespa_0.png-b4caf9b1029f8751752570450b1311ac.etc2.ctex"
+path="res://.godot/imported/Vespa_0.png-b4caf9b1029f8751752570450b1311ac.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "f0a65915ef4824c992c98d2c4233c4c1"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Vespa_0.png"
-dest_files=["res://.godot/imported/Vespa_0.png-b4caf9b1029f8751752570450b1311ac.s3tc.ctex", "res://.godot/imported/Vespa_0.png-b4caf9b1029f8751752570450b1311ac.etc2.ctex"]
+dest_files=["res://.godot/imported/Vespa_0.png-b4caf9b1029f8751752570450b1311ac.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

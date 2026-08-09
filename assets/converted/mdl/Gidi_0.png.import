@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cnhqa0t1l5uah"
-path.s3tc="res://.godot/imported/Gidi_0.png-8eb7a0cd2e1d33c656ebd0121742c858.s3tc.ctex"
-path.etc2="res://.godot/imported/Gidi_0.png-8eb7a0cd2e1d33c656ebd0121742c858.etc2.ctex"
+path="res://.godot/imported/Gidi_0.png-8eb7a0cd2e1d33c656ebd0121742c858.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "b7b7d4927c05bb602f50ac2149a7d8cc"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Gidi_0.png"
-dest_files=["res://.godot/imported/Gidi_0.png-8eb7a0cd2e1d33c656ebd0121742c858.s3tc.ctex", "res://.godot/imported/Gidi_0.png-8eb7a0cd2e1d33c656ebd0121742c858.etc2.ctex"]
+dest_files=["res://.godot/imported/Gidi_0.png-8eb7a0cd2e1d33c656ebd0121742c858.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

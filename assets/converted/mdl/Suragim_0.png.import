@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c3xt3xo0vt66u"
-path.s3tc="res://.godot/imported/Suragim_0.png-42d13d9fc67644f6c00c2cd2bedc8106.s3tc.ctex"
-path.etc2="res://.godot/imported/Suragim_0.png-42d13d9fc67644f6c00c2cd2bedc8106.etc2.ctex"
+path="res://.godot/imported/Suragim_0.png-42d13d9fc67644f6c00c2cd2bedc8106.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "6107051db2a312c9d6a1a95dceab3863"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Suragim_0.png"
-dest_files=["res://.godot/imported/Suragim_0.png-42d13d9fc67644f6c00c2cd2bedc8106.s3tc.ctex", "res://.godot/imported/Suragim_0.png-42d13d9fc67644f6c00c2cd2bedc8106.etc2.ctex"]
+dest_files=["res://.godot/imported/Suragim_0.png-42d13d9fc67644f6c00c2cd2bedc8106.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

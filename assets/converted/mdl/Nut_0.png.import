@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://vwiuioqvr1p6"
-path.s3tc="res://.godot/imported/Nut_0.png-d743f884c23039a4d3708e6adad3d43d.s3tc.ctex"
-path.etc2="res://.godot/imported/Nut_0.png-d743f884c23039a4d3708e6adad3d43d.etc2.ctex"
+path="res://.godot/imported/Nut_0.png-d743f884c23039a4d3708e6adad3d43d.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "a1588030f136ffbb314a12b965d605dc"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Nut_0.png"
-dest_files=["res://.godot/imported/Nut_0.png-d743f884c23039a4d3708e6adad3d43d.s3tc.ctex", "res://.godot/imported/Nut_0.png-d743f884c23039a4d3708e6adad3d43d.etc2.ctex"]
+dest_files=["res://.godot/imported/Nut_0.png-d743f884c23039a4d3708e6adad3d43d.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

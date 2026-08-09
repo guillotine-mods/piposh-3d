@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dyepjwcdt6v2v"
-path.s3tc="res://.godot/imported/House6_0.png-1437c62666ea198e3eb5894964ad8a48.s3tc.ctex"
-path.etc2="res://.godot/imported/House6_0.png-1437c62666ea198e3eb5894964ad8a48.etc2.ctex"
+path="res://.godot/imported/House6_0.png-1437c62666ea198e3eb5894964ad8a48.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "0183bbd756d58d672be890bf42df57a0"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/House6_0.png"
-dest_files=["res://.godot/imported/House6_0.png-1437c62666ea198e3eb5894964ad8a48.s3tc.ctex", "res://.godot/imported/House6_0.png-1437c62666ea198e3eb5894964ad8a48.etc2.ctex"]
+dest_files=["res://.godot/imported/House6_0.png-1437c62666ea198e3eb5894964ad8a48.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

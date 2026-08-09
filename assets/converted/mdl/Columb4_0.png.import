@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bffy1rnmmuwi4"
-path.s3tc="res://.godot/imported/Columb4_0.png-1c6e77129f055a2827d3b2a3f5060e85.s3tc.ctex"
-path.etc2="res://.godot/imported/Columb4_0.png-1c6e77129f055a2827d3b2a3f5060e85.etc2.ctex"
+path="res://.godot/imported/Columb4_0.png-1c6e77129f055a2827d3b2a3f5060e85.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "d7f18b3430847510ad5638a54a416bba"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Columb4_0.png"
-dest_files=["res://.godot/imported/Columb4_0.png-1c6e77129f055a2827d3b2a3f5060e85.s3tc.ctex", "res://.godot/imported/Columb4_0.png-1c6e77129f055a2827d3b2a3f5060e85.etc2.ctex"]
+dest_files=["res://.godot/imported/Columb4_0.png-1c6e77129f055a2827d3b2a3f5060e85.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

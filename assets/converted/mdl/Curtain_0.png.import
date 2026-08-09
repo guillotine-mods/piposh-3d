@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ccm3chllsheo1"
-path.s3tc="res://.godot/imported/Curtain_0.png-baf4e7bccef50dee1cd1693d46124b7f.s3tc.ctex"
-path.etc2="res://.godot/imported/Curtain_0.png-baf4e7bccef50dee1cd1693d46124b7f.etc2.ctex"
+path="res://.godot/imported/Curtain_0.png-baf4e7bccef50dee1cd1693d46124b7f.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "b6b1a68fc94dc589649a61b62a2b2765"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Curtain_0.png"
-dest_files=["res://.godot/imported/Curtain_0.png-baf4e7bccef50dee1cd1693d46124b7f.s3tc.ctex", "res://.godot/imported/Curtain_0.png-baf4e7bccef50dee1cd1693d46124b7f.etc2.ctex"]
+dest_files=["res://.godot/imported/Curtain_0.png-baf4e7bccef50dee1cd1693d46124b7f.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

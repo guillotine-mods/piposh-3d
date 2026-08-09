@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://87dhj0gav0w1"
-path.s3tc="res://.godot/imported/Crossbow_0.png-d4df8bd17b56be01fd7be1a038c6b649.s3tc.ctex"
-path.etc2="res://.godot/imported/Crossbow_0.png-d4df8bd17b56be01fd7be1a038c6b649.etc2.ctex"
+path="res://.godot/imported/Crossbow_0.png-d4df8bd17b56be01fd7be1a038c6b649.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "12fdc88d31d95bc3dcde2de287ddd64f"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Crossbow_0.png"
-dest_files=["res://.godot/imported/Crossbow_0.png-d4df8bd17b56be01fd7be1a038c6b649.s3tc.ctex", "res://.godot/imported/Crossbow_0.png-d4df8bd17b56be01fd7be1a038c6b649.etc2.ctex"]
+dest_files=["res://.godot/imported/Crossbow_0.png-d4df8bd17b56be01fd7be1a038c6b649.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

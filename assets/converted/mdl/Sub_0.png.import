@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dgetmctyixor2"
-path.s3tc="res://.godot/imported/Sub_0.png-8d3f5662c7e28c0a66bb7e2156ab0c90.s3tc.ctex"
-path.etc2="res://.godot/imported/Sub_0.png-8d3f5662c7e28c0a66bb7e2156ab0c90.etc2.ctex"
+path="res://.godot/imported/Sub_0.png-8d3f5662c7e28c0a66bb7e2156ab0c90.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "e4313572a0d6cd4d9cee6d1784e83975"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Sub_0.png"
-dest_files=["res://.godot/imported/Sub_0.png-8d3f5662c7e28c0a66bb7e2156ab0c90.s3tc.ctex", "res://.godot/imported/Sub_0.png-8d3f5662c7e28c0a66bb7e2156ab0c90.etc2.ctex"]
+dest_files=["res://.godot/imported/Sub_0.png-8d3f5662c7e28c0a66bb7e2156ab0c90.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

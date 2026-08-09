@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://doxtya7x0bavy"
-path.s3tc="res://.godot/imported/guard_0.png-6b18d82b1943f7d996f93f102646c195.s3tc.ctex"
-path.etc2="res://.godot/imported/guard_0.png-6b18d82b1943f7d996f93f102646c195.etc2.ctex"
+path="res://.godot/imported/guard_0.png-6b18d82b1943f7d996f93f102646c195.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "18d52918bdcd6dd2be7eb82df168c864"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/guard_0.png"
-dest_files=["res://.godot/imported/guard_0.png-6b18d82b1943f7d996f93f102646c195.s3tc.ctex", "res://.godot/imported/guard_0.png-6b18d82b1943f7d996f93f102646c195.etc2.ctex"]
+dest_files=["res://.godot/imported/guard_0.png-6b18d82b1943f7d996f93f102646c195.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

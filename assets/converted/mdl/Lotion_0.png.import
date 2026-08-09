@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bwb7mksbal1y0"
-path.s3tc="res://.godot/imported/Lotion_0.png-a3e8be42010a78897165273a23e4f9b9.s3tc.ctex"
-path.etc2="res://.godot/imported/Lotion_0.png-a3e8be42010a78897165273a23e4f9b9.etc2.ctex"
+path="res://.godot/imported/Lotion_0.png-a3e8be42010a78897165273a23e4f9b9.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "be4c7c72e28ee22741b0d6fa7ed49a4b"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Lotion_0.png"
-dest_files=["res://.godot/imported/Lotion_0.png-a3e8be42010a78897165273a23e4f9b9.s3tc.ctex", "res://.godot/imported/Lotion_0.png-a3e8be42010a78897165273a23e4f9b9.etc2.ctex"]
+dest_files=["res://.godot/imported/Lotion_0.png-a3e8be42010a78897165273a23e4f9b9.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

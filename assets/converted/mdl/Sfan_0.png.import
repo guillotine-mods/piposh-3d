@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bk7i66y3ib1bn"
-path.s3tc="res://.godot/imported/Sfan_0.png-34f31dee61de68d75cff5cec3eb07c69.s3tc.ctex"
-path.etc2="res://.godot/imported/Sfan_0.png-34f31dee61de68d75cff5cec3eb07c69.etc2.ctex"
+path="res://.godot/imported/Sfan_0.png-34f31dee61de68d75cff5cec3eb07c69.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "2e46a08ff4c026cad951c3f86822930e"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Sfan_0.png"
-dest_files=["res://.godot/imported/Sfan_0.png-34f31dee61de68d75cff5cec3eb07c69.s3tc.ctex", "res://.godot/imported/Sfan_0.png-34f31dee61de68d75cff5cec3eb07c69.etc2.ctex"]
+dest_files=["res://.godot/imported/Sfan_0.png-34f31dee61de68d75cff5cec3eb07c69.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

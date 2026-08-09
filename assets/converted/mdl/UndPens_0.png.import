@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ededurwyqgsv"
-path.s3tc="res://.godot/imported/UndPens_0.png-2c7bf271afb13df7e8909dd4a175b1c8.s3tc.ctex"
-path.etc2="res://.godot/imported/UndPens_0.png-2c7bf271afb13df7e8909dd4a175b1c8.etc2.ctex"
+path="res://.godot/imported/UndPens_0.png-2c7bf271afb13df7e8909dd4a175b1c8.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "d11d987cd1e80ce3f5904010f07de4ea"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/UndPens_0.png"
-dest_files=["res://.godot/imported/UndPens_0.png-2c7bf271afb13df7e8909dd4a175b1c8.s3tc.ctex", "res://.godot/imported/UndPens_0.png-2c7bf271afb13df7e8909dd4a175b1c8.etc2.ctex"]
+dest_files=["res://.godot/imported/UndPens_0.png-2c7bf271afb13df7e8909dd4a175b1c8.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

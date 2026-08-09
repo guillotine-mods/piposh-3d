@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://kuyh8orvqqks"
-path.s3tc="res://.godot/imported/JapArc_0.png-d5d9ac05d7d7a722ab714b44720ceb95.s3tc.ctex"
-path.etc2="res://.godot/imported/JapArc_0.png-d5d9ac05d7d7a722ab714b44720ceb95.etc2.ctex"
+path="res://.godot/imported/JapArc_0.png-d5d9ac05d7d7a722ab714b44720ceb95.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "1a5f00035eaa636e928e19f9e390ca9c"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/JapArc_0.png"
-dest_files=["res://.godot/imported/JapArc_0.png-d5d9ac05d7d7a722ab714b44720ceb95.s3tc.ctex", "res://.godot/imported/JapArc_0.png-d5d9ac05d7d7a722ab714b44720ceb95.etc2.ctex"]
+dest_files=["res://.godot/imported/JapArc_0.png-d5d9ac05d7d7a722ab714b44720ceb95.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

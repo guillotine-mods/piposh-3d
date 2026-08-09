@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bedcfg5ekoddl"
-path.s3tc="res://.godot/imported/Susik_0.png-56b2cebf3411bf2beb7c07b3fc76850c.s3tc.ctex"
-path.etc2="res://.godot/imported/Susik_0.png-56b2cebf3411bf2beb7c07b3fc76850c.etc2.ctex"
+path="res://.godot/imported/Susik_0.png-56b2cebf3411bf2beb7c07b3fc76850c.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "57367c198c3f1f28fc05b14433d108e2"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Susik_0.png"
-dest_files=["res://.godot/imported/Susik_0.png-56b2cebf3411bf2beb7c07b3fc76850c.s3tc.ctex", "res://.godot/imported/Susik_0.png-56b2cebf3411bf2beb7c07b3fc76850c.etc2.ctex"]
+dest_files=["res://.godot/imported/Susik_0.png-56b2cebf3411bf2beb7c07b3fc76850c.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

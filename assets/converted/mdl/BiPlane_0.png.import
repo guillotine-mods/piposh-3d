@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b0f84h53vbge7"
-path.s3tc="res://.godot/imported/BiPlane_0.png-897feb28cf8c93b19c48b6e966d35261.s3tc.ctex"
-path.etc2="res://.godot/imported/BiPlane_0.png-897feb28cf8c93b19c48b6e966d35261.etc2.ctex"
+path="res://.godot/imported/BiPlane_0.png-897feb28cf8c93b19c48b6e966d35261.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "3a2be33ac3ba04bf8da5de251369c355"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/BiPlane_0.png"
-dest_files=["res://.godot/imported/BiPlane_0.png-897feb28cf8c93b19c48b6e966d35261.s3tc.ctex", "res://.godot/imported/BiPlane_0.png-897feb28cf8c93b19c48b6e966d35261.etc2.ctex"]
+dest_files=["res://.godot/imported/BiPlane_0.png-897feb28cf8c93b19c48b6e966d35261.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

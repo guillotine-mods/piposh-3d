@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cg2kc7xjbkbkv"
-path.s3tc="res://.godot/imported/Windthig_0.png-eaedaac69b5c0abe291280e5cf847ccf.s3tc.ctex"
-path.etc2="res://.godot/imported/Windthig_0.png-eaedaac69b5c0abe291280e5cf847ccf.etc2.ctex"
+path="res://.godot/imported/Windthig_0.png-eaedaac69b5c0abe291280e5cf847ccf.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "d40c68f1b4381487633760119a010ebc"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Windthig_0.png"
-dest_files=["res://.godot/imported/Windthig_0.png-eaedaac69b5c0abe291280e5cf847ccf.s3tc.ctex", "res://.godot/imported/Windthig_0.png-eaedaac69b5c0abe291280e5cf847ccf.etc2.ctex"]
+dest_files=["res://.godot/imported/Windthig_0.png-eaedaac69b5c0abe291280e5cf847ccf.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

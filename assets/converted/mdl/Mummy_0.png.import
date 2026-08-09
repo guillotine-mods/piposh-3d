@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://d2lpxuyg0vxt7"
-path.s3tc="res://.godot/imported/Mummy_0.png-65e9cff6a6e02915191e8a9c00bfad3c.s3tc.ctex"
-path.etc2="res://.godot/imported/Mummy_0.png-65e9cff6a6e02915191e8a9c00bfad3c.etc2.ctex"
+path="res://.godot/imported/Mummy_0.png-65e9cff6a6e02915191e8a9c00bfad3c.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "ace0c31625f8257cc7f5f9964f1b0585"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Mummy_0.png"
-dest_files=["res://.godot/imported/Mummy_0.png-65e9cff6a6e02915191e8a9c00bfad3c.s3tc.ctex", "res://.godot/imported/Mummy_0.png-65e9cff6a6e02915191e8a9c00bfad3c.etc2.ctex"]
+dest_files=["res://.godot/imported/Mummy_0.png-65e9cff6a6e02915191e8a9c00bfad3c.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

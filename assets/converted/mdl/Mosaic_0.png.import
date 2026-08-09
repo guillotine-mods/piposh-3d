@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ydxmk57qij1d"
-path.s3tc="res://.godot/imported/Mosaic_0.png-502134d58296fe15b306db99be6e409f.s3tc.ctex"
-path.etc2="res://.godot/imported/Mosaic_0.png-502134d58296fe15b306db99be6e409f.etc2.ctex"
+path="res://.godot/imported/Mosaic_0.png-502134d58296fe15b306db99be6e409f.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "2ccc9fecd49a4c201ffdcba181d1026b"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Mosaic_0.png"
-dest_files=["res://.godot/imported/Mosaic_0.png-502134d58296fe15b306db99be6e409f.s3tc.ctex", "res://.godot/imported/Mosaic_0.png-502134d58296fe15b306db99be6e409f.etc2.ctex"]
+dest_files=["res://.godot/imported/Mosaic_0.png-502134d58296fe15b306db99be6e409f.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

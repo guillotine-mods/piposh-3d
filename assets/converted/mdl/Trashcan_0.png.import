@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://blsdd1ue88tpy"
-path.s3tc="res://.godot/imported/Trashcan_0.png-50dcccfc90f94048c8c8659d8eab037c.s3tc.ctex"
-path.etc2="res://.godot/imported/Trashcan_0.png-50dcccfc90f94048c8c8659d8eab037c.etc2.ctex"
+path="res://.godot/imported/Trashcan_0.png-50dcccfc90f94048c8c8659d8eab037c.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "c70fdff8238590b9950b64b0f26945b7"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Trashcan_0.png"
-dest_files=["res://.godot/imported/Trashcan_0.png-50dcccfc90f94048c8c8659d8eab037c.s3tc.ctex", "res://.godot/imported/Trashcan_0.png-50dcccfc90f94048c8c8659d8eab037c.etc2.ctex"]
+dest_files=["res://.godot/imported/Trashcan_0.png-50dcccfc90f94048c8c8659d8eab037c.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

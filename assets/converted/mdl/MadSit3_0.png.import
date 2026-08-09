@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cbhnjbq21stao"
-path.s3tc="res://.godot/imported/MadSit3_0.png-6c15457a175849e3abef00aa758d0431.s3tc.ctex"
-path.etc2="res://.godot/imported/MadSit3_0.png-6c15457a175849e3abef00aa758d0431.etc2.ctex"
+path="res://.godot/imported/MadSit3_0.png-6c15457a175849e3abef00aa758d0431.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "d874338b35d3b2b6340f2375a3f99c57"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/MadSit3_0.png"
-dest_files=["res://.godot/imported/MadSit3_0.png-6c15457a175849e3abef00aa758d0431.s3tc.ctex", "res://.godot/imported/MadSit3_0.png-6c15457a175849e3abef00aa758d0431.etc2.ctex"]
+dest_files=["res://.godot/imported/MadSit3_0.png-6c15457a175849e3abef00aa758d0431.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

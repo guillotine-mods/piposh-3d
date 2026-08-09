@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://12jgjfo6nbvq"
-path.s3tc="res://.godot/imported/ESpark_0.png-fa333dcd416f7488a18c80a45e644249.s3tc.ctex"
-path.etc2="res://.godot/imported/ESpark_0.png-fa333dcd416f7488a18c80a45e644249.etc2.ctex"
+path="res://.godot/imported/ESpark_0.png-fa333dcd416f7488a18c80a45e644249.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "31a4d8b58b5385e2312a13d8f2031bf2"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/ESpark_0.png"
-dest_files=["res://.godot/imported/ESpark_0.png-fa333dcd416f7488a18c80a45e644249.s3tc.ctex", "res://.godot/imported/ESpark_0.png-fa333dcd416f7488a18c80a45e644249.etc2.ctex"]
+dest_files=["res://.godot/imported/ESpark_0.png-fa333dcd416f7488a18c80a45e644249.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

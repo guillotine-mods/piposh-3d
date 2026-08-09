@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b7kwn80nwltfk"
-path.s3tc="res://.godot/imported/BadRide2_0.png-0f53c289eb81f2447a8c0f5e08967548.s3tc.ctex"
-path.etc2="res://.godot/imported/BadRide2_0.png-0f53c289eb81f2447a8c0f5e08967548.etc2.ctex"
+path="res://.godot/imported/BadRide2_0.png-0f53c289eb81f2447a8c0f5e08967548.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "9e03ff64240307f9dd8d77bc1a7c670a"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/BadRide2_0.png"
-dest_files=["res://.godot/imported/BadRide2_0.png-0f53c289eb81f2447a8c0f5e08967548.s3tc.ctex", "res://.godot/imported/BadRide2_0.png-0f53c289eb81f2447a8c0f5e08967548.etc2.ctex"]
+dest_files=["res://.godot/imported/BadRide2_0.png-0f53c289eb81f2447a8c0f5e08967548.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

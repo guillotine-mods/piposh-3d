@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bl0qxwrinjus3"
-path.s3tc="res://.godot/imported/Pisa_0.png-203cd11a86c48d06246b16ab1b794ace.s3tc.ctex"
-path.etc2="res://.godot/imported/Pisa_0.png-203cd11a86c48d06246b16ab1b794ace.etc2.ctex"
+path="res://.godot/imported/Pisa_0.png-203cd11a86c48d06246b16ab1b794ace.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "b10212e21da9c2e309e63e9da7623c31"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Pisa_0.png"
-dest_files=["res://.godot/imported/Pisa_0.png-203cd11a86c48d06246b16ab1b794ace.s3tc.ctex", "res://.godot/imported/Pisa_0.png-203cd11a86c48d06246b16ab1b794ace.etc2.ctex"]
+dest_files=["res://.godot/imported/Pisa_0.png-203cd11a86c48d06246b16ab1b794ace.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

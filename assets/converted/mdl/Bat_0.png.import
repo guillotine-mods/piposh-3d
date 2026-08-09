@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bx5vlmj47tdlx"
-path.s3tc="res://.godot/imported/Bat_0.png-7fc6748e9b8b10f5eb57e1fa7b809ed8.s3tc.ctex"
-path.etc2="res://.godot/imported/Bat_0.png-7fc6748e9b8b10f5eb57e1fa7b809ed8.etc2.ctex"
+path="res://.godot/imported/Bat_0.png-7fc6748e9b8b10f5eb57e1fa7b809ed8.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "18e3b19130b035764ef56e0af8384c4f"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Bat_0.png"
-dest_files=["res://.godot/imported/Bat_0.png-7fc6748e9b8b10f5eb57e1fa7b809ed8.s3tc.ctex", "res://.godot/imported/Bat_0.png-7fc6748e9b8b10f5eb57e1fa7b809ed8.etc2.ctex"]
+dest_files=["res://.godot/imported/Bat_0.png-7fc6748e9b8b10f5eb57e1fa7b809ed8.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

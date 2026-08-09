@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cgki6qbyck5ax"
-path.s3tc="res://.godot/imported/cards4_0.png-4457ae5e1eff841b96d4e34cecb547db.s3tc.ctex"
-path.etc2="res://.godot/imported/cards4_0.png-4457ae5e1eff841b96d4e34cecb547db.etc2.ctex"
+path="res://.godot/imported/cards4_0.png-4457ae5e1eff841b96d4e34cecb547db.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "4dfafab3c30caef8081b181c4aa695f8"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/cards4_0.png"
-dest_files=["res://.godot/imported/cards4_0.png-4457ae5e1eff841b96d4e34cecb547db.s3tc.ctex", "res://.godot/imported/cards4_0.png-4457ae5e1eff841b96d4e34cecb547db.etc2.ctex"]
+dest_files=["res://.godot/imported/cards4_0.png-4457ae5e1eff841b96d4e34cecb547db.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

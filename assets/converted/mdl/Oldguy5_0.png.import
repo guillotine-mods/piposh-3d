@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://pflydgm4utb1"
-path.s3tc="res://.godot/imported/Oldguy5_0.png-94fd6a7360aedfa2589bbf87be1dffec.s3tc.ctex"
-path.etc2="res://.godot/imported/Oldguy5_0.png-94fd6a7360aedfa2589bbf87be1dffec.etc2.ctex"
+path="res://.godot/imported/Oldguy5_0.png-94fd6a7360aedfa2589bbf87be1dffec.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "8aa4a3b4ddf26bb5d6209345618101b0"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Oldguy5_0.png"
-dest_files=["res://.godot/imported/Oldguy5_0.png-94fd6a7360aedfa2589bbf87be1dffec.s3tc.ctex", "res://.godot/imported/Oldguy5_0.png-94fd6a7360aedfa2589bbf87be1dffec.etc2.ctex"]
+dest_files=["res://.godot/imported/Oldguy5_0.png-94fd6a7360aedfa2589bbf87be1dffec.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c5hg7u1gi18dn"
-path.s3tc="res://.godot/imported/OldDance_0.png-9fe495917609eebfbfe41d2f4af7d778.s3tc.ctex"
-path.etc2="res://.godot/imported/OldDance_0.png-9fe495917609eebfbfe41d2f4af7d778.etc2.ctex"
+path="res://.godot/imported/OldDance_0.png-9fe495917609eebfbfe41d2f4af7d778.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "f30b41e8344a4afc11c0dc731a9b9064"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/OldDance_0.png"
-dest_files=["res://.godot/imported/OldDance_0.png-9fe495917609eebfbfe41d2f4af7d778.s3tc.ctex", "res://.godot/imported/OldDance_0.png-9fe495917609eebfbfe41d2f4af7d778.etc2.ctex"]
+dest_files=["res://.godot/imported/OldDance_0.png-9fe495917609eebfbfe41d2f4af7d778.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

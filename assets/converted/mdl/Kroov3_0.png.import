@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ck4mds5qh6v8q"
-path.s3tc="res://.godot/imported/Kroov3_0.png-9b9bd93e97bae70c3d2425e9eff9c4e7.s3tc.ctex"
-path.etc2="res://.godot/imported/Kroov3_0.png-9b9bd93e97bae70c3d2425e9eff9c4e7.etc2.ctex"
+path="res://.godot/imported/Kroov3_0.png-9b9bd93e97bae70c3d2425e9eff9c4e7.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "e6e7ef55899fbeba8580284d77726eb6"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Kroov3_0.png"
-dest_files=["res://.godot/imported/Kroov3_0.png-9b9bd93e97bae70c3d2425e9eff9c4e7.s3tc.ctex", "res://.godot/imported/Kroov3_0.png-9b9bd93e97bae70c3d2425e9eff9c4e7.etc2.ctex"]
+dest_files=["res://.godot/imported/Kroov3_0.png-9b9bd93e97bae70c3d2425e9eff9c4e7.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bowtyolkx3yae"
-path.s3tc="res://.godot/imported/Matka_0.png-16633b2c30bf251c01f8e7dfc337b8b6.s3tc.ctex"
-path.etc2="res://.godot/imported/Matka_0.png-16633b2c30bf251c01f8e7dfc337b8b6.etc2.ctex"
+path="res://.godot/imported/Matka_0.png-16633b2c30bf251c01f8e7dfc337b8b6.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "02d05e867dfde96fbc3a304c9ce2a994"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Matka_0.png"
-dest_files=["res://.godot/imported/Matka_0.png-16633b2c30bf251c01f8e7dfc337b8b6.s3tc.ctex", "res://.godot/imported/Matka_0.png-16633b2c30bf251c01f8e7dfc337b8b6.etc2.ctex"]
+dest_files=["res://.godot/imported/Matka_0.png-16633b2c30bf251c01f8e7dfc337b8b6.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

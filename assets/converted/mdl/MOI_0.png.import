@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://brqtds12wr2lr"
-path.s3tc="res://.godot/imported/MOI_0.png-162d6ed4abde1947c81a11a62b7b1edc.s3tc.ctex"
-path.etc2="res://.godot/imported/MOI_0.png-162d6ed4abde1947c81a11a62b7b1edc.etc2.ctex"
+path="res://.godot/imported/MOI_0.png-162d6ed4abde1947c81a11a62b7b1edc.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "c84cd5030719c5b9494b155494fbca9e"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/MOI_0.png"
-dest_files=["res://.godot/imported/MOI_0.png-162d6ed4abde1947c81a11a62b7b1edc.s3tc.ctex", "res://.godot/imported/MOI_0.png-162d6ed4abde1947c81a11a62b7b1edc.etc2.ctex"]
+dest_files=["res://.godot/imported/MOI_0.png-162d6ed4abde1947c81a11a62b7b1edc.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

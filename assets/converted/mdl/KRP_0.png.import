@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://glm88x0moo8q"
-path.s3tc="res://.godot/imported/KRP_0.png-d467bab66aeed77e6ba62242805fe047.s3tc.ctex"
-path.etc2="res://.godot/imported/KRP_0.png-d467bab66aeed77e6ba62242805fe047.etc2.ctex"
+path="res://.godot/imported/KRP_0.png-d467bab66aeed77e6ba62242805fe047.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "3c3d8a36906b2edb95a838f84c097dd8"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/KRP_0.png"
-dest_files=["res://.godot/imported/KRP_0.png-d467bab66aeed77e6ba62242805fe047.s3tc.ctex", "res://.godot/imported/KRP_0.png-d467bab66aeed77e6ba62242805fe047.etc2.ctex"]
+dest_files=["res://.godot/imported/KRP_0.png-d467bab66aeed77e6ba62242805fe047.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

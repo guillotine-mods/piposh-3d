@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bwgcjypvo60ww"
-path.s3tc="res://.godot/imported/Falling_0.png-5930b9c266ace10d7e4a9b6e3d808c29.s3tc.ctex"
-path.etc2="res://.godot/imported/Falling_0.png-5930b9c266ace10d7e4a9b6e3d808c29.etc2.ctex"
+path="res://.godot/imported/Falling_0.png-5930b9c266ace10d7e4a9b6e3d808c29.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "4c2985ca29853123494fae2266b755fd"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Falling_0.png"
-dest_files=["res://.godot/imported/Falling_0.png-5930b9c266ace10d7e4a9b6e3d808c29.s3tc.ctex", "res://.godot/imported/Falling_0.png-5930b9c266ace10d7e4a9b6e3d808c29.etc2.ctex"]
+dest_files=["res://.godot/imported/Falling_0.png-5930b9c266ace10d7e4a9b6e3d808c29.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

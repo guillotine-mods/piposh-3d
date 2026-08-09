@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dl5k4c5l87o1c"
-path.s3tc="res://.godot/imported/Bus2_0.png-193c2d10197130ae6fdbd43754fd8d7f.s3tc.ctex"
-path.etc2="res://.godot/imported/Bus2_0.png-193c2d10197130ae6fdbd43754fd8d7f.etc2.ctex"
+path="res://.godot/imported/Bus2_0.png-193c2d10197130ae6fdbd43754fd8d7f.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "13521202248ae94661ea1c3a35730b75"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Bus2_0.png"
-dest_files=["res://.godot/imported/Bus2_0.png-193c2d10197130ae6fdbd43754fd8d7f.s3tc.ctex", "res://.godot/imported/Bus2_0.png-193c2d10197130ae6fdbd43754fd8d7f.etc2.ctex"]
+dest_files=["res://.godot/imported/Bus2_0.png-193c2d10197130ae6fdbd43754fd8d7f.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

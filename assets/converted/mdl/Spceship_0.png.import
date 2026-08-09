@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bqymkdrnopic2"
-path.s3tc="res://.godot/imported/Spceship_0.png-9abb2fa2031971f0a92355e2af620d8f.s3tc.ctex"
-path.etc2="res://.godot/imported/Spceship_0.png-9abb2fa2031971f0a92355e2af620d8f.etc2.ctex"
+path="res://.godot/imported/Spceship_0.png-9abb2fa2031971f0a92355e2af620d8f.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "c31484256cee7e5a50c177d25f5f8799"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Spceship_0.png"
-dest_files=["res://.godot/imported/Spceship_0.png-9abb2fa2031971f0a92355e2af620d8f.s3tc.ctex", "res://.godot/imported/Spceship_0.png-9abb2fa2031971f0a92355e2af620d8f.etc2.ctex"]
+dest_files=["res://.godot/imported/Spceship_0.png-9abb2fa2031971f0a92355e2af620d8f.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

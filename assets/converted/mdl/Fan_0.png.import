@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://6mt3nk6gac4k"
-path.s3tc="res://.godot/imported/Fan_0.png-a39d0ed69677ff27391082f55fba2c92.s3tc.ctex"
-path.etc2="res://.godot/imported/Fan_0.png-a39d0ed69677ff27391082f55fba2c92.etc2.ctex"
+path="res://.godot/imported/Fan_0.png-a39d0ed69677ff27391082f55fba2c92.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "29f63c6b3c399c7b6a629fc659b5c08a"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Fan_0.png"
-dest_files=["res://.godot/imported/Fan_0.png-a39d0ed69677ff27391082f55fba2c92.s3tc.ctex", "res://.godot/imported/Fan_0.png-a39d0ed69677ff27391082f55fba2c92.etc2.ctex"]
+dest_files=["res://.godot/imported/Fan_0.png-a39d0ed69677ff27391082f55fba2c92.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

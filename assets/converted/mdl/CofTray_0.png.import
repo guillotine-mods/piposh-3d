@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b4tdot4ojng6k"
-path.s3tc="res://.godot/imported/CofTray_0.png-e3af7694c9f337ecb832394383b75f7d.s3tc.ctex"
-path.etc2="res://.godot/imported/CofTray_0.png-e3af7694c9f337ecb832394383b75f7d.etc2.ctex"
+path="res://.godot/imported/CofTray_0.png-e3af7694c9f337ecb832394383b75f7d.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "ff04990e43cc71ac17053a84aedbbcf1"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/CofTray_0.png"
-dest_files=["res://.godot/imported/CofTray_0.png-e3af7694c9f337ecb832394383b75f7d.s3tc.ctex", "res://.godot/imported/CofTray_0.png-e3af7694c9f337ecb832394383b75f7d.etc2.ctex"]
+dest_files=["res://.godot/imported/CofTray_0.png-e3af7694c9f337ecb832394383b75f7d.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

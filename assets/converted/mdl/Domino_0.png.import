@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cekdynqekd5kr"
-path.s3tc="res://.godot/imported/Domino_0.png-6efb0a8099b264d674529653ce8634a2.s3tc.ctex"
-path.etc2="res://.godot/imported/Domino_0.png-6efb0a8099b264d674529653ce8634a2.etc2.ctex"
+path="res://.godot/imported/Domino_0.png-6efb0a8099b264d674529653ce8634a2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "ab085e494d197f19361d7fd31a084fc6"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Domino_0.png"
-dest_files=["res://.godot/imported/Domino_0.png-6efb0a8099b264d674529653ce8634a2.s3tc.ctex", "res://.godot/imported/Domino_0.png-6efb0a8099b264d674529653ce8634a2.etc2.ctex"]
+dest_files=["res://.godot/imported/Domino_0.png-6efb0a8099b264d674529653ce8634a2.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

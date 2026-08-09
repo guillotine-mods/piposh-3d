@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://d3dxh0u0q70yc"
-path.s3tc="res://.godot/imported/PozRide_0.png-a929dc838e5640dd6712da9094c03014.s3tc.ctex"
-path.etc2="res://.godot/imported/PozRide_0.png-a929dc838e5640dd6712da9094c03014.etc2.ctex"
+path="res://.godot/imported/PozRide_0.png-a929dc838e5640dd6712da9094c03014.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "11fa903839dcb99c2c0ca0345c6ef87b"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/PozRide_0.png"
-dest_files=["res://.godot/imported/PozRide_0.png-a929dc838e5640dd6712da9094c03014.s3tc.ctex", "res://.godot/imported/PozRide_0.png-a929dc838e5640dd6712da9094c03014.etc2.ctex"]
+dest_files=["res://.godot/imported/PozRide_0.png-a929dc838e5640dd6712da9094c03014.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

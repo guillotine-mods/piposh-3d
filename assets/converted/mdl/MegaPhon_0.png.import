@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://br61fnwmkj41l"
-path.s3tc="res://.godot/imported/MegaPhon_0.png-4569a85c868b5dbfcad808bdf82a1b16.s3tc.ctex"
-path.etc2="res://.godot/imported/MegaPhon_0.png-4569a85c868b5dbfcad808bdf82a1b16.etc2.ctex"
+path="res://.godot/imported/MegaPhon_0.png-4569a85c868b5dbfcad808bdf82a1b16.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "f17f37b42b30d5ff3f4101caac61b4b1"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/MegaPhon_0.png"
-dest_files=["res://.godot/imported/MegaPhon_0.png-4569a85c868b5dbfcad808bdf82a1b16.s3tc.ctex", "res://.godot/imported/MegaPhon_0.png-4569a85c868b5dbfcad808bdf82a1b16.etc2.ctex"]
+dest_files=["res://.godot/imported/MegaPhon_0.png-4569a85c868b5dbfcad808bdf82a1b16.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

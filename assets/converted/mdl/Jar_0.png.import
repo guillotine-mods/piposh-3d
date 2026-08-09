@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bev8tn5u75xas"
-path.s3tc="res://.godot/imported/Jar_0.png-1a183b5584f79988f0961b57f95ac974.s3tc.ctex"
-path.etc2="res://.godot/imported/Jar_0.png-1a183b5584f79988f0961b57f95ac974.etc2.ctex"
+path="res://.godot/imported/Jar_0.png-1a183b5584f79988f0961b57f95ac974.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "53b83481f5ef3132eb57d726825585b1"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Jar_0.png"
-dest_files=["res://.godot/imported/Jar_0.png-1a183b5584f79988f0961b57f95ac974.s3tc.ctex", "res://.godot/imported/Jar_0.png-1a183b5584f79988f0961b57f95ac974.etc2.ctex"]
+dest_files=["res://.godot/imported/Jar_0.png-1a183b5584f79988f0961b57f95ac974.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

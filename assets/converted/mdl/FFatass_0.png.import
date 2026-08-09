@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bkbwa1jgcgee0"
-path.s3tc="res://.godot/imported/FFatass_0.png-c293cf2faf09d4e58f196b3bddb93fc3.s3tc.ctex"
-path.etc2="res://.godot/imported/FFatass_0.png-c293cf2faf09d4e58f196b3bddb93fc3.etc2.ctex"
+path="res://.godot/imported/FFatass_0.png-c293cf2faf09d4e58f196b3bddb93fc3.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "08945b7e249c331ed6baf82286aad5d0"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/FFatass_0.png"
-dest_files=["res://.godot/imported/FFatass_0.png-c293cf2faf09d4e58f196b3bddb93fc3.s3tc.ctex", "res://.godot/imported/FFatass_0.png-c293cf2faf09d4e58f196b3bddb93fc3.etc2.ctex"]
+dest_files=["res://.godot/imported/FFatass_0.png-c293cf2faf09d4e58f196b3bddb93fc3.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

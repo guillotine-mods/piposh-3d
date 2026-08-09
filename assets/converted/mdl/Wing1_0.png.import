@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b8l6a6lml6b5x"
-path.s3tc="res://.godot/imported/Wing1_0.png-2077257ff7a14f5255afc508a21471a4.s3tc.ctex"
-path.etc2="res://.godot/imported/Wing1_0.png-2077257ff7a14f5255afc508a21471a4.etc2.ctex"
+path="res://.godot/imported/Wing1_0.png-2077257ff7a14f5255afc508a21471a4.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "318062f39c9eec64c4dce341487f4a94"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Wing1_0.png"
-dest_files=["res://.godot/imported/Wing1_0.png-2077257ff7a14f5255afc508a21471a4.s3tc.ctex", "res://.godot/imported/Wing1_0.png-2077257ff7a14f5255afc508a21471a4.etc2.ctex"]
+dest_files=["res://.godot/imported/Wing1_0.png-2077257ff7a14f5255afc508a21471a4.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

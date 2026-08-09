@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://qteoblem6nvn"
-path.s3tc="res://.godot/imported/Missile_0.png-8fc4dffd57c2d7fde133516e918ebc9a.s3tc.ctex"
-path.etc2="res://.godot/imported/Missile_0.png-8fc4dffd57c2d7fde133516e918ebc9a.etc2.ctex"
+path="res://.godot/imported/Missile_0.png-8fc4dffd57c2d7fde133516e918ebc9a.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "0bef9fcae125def68a701decfff9cbc5"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Missile_0.png"
-dest_files=["res://.godot/imported/Missile_0.png-8fc4dffd57c2d7fde133516e918ebc9a.s3tc.ctex", "res://.godot/imported/Missile_0.png-8fc4dffd57c2d7fde133516e918ebc9a.etc2.ctex"]
+dest_files=["res://.godot/imported/Missile_0.png-8fc4dffd57c2d7fde133516e918ebc9a.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

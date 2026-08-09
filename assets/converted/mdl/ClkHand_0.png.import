@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bdri3y5ruye2h"
-path.s3tc="res://.godot/imported/ClkHand_0.png-2c8f3b51513e7207aaac8ffd1113a58b.s3tc.ctex"
-path.etc2="res://.godot/imported/ClkHand_0.png-2c8f3b51513e7207aaac8ffd1113a58b.etc2.ctex"
+path="res://.godot/imported/ClkHand_0.png-2c8f3b51513e7207aaac8ffd1113a58b.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "0f26f9ed0bc6791cc751b1288f8ec649"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/ClkHand_0.png"
-dest_files=["res://.godot/imported/ClkHand_0.png-2c8f3b51513e7207aaac8ffd1113a58b.s3tc.ctex", "res://.godot/imported/ClkHand_0.png-2c8f3b51513e7207aaac8ffd1113a58b.etc2.ctex"]
+dest_files=["res://.godot/imported/ClkHand_0.png-2c8f3b51513e7207aaac8ffd1113a58b.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

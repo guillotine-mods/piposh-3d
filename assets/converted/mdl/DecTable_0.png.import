@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cdem4f0kxoaaw"
-path.s3tc="res://.godot/imported/DecTable_0.png-a1654e283a7b6f18f31f941a73eb0827.s3tc.ctex"
-path.etc2="res://.godot/imported/DecTable_0.png-a1654e283a7b6f18f31f941a73eb0827.etc2.ctex"
+path="res://.godot/imported/DecTable_0.png-a1654e283a7b6f18f31f941a73eb0827.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "f6fd0bcab6e1798364ca649c563c4800"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/DecTable_0.png"
-dest_files=["res://.godot/imported/DecTable_0.png-a1654e283a7b6f18f31f941a73eb0827.s3tc.ctex", "res://.godot/imported/DecTable_0.png-a1654e283a7b6f18f31f941a73eb0827.etc2.ctex"]
+dest_files=["res://.godot/imported/DecTable_0.png-a1654e283a7b6f18f31f941a73eb0827.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

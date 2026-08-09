@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bn88vspqigxno"
-path.s3tc="res://.godot/imported/Palmtree_0.png-0ce7dc6bc874955f96a05ab22c088c2b.s3tc.ctex"
-path.etc2="res://.godot/imported/Palmtree_0.png-0ce7dc6bc874955f96a05ab22c088c2b.etc2.ctex"
+path="res://.godot/imported/Palmtree_0.png-0ce7dc6bc874955f96a05ab22c088c2b.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "dc6fc33986647c9fd1bad29cf8d02d45"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Palmtree_0.png"
-dest_files=["res://.godot/imported/Palmtree_0.png-0ce7dc6bc874955f96a05ab22c088c2b.s3tc.ctex", "res://.godot/imported/Palmtree_0.png-0ce7dc6bc874955f96a05ab22c088c2b.etc2.ctex"]
+dest_files=["res://.godot/imported/Palmtree_0.png-0ce7dc6bc874955f96a05ab22c088c2b.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

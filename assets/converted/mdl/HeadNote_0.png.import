@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bfrsri8svpt7c"
-path.s3tc="res://.godot/imported/HeadNote_0.png-b1533744d1f49ce10b49c9a5c178beb0.s3tc.ctex"
-path.etc2="res://.godot/imported/HeadNote_0.png-b1533744d1f49ce10b49c9a5c178beb0.etc2.ctex"
+path="res://.godot/imported/HeadNote_0.png-b1533744d1f49ce10b49c9a5c178beb0.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "241f1f191c6b111cc072b5cbd14ec3d6"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/HeadNote_0.png"
-dest_files=["res://.godot/imported/HeadNote_0.png-b1533744d1f49ce10b49c9a5c178beb0.s3tc.ctex", "res://.godot/imported/HeadNote_0.png-b1533744d1f49ce10b49c9a5c178beb0.etc2.ctex"]
+dest_files=["res://.godot/imported/HeadNote_0.png-b1533744d1f49ce10b49c9a5c178beb0.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

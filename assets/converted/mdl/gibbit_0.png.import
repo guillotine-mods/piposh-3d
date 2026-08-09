@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://37ga3wagfv5y"
-path.s3tc="res://.godot/imported/gibbit_0.png-ce565b3a6376e2b5bb06c71d8d27d946.s3tc.ctex"
-path.etc2="res://.godot/imported/gibbit_0.png-ce565b3a6376e2b5bb06c71d8d27d946.etc2.ctex"
+path="res://.godot/imported/gibbit_0.png-ce565b3a6376e2b5bb06c71d8d27d946.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "0b0a60028c5f7eb3e0d9118220119227"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/gibbit_0.png"
-dest_files=["res://.godot/imported/gibbit_0.png-ce565b3a6376e2b5bb06c71d8d27d946.s3tc.ctex", "res://.godot/imported/gibbit_0.png-ce565b3a6376e2b5bb06c71d8d27d946.etc2.ctex"]
+dest_files=["res://.godot/imported/gibbit_0.png-ce565b3a6376e2b5bb06c71d8d27d946.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

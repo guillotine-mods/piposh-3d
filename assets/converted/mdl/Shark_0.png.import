@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://xdi2q2spdovw"
-path.s3tc="res://.godot/imported/Shark_0.png-1abc01483c020a1176cad9c46d49784b.s3tc.ctex"
-path.etc2="res://.godot/imported/Shark_0.png-1abc01483c020a1176cad9c46d49784b.etc2.ctex"
+path="res://.godot/imported/Shark_0.png-1abc01483c020a1176cad9c46d49784b.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "e9c244adbfccf906337a99acb8991132"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Shark_0.png"
-dest_files=["res://.godot/imported/Shark_0.png-1abc01483c020a1176cad9c46d49784b.s3tc.ctex", "res://.godot/imported/Shark_0.png-1abc01483c020a1176cad9c46d49784b.etc2.ctex"]
+dest_files=["res://.godot/imported/Shark_0.png-1abc01483c020a1176cad9c46d49784b.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

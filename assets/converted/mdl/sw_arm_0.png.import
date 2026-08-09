@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cddgdtrtpf6tk"
-path.s3tc="res://.godot/imported/sw_arm_0.png-e558cbfa362f20a6c7b2f6f3c9ec077c.s3tc.ctex"
-path.etc2="res://.godot/imported/sw_arm_0.png-e558cbfa362f20a6c7b2f6f3c9ec077c.etc2.ctex"
+path="res://.godot/imported/sw_arm_0.png-e558cbfa362f20a6c7b2f6f3c9ec077c.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "6cf5148238a8931c4b680373b69736d0"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/sw_arm_0.png"
-dest_files=["res://.godot/imported/sw_arm_0.png-e558cbfa362f20a6c7b2f6f3c9ec077c.s3tc.ctex", "res://.godot/imported/sw_arm_0.png-e558cbfa362f20a6c7b2f6f3c9ec077c.etc2.ctex"]
+dest_files=["res://.godot/imported/sw_arm_0.png-e558cbfa362f20a6c7b2f6f3c9ec077c.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

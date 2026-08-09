@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bq2jwkb0ofu6t"
-path.s3tc="res://.godot/imported/Bully_0.png-4435c9f4a30f008c5d358024695c3969.s3tc.ctex"
-path.etc2="res://.godot/imported/Bully_0.png-4435c9f4a30f008c5d358024695c3969.etc2.ctex"
+path="res://.godot/imported/Bully_0.png-4435c9f4a30f008c5d358024695c3969.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "41bbe524d852eb2960b6f0319c170c6a"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Bully_0.png"
-dest_files=["res://.godot/imported/Bully_0.png-4435c9f4a30f008c5d358024695c3969.s3tc.ctex", "res://.godot/imported/Bully_0.png-4435c9f4a30f008c5d358024695c3969.etc2.ctex"]
+dest_files=["res://.godot/imported/Bully_0.png-4435c9f4a30f008c5d358024695c3969.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

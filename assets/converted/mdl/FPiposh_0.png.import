@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://fhmh0t3a2wdu"
-path.s3tc="res://.godot/imported/FPiposh_0.png-0b75aa147610c9ba3d71cfb87468e3de.s3tc.ctex"
-path.etc2="res://.godot/imported/FPiposh_0.png-0b75aa147610c9ba3d71cfb87468e3de.etc2.ctex"
+path="res://.godot/imported/FPiposh_0.png-0b75aa147610c9ba3d71cfb87468e3de.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "435d86af911707ecd3c7843217cf541e"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/FPiposh_0.png"
-dest_files=["res://.godot/imported/FPiposh_0.png-0b75aa147610c9ba3d71cfb87468e3de.s3tc.ctex", "res://.godot/imported/FPiposh_0.png-0b75aa147610c9ba3d71cfb87468e3de.etc2.ctex"]
+dest_files=["res://.godot/imported/FPiposh_0.png-0b75aa147610c9ba3d71cfb87468e3de.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

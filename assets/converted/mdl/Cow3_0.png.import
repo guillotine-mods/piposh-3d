@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dm8jw0qxw0bb7"
-path.s3tc="res://.godot/imported/Cow3_0.png-b0e497bd73226920c39cb3286ef19f59.s3tc.ctex"
-path.etc2="res://.godot/imported/Cow3_0.png-b0e497bd73226920c39cb3286ef19f59.etc2.ctex"
+path="res://.godot/imported/Cow3_0.png-b0e497bd73226920c39cb3286ef19f59.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "17d6268b9b297be955c9d27a3639a38f"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Cow3_0.png"
-dest_files=["res://.godot/imported/Cow3_0.png-b0e497bd73226920c39cb3286ef19f59.s3tc.ctex", "res://.godot/imported/Cow3_0.png-b0e497bd73226920c39cb3286ef19f59.etc2.ctex"]
+dest_files=["res://.godot/imported/Cow3_0.png-b0e497bd73226920c39cb3286ef19f59.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

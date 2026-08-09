@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://d0dtv14ajay44"
-path.s3tc="res://.godot/imported/DecTab_0.png-4100e2d2cbbcdf0fe7ad576c58dccde9.s3tc.ctex"
-path.etc2="res://.godot/imported/DecTab_0.png-4100e2d2cbbcdf0fe7ad576c58dccde9.etc2.ctex"
+path="res://.godot/imported/DecTab_0.png-4100e2d2cbbcdf0fe7ad576c58dccde9.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "eacf03f89239f039087ccbfc1e8f1996"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/DecTab_0.png"
-dest_files=["res://.godot/imported/DecTab_0.png-4100e2d2cbbcdf0fe7ad576c58dccde9.s3tc.ctex", "res://.godot/imported/DecTab_0.png-4100e2d2cbbcdf0fe7ad576c58dccde9.etc2.ctex"]
+dest_files=["res://.godot/imported/DecTab_0.png-4100e2d2cbbcdf0fe7ad576c58dccde9.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

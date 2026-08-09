@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dtl0anv6y0h24"
-path.s3tc="res://.godot/imported/vase1_0.png-79705573088cd3c8e5f62f72a832f8bd.s3tc.ctex"
-path.etc2="res://.godot/imported/vase1_0.png-79705573088cd3c8e5f62f72a832f8bd.etc2.ctex"
+path="res://.godot/imported/vase1_0.png-79705573088cd3c8e5f62f72a832f8bd.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "a2cb4e1ca6a9cc855c275c642b08f641"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/vase1_0.png"
-dest_files=["res://.godot/imported/vase1_0.png-79705573088cd3c8e5f62f72a832f8bd.s3tc.ctex", "res://.godot/imported/vase1_0.png-79705573088cd3c8e5f62f72a832f8bd.etc2.ctex"]
+dest_files=["res://.godot/imported/vase1_0.png-79705573088cd3c8e5f62f72a832f8bd.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

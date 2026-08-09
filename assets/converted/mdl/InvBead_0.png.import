@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bcqplwgmb73fm"
-path.s3tc="res://.godot/imported/InvBead_0.png-69d7454376fcf66f27d5d4970426898a.s3tc.ctex"
-path.etc2="res://.godot/imported/InvBead_0.png-69d7454376fcf66f27d5d4970426898a.etc2.ctex"
+path="res://.godot/imported/InvBead_0.png-69d7454376fcf66f27d5d4970426898a.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "f5a89e99b6ab22cb06641870dfafe86a"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/InvBead_0.png"
-dest_files=["res://.godot/imported/InvBead_0.png-69d7454376fcf66f27d5d4970426898a.s3tc.ctex", "res://.godot/imported/InvBead_0.png-69d7454376fcf66f27d5d4970426898a.etc2.ctex"]
+dest_files=["res://.godot/imported/InvBead_0.png-69d7454376fcf66f27d5d4970426898a.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

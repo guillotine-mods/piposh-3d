@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ckfj48nj3rfck"
-path.s3tc="res://.godot/imported/Flea_0.png-38bf40263abaf64a3356dac1e606192d.s3tc.ctex"
-path.etc2="res://.godot/imported/Flea_0.png-38bf40263abaf64a3356dac1e606192d.etc2.ctex"
+path="res://.godot/imported/Flea_0.png-38bf40263abaf64a3356dac1e606192d.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "40982d8b93a3e2b6b56dc4f882769c92"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Flea_0.png"
-dest_files=["res://.godot/imported/Flea_0.png-38bf40263abaf64a3356dac1e606192d.s3tc.ctex", "res://.godot/imported/Flea_0.png-38bf40263abaf64a3356dac1e606192d.etc2.ctex"]
+dest_files=["res://.godot/imported/Flea_0.png-38bf40263abaf64a3356dac1e606192d.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

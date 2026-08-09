@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c0piion5c7rpe"
-path.s3tc="res://.godot/imported/Axe_0.png-4a55ada41f8c6e1d8169c2a9c7dfcd86.s3tc.ctex"
-path.etc2="res://.godot/imported/Axe_0.png-4a55ada41f8c6e1d8169c2a9c7dfcd86.etc2.ctex"
+path="res://.godot/imported/Axe_0.png-4a55ada41f8c6e1d8169c2a9c7dfcd86.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "23264b11bff145a7d18bd0ca40c4d580"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Axe_0.png"
-dest_files=["res://.godot/imported/Axe_0.png-4a55ada41f8c6e1d8169c2a9c7dfcd86.s3tc.ctex", "res://.godot/imported/Axe_0.png-4a55ada41f8c6e1d8169c2a9c7dfcd86.etc2.ctex"]
+dest_files=["res://.godot/imported/Axe_0.png-4a55ada41f8c6e1d8169c2a9c7dfcd86.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

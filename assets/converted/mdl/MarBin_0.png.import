@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c407ltceffvw0"
-path.s3tc="res://.godot/imported/MarBin_0.png-5794087246487e70a198954ed4ec0c05.s3tc.ctex"
-path.etc2="res://.godot/imported/MarBin_0.png-5794087246487e70a198954ed4ec0c05.etc2.ctex"
+path="res://.godot/imported/MarBin_0.png-5794087246487e70a198954ed4ec0c05.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "888f6a198e98a799f6517703327f7729"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/MarBin_0.png"
-dest_files=["res://.godot/imported/MarBin_0.png-5794087246487e70a198954ed4ec0c05.s3tc.ctex", "res://.godot/imported/MarBin_0.png-5794087246487e70a198954ed4ec0c05.etc2.ctex"]
+dest_files=["res://.godot/imported/MarBin_0.png-5794087246487e70a198954ed4ec0c05.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

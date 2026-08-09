@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dlskpi8dqx5ke"
-path.s3tc="res://.godot/imported/Mine_0.png-4919b0b654459cb748fc05c1643099a5.s3tc.ctex"
-path.etc2="res://.godot/imported/Mine_0.png-4919b0b654459cb748fc05c1643099a5.etc2.ctex"
+path="res://.godot/imported/Mine_0.png-4919b0b654459cb748fc05c1643099a5.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "105b2f9e0299939f49bce41fc80d06b7"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Mine_0.png"
-dest_files=["res://.godot/imported/Mine_0.png-4919b0b654459cb748fc05c1643099a5.s3tc.ctex", "res://.godot/imported/Mine_0.png-4919b0b654459cb748fc05c1643099a5.etc2.ctex"]
+dest_files=["res://.godot/imported/Mine_0.png-4919b0b654459cb748fc05c1643099a5.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

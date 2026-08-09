@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cwj5tmsdome2f"
-path.s3tc="res://.godot/imported/FarmTruk_0.png-b8fd39c02dd92dfb083cca4d0fddeffa.s3tc.ctex"
-path.etc2="res://.godot/imported/FarmTruk_0.png-b8fd39c02dd92dfb083cca4d0fddeffa.etc2.ctex"
+path="res://.godot/imported/FarmTruk_0.png-b8fd39c02dd92dfb083cca4d0fddeffa.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "dce6067313ad57cf2e8a2d7e23d6f201"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/FarmTruk_0.png"
-dest_files=["res://.godot/imported/FarmTruk_0.png-b8fd39c02dd92dfb083cca4d0fddeffa.s3tc.ctex", "res://.godot/imported/FarmTruk_0.png-b8fd39c02dd92dfb083cca4d0fddeffa.etc2.ctex"]
+dest_files=["res://.godot/imported/FarmTruk_0.png-b8fd39c02dd92dfb083cca4d0fddeffa.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

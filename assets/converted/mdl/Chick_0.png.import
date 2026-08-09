@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://f7jseb3s61jx"
-path.s3tc="res://.godot/imported/Chick_0.png-cafb1654a8071a7ccbc0533c21cbbe66.s3tc.ctex"
-path.etc2="res://.godot/imported/Chick_0.png-cafb1654a8071a7ccbc0533c21cbbe66.etc2.ctex"
+path="res://.godot/imported/Chick_0.png-cafb1654a8071a7ccbc0533c21cbbe66.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "22780085bde6392546320e9f6035657f"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Chick_0.png"
-dest_files=["res://.godot/imported/Chick_0.png-cafb1654a8071a7ccbc0533c21cbbe66.s3tc.ctex", "res://.godot/imported/Chick_0.png-cafb1654a8071a7ccbc0533c21cbbe66.etc2.ctex"]
+dest_files=["res://.godot/imported/Chick_0.png-cafb1654a8071a7ccbc0533c21cbbe66.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dfc3avpl8nssr"
-path.s3tc="res://.godot/imported/CityJeep_0.png-249f4796c1eded612ddbd1999e18fcac.s3tc.ctex"
-path.etc2="res://.godot/imported/CityJeep_0.png-249f4796c1eded612ddbd1999e18fcac.etc2.ctex"
+path="res://.godot/imported/CityJeep_0.png-249f4796c1eded612ddbd1999e18fcac.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "400165d953936e8c2afc46b692c1c067"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/CityJeep_0.png"
-dest_files=["res://.godot/imported/CityJeep_0.png-249f4796c1eded612ddbd1999e18fcac.s3tc.ctex", "res://.godot/imported/CityJeep_0.png-249f4796c1eded612ddbd1999e18fcac.etc2.ctex"]
+dest_files=["res://.godot/imported/CityJeep_0.png-249f4796c1eded612ddbd1999e18fcac.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

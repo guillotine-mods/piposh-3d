@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bwv3t77nk2qwi"
-path.s3tc="res://.godot/imported/Coffee_0.png-bd172f1dd3b58c4030d02ad1b01edb51.s3tc.ctex"
-path.etc2="res://.godot/imported/Coffee_0.png-bd172f1dd3b58c4030d02ad1b01edb51.etc2.ctex"
+path="res://.godot/imported/Coffee_0.png-bd172f1dd3b58c4030d02ad1b01edb51.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "9ad8036851bfc39a69c91317d5408142"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Coffee_0.png"
-dest_files=["res://.godot/imported/Coffee_0.png-bd172f1dd3b58c4030d02ad1b01edb51.s3tc.ctex", "res://.godot/imported/Coffee_0.png-bd172f1dd3b58c4030d02ad1b01edb51.etc2.ctex"]
+dest_files=["res://.godot/imported/Coffee_0.png-bd172f1dd3b58c4030d02ad1b01edb51.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

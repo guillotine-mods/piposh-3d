@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ya415xlyjhqe"
-path.s3tc="res://.godot/imported/Ludvig_0.png-819a8620e7db15b37eadec3ffd52b662.s3tc.ctex"
-path.etc2="res://.godot/imported/Ludvig_0.png-819a8620e7db15b37eadec3ffd52b662.etc2.ctex"
+path="res://.godot/imported/Ludvig_0.png-819a8620e7db15b37eadec3ffd52b662.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "b93bb048185ef463cf36aee700cf5ea5"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Ludvig_0.png"
-dest_files=["res://.godot/imported/Ludvig_0.png-819a8620e7db15b37eadec3ffd52b662.s3tc.ctex", "res://.godot/imported/Ludvig_0.png-819a8620e7db15b37eadec3ffd52b662.etc2.ctex"]
+dest_files=["res://.godot/imported/Ludvig_0.png-819a8620e7db15b37eadec3ffd52b662.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

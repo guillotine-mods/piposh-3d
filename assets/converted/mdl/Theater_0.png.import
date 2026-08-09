@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dxt8wg5uroqpo"
-path.s3tc="res://.godot/imported/Theater_0.png-17db428ec3c159024c4ecd3cddc8a30f.s3tc.ctex"
-path.etc2="res://.godot/imported/Theater_0.png-17db428ec3c159024c4ecd3cddc8a30f.etc2.ctex"
+path="res://.godot/imported/Theater_0.png-17db428ec3c159024c4ecd3cddc8a30f.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "6d40bc4427ff906edce712edbe7037ac"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Theater_0.png"
-dest_files=["res://.godot/imported/Theater_0.png-17db428ec3c159024c4ecd3cddc8a30f.s3tc.ctex", "res://.godot/imported/Theater_0.png-17db428ec3c159024c4ecd3cddc8a30f.etc2.ctex"]
+dest_files=["res://.godot/imported/Theater_0.png-17db428ec3c159024c4ecd3cddc8a30f.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b6uoarhxwvwhm"
-path.s3tc="res://.godot/imported/Momma_0.png-bd34b38fa7ffd7c095464b3620a62583.s3tc.ctex"
-path.etc2="res://.godot/imported/Momma_0.png-bd34b38fa7ffd7c095464b3620a62583.etc2.ctex"
+path="res://.godot/imported/Momma_0.png-bd34b38fa7ffd7c095464b3620a62583.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "18709e165ca97d89e8d488830887377c"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Momma_0.png"
-dest_files=["res://.godot/imported/Momma_0.png-bd34b38fa7ffd7c095464b3620a62583.s3tc.ctex", "res://.godot/imported/Momma_0.png-bd34b38fa7ffd7c095464b3620a62583.etc2.ctex"]
+dest_files=["res://.godot/imported/Momma_0.png-bd34b38fa7ffd7c095464b3620a62583.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cld0iw8vmtp2h"
-path.s3tc="res://.godot/imported/JoeSit_0.png-3818261da61c410116b1818813d861bf.s3tc.ctex"
-path.etc2="res://.godot/imported/JoeSit_0.png-3818261da61c410116b1818813d861bf.etc2.ctex"
+path="res://.godot/imported/JoeSit_0.png-3818261da61c410116b1818813d861bf.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "b1e800bf3d6dd67dc9471d53f5cc661b"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/JoeSit_0.png"
-dest_files=["res://.godot/imported/JoeSit_0.png-3818261da61c410116b1818813d861bf.s3tc.ctex", "res://.godot/imported/JoeSit_0.png-3818261da61c410116b1818813d861bf.etc2.ctex"]
+dest_files=["res://.godot/imported/JoeSit_0.png-3818261da61c410116b1818813d861bf.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b74rqwkvc1flk"
-path.s3tc="res://.godot/imported/Dude3_0.png-15f36852b986a950a0be79841caa754d.s3tc.ctex"
-path.etc2="res://.godot/imported/Dude3_0.png-15f36852b986a950a0be79841caa754d.etc2.ctex"
+path="res://.godot/imported/Dude3_0.png-15f36852b986a950a0be79841caa754d.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "c0e9ec4f8c9e55cc0cac7dd8991e10fc"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Dude3_0.png"
-dest_files=["res://.godot/imported/Dude3_0.png-15f36852b986a950a0be79841caa754d.s3tc.ctex", "res://.godot/imported/Dude3_0.png-15f36852b986a950a0be79841caa754d.etc2.ctex"]
+dest_files=["res://.godot/imported/Dude3_0.png-15f36852b986a950a0be79841caa754d.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

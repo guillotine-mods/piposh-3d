@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://2ijgp4pgup47"
-path.s3tc="res://.godot/imported/InvZiggy_0.png-31f45d0eb02e36aa8f1a8f9613a258b5.s3tc.ctex"
-path.etc2="res://.godot/imported/InvZiggy_0.png-31f45d0eb02e36aa8f1a8f9613a258b5.etc2.ctex"
+path="res://.godot/imported/InvZiggy_0.png-31f45d0eb02e36aa8f1a8f9613a258b5.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "1ac4a995e97a6d070c918720f7052a67"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/InvZiggy_0.png"
-dest_files=["res://.godot/imported/InvZiggy_0.png-31f45d0eb02e36aa8f1a8f9613a258b5.s3tc.ctex", "res://.godot/imported/InvZiggy_0.png-31f45d0eb02e36aa8f1a8f9613a258b5.etc2.ctex"]
+dest_files=["res://.godot/imported/InvZiggy_0.png-31f45d0eb02e36aa8f1a8f9613a258b5.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

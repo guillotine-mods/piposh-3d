@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://rdddnxwcxmxy"
-path.s3tc="res://.godot/imported/PipSid_0.png-3d33b0ac68f1551d974ad928827bef11.s3tc.ctex"
-path.etc2="res://.godot/imported/PipSid_0.png-3d33b0ac68f1551d974ad928827bef11.etc2.ctex"
+path="res://.godot/imported/PipSid_0.png-3d33b0ac68f1551d974ad928827bef11.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "a4aa46c2ba3935ee00a374a8ef29ffd5"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/PipSid_0.png"
-dest_files=["res://.godot/imported/PipSid_0.png-3d33b0ac68f1551d974ad928827bef11.s3tc.ctex", "res://.godot/imported/PipSid_0.png-3d33b0ac68f1551d974ad928827bef11.etc2.ctex"]
+dest_files=["res://.godot/imported/PipSid_0.png-3d33b0ac68f1551d974ad928827bef11.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

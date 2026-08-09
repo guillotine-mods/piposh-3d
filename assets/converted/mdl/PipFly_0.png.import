@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bugo8jcf58cqx"
-path.s3tc="res://.godot/imported/PipFly_0.png-2c609d65581b9600e0fde1726170ffcf.s3tc.ctex"
-path.etc2="res://.godot/imported/PipFly_0.png-2c609d65581b9600e0fde1726170ffcf.etc2.ctex"
+path="res://.godot/imported/PipFly_0.png-2c609d65581b9600e0fde1726170ffcf.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "11beb68bc5ae4011ce79d5a0b70194f8"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/PipFly_0.png"
-dest_files=["res://.godot/imported/PipFly_0.png-2c609d65581b9600e0fde1726170ffcf.s3tc.ctex", "res://.godot/imported/PipFly_0.png-2c609d65581b9600e0fde1726170ffcf.etc2.ctex"]
+dest_files=["res://.godot/imported/PipFly_0.png-2c609d65581b9600e0fde1726170ffcf.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

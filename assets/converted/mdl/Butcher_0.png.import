@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://q68550spx0j5"
-path.s3tc="res://.godot/imported/Butcher_0.png-d7a5b3967017ed813e88f49af63f6821.s3tc.ctex"
-path.etc2="res://.godot/imported/Butcher_0.png-d7a5b3967017ed813e88f49af63f6821.etc2.ctex"
+path="res://.godot/imported/Butcher_0.png-d7a5b3967017ed813e88f49af63f6821.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "683bb1316e7687905161200488fa2e9d"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Butcher_0.png"
-dest_files=["res://.godot/imported/Butcher_0.png-d7a5b3967017ed813e88f49af63f6821.s3tc.ctex", "res://.godot/imported/Butcher_0.png-d7a5b3967017ed813e88f49af63f6821.etc2.ctex"]
+dest_files=["res://.godot/imported/Butcher_0.png-d7a5b3967017ed813e88f49af63f6821.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

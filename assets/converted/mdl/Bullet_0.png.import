@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://u8cep3bskhci"
-path.s3tc="res://.godot/imported/Bullet_0.png-a71f039e4b9c46d885218785d8e17ec3.s3tc.ctex"
-path.etc2="res://.godot/imported/Bullet_0.png-a71f039e4b9c46d885218785d8e17ec3.etc2.ctex"
+path="res://.godot/imported/Bullet_0.png-a71f039e4b9c46d885218785d8e17ec3.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "48899d46582f55c29c7fec9a359a1e6d"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Bullet_0.png"
-dest_files=["res://.godot/imported/Bullet_0.png-a71f039e4b9c46d885218785d8e17ec3.s3tc.ctex", "res://.godot/imported/Bullet_0.png-a71f039e4b9c46d885218785d8e17ec3.etc2.ctex"]
+dest_files=["res://.godot/imported/Bullet_0.png-a71f039e4b9c46d885218785d8e17ec3.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

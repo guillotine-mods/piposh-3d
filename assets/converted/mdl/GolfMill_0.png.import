@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c1uwobx76o5ck"
-path.s3tc="res://.godot/imported/GolfMill_0.png-ba6e2af0c0da6cb87709ea5a4fa23a84.s3tc.ctex"
-path.etc2="res://.godot/imported/GolfMill_0.png-ba6e2af0c0da6cb87709ea5a4fa23a84.etc2.ctex"
+path="res://.godot/imported/GolfMill_0.png-ba6e2af0c0da6cb87709ea5a4fa23a84.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "bfe8d1dfa0be50c5436ca3e4248e6224"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/GolfMill_0.png"
-dest_files=["res://.godot/imported/GolfMill_0.png-ba6e2af0c0da6cb87709ea5a4fa23a84.s3tc.ctex", "res://.godot/imported/GolfMill_0.png-ba6e2af0c0da6cb87709ea5a4fa23a84.etc2.ctex"]
+dest_files=["res://.godot/imported/GolfMill_0.png-ba6e2af0c0da6cb87709ea5a4fa23a84.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://beut1ddlofdkf"
-path.s3tc="res://.godot/imported/NannMeet_0.png-781816e074645a99a3c7c23a14fd4172.s3tc.ctex"
-path.etc2="res://.godot/imported/NannMeet_0.png-781816e074645a99a3c7c23a14fd4172.etc2.ctex"
+path="res://.godot/imported/NannMeet_0.png-781816e074645a99a3c7c23a14fd4172.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "b3e7a791de88eaa6648b7049de3cd121"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/NannMeet_0.png"
-dest_files=["res://.godot/imported/NannMeet_0.png-781816e074645a99a3c7c23a14fd4172.s3tc.ctex", "res://.godot/imported/NannMeet_0.png-781816e074645a99a3c7c23a14fd4172.etc2.ctex"]
+dest_files=["res://.godot/imported/NannMeet_0.png-781816e074645a99a3c7c23a14fd4172.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

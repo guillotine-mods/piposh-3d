@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b6kruts5p6gjs"
-path.s3tc="res://.godot/imported/Torch_0.png-e4bc22b3f4367c9889cbc7518757941a.s3tc.ctex"
-path.etc2="res://.godot/imported/Torch_0.png-e4bc22b3f4367c9889cbc7518757941a.etc2.ctex"
+path="res://.godot/imported/Torch_0.png-e4bc22b3f4367c9889cbc7518757941a.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "59aaa93ea18d88d47dab5a453b9201f6"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Torch_0.png"
-dest_files=["res://.godot/imported/Torch_0.png-e4bc22b3f4367c9889cbc7518757941a.s3tc.ctex", "res://.godot/imported/Torch_0.png-e4bc22b3f4367c9889cbc7518757941a.etc2.ctex"]
+dest_files=["res://.godot/imported/Torch_0.png-e4bc22b3f4367c9889cbc7518757941a.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

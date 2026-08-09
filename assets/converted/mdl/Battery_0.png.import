@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b3m65l87k6ixy"
-path.s3tc="res://.godot/imported/Battery_0.png-d7843e870686b5503b4376329d3a63e1.s3tc.ctex"
-path.etc2="res://.godot/imported/Battery_0.png-d7843e870686b5503b4376329d3a63e1.etc2.ctex"
+path="res://.godot/imported/Battery_0.png-d7843e870686b5503b4376329d3a63e1.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "aba985969c7434fe381e370bd237ad16"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Battery_0.png"
-dest_files=["res://.godot/imported/Battery_0.png-d7843e870686b5503b4376329d3a63e1.s3tc.ctex", "res://.godot/imported/Battery_0.png-d7843e870686b5503b4376329d3a63e1.etc2.ctex"]
+dest_files=["res://.godot/imported/Battery_0.png-d7843e870686b5503b4376329d3a63e1.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

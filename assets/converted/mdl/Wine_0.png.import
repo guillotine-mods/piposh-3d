@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://d3cnwb0njmk32"
-path.s3tc="res://.godot/imported/Wine_0.png-e9894617b0097503f57c4b032029cdf6.s3tc.ctex"
-path.etc2="res://.godot/imported/Wine_0.png-e9894617b0097503f57c4b032029cdf6.etc2.ctex"
+path="res://.godot/imported/Wine_0.png-e9894617b0097503f57c4b032029cdf6.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "57f86f12dc242b9406e4d3ec24f3d011"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Wine_0.png"
-dest_files=["res://.godot/imported/Wine_0.png-e9894617b0097503f57c4b032029cdf6.s3tc.ctex", "res://.godot/imported/Wine_0.png-e9894617b0097503f57c4b032029cdf6.etc2.ctex"]
+dest_files=["res://.godot/imported/Wine_0.png-e9894617b0097503f57c4b032029cdf6.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c33hq4222w2te"
-path.s3tc="res://.godot/imported/YachGras_0.png-7ccc09c43b5e6dbb26bcb57dff525e29.s3tc.ctex"
-path.etc2="res://.godot/imported/YachGras_0.png-7ccc09c43b5e6dbb26bcb57dff525e29.etc2.ctex"
+path="res://.godot/imported/YachGras_0.png-7ccc09c43b5e6dbb26bcb57dff525e29.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "64140f3b8e170c943408b95dfe97640c"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/YachGras_0.png"
-dest_files=["res://.godot/imported/YachGras_0.png-7ccc09c43b5e6dbb26bcb57dff525e29.s3tc.ctex", "res://.godot/imported/YachGras_0.png-7ccc09c43b5e6dbb26bcb57dff525e29.etc2.ctex"]
+dest_files=["res://.godot/imported/YachGras_0.png-7ccc09c43b5e6dbb26bcb57dff525e29.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

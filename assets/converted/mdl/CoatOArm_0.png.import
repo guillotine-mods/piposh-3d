@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cu1d6h1t0picv"
-path.s3tc="res://.godot/imported/CoatOArm_0.png-78fd1c1adb458a6109761a74e966e2f8.s3tc.ctex"
-path.etc2="res://.godot/imported/CoatOArm_0.png-78fd1c1adb458a6109761a74e966e2f8.etc2.ctex"
+path="res://.godot/imported/CoatOArm_0.png-78fd1c1adb458a6109761a74e966e2f8.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "3e4c686eef9e92c86021fa7aa51146b8"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/CoatOArm_0.png"
-dest_files=["res://.godot/imported/CoatOArm_0.png-78fd1c1adb458a6109761a74e966e2f8.s3tc.ctex", "res://.godot/imported/CoatOArm_0.png-78fd1c1adb458a6109761a74e966e2f8.etc2.ctex"]
+dest_files=["res://.godot/imported/CoatOArm_0.png-78fd1c1adb458a6109761a74e966e2f8.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

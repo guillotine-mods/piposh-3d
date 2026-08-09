@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://mstaa5lywoea"
-path.s3tc="res://.godot/imported/YachStat_0.png-3a78b8b5a5a43968483a1659744b592f.s3tc.ctex"
-path.etc2="res://.godot/imported/YachStat_0.png-3a78b8b5a5a43968483a1659744b592f.etc2.ctex"
+path="res://.godot/imported/YachStat_0.png-3a78b8b5a5a43968483a1659744b592f.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "f702ac13e22d43f80bbf324251d2b835"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/YachStat_0.png"
-dest_files=["res://.godot/imported/YachStat_0.png-3a78b8b5a5a43968483a1659744b592f.s3tc.ctex", "res://.godot/imported/YachStat_0.png-3a78b8b5a5a43968483a1659744b592f.etc2.ctex"]
+dest_files=["res://.godot/imported/YachStat_0.png-3a78b8b5a5a43968483a1659744b592f.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

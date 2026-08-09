@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://betuet88c86lp"
-path.s3tc="res://.godot/imported/Scorp_0.png-0bb74c9344208e2e8305d691a3612f2e.s3tc.ctex"
-path.etc2="res://.godot/imported/Scorp_0.png-0bb74c9344208e2e8305d691a3612f2e.etc2.ctex"
+path="res://.godot/imported/Scorp_0.png-0bb74c9344208e2e8305d691a3612f2e.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "d0c6c9ad2201b8486b7a41f48d042958"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Scorp_0.png"
-dest_files=["res://.godot/imported/Scorp_0.png-0bb74c9344208e2e8305d691a3612f2e.s3tc.ctex", "res://.godot/imported/Scorp_0.png-0bb74c9344208e2e8305d691a3612f2e.etc2.ctex"]
+dest_files=["res://.godot/imported/Scorp_0.png-0bb74c9344208e2e8305d691a3612f2e.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

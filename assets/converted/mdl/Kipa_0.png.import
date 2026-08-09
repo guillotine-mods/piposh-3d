@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ut2qowwrwbhf"
-path.s3tc="res://.godot/imported/Kipa_0.png-5a8a64fd415d28c8d85c75d7c4b03864.s3tc.ctex"
-path.etc2="res://.godot/imported/Kipa_0.png-5a8a64fd415d28c8d85c75d7c4b03864.etc2.ctex"
+path="res://.godot/imported/Kipa_0.png-5a8a64fd415d28c8d85c75d7c4b03864.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "045c1b4cd2b814dedaa188e7c4eb963e"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Kipa_0.png"
-dest_files=["res://.godot/imported/Kipa_0.png-5a8a64fd415d28c8d85c75d7c4b03864.s3tc.ctex", "res://.godot/imported/Kipa_0.png-5a8a64fd415d28c8d85c75d7c4b03864.etc2.ctex"]
+dest_files=["res://.godot/imported/Kipa_0.png-5a8a64fd415d28c8d85c75d7c4b03864.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cxddlp2algg0e"
-path.s3tc="res://.godot/imported/AltiMan_0.png-b6d5204bbf077de1bd26a0207281a7aa.s3tc.ctex"
-path.etc2="res://.godot/imported/AltiMan_0.png-b6d5204bbf077de1bd26a0207281a7aa.etc2.ctex"
+path="res://.godot/imported/AltiMan_0.png-b6d5204bbf077de1bd26a0207281a7aa.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "0dc978e62108a0568fe775c34ca57715"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/AltiMan_0.png"
-dest_files=["res://.godot/imported/AltiMan_0.png-b6d5204bbf077de1bd26a0207281a7aa.s3tc.ctex", "res://.godot/imported/AltiMan_0.png-b6d5204bbf077de1bd26a0207281a7aa.etc2.ctex"]
+dest_files=["res://.godot/imported/AltiMan_0.png-b6d5204bbf077de1bd26a0207281a7aa.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

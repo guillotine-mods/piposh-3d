@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://trab5h1q4ypa"
-path.s3tc="res://.godot/imported/Lace_0.png-80ae2115976c90383c94b774439570dd.s3tc.ctex"
-path.etc2="res://.godot/imported/Lace_0.png-80ae2115976c90383c94b774439570dd.etc2.ctex"
+path="res://.godot/imported/Lace_0.png-80ae2115976c90383c94b774439570dd.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "4a46f4f82738e570d65d85c1f1c30354"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Lace_0.png"
-dest_files=["res://.godot/imported/Lace_0.png-80ae2115976c90383c94b774439570dd.s3tc.ctex", "res://.godot/imported/Lace_0.png-80ae2115976c90383c94b774439570dd.etc2.ctex"]
+dest_files=["res://.godot/imported/Lace_0.png-80ae2115976c90383c94b774439570dd.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

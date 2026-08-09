@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://munaj5jpjlp8"
-path.s3tc="res://.godot/imported/Totem1_0.png-417f7b3758be63911354018a33c147e4.s3tc.ctex"
-path.etc2="res://.godot/imported/Totem1_0.png-417f7b3758be63911354018a33c147e4.etc2.ctex"
+path="res://.godot/imported/Totem1_0.png-417f7b3758be63911354018a33c147e4.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "2e88e986394d01f4f04b36e7fb19f6ba"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Totem1_0.png"
-dest_files=["res://.godot/imported/Totem1_0.png-417f7b3758be63911354018a33c147e4.s3tc.ctex", "res://.godot/imported/Totem1_0.png-417f7b3758be63911354018a33c147e4.etc2.ctex"]
+dest_files=["res://.godot/imported/Totem1_0.png-417f7b3758be63911354018a33c147e4.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

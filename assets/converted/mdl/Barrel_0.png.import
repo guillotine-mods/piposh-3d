@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://beh1hj332ppkr"
-path.s3tc="res://.godot/imported/Barrel_0.png-54e812bf6829da5449e7c74c8ab035d6.s3tc.ctex"
-path.etc2="res://.godot/imported/Barrel_0.png-54e812bf6829da5449e7c74c8ab035d6.etc2.ctex"
+path="res://.godot/imported/Barrel_0.png-54e812bf6829da5449e7c74c8ab035d6.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "f5b1d50ea9f972cdf06d03d8992c009d"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Barrel_0.png"
-dest_files=["res://.godot/imported/Barrel_0.png-54e812bf6829da5449e7c74c8ab035d6.s3tc.ctex", "res://.godot/imported/Barrel_0.png-54e812bf6829da5449e7c74c8ab035d6.etc2.ctex"]
+dest_files=["res://.godot/imported/Barrel_0.png-54e812bf6829da5449e7c74c8ab035d6.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

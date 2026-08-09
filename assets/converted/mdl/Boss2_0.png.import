@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c0negp72ff1pn"
-path.s3tc="res://.godot/imported/Boss2_0.png-55cef0fb2060da289ac98ededbe3a79e.s3tc.ctex"
-path.etc2="res://.godot/imported/Boss2_0.png-55cef0fb2060da289ac98ededbe3a79e.etc2.ctex"
+path="res://.godot/imported/Boss2_0.png-55cef0fb2060da289ac98ededbe3a79e.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "70b66d912ef680a381f4347af599c723"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Boss2_0.png"
-dest_files=["res://.godot/imported/Boss2_0.png-55cef0fb2060da289ac98ededbe3a79e.s3tc.ctex", "res://.godot/imported/Boss2_0.png-55cef0fb2060da289ac98ededbe3a79e.etc2.ctex"]
+dest_files=["res://.godot/imported/Boss2_0.png-55cef0fb2060da289ac98ededbe3a79e.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

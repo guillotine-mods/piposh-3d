@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://du2q5xk73ljgw"
-path.s3tc="res://.godot/imported/Farmm_0.png-e3dec3008e54dbab01b3d030bd0f3897.s3tc.ctex"
-path.etc2="res://.godot/imported/Farmm_0.png-e3dec3008e54dbab01b3d030bd0f3897.etc2.ctex"
+path="res://.godot/imported/Farmm_0.png-e3dec3008e54dbab01b3d030bd0f3897.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "a8b57b14dd849ad9373176be234406c3"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Farmm_0.png"
-dest_files=["res://.godot/imported/Farmm_0.png-e3dec3008e54dbab01b3d030bd0f3897.s3tc.ctex", "res://.godot/imported/Farmm_0.png-e3dec3008e54dbab01b3d030bd0f3897.etc2.ctex"]
+dest_files=["res://.godot/imported/Farmm_0.png-e3dec3008e54dbab01b3d030bd0f3897.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

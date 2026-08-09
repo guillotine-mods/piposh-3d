@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://chigqahr2adck"
-path.s3tc="res://.godot/imported/InvInvit_0.png-fc504c05e2430a6cae96d0d649efef0d.s3tc.ctex"
-path.etc2="res://.godot/imported/InvInvit_0.png-fc504c05e2430a6cae96d0d649efef0d.etc2.ctex"
+path="res://.godot/imported/InvInvit_0.png-fc504c05e2430a6cae96d0d649efef0d.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "65cfcc036aa06b0a5e25137932c9af4e"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/InvInvit_0.png"
-dest_files=["res://.godot/imported/InvInvit_0.png-fc504c05e2430a6cae96d0d649efef0d.s3tc.ctex", "res://.godot/imported/InvInvit_0.png-fc504c05e2430a6cae96d0d649efef0d.etc2.ctex"]
+dest_files=["res://.godot/imported/InvInvit_0.png-fc504c05e2430a6cae96d0d649efef0d.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

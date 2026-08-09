@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c21f5k3sgheal"
-path.s3tc="res://.godot/imported/Clock_0.png-36bd3e1992ce9fc32073fa400fb7fecc.s3tc.ctex"
-path.etc2="res://.godot/imported/Clock_0.png-36bd3e1992ce9fc32073fa400fb7fecc.etc2.ctex"
+path="res://.godot/imported/Clock_0.png-36bd3e1992ce9fc32073fa400fb7fecc.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "cb60a995bd3f8813d905a3baa48f62a5"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Clock_0.png"
-dest_files=["res://.godot/imported/Clock_0.png-36bd3e1992ce9fc32073fa400fb7fecc.s3tc.ctex", "res://.godot/imported/Clock_0.png-36bd3e1992ce9fc32073fa400fb7fecc.etc2.ctex"]
+dest_files=["res://.godot/imported/Clock_0.png-36bd3e1992ce9fc32073fa400fb7fecc.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

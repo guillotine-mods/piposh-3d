@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://d0rorbyp25s8y"
-path.s3tc="res://.godot/imported/Slight_0.png-cd1fda55a9d8debc4d94ed0b71def16d.s3tc.ctex"
-path.etc2="res://.godot/imported/Slight_0.png-cd1fda55a9d8debc4d94ed0b71def16d.etc2.ctex"
+path="res://.godot/imported/Slight_0.png-cd1fda55a9d8debc4d94ed0b71def16d.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "de5e16bfe535c3bfe69efd092e55cac0"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Slight_0.png"
-dest_files=["res://.godot/imported/Slight_0.png-cd1fda55a9d8debc4d94ed0b71def16d.s3tc.ctex", "res://.godot/imported/Slight_0.png-cd1fda55a9d8debc4d94ed0b71def16d.etc2.ctex"]
+dest_files=["res://.godot/imported/Slight_0.png-cd1fda55a9d8debc4d94ed0b71def16d.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

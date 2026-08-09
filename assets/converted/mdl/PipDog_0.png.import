@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ch0vcufw4ehy7"
-path.s3tc="res://.godot/imported/PipDog_0.png-437471bc61dd3d1614e0c19868334e5c.s3tc.ctex"
-path.etc2="res://.godot/imported/PipDog_0.png-437471bc61dd3d1614e0c19868334e5c.etc2.ctex"
+path="res://.godot/imported/PipDog_0.png-437471bc61dd3d1614e0c19868334e5c.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "b6ff9da81e40205db912e8391bbb7515"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/PipDog_0.png"
-dest_files=["res://.godot/imported/PipDog_0.png-437471bc61dd3d1614e0c19868334e5c.s3tc.ctex", "res://.godot/imported/PipDog_0.png-437471bc61dd3d1614e0c19868334e5c.etc2.ctex"]
+dest_files=["res://.godot/imported/PipDog_0.png-437471bc61dd3d1614e0c19868334e5c.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

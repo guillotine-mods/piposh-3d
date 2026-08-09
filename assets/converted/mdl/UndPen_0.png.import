@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://yx6c0rpleca2"
-path.s3tc="res://.godot/imported/UndPen_0.png-39765e457d664b2945345ad0b5013506.s3tc.ctex"
-path.etc2="res://.godot/imported/UndPen_0.png-39765e457d664b2945345ad0b5013506.etc2.ctex"
+path="res://.godot/imported/UndPen_0.png-39765e457d664b2945345ad0b5013506.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "d11d987cd1e80ce3f5904010f07de4ea"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/UndPen_0.png"
-dest_files=["res://.godot/imported/UndPen_0.png-39765e457d664b2945345ad0b5013506.s3tc.ctex", "res://.godot/imported/UndPen_0.png-39765e457d664b2945345ad0b5013506.etc2.ctex"]
+dest_files=["res://.godot/imported/UndPen_0.png-39765e457d664b2945345ad0b5013506.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://d2j6tug37735"
-path.s3tc="res://.godot/imported/Tower_0.png-504c138c83caa1e500dd5c955f9a6ab6.s3tc.ctex"
-path.etc2="res://.godot/imported/Tower_0.png-504c138c83caa1e500dd5c955f9a6ab6.etc2.ctex"
+path="res://.godot/imported/Tower_0.png-504c138c83caa1e500dd5c955f9a6ab6.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "129cee2588b52d128aa70118cd610aa9"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Tower_0.png"
-dest_files=["res://.godot/imported/Tower_0.png-504c138c83caa1e500dd5c955f9a6ab6.s3tc.ctex", "res://.godot/imported/Tower_0.png-504c138c83caa1e500dd5c955f9a6ab6.etc2.ctex"]
+dest_files=["res://.godot/imported/Tower_0.png-504c138c83caa1e500dd5c955f9a6ab6.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cj8ogotvcctph"
-path.s3tc="res://.godot/imported/donut_0.png-673cb1f171a6d149568d04e13078989d.s3tc.ctex"
-path.etc2="res://.godot/imported/donut_0.png-673cb1f171a6d149568d04e13078989d.etc2.ctex"
+path="res://.godot/imported/donut_0.png-673cb1f171a6d149568d04e13078989d.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "fb975d89e73e13b81d141aead5400465"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/donut_0.png"
-dest_files=["res://.godot/imported/donut_0.png-673cb1f171a6d149568d04e13078989d.s3tc.ctex", "res://.godot/imported/donut_0.png-673cb1f171a6d149568d04e13078989d.etc2.ctex"]
+dest_files=["res://.godot/imported/donut_0.png-673cb1f171a6d149568d04e13078989d.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

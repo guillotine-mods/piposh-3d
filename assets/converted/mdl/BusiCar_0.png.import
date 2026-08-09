@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cndv1asan0jon"
-path.s3tc="res://.godot/imported/BusiCar_0.png-915f4bdfebaa6553e803516267d86c76.s3tc.ctex"
-path.etc2="res://.godot/imported/BusiCar_0.png-915f4bdfebaa6553e803516267d86c76.etc2.ctex"
+path="res://.godot/imported/BusiCar_0.png-915f4bdfebaa6553e803516267d86c76.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "83765b33798f85d615003cca20919e12"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/BusiCar_0.png"
-dest_files=["res://.godot/imported/BusiCar_0.png-915f4bdfebaa6553e803516267d86c76.s3tc.ctex", "res://.godot/imported/BusiCar_0.png-915f4bdfebaa6553e803516267d86c76.etc2.ctex"]
+dest_files=["res://.godot/imported/BusiCar_0.png-915f4bdfebaa6553e803516267d86c76.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

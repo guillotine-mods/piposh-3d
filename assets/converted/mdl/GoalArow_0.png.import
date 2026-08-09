@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dj5oy87rnp5ra"
-path.s3tc="res://.godot/imported/GoalArow_0.png-b33ad208bcdbba5750a1cd6b467f6d2a.s3tc.ctex"
-path.etc2="res://.godot/imported/GoalArow_0.png-b33ad208bcdbba5750a1cd6b467f6d2a.etc2.ctex"
+path="res://.godot/imported/GoalArow_0.png-b33ad208bcdbba5750a1cd6b467f6d2a.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "967a64a5d0f081c5b41efd8925abb26c"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/GoalArow_0.png"
-dest_files=["res://.godot/imported/GoalArow_0.png-b33ad208bcdbba5750a1cd6b467f6d2a.s3tc.ctex", "res://.godot/imported/GoalArow_0.png-b33ad208bcdbba5750a1cd6b467f6d2a.etc2.ctex"]
+dest_files=["res://.godot/imported/GoalArow_0.png-b33ad208bcdbba5750a1cd6b467f6d2a.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

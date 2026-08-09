@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ctyq62chfhmdf"
-path.s3tc="res://.godot/imported/OldSit3_0.png-2683670fdeb5d42a03f4b33aa93c5e29.s3tc.ctex"
-path.etc2="res://.godot/imported/OldSit3_0.png-2683670fdeb5d42a03f4b33aa93c5e29.etc2.ctex"
+path="res://.godot/imported/OldSit3_0.png-2683670fdeb5d42a03f4b33aa93c5e29.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "97c76ad1a57a662298b2806bdf92569d"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/OldSit3_0.png"
-dest_files=["res://.godot/imported/OldSit3_0.png-2683670fdeb5d42a03f4b33aa93c5e29.s3tc.ctex", "res://.godot/imported/OldSit3_0.png-2683670fdeb5d42a03f4b33aa93c5e29.etc2.ctex"]
+dest_files=["res://.godot/imported/OldSit3_0.png-2683670fdeb5d42a03f4b33aa93c5e29.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

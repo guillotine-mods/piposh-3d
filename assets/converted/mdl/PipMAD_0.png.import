@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://v0keelql65dj"
-path.s3tc="res://.godot/imported/PipMAD_0.png-559853b1492d06d233651c25d8b76a03.s3tc.ctex"
-path.etc2="res://.godot/imported/PipMAD_0.png-559853b1492d06d233651c25d8b76a03.etc2.ctex"
+path="res://.godot/imported/PipMAD_0.png-559853b1492d06d233651c25d8b76a03.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "4878defb6854cd075ecf833cd3931809"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/PipMAD_0.png"
-dest_files=["res://.godot/imported/PipMAD_0.png-559853b1492d06d233651c25d8b76a03.s3tc.ctex", "res://.godot/imported/PipMAD_0.png-559853b1492d06d233651c25d8b76a03.etc2.ctex"]
+dest_files=["res://.godot/imported/PipMAD_0.png-559853b1492d06d233651c25d8b76a03.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

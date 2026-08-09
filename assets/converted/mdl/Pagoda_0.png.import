@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bm883r6465m14"
-path.s3tc="res://.godot/imported/Pagoda_0.png-b863b3f097b44dc5a19cc6a7b45027ae.s3tc.ctex"
-path.etc2="res://.godot/imported/Pagoda_0.png-b863b3f097b44dc5a19cc6a7b45027ae.etc2.ctex"
+path="res://.godot/imported/Pagoda_0.png-b863b3f097b44dc5a19cc6a7b45027ae.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "6733665dc8f1104161ee6c1cb36af1cb"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Pagoda_0.png"
-dest_files=["res://.godot/imported/Pagoda_0.png-b863b3f097b44dc5a19cc6a7b45027ae.s3tc.ctex", "res://.godot/imported/Pagoda_0.png-b863b3f097b44dc5a19cc6a7b45027ae.etc2.ctex"]
+dest_files=["res://.godot/imported/Pagoda_0.png-b863b3f097b44dc5a19cc6a7b45027ae.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

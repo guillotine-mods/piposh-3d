@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://7egqv04u0std"
-path.s3tc="res://.godot/imported/ZiraRing_0.png-24fdd0347848607e1aca297e184b2100.s3tc.ctex"
-path.etc2="res://.godot/imported/ZiraRing_0.png-24fdd0347848607e1aca297e184b2100.etc2.ctex"
+path="res://.godot/imported/ZiraRing_0.png-24fdd0347848607e1aca297e184b2100.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "6a05d7562c6c13957d49a4c9289ea9d4"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/ZiraRing_0.png"
-dest_files=["res://.godot/imported/ZiraRing_0.png-24fdd0347848607e1aca297e184b2100.s3tc.ctex", "res://.godot/imported/ZiraRing_0.png-24fdd0347848607e1aca297e184b2100.etc2.ctex"]
+dest_files=["res://.godot/imported/ZiraRing_0.png-24fdd0347848607e1aca297e184b2100.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

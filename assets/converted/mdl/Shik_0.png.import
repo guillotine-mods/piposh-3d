@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://1hbfa4lv6dy6"
-path.s3tc="res://.godot/imported/Shik_0.png-9368b85f9a56e456ba824683ba7f09df.s3tc.ctex"
-path.etc2="res://.godot/imported/Shik_0.png-9368b85f9a56e456ba824683ba7f09df.etc2.ctex"
+path="res://.godot/imported/Shik_0.png-9368b85f9a56e456ba824683ba7f09df.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "3ad86c1ea583b3a8f9882815dfe50ccb"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Shik_0.png"
-dest_files=["res://.godot/imported/Shik_0.png-9368b85f9a56e456ba824683ba7f09df.s3tc.ctex", "res://.godot/imported/Shik_0.png-9368b85f9a56e456ba824683ba7f09df.etc2.ctex"]
+dest_files=["res://.godot/imported/Shik_0.png-9368b85f9a56e456ba824683ba7f09df.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

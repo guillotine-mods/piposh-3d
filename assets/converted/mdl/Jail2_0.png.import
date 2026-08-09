@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cenm0hqk0hogl"
-path.s3tc="res://.godot/imported/Jail2_0.png-3af5b98859263277e41aed96532c53e4.s3tc.ctex"
-path.etc2="res://.godot/imported/Jail2_0.png-3af5b98859263277e41aed96532c53e4.etc2.ctex"
+path="res://.godot/imported/Jail2_0.png-3af5b98859263277e41aed96532c53e4.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "c78d311e02ff47c6b024a2672c3814ba"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Jail2_0.png"
-dest_files=["res://.godot/imported/Jail2_0.png-3af5b98859263277e41aed96532c53e4.s3tc.ctex", "res://.godot/imported/Jail2_0.png-3af5b98859263277e41aed96532c53e4.etc2.ctex"]
+dest_files=["res://.godot/imported/Jail2_0.png-3af5b98859263277e41aed96532c53e4.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://beevseetnoubn"
-path.s3tc="res://.godot/imported/Piegon_0.png-894e94b9d6f67ec60a574537a22412b3.s3tc.ctex"
-path.etc2="res://.godot/imported/Piegon_0.png-894e94b9d6f67ec60a574537a22412b3.etc2.ctex"
+path="res://.godot/imported/Piegon_0.png-894e94b9d6f67ec60a574537a22412b3.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "5c4977bd468b190636675ff23379861c"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Piegon_0.png"
-dest_files=["res://.godot/imported/Piegon_0.png-894e94b9d6f67ec60a574537a22412b3.s3tc.ctex", "res://.godot/imported/Piegon_0.png-894e94b9d6f67ec60a574537a22412b3.etc2.ctex"]
+dest_files=["res://.godot/imported/Piegon_0.png-894e94b9d6f67ec60a574537a22412b3.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

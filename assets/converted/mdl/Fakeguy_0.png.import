@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://4di2u8vr6dk5"
-path.s3tc="res://.godot/imported/Fakeguy_0.png-6eded22e8b84e2f4c90a9c15c60f5156.s3tc.ctex"
-path.etc2="res://.godot/imported/Fakeguy_0.png-6eded22e8b84e2f4c90a9c15c60f5156.etc2.ctex"
+path="res://.godot/imported/Fakeguy_0.png-6eded22e8b84e2f4c90a9c15c60f5156.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "0635a797d627856ac6b7b9867e1e90ab"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Fakeguy_0.png"
-dest_files=["res://.godot/imported/Fakeguy_0.png-6eded22e8b84e2f4c90a9c15c60f5156.s3tc.ctex", "res://.godot/imported/Fakeguy_0.png-6eded22e8b84e2f4c90a9c15c60f5156.etc2.ctex"]
+dest_files=["res://.godot/imported/Fakeguy_0.png-6eded22e8b84e2f4c90a9c15c60f5156.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

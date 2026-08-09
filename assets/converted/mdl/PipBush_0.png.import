@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://uish4yrbhp53"
-path.s3tc="res://.godot/imported/PipBush_0.png-6e73c2ecfabf872f9cb377b4d65dd4e5.s3tc.ctex"
-path.etc2="res://.godot/imported/PipBush_0.png-6e73c2ecfabf872f9cb377b4d65dd4e5.etc2.ctex"
+path="res://.godot/imported/PipBush_0.png-6e73c2ecfabf872f9cb377b4d65dd4e5.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "5f73d0de3e6df8d23cf26ae99f2e2b83"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/PipBush_0.png"
-dest_files=["res://.godot/imported/PipBush_0.png-6e73c2ecfabf872f9cb377b4d65dd4e5.s3tc.ctex", "res://.godot/imported/PipBush_0.png-6e73c2ecfabf872f9cb377b4d65dd4e5.etc2.ctex"]
+dest_files=["res://.godot/imported/PipBush_0.png-6e73c2ecfabf872f9cb377b4d65dd4e5.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

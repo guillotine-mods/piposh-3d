@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://4ig3nc8ysrae"
-path.s3tc="res://.godot/imported/Coach_0.png-6c880be4bb19e5ed5a041e695f56a4b3.s3tc.ctex"
-path.etc2="res://.godot/imported/Coach_0.png-6c880be4bb19e5ed5a041e695f56a4b3.etc2.ctex"
+path="res://.godot/imported/Coach_0.png-6c880be4bb19e5ed5a041e695f56a4b3.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "cc45c23a4c817901c5633901f260505b"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Coach_0.png"
-dest_files=["res://.godot/imported/Coach_0.png-6c880be4bb19e5ed5a041e695f56a4b3.s3tc.ctex", "res://.godot/imported/Coach_0.png-6c880be4bb19e5ed5a041e695f56a4b3.etc2.ctex"]
+dest_files=["res://.godot/imported/Coach_0.png-6c880be4bb19e5ed5a041e695f56a4b3.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

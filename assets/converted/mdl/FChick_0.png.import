@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cm78t4bgwxuwy"
-path.s3tc="res://.godot/imported/FChick_0.png-511f564a5972eff0fc0cd29efba61f10.s3tc.ctex"
-path.etc2="res://.godot/imported/FChick_0.png-511f564a5972eff0fc0cd29efba61f10.etc2.ctex"
+path="res://.godot/imported/FChick_0.png-511f564a5972eff0fc0cd29efba61f10.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "22780085bde6392546320e9f6035657f"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/FChick_0.png"
-dest_files=["res://.godot/imported/FChick_0.png-511f564a5972eff0fc0cd29efba61f10.s3tc.ctex", "res://.godot/imported/FChick_0.png-511f564a5972eff0fc0cd29efba61f10.etc2.ctex"]
+dest_files=["res://.godot/imported/FChick_0.png-511f564a5972eff0fc0cd29efba61f10.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

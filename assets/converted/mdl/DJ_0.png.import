@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cr62uq2ai1ugl"
-path.s3tc="res://.godot/imported/DJ_0.png-37313f702008bab8c7cf3539d3266577.s3tc.ctex"
-path.etc2="res://.godot/imported/DJ_0.png-37313f702008bab8c7cf3539d3266577.etc2.ctex"
+path="res://.godot/imported/DJ_0.png-37313f702008bab8c7cf3539d3266577.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "dbf51ca8334e9397b81486ffb1bd6e81"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/DJ_0.png"
-dest_files=["res://.godot/imported/DJ_0.png-37313f702008bab8c7cf3539d3266577.s3tc.ctex", "res://.godot/imported/DJ_0.png-37313f702008bab8c7cf3539d3266577.etc2.ctex"]
+dest_files=["res://.godot/imported/DJ_0.png-37313f702008bab8c7cf3539d3266577.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

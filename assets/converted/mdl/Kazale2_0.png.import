@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c83fgelxkkgoe"
-path.s3tc="res://.godot/imported/Kazale2_0.png-3826f70fe889c0faa4fbcb9c6cbb542f.s3tc.ctex"
-path.etc2="res://.godot/imported/Kazale2_0.png-3826f70fe889c0faa4fbcb9c6cbb542f.etc2.ctex"
+path="res://.godot/imported/Kazale2_0.png-3826f70fe889c0faa4fbcb9c6cbb542f.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "ac1494a05b93fddd9975dd43641f7ecb"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Kazale2_0.png"
-dest_files=["res://.godot/imported/Kazale2_0.png-3826f70fe889c0faa4fbcb9c6cbb542f.s3tc.ctex", "res://.godot/imported/Kazale2_0.png-3826f70fe889c0faa4fbcb9c6cbb542f.etc2.ctex"]
+dest_files=["res://.godot/imported/Kazale2_0.png-3826f70fe889c0faa4fbcb9c6cbb542f.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

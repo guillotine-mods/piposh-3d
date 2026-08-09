@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://brtlcbpyighdm"
-path.s3tc="res://.godot/imported/NutBowl_0.png-a9a45d241a4b3dd7f58eb3550e8de176.s3tc.ctex"
-path.etc2="res://.godot/imported/NutBowl_0.png-a9a45d241a4b3dd7f58eb3550e8de176.etc2.ctex"
+path="res://.godot/imported/NutBowl_0.png-a9a45d241a4b3dd7f58eb3550e8de176.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "2654d7b973e912c2c491b5dde5ea36c0"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/NutBowl_0.png"
-dest_files=["res://.godot/imported/NutBowl_0.png-a9a45d241a4b3dd7f58eb3550e8de176.s3tc.ctex", "res://.godot/imported/NutBowl_0.png-a9a45d241a4b3dd7f58eb3550e8de176.etc2.ctex"]
+dest_files=["res://.godot/imported/NutBowl_0.png-a9a45d241a4b3dd7f58eb3550e8de176.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cfjigppe6klr0"
-path.s3tc="res://.godot/imported/Fries_0.png-52d008fdfb163a97bb03f5797f5eef53.s3tc.ctex"
-path.etc2="res://.godot/imported/Fries_0.png-52d008fdfb163a97bb03f5797f5eef53.etc2.ctex"
+path="res://.godot/imported/Fries_0.png-52d008fdfb163a97bb03f5797f5eef53.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "df11e035208fb6b355594ee22c5a4c98"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Fries_0.png"
-dest_files=["res://.godot/imported/Fries_0.png-52d008fdfb163a97bb03f5797f5eef53.s3tc.ctex", "res://.godot/imported/Fries_0.png-52d008fdfb163a97bb03f5797f5eef53.etc2.ctex"]
+dest_files=["res://.godot/imported/Fries_0.png-52d008fdfb163a97bb03f5797f5eef53.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

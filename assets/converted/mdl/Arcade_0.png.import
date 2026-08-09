@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b14yc3kuyul4n"
-path.s3tc="res://.godot/imported/Arcade_0.png-e393c9baf57d9c13bd5b21690793f05d.s3tc.ctex"
-path.etc2="res://.godot/imported/Arcade_0.png-e393c9baf57d9c13bd5b21690793f05d.etc2.ctex"
+path="res://.godot/imported/Arcade_0.png-e393c9baf57d9c13bd5b21690793f05d.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "04f5325fb90be9f7ec46b42bd3bcc80d"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Arcade_0.png"
-dest_files=["res://.godot/imported/Arcade_0.png-e393c9baf57d9c13bd5b21690793f05d.s3tc.ctex", "res://.godot/imported/Arcade_0.png-e393c9baf57d9c13bd5b21690793f05d.etc2.ctex"]
+dest_files=["res://.godot/imported/Arcade_0.png-e393c9baf57d9c13bd5b21690793f05d.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bdvpg7d80157s"
-path.s3tc="res://.godot/imported/lbeam_0.png-13eb8a3dc8761eb45eea1ed55ccbc1b2.s3tc.ctex"
-path.etc2="res://.godot/imported/lbeam_0.png-13eb8a3dc8761eb45eea1ed55ccbc1b2.etc2.ctex"
+path="res://.godot/imported/lbeam_0.png-13eb8a3dc8761eb45eea1ed55ccbc1b2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "e8be250f96b6eaab1205fb54fe486467"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/lbeam_0.png"
-dest_files=["res://.godot/imported/lbeam_0.png-13eb8a3dc8761eb45eea1ed55ccbc1b2.s3tc.ctex", "res://.godot/imported/lbeam_0.png-13eb8a3dc8761eb45eea1ed55ccbc1b2.etc2.ctex"]
+dest_files=["res://.godot/imported/lbeam_0.png-13eb8a3dc8761eb45eea1ed55ccbc1b2.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

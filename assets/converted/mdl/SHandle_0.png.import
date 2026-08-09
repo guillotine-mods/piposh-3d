@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bcsgbcc5d1x7e"
-path.s3tc="res://.godot/imported/SHandle_0.png-e6a1a308a00ba74b5fbb4c5c86256e6d.s3tc.ctex"
-path.etc2="res://.godot/imported/SHandle_0.png-e6a1a308a00ba74b5fbb4c5c86256e6d.etc2.ctex"
+path="res://.godot/imported/SHandle_0.png-e6a1a308a00ba74b5fbb4c5c86256e6d.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "901ecc719a6ff7d58ee9e46dfb13784b"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/SHandle_0.png"
-dest_files=["res://.godot/imported/SHandle_0.png-e6a1a308a00ba74b5fbb4c5c86256e6d.s3tc.ctex", "res://.godot/imported/SHandle_0.png-e6a1a308a00ba74b5fbb4c5c86256e6d.etc2.ctex"]
+dest_files=["res://.godot/imported/SHandle_0.png-e6a1a308a00ba74b5fbb4c5c86256e6d.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

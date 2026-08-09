@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b855qtopvy3j3"
-path.s3tc="res://.godot/imported/Alien_0.png-ee7854a1cb1dbcdf0666528d2a6899aa.s3tc.ctex"
-path.etc2="res://.godot/imported/Alien_0.png-ee7854a1cb1dbcdf0666528d2a6899aa.etc2.ctex"
+path="res://.godot/imported/Alien_0.png-ee7854a1cb1dbcdf0666528d2a6899aa.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "092fe67c266ee01ac32c269f1f4e9dc1"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Alien_0.png"
-dest_files=["res://.godot/imported/Alien_0.png-ee7854a1cb1dbcdf0666528d2a6899aa.s3tc.ctex", "res://.godot/imported/Alien_0.png-ee7854a1cb1dbcdf0666528d2a6899aa.etc2.ctex"]
+dest_files=["res://.godot/imported/Alien_0.png-ee7854a1cb1dbcdf0666528d2a6899aa.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

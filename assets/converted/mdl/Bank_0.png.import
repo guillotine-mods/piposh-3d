@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dhdbb8f0bnovg"
-path.s3tc="res://.godot/imported/Bank_0.png-0f80075cec4fd97dbe52ce5d07223375.s3tc.ctex"
-path.etc2="res://.godot/imported/Bank_0.png-0f80075cec4fd97dbe52ce5d07223375.etc2.ctex"
+path="res://.godot/imported/Bank_0.png-0f80075cec4fd97dbe52ce5d07223375.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "7577248c459267887b6df167e3cb8149"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Bank_0.png"
-dest_files=["res://.godot/imported/Bank_0.png-0f80075cec4fd97dbe52ce5d07223375.s3tc.ctex", "res://.godot/imported/Bank_0.png-0f80075cec4fd97dbe52ce5d07223375.etc2.ctex"]
+dest_files=["res://.godot/imported/Bank_0.png-0f80075cec4fd97dbe52ce5d07223375.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b1bbxyhirdppy"
-path.s3tc="res://.godot/imported/Terrain_0.png-955d5eb952d05e81db635e89a6aea194.s3tc.ctex"
-path.etc2="res://.godot/imported/Terrain_0.png-955d5eb952d05e81db635e89a6aea194.etc2.ctex"
+path="res://.godot/imported/Terrain_0.png-955d5eb952d05e81db635e89a6aea194.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "a86a8eaee533d2e5484a925b38f50912"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Terrain_0.png"
-dest_files=["res://.godot/imported/Terrain_0.png-955d5eb952d05e81db635e89a6aea194.s3tc.ctex", "res://.godot/imported/Terrain_0.png-955d5eb952d05e81db635e89a6aea194.etc2.ctex"]
+dest_files=["res://.godot/imported/Terrain_0.png-955d5eb952d05e81db635e89a6aea194.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

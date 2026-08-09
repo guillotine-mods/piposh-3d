@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c4fgyn8w6oxsl"
-path.s3tc="res://.godot/imported/Mask_0.png-58352b8798ecf81488ad9d09da06a363.s3tc.ctex"
-path.etc2="res://.godot/imported/Mask_0.png-58352b8798ecf81488ad9d09da06a363.etc2.ctex"
+path="res://.godot/imported/Mask_0.png-58352b8798ecf81488ad9d09da06a363.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "5bb2972bc17a3441d7817938fa2306e0"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Mask_0.png"
-dest_files=["res://.godot/imported/Mask_0.png-58352b8798ecf81488ad9d09da06a363.s3tc.ctex", "res://.godot/imported/Mask_0.png-58352b8798ecf81488ad9d09da06a363.etc2.ctex"]
+dest_files=["res://.godot/imported/Mask_0.png-58352b8798ecf81488ad9d09da06a363.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

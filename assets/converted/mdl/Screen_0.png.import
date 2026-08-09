@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://d0grf3mqiehmu"
-path.s3tc="res://.godot/imported/Screen_0.png-1c6ca2c593d81ebbad375e5f39e6dfbe.s3tc.ctex"
-path.etc2="res://.godot/imported/Screen_0.png-1c6ca2c593d81ebbad375e5f39e6dfbe.etc2.ctex"
+path="res://.godot/imported/Screen_0.png-1c6ca2c593d81ebbad375e5f39e6dfbe.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "8823df75506346bb3b13bca0b7fb059f"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Screen_0.png"
-dest_files=["res://.godot/imported/Screen_0.png-1c6ca2c593d81ebbad375e5f39e6dfbe.s3tc.ctex", "res://.godot/imported/Screen_0.png-1c6ca2c593d81ebbad375e5f39e6dfbe.etc2.ctex"]
+dest_files=["res://.godot/imported/Screen_0.png-1c6ca2c593d81ebbad375e5f39e6dfbe.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

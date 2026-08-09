@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://do4v530is1ka"
-path.s3tc="res://.godot/imported/Betty_0.png-1af7390d9a44ce670a4aaeb124255584.s3tc.ctex"
-path.etc2="res://.godot/imported/Betty_0.png-1af7390d9a44ce670a4aaeb124255584.etc2.ctex"
+path="res://.godot/imported/Betty_0.png-1af7390d9a44ce670a4aaeb124255584.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "04e4bb05167733450a10b74281cc1f12"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Betty_0.png"
-dest_files=["res://.godot/imported/Betty_0.png-1af7390d9a44ce670a4aaeb124255584.s3tc.ctex", "res://.godot/imported/Betty_0.png-1af7390d9a44ce670a4aaeb124255584.etc2.ctex"]
+dest_files=["res://.godot/imported/Betty_0.png-1af7390d9a44ce670a4aaeb124255584.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

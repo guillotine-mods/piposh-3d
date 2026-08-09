@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cqj1l528l1i6m"
-path.s3tc="res://.godot/imported/InvTofu_0.png-d11227aeec44e7e4b417ec6033f89d1f.s3tc.ctex"
-path.etc2="res://.godot/imported/InvTofu_0.png-d11227aeec44e7e4b417ec6033f89d1f.etc2.ctex"
+path="res://.godot/imported/InvTofu_0.png-d11227aeec44e7e4b417ec6033f89d1f.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "d726c0ffd4cc1909e78cdb323f72c2b3"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/InvTofu_0.png"
-dest_files=["res://.godot/imported/InvTofu_0.png-d11227aeec44e7e4b417ec6033f89d1f.s3tc.ctex", "res://.godot/imported/InvTofu_0.png-d11227aeec44e7e4b417ec6033f89d1f.etc2.ctex"]
+dest_files=["res://.godot/imported/InvTofu_0.png-d11227aeec44e7e4b417ec6033f89d1f.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

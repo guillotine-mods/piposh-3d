@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://d0lbpwxdta8oj"
-path.s3tc="res://.godot/imported/GranRace_0.png-bd480eb5b7f7b7e7116df1cd4e8f6369.s3tc.ctex"
-path.etc2="res://.godot/imported/GranRace_0.png-bd480eb5b7f7b7e7116df1cd4e8f6369.etc2.ctex"
+path="res://.godot/imported/GranRace_0.png-bd480eb5b7f7b7e7116df1cd4e8f6369.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "1fc5a9fc5212cb192b9e1ab02aea01e0"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/GranRace_0.png"
-dest_files=["res://.godot/imported/GranRace_0.png-bd480eb5b7f7b7e7116df1cd4e8f6369.s3tc.ctex", "res://.godot/imported/GranRace_0.png-bd480eb5b7f7b7e7116df1cd4e8f6369.etc2.ctex"]
+dest_files=["res://.godot/imported/GranRace_0.png-bd480eb5b7f7b7e7116df1cd4e8f6369.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

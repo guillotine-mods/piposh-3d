@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://babj6hgnieh3c"
-path.s3tc="res://.godot/imported/Effy_0.png-d2e432bdf1c03adedc84fdb7930833bd.s3tc.ctex"
-path.etc2="res://.godot/imported/Effy_0.png-d2e432bdf1c03adedc84fdb7930833bd.etc2.ctex"
+path="res://.godot/imported/Effy_0.png-d2e432bdf1c03adedc84fdb7930833bd.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "97aa77fa47c368809423da8d5c77c692"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Effy_0.png"
-dest_files=["res://.godot/imported/Effy_0.png-d2e432bdf1c03adedc84fdb7930833bd.s3tc.ctex", "res://.godot/imported/Effy_0.png-d2e432bdf1c03adedc84fdb7930833bd.etc2.ctex"]
+dest_files=["res://.godot/imported/Effy_0.png-d2e432bdf1c03adedc84fdb7930833bd.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

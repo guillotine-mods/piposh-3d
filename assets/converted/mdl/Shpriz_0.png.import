@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b23lf4gnubjia"
-path.s3tc="res://.godot/imported/Shpriz_0.png-d9f6dd99c3e330abd6701a8a3c51072d.s3tc.ctex"
-path.etc2="res://.godot/imported/Shpriz_0.png-d9f6dd99c3e330abd6701a8a3c51072d.etc2.ctex"
+path="res://.godot/imported/Shpriz_0.png-d9f6dd99c3e330abd6701a8a3c51072d.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "86e9987b75295b7a8ae2720227f9d6d5"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Shpriz_0.png"
-dest_files=["res://.godot/imported/Shpriz_0.png-d9f6dd99c3e330abd6701a8a3c51072d.s3tc.ctex", "res://.godot/imported/Shpriz_0.png-d9f6dd99c3e330abd6701a8a3c51072d.etc2.ctex"]
+dest_files=["res://.godot/imported/Shpriz_0.png-d9f6dd99c3e330abd6701a8a3c51072d.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

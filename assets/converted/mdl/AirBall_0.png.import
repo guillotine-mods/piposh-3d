@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://brw3xclfnyo4h"
-path.s3tc="res://.godot/imported/AirBall_0.png-29e907b5804db74cf7a6b71f1bfbcb7b.s3tc.ctex"
-path.etc2="res://.godot/imported/AirBall_0.png-29e907b5804db74cf7a6b71f1bfbcb7b.etc2.ctex"
+path="res://.godot/imported/AirBall_0.png-29e907b5804db74cf7a6b71f1bfbcb7b.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "6e7e9afcf2bb986d8c9ac31eb04dcdb9"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/AirBall_0.png"
-dest_files=["res://.godot/imported/AirBall_0.png-29e907b5804db74cf7a6b71f1bfbcb7b.s3tc.ctex", "res://.godot/imported/AirBall_0.png-29e907b5804db74cf7a6b71f1bfbcb7b.etc2.ctex"]
+dest_files=["res://.godot/imported/AirBall_0.png-29e907b5804db74cf7a6b71f1bfbcb7b.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

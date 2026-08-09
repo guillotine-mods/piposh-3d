@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://omtt2t4tp2sl"
-path.s3tc="res://.godot/imported/Kiviti_0.png-0608345735dce26e49509f118be6279b.s3tc.ctex"
-path.etc2="res://.godot/imported/Kiviti_0.png-0608345735dce26e49509f118be6279b.etc2.ctex"
+path="res://.godot/imported/Kiviti_0.png-0608345735dce26e49509f118be6279b.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "a77e5da8fee26bbf3ef0471c879d465e"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Kiviti_0.png"
-dest_files=["res://.godot/imported/Kiviti_0.png-0608345735dce26e49509f118be6279b.s3tc.ctex", "res://.godot/imported/Kiviti_0.png-0608345735dce26e49509f118be6279b.etc2.ctex"]
+dest_files=["res://.godot/imported/Kiviti_0.png-0608345735dce26e49509f118be6279b.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c1drnch8owby3"
-path.s3tc="res://.godot/imported/Wall_0.png-5190a77d227288e22d2e4ad395b17390.s3tc.ctex"
-path.etc2="res://.godot/imported/Wall_0.png-5190a77d227288e22d2e4ad395b17390.etc2.ctex"
+path="res://.godot/imported/Wall_0.png-5190a77d227288e22d2e4ad395b17390.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "7c5c50c0cab5d217682bd6c02ee77878"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Wall_0.png"
-dest_files=["res://.godot/imported/Wall_0.png-5190a77d227288e22d2e4ad395b17390.s3tc.ctex", "res://.godot/imported/Wall_0.png-5190a77d227288e22d2e4ad395b17390.etc2.ctex"]
+dest_files=["res://.godot/imported/Wall_0.png-5190a77d227288e22d2e4ad395b17390.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

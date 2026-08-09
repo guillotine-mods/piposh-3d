@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bn3r2m5m0dnk5"
-path.s3tc="res://.godot/imported/Deck_0.png-bb94118c365f49110f34b245b5d6ff1b.s3tc.ctex"
-path.etc2="res://.godot/imported/Deck_0.png-bb94118c365f49110f34b245b5d6ff1b.etc2.ctex"
+path="res://.godot/imported/Deck_0.png-bb94118c365f49110f34b245b5d6ff1b.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "d29d21ea726910647517e441403d5323"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Deck_0.png"
-dest_files=["res://.godot/imported/Deck_0.png-bb94118c365f49110f34b245b5d6ff1b.s3tc.ctex", "res://.godot/imported/Deck_0.png-bb94118c365f49110f34b245b5d6ff1b.etc2.ctex"]
+dest_files=["res://.godot/imported/Deck_0.png-bb94118c365f49110f34b245b5d6ff1b.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

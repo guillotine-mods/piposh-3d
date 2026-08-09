@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ce7pnvuchcmjr"
-path.s3tc="res://.godot/imported/Recorder_0.png-5e6c5895c62aaf9394d8f2b655406775.s3tc.ctex"
-path.etc2="res://.godot/imported/Recorder_0.png-5e6c5895c62aaf9394d8f2b655406775.etc2.ctex"
+path="res://.godot/imported/Recorder_0.png-5e6c5895c62aaf9394d8f2b655406775.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "45eff34c6a52a6a95038f3227ab00f55"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Recorder_0.png"
-dest_files=["res://.godot/imported/Recorder_0.png-5e6c5895c62aaf9394d8f2b655406775.s3tc.ctex", "res://.godot/imported/Recorder_0.png-5e6c5895c62aaf9394d8f2b655406775.etc2.ctex"]
+dest_files=["res://.godot/imported/Recorder_0.png-5e6c5895c62aaf9394d8f2b655406775.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

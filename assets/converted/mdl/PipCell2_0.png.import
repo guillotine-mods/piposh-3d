@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dejryasql8nyn"
-path.s3tc="res://.godot/imported/PipCell2_0.png-303585495ad7af904e69f300be78dc9a.s3tc.ctex"
-path.etc2="res://.godot/imported/PipCell2_0.png-303585495ad7af904e69f300be78dc9a.etc2.ctex"
+path="res://.godot/imported/PipCell2_0.png-303585495ad7af904e69f300be78dc9a.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "6b60f4c4f5b967370dda6f36ec8adeaf"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/PipCell2_0.png"
-dest_files=["res://.godot/imported/PipCell2_0.png-303585495ad7af904e69f300be78dc9a.s3tc.ctex", "res://.godot/imported/PipCell2_0.png-303585495ad7af904e69f300be78dc9a.etc2.ctex"]
+dest_files=["res://.godot/imported/PipCell2_0.png-303585495ad7af904e69f300be78dc9a.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

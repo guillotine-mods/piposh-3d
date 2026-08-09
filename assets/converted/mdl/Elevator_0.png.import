@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cfgtaej02i87f"
-path.s3tc="res://.godot/imported/Elevator_0.png-ee4ff3899a944072fcad6fa5858e9e2f.s3tc.ctex"
-path.etc2="res://.godot/imported/Elevator_0.png-ee4ff3899a944072fcad6fa5858e9e2f.etc2.ctex"
+path="res://.godot/imported/Elevator_0.png-ee4ff3899a944072fcad6fa5858e9e2f.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "fcd6bcb56c1689fcef28b57c22475bad"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/Elevator_0.png"
-dest_files=["res://.godot/imported/Elevator_0.png-ee4ff3899a944072fcad6fa5858e9e2f.s3tc.ctex", "res://.godot/imported/Elevator_0.png-ee4ff3899a944072fcad6fa5858e9e2f.etc2.ctex"]
+dest_files=["res://.godot/imported/Elevator_0.png-ee4ff3899a944072fcad6fa5858e9e2f.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

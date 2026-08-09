@@ -3,11 +3,9 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cmtbhm33ftu30"
-path.s3tc="res://.godot/imported/movcam_0.png-e76b35360550b4abeb408e8cea3d717e.s3tc.ctex"
-path.etc2="res://.godot/imported/movcam_0.png-e76b35360550b4abeb408e8cea3d717e.etc2.ctex"
+path="res://.godot/imported/movcam_0.png-e76b35360550b4abeb408e8cea3d717e.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
 "md5": "6bc68652eed4455707861b443134dde9"
@@ -16,11 +14,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/converted/mdl/movcam_0.png"
-dest_files=["res://.godot/imported/movcam_0.png-e76b35360550b4abeb408e8cea3d717e.s3tc.ctex", "res://.godot/imported/movcam_0.png-e76b35360550b4abeb408e8cea3d717e.etc2.ctex"]
+dest_files=["res://.godot/imported/movcam_0.png-e76b35360550b4abeb408e8cea3d717e.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
