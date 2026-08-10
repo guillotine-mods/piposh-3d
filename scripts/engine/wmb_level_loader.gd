@@ -3,6 +3,10 @@ extends Node3D
 ## Transforms are pre-baked Acknex(Z-up) → Godot(Y-up) in the JSON.
 
 const MdlAnimator = preload("res://scripts/engine/mdl_animator.gd")
+## Runtime .WMB reader (0-py migration). Deliberately NO `class_name` anywhere
+## in this project (commit 5c0adfa: a global class inside a mounted .pck never
+## resolves), so it is reached by preload only.
+const WmbFile = preload("res://scripts/engine/wmb_file.gd")
 
 signal entity_triggered(action: String, skills: Array, node: Node3D)
 signal level_loaded(level_name: String, ok: bool)
@@ -10,6 +14,29 @@ signal level_loaded(level_name: String, ok: bool)
 const MDL_DIR := "res://assets/converted/mdl/"
 const WMB_DIR := "res://assets/converted/wmb/"
 const LEVEL_DIR := "res://assets/converted/levels/"
+## Original game data, read byte-for-byte by `WmbFile` when the runtime path is
+## enabled. Same directory the byte-level oracles (tools/smoke_wmb_reader.gd,
+## tools/smoke_wmb_mesh.gd) read.
+const WMB_SRC_DIR := "res://original/piposh3d/WMB/"
+
+## FEATURE FLAG — DEFAULTS OFF.
+##
+## false (default): level object data comes from `assets/converted/levels/
+## <Name>.json` and brush geometry from `<Name>_brush.glb` / `wmb/<Stem>.glb`,
+## i.e. the offline Python pipeline's output. Behaviour is byte-for-byte what it
+## has always been; none of the runtime-WMB code below is reached.
+##
+## true: the same two things are produced in-engine by `WmbFile` straight out of
+## `original/piposh3d/WMB/*.WMB` — no converted JSON, no GLB. `WmbFile` is
+## already proven byte-identical to the Python converters
+## (tools/smoke_wmb_reader.gd 134/134, tools/smoke_wmb_mesh.gd 134/134); what
+## this flag adds is the *engine* question — does a scene fed by the reader
+## equal a scene fed by the GLB — which tools/smoke_wmb_integration.gd answers.
+const USE_RUNTIME_WMB := false
+## Per-instance override of the const above, so both paths can be built in one
+## process and compared (tools/smoke_wmb_integration.gd). Nothing in the game
+## writes this; it defaults to the const, which is false.
+var use_runtime_wmb: bool = USE_RUNTIME_WMB
 ## Island.MDL uses scale 20; allow generous but reject skybox junk.
 ## Reported live (2026-08-08): Plane3 "loads but nothing ever
 ## progresses" -- its own `action Dome` (`BackDome.MDL`, scale 95.36)
@@ -41,6 +68,9 @@ var _entities_root: Node3D
 var _geometry_root: Node3D
 var _glb_index: Dictionary = {}
 var _wmb_index: Dictionary = {}
+## lowercased stem -> "res://original/piposh3d/WMB/<file>", with the file's real
+## on-disk casing. Built lazily, only on the runtime path.
+var _wmb_src_index: Dictionary = {}
 
 
 func _ready() -> void:
@@ -63,22 +93,42 @@ func load_level(p_level_name: String) -> bool:
 	_clear_children(_geometry_root)
 	_clear_children(_entities_root)
 
-	var path := _resolve_level_json(p_level_name)
-	if path == "":
-		push_warning("No level JSON: %s" % p_level_name)
-		_spawn_ground(Vector3.ZERO, Vector3(40, 1, 40))
-		spawn_position = Vector3(0, 2, 8)
-		level_loaded.emit(level_name, false)
-		return false
+	# SEAM 1 — level object data. Both branches must yield the same dictionary
+	# shape; `WmbFile.read_level()` returns exactly what
+	# `tools/extract_wmb_full.py` writes to <Name>.json (proven 134/134 by
+	# tools/smoke_wmb_reader.gd), so everything downstream is untouched.
+	var data
+	if use_runtime_wmb:
+		var wmb_path := _resolve_wmb_source(p_level_name)
+		if wmb_path == "":
+			push_warning("No level WMB: %s" % p_level_name)
+			_spawn_ground(Vector3.ZERO, Vector3(40, 1, 40))
+			spawn_position = Vector3(0, 2, 8)
+			level_loaded.emit(level_name, false)
+			return false
+		data = WmbFile.read_level(wmb_path)
+		# read_level() reports its "no objects list" ValueError path as {"error": …},
+		# which is the runtime equivalent of an unreadable/!Dictionary JSON below.
+		if typeof(data) != TYPE_DICTIONARY or data.has("error"):
+			level_loaded.emit(level_name, false)
+			return false
+	else:
+		var path := _resolve_level_json(p_level_name)
+		if path == "":
+			push_warning("No level JSON: %s" % p_level_name)
+			_spawn_ground(Vector3.ZERO, Vector3(40, 1, 40))
+			spawn_position = Vector3(0, 2, 8)
+			level_loaded.emit(level_name, false)
+			return false
 
-	var f := FileAccess.open(path, FileAccess.READ)
-	if f == null:
-		level_loaded.emit(level_name, false)
-		return false
-	var data = JSON.parse_string(f.get_as_text())
-	if typeof(data) != TYPE_DICTIONARY:
-		level_loaded.emit(level_name, false)
-		return false
+		var f := FileAccess.open(path, FileAccess.READ)
+		if f == null:
+			level_loaded.emit(level_name, false)
+			return false
+		data = JSON.parse_string(f.get_as_text())
+		if typeof(data) != TYPE_DICTIONARY:
+			level_loaded.emit(level_name, false)
+			return false
 	last_level_data = data
 
 	var bounds: Dictionary = data.get("bounds", {})
@@ -203,21 +253,143 @@ func _clear_children(node: Node) -> void:
 		c.free()
 
 
+## SEAM 2 — level brush geometry. Everything after the `inst` is produced is
+## shared by both branches, so material treatment (sky transparency, filtering)
+## and collision are applied identically either way.
 func _spawn_brush_geometry(p_level_name: String) -> bool:
-	var path := _resolve_brush_glb(p_level_name)
-	if path == "":
-		return false
-	var packed := load(path)
-	if packed == null or not (packed is PackedScene):
-		push_warning("Brush GLB failed to load: %s" % path)
-		return false
-	var inst: Node = (packed as PackedScene).instantiate()
+	var inst: Node = null
+	if use_runtime_wmb:
+		inst = _build_runtime_wmb_node(p_level_name)
+		if inst == null:
+			return false
+	else:
+		var path := _resolve_brush_glb(p_level_name)
+		if path == "":
+			return false
+		var packed := load(path)
+		if packed == null or not (packed is PackedScene):
+			push_warning("Brush GLB failed to load: %s" % path)
+			return false
+		inst = (packed as PackedScene).instantiate()
 	inst.name = "Brush"
 	_force_unshaded_if_needed(inst, true)
 	# Static collision from visual meshes (coarse but keeps player on floors).
 	_add_mesh_collision(inst)
 	_geometry_root.add_child(inst)
 	return true
+
+
+## Build the same node an extracted `_brush.glb` / `wmb/<stem>.glb` would
+## instantiate to, but straight from the original .WMB via `WmbFile`.
+##
+## Shape mirrors the offline pipeline's glTF: ONE MeshInstance3D whose ArrayMesh
+## carries one surface per non-empty texture bucket, in sorted texture-index
+## order (`WmbFile.build_mesh()`), wrapped in a Node3D at identity — which is
+## what the exporter writes and therefore what `PackedScene.instantiate()`
+## yields. Returns null wherever the GLB path would have returned "" / failed to
+## load, so the caller's ground-pad fallback is reached the same way.
+func _build_runtime_wmb_node(stem: String) -> Node3D:
+	var src := _resolve_wmb_source(stem)
+	if src == "":
+		return null
+	var f := FileAccess.open(src, FileAccess.READ)
+	if f == null:
+		return null
+	var bytes := f.get_buffer(f.get_length())
+	f.close()
+	if bytes.is_empty():
+		return null
+	var brush := WmbFile.read_brush(bytes, true)
+	if brush.is_empty():
+		return null
+	var mesh := WmbFile.build_mesh(brush)
+	if mesh.get_surface_count() == 0:
+		return null
+	_apply_runtime_brush_materials(mesh, brush)
+	var mi := MeshInstance3D.new()
+	mi.name = "BrushMesh"
+	mi.mesh = mesh
+	var holder := Node3D.new()
+	holder.name = stem
+	holder.add_child(mi)
+	return holder
+
+
+## Attach one StandardMaterial3D per surface carrying the Acknex texture NAME
+## and decoded pixels.
+##
+## The name matters as much as the pixels: `_force_unshaded_if_needed()` keys
+## its sky/backdrop transparency rule off `mat.resource_name` (see its own
+## comment — the glTF exporter carries the original Acknex texture name through
+## as the glTF material name, which is the only place it survives). Setting
+## `resource_name` here is what makes that rule fire identically on this path.
+func _apply_runtime_brush_materials(mesh: ArrayMesh, brush: Dictionary) -> void:
+	var textures: Array = brush.get("textures", [])
+	var keys: Array = brush["buckets"].keys()
+	keys.sort()
+	var si := 0
+	for tex_idx in keys:
+		var b: Dictionary = brush["buckets"][tex_idx]
+		# build_mesh() skips empty buckets; walk in lockstep with it.
+		if (b["idx"] as Array).is_empty():
+			continue
+		if si >= mesh.get_surface_count():
+			break
+		var mat := StandardMaterial3D.new()
+		mat.resource_name = str(b["name"])
+		var ti := int(tex_idx)
+		if ti >= 0 and ti < textures.size():
+			var img: Image = textures[ti].get("image")
+			if img != null:
+				# LINEAR_WITH_MIPMAPS is what brush surfaces get below; without
+				# mips that filter silently degrades to plain linear.
+				if not img.has_mipmaps():
+					img.generate_mipmaps()
+				mat.albedo_texture = ImageTexture.create_from_image(img)
+		mesh.surface_set_material(si, mat)
+		si += 1
+
+
+## Locate the original .WMB for a level or prop stem.
+##
+## Unlike `_resolve_level_json` / `_direct_glb`, this prefers a cached DirAccess
+## listing over direct-path probes, and deliberately so: the corpus mixes `.wmb`
+## and `.WMB` (and `Menu.WMB` vs `Town.wmb` casing on the stem too), so a probe
+## loop on a case-INsensitive filesystem happily opens `DRoad1.wmb` when asked
+## for `DRoad1.WMB` and Godot logs "Case mismatch opening requested file … will
+## not open when exported to other case-sensitive platforms" for every one. The
+## listing gives the real on-disk name, so the path handed to FileAccess is
+## always exact. The direct-probe fallback is kept for the PCK/Android case
+## where DirAccess listing of res:// is unreliable (CONTRACT §6).
+func _resolve_wmb_source(stem: String) -> String:
+	if stem == "":
+		return ""
+	if _wmb_src_index.is_empty():
+		_build_wmb_src_index()
+	var hit := str(_wmb_src_index.get(stem.to_lower(), ""))
+	if hit != "":
+		return hit
+	var casings: Array[String] = [stem, stem.to_lower()]
+	casings.append(stem.substr(0, 1).to_upper() + stem.substr(1).to_lower())
+	for s in casings:
+		for ext in [".WMB", ".wmb"]:
+			var p: String = WMB_SRC_DIR + s + ext
+			if FileAccess.file_exists(p):
+				return p
+	return ""
+
+
+func _build_wmb_src_index() -> void:
+	var dir := DirAccess.open(WMB_SRC_DIR)
+	if dir == null:
+		return
+	dir.list_dir_begin()
+	var fn := dir.get_next()
+	while fn != "":
+		if not dir.current_is_dir() and fn.get_extension().to_lower() == "wmb":
+			_wmb_src_index[fn.get_basename().to_lower()] = WMB_SRC_DIR + fn
+		fn = dir.get_next()
+	dir.list_dir_end()
 
 
 func _resolve_brush_glb(p_level_name: String) -> String:
@@ -465,32 +637,38 @@ func _spawn_entity(obj: Dictionary) -> bool:
 
 	var stem := file.get_file().get_basename()
 	var is_wmb := file.to_lower().ends_with(".wmb")
-	var glb_path := _find_wmb_glb(stem) if is_wmb else _find_glb(stem)
+	# SEAM 3 — per-entity visual. Only .wmb-backed props change source; .mdl
+	# props keep going through _find_glb() either way (MDL is a separate reader
+	# and a separate migration step). Everything after `inst` is shared.
+	var inst: Node = null
+	if use_runtime_wmb and is_wmb:
+		inst = _build_runtime_wmb_node(stem)
+	else:
+		var glb_path := _find_wmb_glb(stem) if is_wmb else _find_glb(stem)
+		if glb_path != "":
+			var packed := load(glb_path)
+			if packed is PackedScene:
+				inst = (packed as PackedScene).instantiate()
 
-	if glb_path != "":
-		var packed := load(glb_path)
-		if packed is PackedScene:
-			var inst: Node = (packed as PackedScene).instantiate()
-			_force_unshaded_if_needed(inst, is_wmb)
-			root.add_child(inst)
-			if not is_wmb:
-				_attach_animator(root, stem, action)
-			# Opt-in feet-snap for floor actors only (see CONTRACT).
-			if _should_feet_snap(action, stem):
-				_snap_mesh_feet_to_origin(root, scl.y)
-			if stem.to_lower() in ["shiknote", "afg"]:
-				_mount_wall_card(root, stem.to_lower())
-			# FP levels need solid props; skip passable / cameras / FP body.
-			if (
-				not is_wmb
-				and not flag_passable
-				and not _is_camera_action(action)
-				and not _is_first_person_action(action)
-				and stem.to_lower() != "cam"
-			):
-				_add_mesh_collision(inst)
-		else:
-			_add_marker(root, action, is_wmb)
+	if inst != null:
+		_force_unshaded_if_needed(inst, is_wmb)
+		root.add_child(inst)
+		if not is_wmb:
+			_attach_animator(root, stem, action)
+		# Opt-in feet-snap for floor actors only (see CONTRACT).
+		if _should_feet_snap(action, stem):
+			_snap_mesh_feet_to_origin(root, scl.y)
+		if stem.to_lower() in ["shiknote", "afg"]:
+			_mount_wall_card(root, stem.to_lower())
+		# FP levels need solid props; skip passable / cameras / FP body.
+		if (
+			not is_wmb
+			and not flag_passable
+			and not _is_camera_action(action)
+			and not _is_first_person_action(action)
+			and stem.to_lower() != "cam"
+		):
+			_add_mesh_collision(inst)
 	else:
 		_add_marker(root, action, is_wmb)
 
