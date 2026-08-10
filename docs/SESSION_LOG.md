@@ -8854,3 +8854,37 @@ is slightly wrong about this: `_find_wmb_glb("Shiks")` reaching the broken copy
 first applies to the PROP path only; level brushes resolve via
 `_resolve_brush_glb`, which probes `levels/<name>_brush.glb` FIRST
 (wmb_level_loader.gd:227). The broken file was already unreachable at runtime.
+
+## 2026-08-10 — Correction: IDPO is now ported, MDL coverage is complete
+
+The entry above records "375 of 648 models are Quake IDPO and `parse_quake_mdl`
+is not ported". That was true when written and is no longer true. This file is
+append-only, so: `parse_quake_mdl` has since been ported into
+`scripts/engine/mdl_file.gd`, and `smoke_mdl_reader` now reports **648/648 EXACT
+MATCH, 480,082 vertices**, including all 375 IDPO models. The single model with
+no reference is `Hezi4`, which `convert_mdl.py` itself rejects as degenerate
+(uvs=0), so there is nothing to compare against.
+
+The reader layer therefore covers 100% of every corpus it targets:
+
+| reader | coverage |
+|---|---|
+| `gfx_bitmap.gd` | 507 pixel-exact (34 excluded as NB-7 stem collisions, 1 rejected by both) |
+| `wdl_parser.gd` | 85/85 ASTs identical |
+| `wmb_file.gd` objects | 134/134, 6,291 objects |
+| `wmb_file.gd` brush | 134/134, 1,313,543 verts |
+| `mdl_file.gd` | 648/648, 480,082 verts |
+
+Two gaps remain inside the readers, both marked in the source rather than
+silently wrong: classic Quake 8-bit palette skin PIXEL decode (the stride IS
+handled, which is what the geometry depends on; RGB565/RGBA4444 skins do
+decode), and the `.mdlanim`/`.skins` sidecar writers, which a runtime reader
+does not need but the current loader still consumes.
+
+A third GDScript type-inference failure showed up while porting IDPO
+(`var sb := st_off + vi * 12`, where `vi` comes from iterating an untyped Array
+literal and is therefore Variant). That is three for three: every single time a
+new reader misbehaved in a confusing way this session -- a hang, a PASS with zero
+comparisons, and an immediate exit -- the cause was `:=` inferring from a Variant
+expression. Type the variable explicitly whenever the right-hand side indexes or
+iterates an untyped Array.
