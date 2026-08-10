@@ -4659,11 +4659,6 @@ func _do_create(a: Array, my) -> Node3D:
 	# superset of the old behavior, not a narrowing).
 	var pos_source: Node3D = (a[1] if a.size() > 1 and a[1] is Node3D and is_instance_valid(a[1]) else my)
 	inst.global_transform = pos_source.global_transform if pos_source else Transform3D.IDENTITY
-	# See `_reset_entity_to_spawn()`'s own comment -- WmbLevelLoader sets
-	# this for every level-placed entity, but a runtime `create()`'d one
-	# never goes through that spawn path at all. Without it, a retry
-	# reset would have nothing to put a runtime-created entity back to.
-	inst.set_meta("wdl_spawn_position", inst.global_position)
 	if not is_sprite:
 		var anim := MdlAnimator.new()
 		anim.name = "MdlAnimator"
@@ -4672,6 +4667,33 @@ func _do_create(a: Array, my) -> Node3D:
 	inst.set_meta("action", str(a[2]) if a.size() > 2 else "")
 	inst.set_meta("wdl_skills", [])
 	var action := str(inst.get_meta("action", ""))
+	# Reported live (2026-08-10, this round): "the water, the driving
+	# cars etc that they are not in the same heights." Every WED-placed
+	# entity gets its own model's feet-to-origin offset corrected at
+	# spawn (`WmbLevelLoader._snap_mesh_feet_to_origin()` -- the very
+	# same mesh-AABB-vs-origin fix already relied on elsewhere this
+	# session, e.g. Piposh/Krupnik in Plane), but a runtime `create()`'d
+	# entity never went through that spawn path at all -- and this is
+	# EXACTLY how every piece of moving city traffic comes to exist
+	# (`action MakeCars`' own `create(<car.mdl>, waypoint, SportCar)`
+	# calls, Town/Fight/Race/Mount/Mine's own real corpus usage). Two
+	# different car models with two different feet-to-origin offsets,
+	# spawned at the same street-level reference point, would land at
+	# two different apparent heights -- exactly "cars not at the same
+	# height" -- while any WED-PLACED car nearby (already corrected)
+	# looks fine, making the mismatch read as inconsistent/floating
+	# traffic specifically. Fixed by reusing the loader's own identical
+	# opt-out gate and correction for every non-sprite create() (a
+	# billboard sprite has no mesh AABB to snap in the first place).
+	if not is_sprite and _loader.has_method("_should_feet_snap") and _loader.call("_should_feet_snap", action, stem):
+		_loader.call("_snap_mesh_feet_to_origin", inst, 1.0)
+	# See `_reset_entity_to_spawn()`'s own comment -- WmbLevelLoader sets
+	# this for every level-placed entity, but a runtime `create()`'d one
+	# never goes through that spawn path at all. Without it, a retry
+	# reset would have nothing to put a runtime-created entity back to.
+	# Captured AFTER the feet-snap correction above so a retry resets to
+	# the corrected height, not the pre-snap raw spawn transform.
+	inst.set_meta("wdl_spawn_position", inst.global_position)
 	# GB-8 continued (2026-08-07, Range): "can we remove the bullets and
 	# just check if the mouse clicked on the target or not?" Replaces
 	# Range/Final/Shooter/InShrine's shared physical-bullet-travel model

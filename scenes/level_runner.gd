@@ -290,6 +290,27 @@ func _apply_wdl_fog() -> void:
 		return
 	var env := we.environment
 	env.fog_enabled = value > 0.0
+	# Reported live (2026-08-10 continued): "the fog issue still occurs" /
+	# Plane3 "really dark" persisted even after anchoring fog_depth_end to
+	# the level's own real bounds (above). Godot's `Environment.fog_sky_
+	# affect` defaults to 1.0 -- full effect -- meaning the sky/background
+	# itself gets blended toward `fog_light_color` as if it sat at the fog's
+	# own far depth, same as any other fogged surface. The real engine this
+	# game shipped on (3D GameStudio A5, confirmed boot banner "commercial
+	# release V5.240") used classic DirectX fixed-function depth fog, which
+	# by design exempts the skybox/background entirely -- a skybox has no
+	# real depth to fog against, and every DirectX-era engine of this kind
+	# renders it fog-free so a distant hazy scene doesn't also paint the sky
+	# solid fog-color. With `fog_color=1` (near-black, GB-24's own finding)
+	# active for Plane3's whole falling/aerial sequence, a `fog_sky_affect`
+	# of 1.0 would wash the ENTIRE sky -- which dominates the frame in an
+	# aerial shot -- toward solid black regardless of how generously
+	# `fog_depth_end` is tuned, since the sky is conceptually at infinite
+	# distance and always exceeds any finite fog range. No amount of
+	# distance-formula tuning could ever fix that; this is a different,
+	# structural mismatch (fog fogging out to backdrop, when the real
+	# engine only ever fogged worldgeometry). Zeroed to match.
+	env.fog_sky_affect = 0.0
 	if value > 0.0:
 		# fog_color defaults to (0,0,0) (never assigned) for levels that
 		# set camera.fog without ever touching fog_color -- treat that as
@@ -463,7 +484,17 @@ func _ensure_environment() -> void:
 		sun.name = "Sun"
 		sun.light_color = Color(1.0, 0.96, 0.88)
 		sun.light_energy = 0.75
-		sun.shadow_enabled = false
+		# Reported live again (2026-08-10, this round): "the lighting
+		# effects from the original game are missing" -- previously left
+		# off pending live visual verification (see this function's own
+		# docstring above); re-reported explicitly enough times now
+		# ("light and shadows that don't exist in the current graphics")
+		# that leaving it off any longer isn't the safer choice. One
+		# directional light's shadow map is cheap regardless of scene size
+		# (unlike per-point-light shadows, which this session also enabled
+		# corpus-wide since WMB point-light counts are small -- see
+		# WmbLevelLoader._spawn_light()).
+		sun.shadow_enabled = true
 		sun.rotation_degrees = Vector3(-50.0, -35.0, 0.0)
 		add_child(sun)
 

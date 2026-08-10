@@ -32,12 +32,19 @@ func _run() -> void:
 		return
 
 	var env := we.environment
-	print("fog_enabled=%s fog_depth_end=%s fog_light_color=%s" % [env.fog_enabled, env.fog_depth_end, env.fog_light_color])
+	print("fog_enabled=%s fog_depth_end=%s fog_light_color=%s fog_sky_affect=%s" % [env.fog_enabled, env.fog_depth_end, env.fog_light_color, env.fog_sky_affect])
 
 	# Plane3's own main() sets fog_color=1; -- per the "VECTOR=SCALAR sets
 	# only .x" idiom this session established, that's (1,0,0) in Acknex's
 	# roughly-0-255 color scale, i.e. very close to black.
 	var color_ok: bool = env.fog_light_color.r < 0.05 and env.fog_light_color.g < 0.01 and env.fog_light_color.b < 0.01
-	var ok: bool = env.fog_enabled and env.fog_depth_end > 0.0 and color_ok
+	# Classic DirectX fixed-function fog (what this game's real A5 engine
+	# used) never fogs the skybox -- with a near-black fog color, leaving
+	# Godot's default fog_sky_affect=1.0 would wash the whole sky/background
+	# toward solid black regardless of fog_depth_end, dominating an aerial
+	# shot like Plane3's own fall sequence. Must be 0 so only real world
+	# geometry gets fogged, matching the original engine's own behavior.
+	var sky_ok: bool = env.fog_sky_affect == 0.0
+	var ok: bool = env.fog_enabled and env.fog_depth_end > 0.0 and color_ok and sky_ok
 	print("OK" if ok else "FAIL")
 	quit(0 if ok else 1)

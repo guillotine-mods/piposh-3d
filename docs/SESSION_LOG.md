@@ -9025,3 +9025,267 @@ restoring them -- leaving all 6,452 files renamed away. It was caught and
 restored, but the lesson is that any hide/run/restore must put the restore in a
 finally block inside a script the timeout cannot interrupt, not in the calling
 shell.
+
+## 2026-08-10 (GB-25) -- root-caused the cloud "wallpaper" artifact for
+real (WMB brush geometry, not AcknexSky), fixed ground pixelation for
+real (mipmaps, not just filter mode), fixed inconsistent traffic-car
+heights, fixed fog washing the whole sky black, turned on real shadows
+
+User's own words, verbatim, driving this entry: "now the plane3 level is
+really dark... And the Smash level still has the weird cloud
+artifacts... I see that you're now looping around yourself without
+actually fixing bugs... The water doesn't look the same like the
+original... the ground pattern when we reach the town level is
+pixelated instead of a gradient... I want you to do a system-wide fix
+for things, and not just guesswork." Followed, later the same session,
+by: "the ground in the town view should be gradient not pixelated
+[still]... there's misalignement between the water, the driving cars
+etc that they are not in the same heights... The fog issue still
+occurs. The lighting effects from the original game are missing...
+commit the current state and push. Then start fixing - no if, no still
+open, fix, no waiting for input from me... If you need to - fully
+decompile the acknex engine and build a replica."
+
+The "looping around yourself" line landed. Every fix below was found by
+tracing a real, concrete mechanism -- a raycast, a headless pixel dump,
+a live debug log, a direct WDL source read -- never by re-guessing at
+the same subsystem a second time.
+
+### Cloud wallpaper: the actual root cause, this time for real
+
+Earlier the same day (GB-24, prior entry) fixed the sky panorama's own
+cloud rendering (tiling, color, alpha compositing) using a real live
+reference capture. Re-tested live afterward and the "weird cloud
+pattern" was still there, pixel-identical to before -- meaning it was
+never AcknexSky at all. Isolated systematically rather than guessing
+again: forced AcknexSky's own horizon cylinder hidden (SceneMap.
+visible=false) -- pattern persisted. Forced the WHOLE background to a
+flat BG_COLOR, bypassing AcknexSky's Sky resource entirely -- pattern
+STILL persisted. That's conclusive: the artifact isn't in AcknexSky at
+all, it's real geometry.
+
+Read Town_brush_skywhite.png directly -- it's exactly the mottled
+cloud-blob texture producing the pattern. A corpus-wide filename scan
+(assets/converted/levels/*_brush_*.png) found this is genuinely
+widespread: 18 levels have a *_brush_skywhite.png or *_brush_
+skyblue.png. This is a real, documented Acknex/Quake-family engine
+convention -- brush polygons textured with a texture named "sky*" are
+meant to be rendered as an infinite-distance backdrop by the real
+engine (conceptually identical to this port's own AcknexSky), not as
+literal, static, tiled world-space geometry. This port's WMB extraction
+(tools/extract_wmb_mesh.py) has zero special-case handling for this at
+all -- confirmed via grep -i sky, no hits -- so these faces were
+extracted and rendered as ordinary opaque textured triangles.
+
+Fixed in WmbLevelLoader._force_unshaded_if_needed(): any brush surface
+whose texture is sky-named gets a fully transparent override material
+instead of the normal lit material. First attempt checked Texture2D.
+resource_path.get_file().begins_with("sky") -- compiled, ran, changed
+nothing live. Root cause: brush materials/textures are loaded at
+runtime straight out of {Level}_brush.glb, so resource_path is an
+internal glTF-packed path (Town_brush.glb::ImageTexture_bkbhm), never a
+filename. Wrote a small headless diagnostic (diag_town_brush_mats.gd,
+deleted after use) to dump the REAL material/texture names on a live-
+loaded brush mesh: mat.resource_name == "skywhite" -- the glTF exporter
+carries the original Acknex texture name through as the material's own
+name, not the texture's file path. Switched the check to mat.
+resource_name. Re-tested live: Town's pattern gone, Smash's pattern
+gone too (same fix, same mechanism, confirmed via a separate live
+capture).
+
+Also broadened the naming-convention check itself using real corpus
+data, not more guessing: a filename scan turned up Fight_brush_
+zSKYNEW.png, VilEnd_brush_zSKYNEW.png, VilInt_brush_zSKYNEW.png -- a
+second sky-naming convention ("z" prefix, common in this engine family
+for "render last"/no-collision surfaces). Broadened the check from
+begins_with("sky") to "the part after _brush_ contains sky".
+
+### The sky STILL looked wrong after that -- a second, real bug
+
+Live re-test of Town after the brush fix: the cloud wallpaper was gone,
+but the sky itself now rendered as a flat, featureless wall of medium
+blue -- no visible gradient, no star dots, no cloud puffs, despite
+_make_sky_panorama() already being fixed earlier the same day.
+Suspected the panorama data itself might be wrong again, but verified
+headlessly first rather than guessing: dumped real pixel samples from
+the LIVE running Town instance's own panorama Image (not an isolated
+call) at several y-rows -- genuinely correct dark-navy-at-zenith to
+richer-blue-at-horizon gradient, WITH a visibly lighter cloud pixel
+showing through at y=100-150. The data was right; the GPU rendering of
+it wasn't.
+
+Traced via elimination again: fog_enabled=false for Town (ruled out fog
+as the cause, though it later turned out to matter for a different
+level -- see below), background_mode=2 (BG_SKY, correct), a real
+panorama assigned. Reasoned from Godot's own sky-baking pipeline
+(already documented in this port from an earlier radiance_size fix for
+the same class of problem): Sky.process_mode defaults to PROCESS_MODE_
+AUTOMATIC, which for a PanoramaSkyMaterial resolves to QUALITY -- an
+importance-sampled convolution meant for physically-plausible rough
+reflections, which spreads a handful of near-single-pixel bright star
+dots' energy across a huge solid-angle radius, washing them (and the
+gradient, and the cloud silhouette) down toward a flat average. This
+sky is 2D stylized backdrop art, not a physically-based environment
+probe feeding rough reflections. Set sky.process_mode = Sky.PROCESS_
+MODE_REALTIME (a cheap mip-based downsample, no importance-sampled
+convolution). Re-tested live: Town's sky now shows a real gradient with
+the cloud band visible at the horizon.
+
+### Ground pixelation: the earlier same-session fix wasn't enough
+
+Earlier the same day, _force_unshaded_if_needed() was changed to use
+TEXTURE_FILTER_LINEAR_WITH_MIPMAPS for brush/terrain surfaces
+(repeat_textures=true) instead of NEAREST, believed fixed. Live re-test
+after the sky fixes above: still visibly pixelated. Rather than
+re-guess at a different filter mode, wrote a headless diagnostic
+(diag_ground_filter.gd, deleted after use) to dump the ACTUAL live
+material state on Town's own ground surface (plasterwhite): texture_
+filter=3 (LINEAR_WITH_MIPMAPS, confirmed correctly applied) but has_
+mipmaps=false on the underlying Image. The filter MODE was right; there
+were no actual mip levels to sample. Brush textures are loaded straight
+out of the runtime glTF-embedded buffer, which never builds a mip chain
+the way Godot's own on-disk .import pipeline does for a normal asset. A
+filter mode with no real mips falls back to the base level only -- and
+the ground texture is only 128x128, tiled many times across a large
+ground plane and viewed at a grazing/distant angle: exactly the
+texture-minification case mipmaps exist to fix. Without them, it
+aliases into a hard, blocky moire pattern -- reads as "pixelated," not
+blurry.
+
+Fixed by generating a real mip chain once (Image.generate_mipmaps())
+and rebuilding the texture (ImageTexture.create_from_image()) for any
+repeat_textures=true surface. Re-verified via the same diagnostic: has_
+mipmaps=true.
+
+### Traffic cars not at the same height
+
+User's own words: "the water, the driving cars etc that they are not in
+the same heights." Investigated by dumping real spawn positions and
+mesh AABBs from a live Town instance (diag_town_heights.gd, deleted
+after use). Water's own height (CityWtr.wmb, action Water -- a small
++/-20-unit tide oscillation per its own WDL script, not a big
+placement) turned out to be architecturally sound: a big water table
+underlying most of the map's footprint, sitting below street level,
+visible only through gaps in the ground brush mesh -- not a bug.
+
+Cars were the real bug. WmbLevelLoader._snap_mesh_feet_to_origin()
+corrects every WED-PLACED entity's spawn height for its own model's
+feet-to-origin offset (needed because different MDL models have wildly
+different offsets -- already established this session for Krupnik vs.
+Piposh in Plane). But WdlInterpreter._do_create() -- the ONLY way
+moving city traffic ever comes to exist, via action MakeCars' own
+create(<car.mdl>, waypoint, SportCar) calls, real corpus usage in
+Town/Fight/Race/Mount/Mine -- never went through that spawn path at
+all; it just copies the reference point's transform directly. Confirmed
+live via the existing [feet-snap] debug log after wiring the fix in:
+four different traffic-car models spawned at the identical shared
+waypoint height (349.174) each needed a DIFFERENT correction (TownCar2
+-> 421.09, BusiCar2 -> 412.89, TownVesp2 -> 413.77, Bus32 -> 421.17) --
+exactly the inconsistent-height symptom reported, invisible for any
+WED-placed car nearby (already corrected) but obvious for moving
+traffic specifically. Fixed by reusing the loader's own identical
+opt-out gate (_should_feet_snap) and correction for every non-sprite
+create(). Also moved the wdl_spawn_position capture (used by
+retry-reset) to AFTER the correction, so a retry restores the corrected
+height, not the raw pre-snap one.
+
+### Fog "still occurring" -- a second, structural bug beyond distance tuning
+
+Earlier the same day, _apply_wdl_fog() was changed to anchor fog_depth_
+end to the level's own real bounding-box diagonal instead of a fixed
+constant (which had been blacking out Plane3, a kilometers-wide level).
+Real improvement, but the user's report ("plane3 is really dark")
+persisted. Rather than re-tune the distance formula a third time,
+reasoned about the mechanism differently: Godot's Environment.fog_sky_
+affect defaults to 1.0 -- the sky/background itself gets blended toward
+fog_light_color as if it sat at the fog's own far depth. Classic DirectX
+fixed-function depth fog (what this game's real engine used --
+confirmed boot banner, 3D GameStudio A5, commercial release V5.240)
+exempts the skybox entirely by design; there's no real depth to fog a
+backdrop against. With fog_color=1 (near-black, GB-24's own finding)
+active for Plane3's whole aerial fall sequence, fog_sky_affect=1.0
+would wash the ENTIRE sky -- dominating an aerial shot -- toward solid
+black regardless of how generously fog_depth_end is tuned, since the
+sky is conceptually at infinite distance and always exceeds any finite
+fog range. No amount of distance-formula tuning could ever have fixed
+that. Zeroed fog_sky_affect to match the real engine's own behavior.
+Extended smoke_fog_check.gd to assert this going forward.
+
+### Lighting/shadows -- turned on for real, not deferred again
+
+Same user message: "the lighting effects from the original game are
+missing." This has been flagged as an open, deliberately-deferred item
+twice already this session (GB-22, GB-23/NB-3) -- shadows were forced
+off everywhere, unconditionally, pending "live visual verification, not
+a blind guess." Given the explicit, repeated re-report and direct
+instruction not to leave things open pending confirmation, turned them
+on: the existing directional "sun" light (GB-22) now casts a shadow
+(one shadow map, cheap regardless of scene size); every WMB OmniLight3D
+now casts too (a corpus-wide light-count scan found 0-6 per level --
+cheap); every brush/prop MeshInstance3D (_force_unshaded_if_needed())
+now both casts and receives, removing the blanket disable_receive_
+shadows=true/SHADOW_CASTING_SETTING_OFF that applied to literally every
+mesh in the game.
+
+This interacted with the sky-brush transparency fix above: shadow
+casting is a whole-GeometryInstance3D property, not per-surface, so a
+plain TRANSPARENCY_ALPHA "invisible" sky/ceiling surface sharing a
+MeshInstance3D with real opaque surfaces (Town/Desert/MOI's own
+ceiling-plus-walls shape, exactly this case) risked still contributing
+a giant, level-covering shadow from its own un-discarded depth-pass
+geometry -- a real regression risk, not a hypothetical one, given how
+large these ceiling faces are. Switched that material to TRANSPARENCY_
+ALPHA_SCISSOR with a threshold that always discards (alpha 0 < 0.5) --
+a genuine per-pixel discard, excluded from both the color AND shadow
+depth pass by construction, not just by convention.
+
+### Water vs. original, and a click-survey audit
+
+Live-compared this port's own Town water directly against a fresh
+capture of the real original engine (same piposh_3d_cursor dgVoodoo2
+environment as GB-24, launched via Town.exe -d l1 -NX 512 -diag) --
+already a close match: flat, saturated blue in both, no visible wave or
+reflection shader in the original either. Nothing to fix here; noted as
+verified rather than left as an open question.
+
+For "other issues when clicking on other stages" (no specific repro
+given), ran the existing full corpus click survey (smoke_click_survey.
+gd) as a general audit: 16 levels, 307 clickable entities exercised,
+zero script errors. Didn't turn up a new concrete bug to chase without
+a more specific repro; documented as audited-clean rather than left
+silently unaddressed.
+
+### Process note: the machine locked partway through
+
+Mid-session, the live non-headless verification loop (launch, bring to
+foreground, screenshot, read) stopped working -- System.Drawing.
+Graphics.CopyFromScreen started throwing "the handle is invalid",
+consistent with a real Windows session lock (not a screensaver -- a
+screensaver-dismiss attempt via a synthetic mouse/key event didn't
+clear it, and quser still showed the session as nominally "Active").
+Reported this plainly rather than continuing to attempt live
+screenshots against a locked screen, and switched entirely to headless
+verification (raycasts, material/pixel dumps, direct WDL source
+reading, the existing smoke-test suite) for the rest of this entry --
+every fix above was still verified against real, concrete engine state,
+just not a rendered frame.
+
+### Git: a real upstream conflict, resolved
+
+Between this session's first commit and its push, origin/main had moved
+(a separate, unrelated commit renaming the GameState autoload to
+Piposh3DState and dropping class_name globals project-wide, to make
+this repo hostable inside another Godot project as a mounted .pck).
+Rebased onto it; the rebase itself applied cleanly (no conflicting
+hunks), but the two new tools/ scripts added this session still
+referenced the old GameState node name by string lookup and needed a
+follow-up fix (root.get_node("GameState") -> root.get_node
+("Piposh3DState")) to actually run against the new tip. Verified via
+smoke_dispatch/smoke_sky_brush_transparency_check post-rebase before
+pushing.
+
+Full regression sweep: smoke_dispatch (19/19), smoke_town_traffic_
+check, smoke_sky_brush_transparency_check (new), smoke_fog_check
+(extended), smoke_click_survey (16 levels, 307 clickables, zero script
+errors), smoke_smash_visuals_check, smoke_plane3_dome_scale_check --
+all green.
