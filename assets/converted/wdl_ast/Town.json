@@ -293,6 +293,37 @@
      {
       "t": "expr_stmt",
       "expr": {
+       "t": "call",
+       "name": "gfx_init",
+       "args": []
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "_fitp"
+       },
+       "value": {
+        "t": "id",
+        "name": "GUI"
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "call",
+       "name": "fit",
+       "args": []
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
        "t": "assign",
        "op": "=",
        "target": {

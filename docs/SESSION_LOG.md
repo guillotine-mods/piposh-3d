@@ -8683,3 +8683,94 @@ poll_check`, `smoke_fog_check` (extended to also assert the fog color
 itself, not just that fog is enabled), `smoke_bitmap_create_check`,
 `smoke_particle_texture_check`, `smoke_town_traffic_check`, `smoke_
 plane2_all_goals` -- all green.
+
+## 2026-08-10 — Original dump restored; full pipeline re-run; first GDScript runtime reader
+
+Checked: the repo had no `original/` at all (it is gitignored), so no converter
+could run. Located the A5 source as `guillotine-mods/Piposh-3D-Remaster` and
+placed it at `original/piposh3d/` — the exact path all converters hardcode —
+then stripped its `.git` and the non-asset bulk (`_backup_mdl`, `skins_editable`,
+`_backup_exe*`, ESRGAN weights), 3,166 MB -> 1,793 MB. Kept the patched EXEs +
+dgVoodoo2 in place, so the folder is both the conversion source AND the runnable
+original used for reference renders. Kept `_backup_wdl/` (0.9 MB) as the pristine
+script reference.
+
+Ran every converter at FULL corpus, including the three `run_pipeline.py` never
+calls (`parse_wdl.py`, `extract_wdl_meta.py`, `extract_dialog_text.py`) and with
+the flags its defaults omit (`extract_wmb_mesh.py --all`, not its 7-stem default;
+`convert_mdl.py --limit 0`, not 80). Results: WMB 134/134 both stages, MDL
+648/649, GFX 541/542, WDL 85/85 ASTs, SFX 1911, dialog 57 entries.
+
+Asked: use the AI-upscaled models or the pristine `_backup_mdl` set?
+Answer: use the upscaled ones — replacements are coming later from a person.
+Confirmed the upscale actually survives conversion by reading embedded texture
+dimensions (NOT by file size): Ami/PipDog/Genia/Yachdal all 320x200 -> 640x400.
+The ~2x rather than 4x GLB growth is only PNG compressing smooth pixels well;
+`convert_mdl.py` contains no resize/clamp.
+
+Result: **the pipeline reproduces the committed assets, with a fully explained
+diff.** 1,578 files show modified, but by content: 6,291 objects across 134
+levels have IDENTICAL placement (angle_gs/origin/scale/flags, 0 changed);
+55/55 brush GLBs have identical vertex+triangle counts; 199/200 sampled GFX PNGs
+are same-pixels/different-bytes (Pillow encoder drift) with 0 pixel differences;
+83/85 ASTs identical. Only real content changes are the intended 2x MDL skins
+and `IO.json`/`Town.json`.
+
+`IO.wdl` and `Town.wdl` are the only two scripts the Remaster edited, and both
+edits are purely ADDITIVE (IO gains a 36-line hi-res 2D "fit" system: gfx_init(),
+fit(), gfx_scale/ox/oy; Town gains 3 lines). No existing save-flag logic is
+modified, so the port inherits nothing altered and no pristine swap is needed.
+
+In-engine verification (Godot 4.7.1, which IS installed at
+`C:\Program Files\Godot_v4.7.1` — it is simply not on PATH): headless `--import`
+clean, `smoke_test` 6/6, `smoke_dispatch --all` **55/56 with zero levels reaching
+the inert branch**, unchanged from the previously recorded figure. The "missing"
+56th is `IO`, which is not a level at all — the roster is built from the 56 root
+`.wdl` files and `IO.wdl` is the shared save/IO include. The 16 recurring
+`Parameter "material" is null` errors come from
+`servers/rendering/dummy/storage/material_storage.cpp` — the HEADLESS dummy
+renderer at level teardown. They cannot occur in a real render.
+
+Pre-existing verifier failures, confirmed NOT caused by the source swap:
+- `verify_normals` 783/784 — by design; it is Phase 2's gate.
+- `verify_gltf_strict` 1 — the known stale `wmb/Shiks.glb` (manual 3.4). This run
+  did not regenerate it; its real output goes to `levels/Shiks_brush.glb`.
+  `wmb/Plane2.glb` is a second orphan of the same kind.
+- `verify_corpus` 1 — the facing guard now reads mean_dev=-92.9 deg, but its own
+  docstring records the human-confirmed-correct baseline as +177.1 and the
+  known-wrong value as -2.9. Ours is NEITHER, with R unchanged at 0.906. Input
+  proven identical to committed (6,291 objects), so this drift predates us —
+  someone moved a yaw value without updating the recorded baseline. Still open.
+- `verify_wdl_parse` "4 regressions" — NOT real. The new ASTs have skip counts
+  identical to the committed ones (Final 2/2, Race 3/3, Weather 19/19, war 20/20);
+  the verifier's baselines are stale, not the parse. The underlying skips are
+  genuine grammar gaps: bit-shift operators (>>, <<) and dotted refs in panel
+  declarations (camera.fog, player.health).
+- `Hezi4.MDL` degenerate (uvs=0) — also absent from the committed set.
+- `migrate_angles.py --check`: 134 levels, 0 fixes needed.
+
+**First step of the 0-py migration.** Added `scripts/engine/gfx_bitmap.gd`, a
+runtime PCX/BMP reader (the GDScript counterpart of `convert_gfx.py`), plus
+`tools/smoke_gfx_reader.gd` which uses the Python output as an ORACLE: decode
+every original with the reader and compare pixel-for-pixel. It reads reference
+PNGs via `load_png_from_buffer` on raw bytes, never `load()`, so Godot's VRAM
+compression cannot corrupt the comparison — that confusion is GB-19.
+
+Corpus measured before writing the decoder rather than assumed: 438 of 456 PCX
+are 24-bit TRUECOLOUR (planes=3), only 17 are paletted; and several files declare
+an ODD bytes-per-line (cross=15, Opt1=593, glf1-3=431, Pause=167) in violation of
+the PCX spec's even-stride rule — a reader that rounds the stride shears exactly
+those images. The reader uses bytes-per-line as declared.
+
+Result: **507 pixel-exact, 0 mismatched**, 1 failed (`stat0.pcx`, the 92-byte
+non-PCX that `convert_gfx.py` also rejects — identical behaviour), 34 excluded as
+ambiguous. Throughput 35.1 Mpx in 10.2 s = **3.43 Mpx/s** in plain GDScript.
+Feasible for level-load with a loading screen; the per-pixel plane-interleave
+loop is the bottleneck, so a first-run cache to `user://` (or GDExtension for the
+hot loop) is the answer if it ever matters on mobile.
+
+Found while doing it: `convert_gfx.py` writes every source to `<stem>.png`, but
+17 stems exist as BOTH .bmp and .pcx, so one silently overwrites the other and
+which one survives depends on ASCII case ordering (`CaseOff.bmp` loses to
+`caseoff.pcx`; `CLOUDS.PCX` loses to `Clouds.bmp`). 17 source images are silently
+discarded today. Filed as NB-7.

@@ -78,6 +78,7 @@ QOL item from being promoted to GB (or the reverse) by moving the row.
 | NB-4 | The green "overlay" HUD panel flickers. | |
 | NB-5 | Loading text isn't centered — sits a bit too far right/down. | |
 | NB-6 | "Sticker clicked/found" text isn't centered — sits a bit too far right/down. | |
+| NB-7 | `tools/convert_gfx.py` silently discards 17 source bitmaps. It writes every source to `<stem>.png`, but 17 stems exist as BOTH `.bmp` and `.pcx` in `original/piposh3d/GFX` (AsyBar1/2, AsyPNL, CaseOff, CaseOn, Clouds, Credits, Drop, Large, Panel, pass, PNL1, PNL2, PokrPNL1, sky, Star, VS) — so one overwrites the other. Which one survives depends on ASCII case ordering of the filenames, so it is effectively arbitrary: `CaseOff.bmp` loses to `caseoff.pcx`, but `CLOUDS.PCX` loses to `Clouds.bmp`. Some UI elements may therefore be showing the wrong variant. | Found 2026-08-10 while validating the GDScript GFX reader against this converter (see `docs/SESSION_LOG.md`). Fix by disambiguating the output name, or by deciding per-stem which format the original engine actually loaded — the `.wdl` `bmap` declarations name the extension explicitly, so that is a corpus measurement, not a guess. |
 
 ---
 

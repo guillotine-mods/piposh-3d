@@ -121,6 +121,36 @@
    "init_list": false
   },
   {
+   "name": "gfx_scale",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 1.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "gfx_ox",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.0
+   },
+   "init_list": false
+  },
+  {
+   "name": "gfx_oy",
+   "kind": "var",
+   "array_size": null,
+   "init": {
+    "t": "num",
+    "v": 0.0
+   },
+   "init_list": false
+  },
+  {
    "name": "strDOD1",
    "kind": "string",
    "array_size": null,
@@ -596,6 +626,353 @@
   }
  ],
  "functions": {
+  "gfx_init": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "local_decl",
+      "decls": [
+       {
+        "name": "sx",
+        "kind": "var",
+        "array_size": null,
+        "init": null,
+        "init_list": false
+       }
+      ]
+     },
+     {
+      "t": "local_decl",
+      "decls": [
+       {
+        "name": "sy",
+        "kind": "var",
+        "array_size": null,
+        "init": null,
+        "init_list": false
+       }
+      ]
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "sx"
+       },
+       "value": {
+        "t": "binop",
+        "op": "/",
+        "l": {
+         "t": "field",
+         "obj": {
+          "t": "id",
+          "name": "screen_size"
+         },
+         "name": "x"
+        },
+        "r": {
+         "t": "num",
+         "v": 640.0
+        }
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "sy"
+       },
+       "value": {
+        "t": "binop",
+        "op": "/",
+        "l": {
+         "t": "field",
+         "obj": {
+          "t": "id",
+          "name": "screen_size"
+         },
+         "name": "y"
+        },
+        "r": {
+         "t": "num",
+         "v": 480.0
+        }
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "gfx_scale"
+       },
+       "value": {
+        "t": "id",
+        "name": "sx"
+       }
+      }
+     },
+     {
+      "t": "if",
+      "cond": {
+       "t": "binop",
+       "op": "<",
+       "l": {
+        "t": "id",
+        "name": "sy"
+       },
+       "r": {
+        "t": "id",
+        "name": "sx"
+       }
+      },
+      "then": {
+       "t": "block",
+       "body": [
+        {
+         "t": "expr_stmt",
+         "expr": {
+          "t": "assign",
+          "op": "=",
+          "target": {
+           "t": "id",
+           "name": "gfx_scale"
+          },
+          "value": {
+           "t": "id",
+           "name": "sy"
+          }
+         }
+        }
+       ]
+      },
+      "else": null
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "gfx_ox"
+       },
+       "value": {
+        "t": "binop",
+        "op": "/",
+        "l": {
+         "t": "binop",
+         "op": "-",
+         "l": {
+          "t": "field",
+          "obj": {
+           "t": "id",
+           "name": "screen_size"
+          },
+          "name": "x"
+         },
+         "r": {
+          "t": "binop",
+          "op": "*",
+          "l": {
+           "t": "num",
+           "v": 640.0
+          },
+          "r": {
+           "t": "id",
+           "name": "gfx_scale"
+          }
+         }
+        },
+        "r": {
+         "t": "num",
+         "v": 2.0
+        }
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "id",
+        "name": "gfx_oy"
+       },
+       "value": {
+        "t": "binop",
+        "op": "/",
+        "l": {
+         "t": "binop",
+         "op": "-",
+         "l": {
+          "t": "field",
+          "obj": {
+           "t": "id",
+           "name": "screen_size"
+          },
+          "name": "y"
+         },
+         "r": {
+          "t": "binop",
+          "op": "*",
+          "l": {
+           "t": "num",
+           "v": 480.0
+          },
+          "r": {
+           "t": "id",
+           "name": "gfx_scale"
+          }
+         }
+        },
+        "r": {
+         "t": "num",
+         "v": 2.0
+        }
+       }
+      }
+     }
+    ]
+   }
+  },
+  "fit": {
+   "params": [],
+   "body": {
+    "t": "block",
+    "body": [
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "_fitp"
+        },
+        "name": "scale_x"
+       },
+       "value": {
+        "t": "id",
+        "name": "gfx_scale"
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "_fitp"
+        },
+        "name": "scale_y"
+       },
+       "value": {
+        "t": "id",
+        "name": "gfx_scale"
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "_fitp"
+        },
+        "name": "pos_x"
+       },
+       "value": {
+        "t": "binop",
+        "op": "+",
+        "l": {
+         "t": "id",
+         "name": "gfx_ox"
+        },
+        "r": {
+         "t": "binop",
+         "op": "*",
+         "l": {
+          "t": "field",
+          "obj": {
+           "t": "id",
+           "name": "_fitp"
+          },
+          "name": "pos_x"
+         },
+         "r": {
+          "t": "id",
+          "name": "gfx_scale"
+         }
+        }
+       }
+      }
+     },
+     {
+      "t": "expr_stmt",
+      "expr": {
+       "t": "assign",
+       "op": "=",
+       "target": {
+        "t": "field",
+        "obj": {
+         "t": "id",
+         "name": "_fitp"
+        },
+        "name": "pos_y"
+       },
+       "value": {
+        "t": "binop",
+        "op": "+",
+        "l": {
+         "t": "id",
+         "name": "gfx_oy"
+        },
+        "r": {
+         "t": "binop",
+         "op": "*",
+         "l": {
+          "t": "field",
+          "obj": {
+           "t": "id",
+           "name": "_fitp"
+          },
+          "name": "pos_y"
+         },
+         "r": {
+          "t": "id",
+          "name": "gfx_scale"
+         }
+        }
+       }
+      }
+     }
+    ]
+   }
+  },
   "fRIP1": {
    "params": [],
    "body": {
@@ -13973,6 +14350,10 @@
   "bCon_Map": "con_map.pcx"
  },
  "panels": {
+  "_anon_119": {
+   "kind": "panel",
+   "fields": {}
+  },
   "pConsole": {
    "kind": "panel",
    "fields": {
@@ -15055,6 +15436,6 @@
  ],
  "skip_count": 1,
  "skipped": [
-  "line 1052: stray '}' at top level (skipped)"
+  "line 1088: stray '}' at top level (skipped)"
  ]
 }

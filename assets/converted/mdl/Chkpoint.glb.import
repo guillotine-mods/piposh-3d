@@ -4,12 +4,11 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://bu6k72efbqwt5"
-path="res://.godot/imported/Chkpoint.glb-bfb13cc9e3c3f636bb7b925feb13d688.scn"
+valid=false
 
 [deps]
 
 source_file="res://assets/converted/mdl/Chkpoint.glb"
-dest_files=["res://.godot/imported/Chkpoint.glb-bfb13cc9e3c3f636bb7b925feb13d688.scn"]
 
 [params]
 
