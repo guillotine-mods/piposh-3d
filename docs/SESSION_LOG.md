@@ -8937,3 +8937,47 @@ for ~100 minutes (376 s CPU, ~6% of a core). `tools/visual_check.gd` never
 quits by design, so anything launching it must kill it. No disk or data harm --
 scratch output was cleaned and free space actually rose -- but sweep for stray
 `Godot*` processes after any non-headless run.
+
+## 2026-08-10 — Proof: WMB and WDL genuinely run from the originals, with the converted assets removed
+
+Checked: the 0-py migration's whole claim is that the game can read
+original/piposh3d/ directly instead of assets/converted/. Byte-level oracles
+prove reader == Python, and smoke_wmb_integration proves engine-fed-by-reader ==
+engine-fed-by-GLB, but neither proves the converted assets are actually
+UNNECESSARY -- both had them sitting on disk the whole time.
+
+So: flipped USE_RUNTIME_WMB and USE_RUNTIME_WDL to true, RENAMED
+assets/converted/levels/ (1,790 files) and assets/converted/wdl_ast/ (85 files)
+out of the way entirely, and ran the full roster.
+
+Result: **55/56 levels dispatched, zero levels inert, exit 0**, with every
+level's brush geometry, entity placement, spawn point and game script sourced
+from original/piposh3d/ at runtime. The 56th is IO, which is not a level. Both
+directories and both flags were restored afterwards and re-verified (1,790 and
+85 files back, flags false).
+
+That is the first hard evidence the migration is real rather than merely
+equivalent.
+
+**What is NOT yet proven, stated plainly.** Only two of the four readers are
+wired into the engine. Grepping the engine for the other two returns nothing but
+their own tests:
+- MDL: nothing outside tools/smoke_mdl_reader.gd references mdl_file.gd.
+- GFX: nothing outside tools/smoke_gfx_reader.gd references gfx_bitmap.gd.
+So deleting assets/converted wholesale would still fail today, for models and
+bitmaps, regardless of the flags. Wiring both is in progress.
+
+Also worth recording, because it wasted hours: the instruction given to every
+subagent to clean up with `Get-Process -Name 'Godot*' | Stop-Process -Force`
+made them kill EACH OTHER'S test runs. That produced a stream of phantom
+failures -- runs dying mid-roster with no crash output, at different levels each
+time -- and led one agent to report smoke_dispatch, smoke_anim and
+smoke_screenshot as "already broken" by an autoload-at-preload-time issue. They
+are not broken: smoke_dispatch exits 0 at 55/56 with nothing else running. Two
+further claims in that same report were also wrong on checking (Shiks.glb was
+described as present; it was deleted in 0f1fef4). Agents must kill only their own
+PIDs, and agent reports must be re-verified before they are believed.
+
+Second environment note: PowerShell 5.1 turns Godot's stderr warning flood into
+NativeCommandError records and aborts the pipeline, producing bogus "exit 255"
+results. Run Godot through cmd /c with explicit redirection instead.
