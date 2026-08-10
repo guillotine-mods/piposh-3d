@@ -3,6 +3,10 @@ extends Node3D
 
 const SettingsPanel = preload("res://scripts/ui/settings_panel.gd")
 const WmbLevelLoader = preload("res://scripts/engine/wmb_level_loader.gd")
+## Single GFX seam (0-py migration) — see `GfxBitmap.USE_RUNTIME_GFX`. Loads the
+## converted PNG while that flag is false (the default), the original PCX/BMP
+## when it is true.
+const GfxBitmap = preload("res://scripts/engine/gfx_bitmap.gd")
 
 @onready var loader: WmbLevelLoader = $WmbLevelLoader
 @onready var player: CharacterBody3D = $Player
@@ -23,9 +27,9 @@ func _ready() -> void:
 	AudioChannels.rebuild_index()
 
 	# mainmsg is the death/retry panel in WDL — keep faint, not a full takeover
-	var art := "res://assets/converted/gfx/mainmsg.png"
-	if ResourceLoader.exists(art):
-		bg.texture = load(art)
+	var art := _gfx("mainmsg.png")
+	if art != null:
+		bg.texture = art
 		bg.modulate = Color(1, 1, 1, 0.15)
 
 	_script_cam = Camera3D.new()
@@ -154,11 +158,9 @@ func _on_show_mov_input(event: InputEvent) -> void:
 		hud.text = "Movies %s" % ("OFF" if Piposh3DState.skip_intro_movies else "ON")
 
 
+## Single GFX seam (0-py migration) — see `GfxBitmap.USE_RUNTIME_GFX`.
 func _gfx(name: String) -> Texture2D:
-	var path := "res://assets/converted/gfx/%s" % name
-	if ResourceLoader.exists(path):
-		return load(path) as Texture2D
-	return null
+	return GfxBitmap.get_texture(name)
 
 
 func _ensure_environment() -> void:

@@ -5,7 +5,12 @@ signal dialog_choice(choice: int)
 signal skip_line_pressed
 
 const DESIGN := Vector2(640, 480)
-const GFX := "res://assets/converted/gfx/"
+## Single GFX seam (0-py migration) — see `GfxBitmap.USE_RUNTIME_GFX`. Loads the
+## converted PNG under `assets/converted/gfx/` while that flag is false (the
+## default), the original `original/piposh3d/GFX/*.pcx|*.bmp` when it is true.
+## Deliberately NO `class_name` anywhere in this project (commit 5c0adfa), so it
+## is reached by preload only.
+const GfxBitmap = preload("res://scripts/engine/gfx_bitmap.gd")
 
 var mouse_look := true  # mouse_mode==0 in WDL
 var show_debug := false
@@ -569,34 +574,22 @@ func _fit(tr: TextureRect) -> void:
 		tr.size = tr.texture.get_size()
 
 
+## Single GFX seam (0-py migration) — see `GfxBitmap.USE_RUNTIME_GFX`.
+##
+## `_ensure_overlay_alpha()` deliberately stays HERE rather than moving into the
+## shared resolver: it is a legacy fixup for pre-color-key PNGs and it must not
+## reach the other call sites. `A5.png` (boot's splash) is a NON-overlay bmap and
+## renders opaque, black background included — re-keying it would be wrong. Both
+## sides of the flag run the identical tail, so this changes nothing about which
+## path produced the texture.
 func _load_tex(file_name: String) -> Texture2D:
-	var path := _resolve_gfx(file_name)
-	if path == "":
-		push_warning("GFX missing: %s" % file_name)
-		return null
-	var tex := load(path) as Texture2D
+	var tex := GfxBitmap.get_texture(file_name)
 	if tex == null:
+		push_warning("GFX missing: %s" % file_name)
 		return null
 	# A5 overlay: pure black is transparent. Re-key at load so older PNGs
 	# without an alpha channel still composite correctly.
 	return _ensure_overlay_alpha(tex)
-
-
-func _resolve_gfx(file_name: String) -> String:
-	var path := GFX + file_name
-	if ResourceLoader.exists(path):
-		return path
-	var dir := DirAccess.open(GFX)
-	if dir == null:
-		return ""
-	var want := file_name.to_lower()
-	dir.list_dir_begin()
-	var fn := dir.get_next()
-	while fn != "":
-		if fn.to_lower() == want:
-			return GFX + fn
-		fn = dir.get_next()
-	return ""
 
 
 func _ensure_overlay_alpha(tex: Texture2D) -> Texture2D:

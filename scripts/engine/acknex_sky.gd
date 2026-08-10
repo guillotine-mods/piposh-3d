@@ -2,7 +2,13 @@ extends Node3D
 ## Acknex IO.wdl sky stack from assets/converted/wdl_meta.json (uniform).
 ## scene_field=60 → texture wraps 6×; scene_angle.tilt=-10.
 
-const GFX := "res://assets/converted/gfx/"
+## Single GFX seam (0-py migration) — see `GfxBitmap.USE_RUNTIME_GFX`. Loads the
+## converted PNG under `assets/converted/gfx/` while that flag is false (the
+## default), the original `original/piposh3d/GFX/*.pcx|*.bmp` when it is true.
+## Deliberately NO `class_name` anywhere in this project (commit 5c0adfa: a
+## global class inside a mounted .pck never resolves), so it is reached by
+## preload only.
+const GfxBitmap = preload("res://scripts/engine/gfx_bitmap.gd")
 const META_PATH := "res://assets/converted/wdl_meta.json"
 const SCENE_REPEAT := 6.0
 ## Reported live (2026-08-10), confirmed via direct inspection of a real
@@ -424,17 +430,15 @@ func _spawn_scene_cylinder(scene_file: String, bounds: AABB) -> void:
 	add_child(mi)
 
 
+## Single GFX seam (0-py migration) — see `GfxBitmap.USE_RUNTIME_GFX`. The
+## "Horizon1.pcx → horizon1.png" fallback this used to spell out itself (the
+## live `bmap` value from `LevelRunner._live_bmap_file()` carries the ORIGINAL
+## filename and extension, while `wdl_meta.json`'s static extraction lowercases
+## and rewrites it to .png) now lives in `GfxBitmap.resolve_converted_path()`,
+## unchanged. On the runtime path that same explicit extension is what disproves
+## the .bmp/.pcx ambiguity for `sky` — see `GfxBitmap.COLLIDING_STEM_EXT`.
 func _load_tex(file_name: String) -> Texture2D:
-	var names: Array[String] = [file_name, file_name.to_lower()]
-	# Horizon1.pcx → horizon1.png (extract_wdl_meta lowercases)
-	if not file_name.to_lower().ends_with(".png"):
-		names.append(file_name.get_basename() + ".png")
-		names.append(file_name.get_basename().to_lower() + ".png")
-	for n in names:
-		var path: String = GFX + n
-		if ResourceLoader.exists(path):
-			return load(path) as Texture2D
-	return null
+	return GfxBitmap.get_texture(file_name)
 
 
 func _tex_image(tex: Texture2D) -> Image:
@@ -443,9 +447,18 @@ func _tex_image(tex: Texture2D) -> Image:
 	var img := tex.get_image()
 	if img == null:
 		return null
-	if img.is_compressed():
-		img.decompress()
-	return img
+	# `CompressedTexture2D.get_image()` decodes a fresh copy every call, but
+	# `ImageTexture.get_image()` (what the runtime GFX path produces) hands back
+	# the texture's OWN live Image -- and `GfxBitmap` caches that texture for the
+	# process lifetime. `_make_sky_panorama()` calls `convert()` on both results,
+	# which would mutate the cache in place. Duplicate so the two paths behave
+	# identically and neither one can poison the cache.
+	var copy := img.duplicate(true) as Image
+	if copy == null:
+		copy = img
+	if copy.is_compressed():
+		copy.decompress()
+	return copy
 
 
 func _clear_children() -> void:
