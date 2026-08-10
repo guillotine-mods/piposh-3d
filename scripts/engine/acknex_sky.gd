@@ -80,8 +80,20 @@ func apply(
 
 	_apply_sky_maps(env, sky_file, cloud_file)
 
+	# Reported live (2026-08-11): "when we reach the MAP level, there's a
+	# background that doesn't seem related next to the map." Map.wdl never
+	# calls load_level() at all -- confirmed directly, it's a pure panel/UI
+	# screen (pMap's own `bmap = map;` world-map artwork plus a handful of
+	# location-icon panels drawn over it), the same shape as Menu (already
+	# in this list). With no real 3D level loaded, the default BG_SKY dome
+	# + generic horizon.png backdrop was still showing full-screen behind
+	# the 2D map artwork -- a real 3D factory skyline with no thematic
+	# relationship to a travel/location-select menu, reading as "a
+	# background that doesn't seem related." Added alongside Menu/Credits/
+	# Studio/VilEnd (every other confirmed panel-only, no-load_level()
+	# screen already treated as indoor/flat here).
 	var indoor := bool(level_meta.get("indoor", false)) \
-		or key in ["studio", "menu", "credits", "vilend"]
+		or key in ["studio", "menu", "credits", "vilend", "map"]
 	var scene_file := live_scene_map if live_scene_map != "" else str(level_meta.get("scene_map", ""))
 	if scene_file == "" and not indoor:
 		scene_file = str(defaults.get("scene_map", "horizon.png"))

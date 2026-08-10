@@ -31,17 +31,18 @@ func _run() -> void:
 			await process_frame
 
 	var acknex_sky := runner.get_node_or_null("AcknexSky")
-	if mode == "hidecyl" and acknex_sky:
+	var effective_mode := mode2 if mode2 != "" else mode
+	if effective_mode == "hidecyl" and acknex_sky:
 		var sm := acknex_sky.get_node_or_null("SceneMap")
 		if sm:
 			sm.visible = false
 			print("hid SceneMap")
-	elif mode == "nofog" and runner:
+	elif effective_mode == "nofog" and runner:
 		var we2 := runner.get_node_or_null("WorldEnvironment") as WorldEnvironment
 		if we2 and we2.environment:
 			we2.environment.fog_enabled = false
 			print("forced fog_enabled=false")
-	elif mode == "hidesky" and runner:
+	elif effective_mode == "hidesky" and runner:
 		var we := runner.get_node_or_null("WorldEnvironment") as WorldEnvironment
 		if we and we.environment:
 			we.environment.background_mode = Environment.BG_COLOR

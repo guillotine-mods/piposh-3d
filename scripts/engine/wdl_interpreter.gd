@@ -3057,7 +3057,7 @@ func _call(name: String, arg_exprs: Array, my) -> Variant:
 		var particle_action := ""
 		if arg_exprs.size() > 2 and typeof(arg_exprs[2]) == TYPE_DICTIONARY and arg_exprs[2].get("t") == "id":
 			particle_action = str(arg_exprs[2].get("name", ""))
-		_do_emit(_to_num(_eval(arg_exprs[0], my)), _vec_get(arg_exprs[1], my), particle_action)
+		_do_emit(_to_num(_eval(arg_exprs[0], my)), _vec_get(arg_exprs[1], my), particle_action, my)
 		return 0.0
 	if not (low in BRIDGE_OVER_SHARED_FUNCTIONS):
 		# User-defined function call (not a builtin) -- run synchronously to
@@ -3913,7 +3913,7 @@ var _particle_parent: Node3D
 var _particle_textures_by_action: Dictionary = {}
 
 
-func _do_emit(quantity: float, pos_gs: Vector3, particle_action: String = "") -> void:
+func _do_emit(quantity: float, pos_gs: Vector3, particle_action: String = "", my = null) -> void:
 	if _loader == null:
 		return
 	if _particle_parent == null or not is_instance_valid(_particle_parent):
@@ -3928,7 +3928,7 @@ func _do_emit(quantity: float, pos_gs: Vector3, particle_action: String = "") ->
 	# evaluated direction (not the generic random-burst default) makes a
 	# directional effect like `stream()` (pee) actually read as a STREAM
 	# instead of an omnidirectional splash.
-	var base_dir := _particle_base_dir_for_action(particle_action)
+	var base_dir := _particle_base_dir_for_action(particle_action, my)
 	var has_base_dir: bool = base_dir.length() > 0.001
 	for i in n:
 		var spr := Sprite3D.new()
@@ -3977,7 +3977,22 @@ func _do_emit(quantity: float, pos_gs: Vector3, particle_action: String = "") ->
 ## particle action with no MY_SPEED assignment found -- never a
 ## regression for smoke/lava/blood/debris-style effects that were already
 ## working as an omnidirectional scatter.
-func _particle_base_dir_for_action(action_name: String) -> Vector3:
+## Reported live again (2026-08-11): "the pee still doesn't have the same
+## path of flow like in the original game." The docstring above already
+## got the FORMULA right (reading the real, live-evaluated MY_SPEED.X/Y/Z
+## the original stream() computes), but never rotated it into world space
+## by the emitting entity's own facing -- `MY_SPEED` in Acknex's particle
+## model is specified relative to the emitter, the same way `move(ENT,
+## dist,absdist)`'s own `dist` argument is entity-relative (see
+## _do_move_call() -- fixed for that exact reason, same session, GB-20).
+## Without this, the stream always pointed the same fixed WORLD direction
+## no matter which way Piposh was actually facing during the scene --
+## right by pure coincidence at whatever angle it was first tuned
+## against, wrong at any other. Now rotates by `my`'s own pan/tilt/roll
+## via the identical `_acknex_entity_basis()` used for `move()`, applied
+## AFTER the GS->Godot axis remap (rotating a relative direction, not a
+## world one, so the remap has to happen first).
+func _particle_base_dir_for_action(action_name: String, my = null) -> Vector3:
 	if action_name == "":
 		return Vector3.ZERO
 	var resolved_fn := _resolve_function(action_name)
@@ -3992,7 +4007,13 @@ func _particle_base_dir_for_action(action_name: String) -> Vector3:
 	var dir_gs := Vector3(vx, vy, vz)
 	if dir_gs.length() < 0.001:
 		return Vector3.ZERO
-	return _gs_to_godot(dir_gs).normalized()
+	var rel := _gs_to_godot(dir_gs).normalized()
+	if my != null and is_instance_valid(my):
+		var pan := float(my.get_meta("pan", 0.0))
+		var tilt := float(my.get_meta("tilt", 0.0))
+		var roll := float(my.get_meta("roll", 0.0))
+		rel = _acknex_entity_basis(pan, tilt, roll) * rel
+	return rel
 
 
 ## Depth-first search for `MY_SPEED.X`/`.Y`/`.Z` assignments in a
