@@ -28,7 +28,7 @@ func _init() -> void:
 
 func _run() -> void:
 	await process_frame
-	root.get_node("GameState").set("current_level", LEVEL)
+	root.get_node("Piposh3DState").set("current_level", LEVEL)
 
 	var packed: PackedScene = load("res://scenes/level_runner.tscn")
 	var runner: Node = packed.instantiate()
@@ -88,7 +88,7 @@ func _run() -> void:
 			saw_fetch = true
 		if clip.to_lower() == "walk":
 			saw_walk = true
-		if root.get_node("GameState").current_level != LEVEL:
+		if root.get_node("Piposh3DState").current_level != LEVEL:
 			break
 
 	print("saw_fetch=%s saw_walk=%s" % [saw_fetch, saw_walk])

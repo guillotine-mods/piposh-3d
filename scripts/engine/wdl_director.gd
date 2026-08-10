@@ -1,5 +1,4 @@
 extends Node
-class_name WdlDirector
 ## WDL-derived level behaviour that isn't already covered by WdlInterpreter's
 ## own AST execution: camera wiring/arbitration, mouse mode, generic entity
 ## classification (cameras/patrols/random buildings/AFG cards), and click
@@ -18,6 +17,11 @@ class_name WdlDirector
 ## replaces dead code with nothing. See docs/CONTRACT.md §4.1 and
 ## docs/SESSION_LOG.md for the full reasoning and the parity-test rule the
 ## interpreter went through before earning that trust.
+
+const GameHud = preload("res://scripts/ui/game_hud.gd")
+const MdlAnimator = preload("res://scripts/engine/mdl_animator.gd")
+const WdlInterpreter = preload("res://scripts/engine/wdl_interpreter.gd")
+const WmbLevelLoader = preload("res://scripts/engine/wmb_level_loader.gd")
 
 signal status(msg: String)
 signal request_run(level_name: String)
@@ -121,12 +125,12 @@ func setup(loader: WmbLevelLoader, camera: Camera3D, level_data: Dictionary, hud
 				_make_clickable(node, action)
 			"AFG_Card":
 				# Afgan.wdl collectible: my.skill1 = card index (0-31), click
-				# picks it up (persists to GameState.afg, removes entity).
+				# picks it up (persists to Piposh3DState.afg, removes entity).
 				# See _run_afg_take()/_show_afg_card() -- a faithful port of
 				# Afgan.wdl's real AFG_Take action (confirmed against
 				# original/piposh3d/WDL/Afgan.wdl), not a guess.
 				var card_i := int(round(float(skills[0]))) if skills.size() > 0 else -1
-				if card_i >= 0 and card_i < GameState.afg.size() and GameState.afg[card_i] == 1:
+				if card_i >= 0 and card_i < Piposh3DState.afg.size() and Piposh3DState.afg[card_i] == 1:
 					node.queue_free()  # already collected in a prior session
 				else:
 					node.set_meta("afg_card_index", card_i)
@@ -828,7 +832,7 @@ func handle_action(action: String) -> void:
 func _handle_click_action(action: String, node: Node3D = null) -> void:
 	if node != null and node.has_meta("afg_card_index"):
 		# Afgan.wdl collectible: needs a Godot-side persistence + HUD-feedback
-		# hook WDL alone can't express (GameState.afg/save_slot — Acknex's
+		# hook WDL alone can't express (Piposh3DState.afg/save_slot — Acknex's
 		# own WriteGameData()/PANEL system has no equivalent here). Must run
 		# before the generic wdl_event dispatch below: this entity's own
 		# `my.event = AFG_Take;` (set by its action coroutine, see setup()'s
@@ -886,10 +890,10 @@ func _run_afg_take(node: Node3D) -> void:
 	if node == null:
 		return
 	var card_i := int(node.get_meta("afg_card_index", -1))
-	if card_i < 0 or card_i >= GameState.afg.size():
+	if card_i < 0 or card_i >= Piposh3DState.afg.size():
 		return
-	GameState.afg[card_i] = 1
-	GameState.save_slot(0)
+	Piposh3DState.afg[card_i] = 1
+	Piposh3DState.save_slot(0)
 	status.emit("Afgan card %d collected" % card_i)
 	node.queue_free()
 	_show_afg_card(card_i)

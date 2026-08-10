@@ -21,7 +21,7 @@ func _run() -> void:
 	var args := OS.get_cmdline_user_args()
 	if args.size() > 0:
 		level = args[0]
-	root.get_node("GameState").set("current_level", level)
+	root.get_node("Piposh3DState").set("current_level", level)
 	print("Loading level: %s" % level)
 
 	var packed: PackedScene = load("res://scenes/level_runner.tscn")

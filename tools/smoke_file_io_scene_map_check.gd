@@ -32,7 +32,7 @@ func _init() -> void:
 func _run() -> void:
 	await process_frame
 	var packed: PackedScene = load("res://scenes/level_runner.tscn")
-	root.get_node("GameState").set("current_level", "Plane3")
+	root.get_node("Piposh3DState").set("current_level", "Plane3")
 	var runner: Node = packed.instantiate()
 	root.add_child(runner)
 	for i in 5:

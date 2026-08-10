@@ -27,7 +27,7 @@ func _run() -> void:
 
 
 func _check(level: String, expect: bool) -> bool:
-	root.get_node("GameState").set("current_level", level)
+	root.get_node("Piposh3DState").set("current_level", level)
 	var packed: PackedScene = load("res://scenes/level_runner.tscn")
 	var runner: Node = packed.instantiate()
 	root.add_child(runner)

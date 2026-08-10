@@ -1,5 +1,4 @@
 extends CanvasLayer
-class_name SettingsPanel
 ## Minimal volume-control settings panel. Added 2026-08-09 per direct
 ## request during a playtest ("let's have an FX / voice volume control
 ## in settings") -- also QOL-6's own long-standing backlog ask (separate

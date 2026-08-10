@@ -1,5 +1,4 @@
 extends Node
-class_name MdlAnimator
 ## Plays Acknex MDL vertex-frame animations (ent_cycle / ent_frame)
 ## and switches my.skin textures when a .skins sidecar is present.
 ##

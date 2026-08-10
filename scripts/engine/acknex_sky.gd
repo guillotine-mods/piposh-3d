@@ -1,5 +1,4 @@
 extends Node3D
-class_name AcknexSky
 ## Acknex IO.wdl sky stack from assets/converted/wdl_meta.json (uniform).
 ## scene_field=60 → texture wraps 6×; scene_angle.tilt=-10.
 

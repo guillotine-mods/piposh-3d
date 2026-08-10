@@ -3,6 +3,8 @@ extends SceneTree
 ## godot --headless --path . -s res://tools/smoke_anim.gd
 
 
+const WmbLevelLoader = preload("res://scripts/engine/wmb_level_loader.gd")
+
 func _init() -> void:
 	call_deferred("_run")
 

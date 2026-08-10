@@ -47,7 +47,7 @@ func _init() -> void:
 
 func _run() -> void:
 	await process_frame
-	root.get_node("GameState").set("current_level", LEVEL)
+	root.get_node("Piposh3DState").set("current_level", LEVEL)
 
 	var packed: PackedScene = load("res://scenes/level_runner.tscn")
 	var runner: Node = packed.instantiate()
@@ -106,11 +106,11 @@ func _run() -> void:
 			print("FAIL: BadBird was removed (my=TheVase/actor_explode() misfire) at frame=%d" % i)
 			quit(1)
 			return
-		if root.get_node("GameState").current_level != LEVEL:
+		if root.get_node("Piposh3DState").current_level != LEVEL:
 			reached_smash = true
 			break
 
-	print("BadBird alive=%s current_level=%s" % [is_instance_valid(badbird), root.get_node("GameState").current_level])
+	print("BadBird alive=%s current_level=%s" % [is_instance_valid(badbird), root.get_node("Piposh3DState").current_level])
 	var ok: bool = reached_smash and is_instance_valid(badbird)
 	print("OK" if ok else "FAIL: never reached Run(Smash.exe)")
 	quit(0 if ok else 1)

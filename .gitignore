@@ -1,7 +1,11 @@
 # Godot 4
 .godot/
 *.translation
-export_presets.cfg
+
+# `export_presets.cfg` is tracked deliberately. The Director player embeds this
+# project by mounting a `.pck` built from it, and the pack is built by
+# `--export-pack Pack`, so the preset that names it has to travel with the repo.
+# Keystores and signing material are ignored separately below.
 
 # Local Android / APK output (reinstall template via Editor if needed)
 build/

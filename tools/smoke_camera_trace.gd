@@ -28,12 +28,12 @@ func _run() -> void:
 	var args := OS.get_cmdline_user_args()
 	var level := args[0] if args.size() > 0 else DEFAULT_LEVEL
 
-	# get_node()+set() instead of a static `GameState.current_level =`
+	# get_node()+set() instead of a static `Piposh3DState.current_level =`
 	# reference -- a bare autoload identifier forces GDScript to resolve it
 	# at this script's own parse time, before autoloads are registered in
 	# `-s` custom-main-loop mode (see tools/smoke_dispatch.gd's header for
 	# the fuller story); routing through the node tree defers it to runtime.
-	root.get_node("GameState").set("current_level", level)
+	root.get_node("Piposh3DState").set("current_level", level)
 
 	var packed: PackedScene = load("res://scenes/level_runner.tscn")
 	var runner: Node = packed.instantiate()

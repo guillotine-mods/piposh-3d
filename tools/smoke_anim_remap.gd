@@ -2,6 +2,8 @@ extends SceneTree
 ## Verify imported Ami verts remap cleanly to mdlanim bind pose.
 
 
+const MdlAnimator = preload("res://scripts/engine/mdl_animator.gd")
+
 func _init() -> void:
 	var packed := load("res://assets/converted/mdl/Ami.glb") as PackedScene
 	var host := Node3D.new()

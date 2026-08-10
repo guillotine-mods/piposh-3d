@@ -22,7 +22,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-GameState="*res://autoload/game_state.gd"
+Piposh3DState="*res://autoload/piposh3d_state.gd"
 LevelRouter="*res://autoload/level_router.gd"
 AudioChannels="*res://autoload/audio_channels.gd"
 PiposhDebug="*res://autoload/piposh_debug.gd"

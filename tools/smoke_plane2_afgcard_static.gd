@@ -11,6 +11,8 @@ extends SceneTree
 ##
 ## Run: godot --headless --path . -s res://tools/smoke_plane2_afgcard_static.gd
 
+const MdlAnimator = preload("res://scripts/engine/mdl_animator.gd")
+
 const LEVEL := "Plane2"
 
 
@@ -20,7 +22,7 @@ func _init() -> void:
 
 func _run() -> void:
 	await process_frame
-	root.get_node("GameState").set("current_level", LEVEL)
+	root.get_node("Piposh3DState").set("current_level", LEVEL)
 
 	var packed: PackedScene = load("res://scenes/level_runner.tscn")
 	var runner: Node = packed.instantiate()

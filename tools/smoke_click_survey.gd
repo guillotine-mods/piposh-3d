@@ -30,7 +30,7 @@ func _init() -> void:
 
 func _run() -> void:
 	await process_frame
-	var game_state := root.get_node("GameState")
+	var game_state := root.get_node("Piposh3DState")
 	var packed: PackedScene = load("res://scenes/level_runner.tscn")
 
 	var total_entities := 0

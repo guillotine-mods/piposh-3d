@@ -1,6 +1,14 @@
 extends Node3D
 ## Hosts a WMB level and runs WDL-derived behaviours (cameras, HUD, mouse).
 
+const AcknexSky = preload("res://scripts/engine/acknex_sky.gd")
+const CameraAuthority = preload("res://scripts/engine/camera_authority.gd")
+const GameHud = preload("res://scripts/ui/game_hud.gd")
+const SettingsPanel = preload("res://scripts/ui/settings_panel.gd")
+const TouchControls = preload("res://scripts/ui/touch_controls.gd")
+const WdlDirector = preload("res://scripts/engine/wdl_director.gd")
+const WmbLevelLoader = preload("res://scripts/engine/wmb_level_loader.gd")
+
 @onready var loader: WmbLevelLoader = $WmbLevelLoader
 @onready var player: CharacterBody3D = $Player
 @onready var hud_title: Label = $UI/Title
@@ -108,7 +116,7 @@ func _ready() -> void:
 	_director.status.connect(_on_status)
 	_director.request_run.connect(_on_run)
 
-	var level := GameState.current_level
+	var level := Piposh3DState.current_level
 	loader.entity_triggered.connect(_on_entity_triggered)
 	var ok := loader.load_level(level)
 	print("[level] starting level=%s script=%s source=%s" % [
@@ -200,7 +208,7 @@ func _process(_delta: float) -> void:
 		or (live_sky != "" and live_sky != _last_applied_sky_map)
 		or (live_cloud != "" and live_cloud != _last_applied_cloud_map)
 	):
-		_apply_wdl_sky(GameState.current_level)
+		_apply_wdl_sky(Piposh3DState.current_level)
 	_apply_wdl_fog()
 	if not _use_fp:
 		return
@@ -526,15 +534,15 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.keycode == KEY_F1:
 			LevelRouter.goto_level("Menu")
 		elif event.keycode == KEY_F2:
-			GameState.save_slot(1)
-			_game_hud.set_status("Saved slot 1 @ %s" % GameState.current_level)
+			Piposh3DState.save_slot(1)
+			_game_hud.set_status("Saved slot 1 @ %s" % Piposh3DState.current_level)
 		elif event.keycode == KEY_F3:
-			var idx := DEBUG_LEVELS.find(GameState.current_level)
+			var idx := DEBUG_LEVELS.find(Piposh3DState.current_level)
 			idx = (idx + 1) % DEBUG_LEVELS.size()
 			LevelRouter.goto_level(DEBUG_LEVELS[idx])
 		elif event.keycode == KEY_F10:
 			_game_hud.show_debug = not _game_hud.show_debug
-			_game_hud.set_debug_text(GameState.current_level, "F1=Menu F3=Next F4=Levels F6=Plane3 Space=Recenter F10=debug")
+			_game_hud.set_debug_text(Piposh3DState.current_level, "F1=Menu F3=Next F4=Levels F6=Plane3 Space=Recenter F10=debug")
 		elif event.keycode == KEY_F4:
 			_toggle_level_select()
 		elif event.keycode == KEY_F6:

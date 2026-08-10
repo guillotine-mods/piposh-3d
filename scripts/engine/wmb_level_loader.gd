@@ -1,7 +1,8 @@
 extends Node3D
-class_name WmbLevelLoader
 ## Instantiates entities from converted WMB JSON + MDL glb assets.
 ## Transforms are pre-baked Acknex(Z-up) → Godot(Y-up) in the JSON.
+
+const MdlAnimator = preload("res://scripts/engine/mdl_animator.gd")
 
 signal entity_triggered(action: String, skills: Array, node: Node3D)
 signal level_loaded(level_name: String, ok: bool)

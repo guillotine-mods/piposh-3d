@@ -10,7 +10,7 @@ func _ready() -> void:
 		splash.texture = load(splash_path)
 	status.text = "Piposh 3D — Godot port"
 	await get_tree().create_timer(1.5).timeout
-	if GameState.skip_intro_movies:
+	if Piposh3DState.skip_intro_movies:
 		LevelRouter.goto_level("Menu")
 	else:
 		LevelRouter.goto_level("Start")

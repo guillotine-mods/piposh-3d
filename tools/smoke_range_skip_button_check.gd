@@ -30,7 +30,7 @@ func _init() -> void:
 
 func _run() -> void:
 	await process_frame
-	root.get_node("GameState").set("current_level", LEVEL)
+	root.get_node("Piposh3DState").set("current_level", LEVEL)
 
 	var packed: PackedScene = load("res://scenes/level_runner.tscn")
 	var runner: Node = packed.instantiate()
@@ -64,12 +64,12 @@ func _run() -> void:
 	var reached_next_level := false
 	for i in 300:  # 5s -- D1 blocks on a real voice line finishing first
 		await process_frame
-		if root.get_node("GameState").current_level != LEVEL:
+		if root.get_node("Piposh3DState").current_level != LEVEL:
 			reached_next_level = true
 			break
 
 	print("frozen while clicking=%s (expect true -- still on the death screen)" % [frozen_before])
-	print("GameState.current_level after=%s (expect Plane3)" % [root.get_node("GameState").current_level])
+	print("Piposh3DState.current_level after=%s (expect Plane3)" % [root.get_node("Piposh3DState").current_level])
 
 	var ok: bool = frozen_before and reached_next_level
 	print("OK" if ok else "FAIL: Skip button deadlocked instead of reaching the next level")

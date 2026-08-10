@@ -63,7 +63,7 @@ func goto_level(level_name: String) -> void:
 	if key.ends_with(".wdl") or key.ends_with(".WDL"):
 		key = key.get_basename()
 	key = aliases.get(key, key)
-	GameState.current_level = key
+	Piposh3DState.current_level = key
 	if key.to_lower() == "menu":
 		print("[level] switching scene: %s (level=%s)" % [MENU_SCENE, key])
 		get_tree().change_scene_to_file(MENU_SCENE)

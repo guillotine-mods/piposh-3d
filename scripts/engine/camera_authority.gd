@@ -1,4 +1,3 @@
-class_name CameraAuthority
 extends RefCounted
 ## Formalizes the camera-authority arbitration between the native FP
 ## controller's own Camera3D and the WDL-driven script Camera3D.

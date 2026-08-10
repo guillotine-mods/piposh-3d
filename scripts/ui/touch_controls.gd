@@ -1,5 +1,4 @@
 extends CanvasLayer
-class_name TouchControls
 ## On-screen move (left) + look (right) pads for mobile / touch FP play.
 
 var _player: CharacterBody3D

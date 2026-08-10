@@ -1,5 +1,4 @@
 extends CanvasLayer
-class_name GameHud
 ## Acknex-style 2D panels (640×480 design space), cursor, dialog, Town BIO.
 
 signal dialog_choice(choice: int)

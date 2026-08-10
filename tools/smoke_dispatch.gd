@@ -34,10 +34,10 @@ func _run() -> void:
 	await process_frame
 	# Loaded here (not as a static WmbLevelLoader/WdlDirector reference at
 	# the top of the file) so GDScript doesn't compile these classes -- and
-	# transitively the GameState/AudioBus/PiposhDebug autoloads they
+	# transitively the Piposh3DState/AudioBus/PiposhDebug autoloads they
 	# reference -- until after this script's own SceneTree has finished
 	# registering autoloads. A static reference hit "Identifier not found:
-	# GameState" at parse time; no existing tools/smoke_*.gd script
+	# Piposh3DState" at parse time; no existing tools/smoke_*.gd script
 	# instantiates WmbLevelLoader/WdlDirector, so this ordering issue had
 	# never been exercised before.
 	var loader_script: GDScript = load("res://scripts/engine/wmb_level_loader.gd")

@@ -1,5 +1,4 @@
 extends Node
-class_name WdlInterpreter
 ## Generic WDL runtime: executes the AST tools/parse_wdl.py produces
 ## (assets/converted/wdl_ast/{Level}.json) directly, instead of a level
 ## getting its behavior from a hand-ported wdl_director.gd chapter. Built
@@ -11,6 +10,10 @@ class_name WdlInterpreter
 ## Only statement execution (exec_block/exec_stmt/exec_while/exec_if) is
 ## coroutine-aware (uses `await`), since only `wait()`/`waitt()` ever yield
 ## in real WDL — expression evaluation is plain synchronous recursion.
+
+const GameHud = preload("res://scripts/ui/game_hud.gd")
+const MdlAnimator = preload("res://scripts/engine/mdl_animator.gd")
+const WmbLevelLoader = preload("res://scripts/engine/wmb_level_loader.gd")
 
 const AST_DIR := "res://assets/converted/wdl_ast/"
 

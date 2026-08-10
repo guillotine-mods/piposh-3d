@@ -1,6 +1,9 @@
 extends Node3D
 ## 3D menu shell based on Menu.wdl / Menu.WMB
 
+const SettingsPanel = preload("res://scripts/ui/settings_panel.gd")
+const WmbLevelLoader = preload("res://scripts/engine/wmb_level_loader.gd")
+
 @onready var loader: WmbLevelLoader = $WmbLevelLoader
 @onready var player: CharacterBody3D = $Player
 @onready var hud: Label = $UI/Hint
@@ -138,8 +141,8 @@ func _on_show_mov_input(event: InputEvent) -> void:
 			_p_show.texture = tex
 			_p_show.size = tex.get_size()
 		# ShowMov2/3 mean skip intro movies next boot
-		GameState.skip_intro_movies = _show_idx > 1
-		hud.text = "Movies %s" % ("OFF" if GameState.skip_intro_movies else "ON")
+		Piposh3DState.skip_intro_movies = _show_idx > 1
+		hud.text = "Movies %s" % ("OFF" if Piposh3DState.skip_intro_movies else "ON")
 
 
 func _gfx(name: String) -> Texture2D:
@@ -181,7 +184,7 @@ func _on_entity_triggered(action: String, _skills: Array, node: Node3D) -> void:
 
 
 func _new_game() -> void:
-	GameState.reset_new_game()
+	Piposh3DState.reset_new_game()
 	AudioChannels.stop_music()
 	AudioChannels.play_sfx("MenuNew.wav")
 	await get_tree().create_timer(0.35).timeout
@@ -198,8 +201,8 @@ func _on_new_pressed() -> void:
 
 
 func _on_load1_pressed() -> void:
-	if GameState.load_slot(1):
-		LevelRouter.goto_level(GameState.current_level)
+	if Piposh3DState.load_slot(1):
+		LevelRouter.goto_level(Piposh3DState.current_level)
 	else:
 		hud.text = "No save in slot 1"
 
