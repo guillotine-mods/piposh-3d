@@ -32,8 +32,12 @@ func _run() -> void:
 		return
 
 	var env := we.environment
-	print("fog_enabled=%s fog_depth_end=%s" % [env.fog_enabled, env.fog_depth_end])
+	print("fog_enabled=%s fog_depth_end=%s fog_light_color=%s" % [env.fog_enabled, env.fog_depth_end, env.fog_light_color])
 
-	var ok: bool = env.fog_enabled and env.fog_depth_end > 0.0
+	# Plane3's own main() sets fog_color=1; -- per the "VECTOR=SCALAR sets
+	# only .x" idiom this session established, that's (1,0,0) in Acknex's
+	# roughly-0-255 color scale, i.e. very close to black.
+	var color_ok: bool = env.fog_light_color.r < 0.05 and env.fog_light_color.g < 0.01 and env.fog_light_color.b < 0.01
+	var ok: bool = env.fog_enabled and env.fog_depth_end > 0.0 and color_ok
 	print("OK" if ok else "FAIL")
 	quit(0 if ok else 1)

@@ -108,6 +108,65 @@ func _apply_sky_maps(env: Environment, sky_file: String, cloud_file: String) -> 
 	env.ambient_light_energy = 0.9
 
 
+## Reported live (2026-08-10), with real reference screenshots from the
+## running original engine (3D GameStudio A5, launched directly via the
+## project's own `piposh_3d_cursor` dgVoodoo2 test harness): "one pattern
+## added to the background looks better but the weird clouds are still
+## the wrong pattern." Compared this port's own panorama directly against
+## the reference and found two real, separate bugs, not one:
+##
+## 1. **Cloud shape was a single, heavily-distorted stretch, not tiled
+##    wisps.** The previous version mapped the ENTIRE 1024px-wide
+##    panorama row to exactly one pass across clds.png's own 320px width
+##    (`cx = x * cloud_img.get_width() / w`, no repeat) -- squashing one
+##    square (320x320) cloud silhouette into a roughly 4.5x-wider-than-
+##    tall smear covering the WHOLE horizontal sky at once. The reference
+##    screenshots instead show several distinct, naturally-proportioned
+##    soft cloud puffs scattered across the sky, clearly the same source
+##    shape repeated at something close to its own native aspect ratio,
+##    not one warped band. Fixed by tiling clds.png at roughly its own
+##    square aspect ratio (`CLOUD_REPEAT` copies across the panorama
+##    width, chosen so each tile's width:height ratio in panorama-pixel
+##    space is close to 1:1, matching the source texture's own 320x320
+##    square) instead of one full-width stretch.
+##
+## 2. **Cloud color was wrong.** clds.png's own opaque pixels are almost
+##    pure black (confirmed via direct pixel read: dominant values are
+##    RGB 1-17 out of 255) with a lighter grey highlight streak -- a
+##    literal alpha-blend of that RGB would paint the clouds nearly
+##    invisible-dark, not the soft white puffs the reference clearly
+##    shows. Reasoned this is a hand-painted DENSITY/SHADING mask (common
+##    technique for this engine's era) rather than a literal display
+##    color: rendered here as a soft, warm-white cloud tint whose
+##    strength is driven by the texture's own alpha (overall silhouette)
+##    modulated by its own luminance (the lighter "highlight" streak
+##    reads as denser/more opaque cloud, the near-black majority as a
+##    softer, more translucent wisp) -- giving internal shading instead
+##    of a flat silhouette. This is a reasoned, best-effort interpretation,
+##    not a confirmed byte-exact match to the original engine's own
+##    blend algorithm (still unverified against a live A5 render, which
+##    kept crashing in this environment's dgVoodoo2/DirectDraw wrapper --
+##    see docs/SESSION_LOG.md for the full attempt).
+##
+## 3. **Base sky color was too light/pale.** The reference shows a rich,
+##    fairly dark blue-purple at the zenith, lightening toward a more
+##    saturated mid-blue near the horizon -- not the previous version's
+##    pale, washed-out blue. Re-picked directly from the reference
+##    screenshots (visual color estimate, not a measured constant).
+## Cloud puffs sit in a narrow band centered on `CLOUD_BAND_CENTER` (v,
+## zenith=0/horizon=0.5), `CLOUD_BAND_HALF_HEIGHT` tall each side, softly
+## fading at the band's own top/bottom edges. `CLOUD_CELLS` splits the
+## panorama into that many equal horizontal cells; within each cell the
+## cloud texture is scaled down to `CLOUD_FILL` of the cell (leaving
+## clear sky around it, not tiled edge-to-edge) so puffs read as
+## separate, sparse clusters -- confirmed against the reference
+## screenshots' own look (roughly 1-2 distinct puffs visible in a normal
+## ~90-100 degree forward view, i.e. ~3-4 per full 360 degree wrap, with
+## most of the sky clear between them).
+const CLOUD_CELLS := 4
+const CLOUD_BAND_CENTER := 0.22
+const CLOUD_BAND_HALF_HEIGHT := 0.16
+const CLOUD_FILL := 0.55
 func _make_sky_panorama(sky_img: Image, cloud_tex: Texture2D) -> Image:
 	var w := 1024
 	var h := 512
@@ -118,46 +177,46 @@ func _make_sky_panorama(sky_img: Image, cloud_tex: Texture2D) -> Image:
 	var cloud_img: Image = _tex_image(cloud_tex)
 	if cloud_img:
 		cloud_img.convert(Image.FORMAT_RGBA8)
-	# Reported live (2026-08-10): "the background has the same weird cloud
-	# pattern in all of the area... in all of the game's levels." Root
-	# cause confirmed via direct pixel inspection: sky.png (256x256) is
-	# 99.9% alpha=0 (a handful of white star-dot pixels are the only real
-	# content), and clds.png (320x320) is ~85% OPAQUE near-black pixels
-	# over ~15% alpha=0 gaps. The previous version wrote sky_img's own
-	# pixels straight into `out` and only used cloud alpha to lerp
-	# TOWARD clds' color, so `out`'s RGB stayed at (0,0,0) almost
-	# everywhere -- and PanoramaSkyMaterial reads a panorama's RGB
-	# directly with no notion of alpha at all (nothing "behind" a sky
-	# dome to blend against), so nearly the whole dome rendered as solid
-	# opaque BLACK, with the sparse star/cloud fragments poking through
-	# reading as "a weird cloud pattern" on a black sky. Fixed by
-	# establishing a real opaque blue-sky gradient as the base FIRST,
-	# then compositing the star and cloud layers onto it using each
-	# layer's OWN alpha as blend weight, so a transparent source pixel
-	# correctly shows the sky base instead of black. Applies uniformly to
-	# every level via the shared `defaults.sky_map`/`cloud_map`, matching
-	# the "same pattern in all of the game's levels" report.
+	var cloud_w := (cloud_img.get_width() if cloud_img else 1)
+	var cloud_h := (cloud_img.get_height() if cloud_img else 1)
+	var cloud_tint := Color(0.93, 0.95, 0.98)
+	var band_lo := CLOUD_BAND_CENTER - CLOUD_BAND_HALF_HEIGHT
+	var band_hi := CLOUD_BAND_CENTER + CLOUD_BAND_HALF_HEIGHT
+	var cell_w := float(w) / float(CLOUD_CELLS)
+	var cell_h := band_hi - band_lo
 	for y in h:
 		var v := float(y) / float(h - 1)
 		var src_v := clampf(v * 1.6, 0.0, 0.999)
 		var sy := clampi(int(src_v * float(ch - 1)), 0, ch - 1)
 		var base: Color
-		if v < 0.55:
-			base = Color(0.55, 0.68, 0.88).lerp(Color(0.22, 0.4, 0.72), clampf(v / 0.55, 0.0, 1.0))
+		if v < 0.5:
+			base = Color(0.14, 0.16, 0.42).lerp(Color(0.32, 0.42, 0.75), clampf(v / 0.5, 0.0, 1.0))
 		else:
-			base = Color(0.22, 0.4, 0.72).darkened(clampf((v - 0.55) / 0.45, 0.0, 0.85))
+			base = Color(0.32, 0.42, 0.75).darkened(clampf((v - 0.5) / 0.5, 0.0, 0.8))
+		# Position within the cloud band, centered, [-0.5, 0.5] in each
+		# axis, scaled up by 1/CLOUD_FILL so only the middle CLOUD_FILL
+		# fraction of the cell maps onto the real texture -- outside that
+		# stays clear sky (band_frac out of [0,1]).
+		var band_frac := (v - band_lo) / cell_h if cell_h > 0.0 else -1.0
+		var in_band := cloud_img != null and band_frac >= 0.0 and band_frac <= 1.0
 		for x in w:
 			var sx := x * cw / w
 			var col := base
 			var star := sky_img.get_pixel(sx % cw, sy)
 			if star.a > 0.01:
 				col = col.lerp(Color(star.r, star.g, star.b), star.a)
-			if cloud_img and v < 0.45:
-				var cx := x * cloud_img.get_width() / w
-				var cy := int(v / 0.45 * float(cloud_img.get_height() - 1))
-				var cc := cloud_img.get_pixel(cx % cloud_img.get_width(), cy)
-				if cc.a > 0.01:
-					col = col.lerp(Color(cc.r, cc.g, cc.b), 0.55 * cc.a)
+			if in_band:
+				var cell_frac := fmod(float(x), cell_w) / cell_w
+				var lu := (cell_frac - 0.5) / CLOUD_FILL + 0.5
+				var lv := (band_frac - 0.5) / CLOUD_FILL + 0.5
+				if lu >= 0.0 and lu <= 1.0 and lv >= 0.0 and lv <= 1.0:
+					var cx := clampi(int(lu * float(cloud_w)), 0, cloud_w - 1)
+					var cy := clampi(int(lv * float(cloud_h)), 0, cloud_h - 1)
+					var cc := cloud_img.get_pixel(cx, cy)
+					if cc.a > 0.01:
+						var luma := (cc.r + cc.g + cc.b) / 3.0
+						var strength := cc.a * clampf(0.35 + 1.4 * luma, 0.0, 1.0)
+						col = col.lerp(cloud_tint, strength)
 			out.set_pixel(x, y, col)
 	return out
 

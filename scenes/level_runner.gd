@@ -47,6 +47,7 @@ var _last_applied_sky_map := ""
 var _last_applied_cloud_map := ""
 ## See `_apply_wdl_fog()`'s own docstring. -1.0 = "no value read yet".
 var _last_applied_fog := -1.0
+var _last_applied_fog_color := Vector3(-1.0, -1.0, -1.0)
 
 
 func _ready() -> void:
@@ -207,41 +208,68 @@ func _process(_delta: float) -> void:
 
 
 ## Reported live (2026-08-10): "when Piposh falls there's fog... that
-## don't exist in the current graphics." `camera.fog = N;` (11 corpus
-## levels, e.g. Plane2/Plane3/Smash's own main()) was entirely unbridged
-## in the interpreter before this session -- see `WdlInterpreter._set_
-## camera_field()`'s own "fog" case, which now stores the live value as
-## camera meta since the interpreter has no direct Environment reference
-## of its own. Polled continuously here (same shape as sky_map/cloud_map/
-## scene_map above) since some levels change it mid-level too (Plane2's
-## own `camera.fog=0;` partway through, to clear fog for a specific
-## moment).
+## don't exist in the current graphics" and, follow-up same day: "the fog
+## is not implemented well." `camera.fog = N;` (11 corpus levels, e.g.
+## Plane2/Plane3/Smash's own main()) was entirely unbridged in the
+## interpreter before this session -- see `WdlInterpreter._set_camera_
+## field()`'s own "fog" case, which stores the live value as camera meta
+## since the interpreter has no direct Environment reference of its own.
+## Polled continuously here (same shape as sky_map/cloud_map/scene_map
+## above) since some levels change it mid-level too (Plane2's own
+## `camera.fog=0;` partway through, to clear fog for a specific moment).
+##
+## `fog_color` was FIRST left unapplied, guessed to be unused boilerplate
+## since every level that sets it always uses the same literal `1`. Re-
+## examined after getting a real, live reference render of the actual
+## engine running (3D GameStudio A5, launched directly via the project's
+## own `piposh_3d_cursor` dgVoodoo2 test harness -- see docs/SESSION_LOG.md
+## for the full capture story): the game's own sky is genuinely a NIGHT
+## scene (deep blue-purple, visible stars, confirmed both via that live
+## capture and user-provided screenshots). Per this session's own earlier
+## "VECTOR = SCALAR sets only .x" finding (GB-20), `fog_color=1;` really
+## does mean (red=1, green=0, blue=0) -- in the same roughly-0-255 scale
+## `sky_color.red` is seen using elsewhere in the corpus (up to 250) --
+## i.e. very close to pure BLACK. Read as "boilerplate" that seemed odd
+## in isolation, but is exactly the sensible, deliberate choice for a
+## NIGHT-time fog (distant geometry fading to near-black darkness, not a
+## daytime gray haze) -- so this now reads the real live `fog_color`
+## value and applies it as the actual fog tint instead of a fixed guess.
 ##
 ## The exact numeric mapping from Acknex's own `camera.fog` value to
-## Godot's depth-fog distance is a reasoned guess, not a measured
+## Godot's depth-fog distance is still a reasoned guess, not a measured
 ## constant -- headless Godot can't render a frame to tune it against a
-## real reference screenshot. `fog_color` (a real corpus global, always
-## seen set to a bare `1`) is NOT applied as a literal RGB tint: per this
-## session's own "VECTOR = SCALAR sets only .x" finding, `fog_color=1;`
-## would mean (red=1, green=0, blue=0) -- almost pure black in Acknex's
-## 0-100ish color scale, which reads as "boilerplate/unused legacy
-## default" rather than a deliberately authored dark-red fog, so a
-## neutral fog color is used instead of guessing at that literal value.
+## live reference, and the one live capture session got a real screenshot
+## of Smash's own default (no-fog) state, not a moment with fog actually
+## active, to compare against directly.
 func _apply_wdl_fog() -> void:
 	if _script_cam == null:
 		return
 	var raw = _script_cam.get_meta("fog", -1.0)
 	var value := float(raw)
-	if value == _last_applied_fog:
+	var interp: Node = _director.get("_wdl_interp") if _director else null
+	var fog_color_gs: Vector3 = (interp.get("_vectors") as Dictionary).get("fog_color", Vector3.ZERO) if interp else Vector3.ZERO
+	if value == _last_applied_fog and fog_color_gs == _last_applied_fog_color:
 		return
 	_last_applied_fog = value
+	_last_applied_fog_color = fog_color_gs
 	var we := get_node_or_null("WorldEnvironment") as WorldEnvironment
 	if we == null or we.environment == null:
 		return
 	var env := we.environment
 	env.fog_enabled = value > 0.0
 	if value > 0.0:
-		env.fog_light_color = Color(0.65, 0.68, 0.72)
+		# fog_color defaults to (0,0,0) (never assigned) for levels that
+		# set camera.fog without ever touching fog_color -- treat that as
+		# "no real color chosen", not "pure black fog", falling back to a
+		# neutral mid-gray instead.
+		if fog_color_gs.length() > 0.001:
+			env.fog_light_color = Color(
+				clampf(fog_color_gs.x / 255.0, 0.0, 1.0),
+				clampf(fog_color_gs.y / 255.0, 0.0, 1.0),
+				clampf(fog_color_gs.z / 255.0, 0.0, 1.0),
+			)
+		else:
+			env.fog_light_color = Color(0.5, 0.5, 0.5)
 		env.fog_light_energy = 1.0
 		env.fog_depth_begin = 0.0
 		env.fog_depth_end = clampf(60000.0 / value, 800.0, 20000.0)

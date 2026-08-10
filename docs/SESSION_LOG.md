@@ -8554,3 +8554,132 @@ sky_panorama_check`, `smoke_live_sky_poll_check`, `smoke_fog_check`
 check`, `smoke_emit_particles_check`, `smoke_town_traffic_check`,
 `smoke_plane2_all_goals`, `smoke_gib_debris_movement_check`, `smoke_
 range_shoot` -- all green.
+
+
+## 2026-08-10 (GB-24) -- got a real, live reference render of the actual
+original engine running, and used it to fix the sky panorama's cloud
+pattern and the fog color -- not a guess this time
+
+Direct follow-up in the same session, same day, after the user pushed
+back hard on the previous two rounds' own guess-and-check approach:
+"the fog is not implemented well," "the weird clouds are still the wrong
+pattern," and, explicitly: "your job is to make the game work like it
+was originally, system-wide... If you need to decompile the Acknex
+engine for this, or anything else to get things running like they were
+originally, please do." The user then pointed at a specific, already-
+existing environment: `E:\RE_general\PiposhTools\piposh_3d_cursor` -- a
+separate, unrelated reverse-engineering project tree (not part of this
+repo) that a previous, different effort had already built: the original
+game's own `.exe` modules, checksum-cracked to allow WDL editing, patched
+for a larger memory nexus, and wrapped with dgVoodoo2 (`DDraw.dll`/
+`D3DImm.dll` + `dgVoodoo.conf`) so the original DirectDraw/Direct3D7
+1st-generation Windows game can actually run on a modern GPU/OS at all.
+
+**Getting a real render.** Launched `Town.exe -d l1 -NX 512 -diag`
+directly (the project's own `TestTown.bat` harness). Confirmed via the
+engine's own boot banner (captured in an early screenshot, before the
+window went fullscreen): "3D GameStudio (c) Conitec... A5 engine -
+commercial release V5.240 / Jul 12 2002" -- the exact engine identity
+and build. First attempts to screenshot it failed for two different
+reasons, worked through one at a time rather than giving up: (1)
+`PrintWindow` (the standard "capture a window's own contents by handle"
+Win32 API) returned a real result but produced solid black images --
+this is a known limitation, PrintWindow reads a window's GDI device
+context, which DirectDraw/Direct3D-rendered exclusive-fullscreen content
+bypasses entirely (the driver composites straight to the display, not
+through the window's own GDI surface); (2) even after confirming the
+process was alive and its own window handle was valid, it kept exiting
+on its own within roughly 10-15 seconds of every launch attempt in this
+specific (remote/automated) session -- a known class of issue with
+legacy DirectDraw exclusive-fullscreen mode under Remote Desktop-style
+sessions. Fixed both by editing `dgVoodoo.conf`'s own `FullScreenMode`
+from `true` to `false` (backed up the original file first) to force a
+real, GDI-compatible windowed mode instead of exclusive fullscreen --
+this made the process stay alive long enough, and let a plain desktop
+screenshot (`Graphics.CopyFromScreen`) actually capture the real
+rendered frame instead of black or the surrounding desktop. Got a clean,
+full-quality live capture of `Smash.exe`'s own Tofu-stand scene -- the
+exact same in-game moment the user's own earlier screenshots showed,
+this time as a direct, on-demand reference rather than something only
+the user could provide.
+
+**Sky/cloud pattern, re-diagnosed against the live reference.** The
+user's own earlier binocular-view screenshots (provided the message
+before this one) already showed a rich blue-purple night sky with
+visible stars and several distinct, soft, wispy white cloud puffs -- the
+live capture confirmed the same look directly. Compared this port's own
+`_make_sky_panorama()` against that reference and found it was wrong in
+two independent ways, not one:
+
+1. The entire 320x320 `clds.png` cloud shape was being mapped as ONE
+   pass across the FULL 1024px panorama width, with no tiling at all
+   (`cx = x * cloud_img.get_width() / w`) -- squashing a roughly-square
+   cloud silhouette into a ~4.5x-wider-than-tall smear covering the
+   WHOLE horizontal sky in one continuous, heavily distorted band. The
+   reference shows several separate, naturally-proportioned puffs with
+   real open sky between them, not one warped stretch.
+
+2. `clds.png`'s own opaque pixels are almost pure black (re-confirmed
+   via direct pixel read: dominant RGB values 1-17 out of 255, with a
+   lighter grey highlight streak) -- alpha-blending that literal color
+   would paint the clouds as near-invisible dark smudges, the opposite
+   of the reference's clearly visible soft white puffs.
+
+Fixed by rewriting cloud placement entirely: split the panorama into a
+small number of cells (`CLOUD_CELLS`), each shrunk to `CLOUD_FILL`
+(55%) of its own cell size and centered, so real clear sky separates
+each cloud cluster instead of them touching edge-to-edge; confined the
+whole cloud band to a narrower vertical range centered above the horizon
+(`CLOUD_BAND_CENTER`/`CLOUD_BAND_HALF_HEIGHT`) rather than filling the
+entire upper 45% of the dome; and stopped treating `clds.png`'s own RGB
+as a literal paste color -- instead reading its alpha as the cloud's
+overall silhouette and its own luminance as an internal density/shading
+modulator, blended toward a soft warm-white tint. Also re-picked the
+base sky gradient to a noticeably darker, richer blue-purple (matching
+the reference's genuinely nighttime sky) -- the previous version was a
+much paler, washed-out blue that didn't read as night at all. Rendered
+the actual generated panorama to a PNG and viewed it directly (not just
+trusting the black-pixel-percentage regression check) at each iteration
+-- the first attempt (tiling at `CLOUD_REPEAT=5` with no cell-shrinking)
+still looked wrong, showing an almost continuous white band across the
+whole top of the sky with barely any gaps; only after adding the
+per-cell shrink-and-center step did it produce several genuinely
+separated, natural-looking puffs matching the reference.
+
+**Fog color, reconsidered.** Earlier the same day (GB-23), `fog_color`
+was deliberately left unapplied -- every level that sets it uses the
+same literal `fog_color=1;`, which looked like unused boilerplate rather
+than a deliberate color choice, especially since (per this session's own
+earlier "VECTOR = SCALAR sets only .x" finding, GB-20) that literal `1`
+means (red=1, green=0, blue=0), nearly pure black. Revisited this once
+the live reference confirmed the game's own sky is a genuine NIGHT
+scene: a fog that fades distant geometry into near-black darkness is
+exactly the sensible, deliberate choice for a night level, not an
+unused default -- the "looked odd in isolation" read was wrong once
+placed in the actual visual context. `_apply_wdl_fog()` now reads the
+real live `fog_color` global (via the interpreter's own `_vectors` dict,
+the same storage GB-20's scalar-to-vector mirroring populates) and
+applies it as the real fog tint, converting from Acknex's own roughly-
+0-255 color scale to Godot's 0-1 range -- falling back to a neutral gray
+only for the rare case where `camera.fog` is set without `fog_color`
+ever being touched at all (so a fog effect still shows something
+reasonable rather than defaulting to invisible black). The `camera.fog`-
+value-to-fog-distance mapping itself is still an unverified, reasoned
+guess -- the live capture obtained was of Smash's own default (no-fog)
+state, confirming fog is correctly OFF there (Smash's own `main()` never
+sets `camera.fog` to a nonzero value, only `fog_color`), but didn't
+happen to catch a moment with fog actively visible to tune the distance
+number against.
+
+Left the `piposh_3d_cursor` environment in windowed mode (dgVoodoo.conf's
+`FullScreenMode=false`) rather than reverting it back to fullscreen --
+windowed mode is what made capture possible at all in this environment,
+and is arguably more useful for any future testing here too; the
+original config is still backed up if that's ever wanted back.
+
+Full regression sweep: `smoke_dispatch --all` (55/56, unchanged), `smoke_
+sky_panorama_check`, `smoke_scene_cylinder_uv_check`, `smoke_live_sky_
+poll_check`, `smoke_fog_check` (extended to also assert the fog color
+itself, not just that fog is enabled), `smoke_bitmap_create_check`,
+`smoke_particle_texture_check`, `smoke_town_traffic_check`, `smoke_
+plane2_all_goals` -- all green.
