@@ -142,6 +142,15 @@ func _on_show_mov_input(event: InputEvent) -> void:
 			_p_show.size = tex.get_size()
 		# ShowMov2/3 mean skip intro movies next boot
 		Piposh3DState.skip_intro_movies = _show_idx > 1
+		# Persist it. skip_intro_movies is NOT part of to_dict()/from_dict(), so
+		# without this it resets to false on every launch and the setting only
+		# survives until you quit -- which makes repeated testing tedious, since
+		# boot sends you to Start (the intro) rather than the menu. It is a
+		# preference, not game state, so it belongs in settings.cfg rather than
+		# a save slot.
+		AudioChannels.set_setting("game", "skip_intro_movies",
+				Piposh3DState.skip_intro_movies)
+		AudioChannels.set_setting("game", "show_mov_idx", _show_idx)
 		hud.text = "Movies %s" % ("OFF" if Piposh3DState.skip_intro_movies else "ON")
 
 
