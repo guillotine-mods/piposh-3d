@@ -819,7 +819,21 @@ func _force_unshaded_if_needed(node: Node, repeat_textures: bool = false) -> voi
 					var mat_name := mat.resource_name.to_lower()
 					if mat_name.contains("sky") or mat_name.contains("ciel") or mat_name == "" or mat_name == "#default":
 						var invis := StandardMaterial3D.new()
-						invis.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+						# ALPHA_SCISSOR (a genuine per-pixel discard), not plain
+						# ALPHA blending: this round also turned shadow casting
+						# ON for every brush MeshInstance3D (see this function's
+						# own shadow-fix note below) -- shadow casting is a
+						# whole-node GeometryInstance3D property, not a
+						# per-surface one, so a plain alpha-blended "invisible"
+						# surface sharing a MeshInstance3D with real opaque
+						# surfaces (Town/Desert/MOI's own ceiling-plus-walls
+						# mesh, exactly this shape) risks still contributing a
+						# giant, level-covering shadow from its own un-discarded
+						# depth-pass geometry. A scissor discard (alpha 0 always
+						# below the threshold) is excluded from both the color
+						# AND shadow depth pass, guaranteed.
+						invis.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+						invis.alpha_scissor_threshold = 0.5
 						invis.albedo_color = Color(1, 1, 1, 0)
 						mi.set_surface_override_material(i, invis)
 						continue
@@ -844,6 +858,34 @@ func _force_unshaded_if_needed(node: Node, repeat_textures: bool = false) -> voi
 					# geometry now gets real mipmapped linear filtering.
 					if repeat_textures:
 						bm.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+						# Reported live again (2026-08-10, this round): "the
+						# ground in the town view should be gradient not
+						# pixelated" -- STILL happening even with the filter
+						# fix above. Traced headlessly (tools/diag_ground_
+						# filter.gd): texture_filter really was 3 (LINEAR_WITH_
+						# MIPMAPS) on the live surface, but the underlying
+						# Image had has_mipmaps=false -- brush textures are
+						# loaded straight out of the runtime glTF-embedded
+						# buffer (see _resolve_brush_glb below), which never
+						# builds a mip chain the way Godot's own normal .import
+						# pipeline does for a file on disk. A filter MODE with
+						# no actual mip levels to sample falls back to the base
+						# level only -- for a small (128x128 on Town's own
+						# ground) texture tiled many times across a large
+						# ground plane and viewed at a grazing/distant angle,
+						# that's exactly the texture-minification case mipmaps
+						# exist to fix; without them it aliases into a hard,
+						# blocky moire pattern, not a smooth gradient. Fixed by
+						# actually generating a real mip chain for the image
+						# once and rebuilding the texture from it.
+						var base_tex := bm.albedo_texture
+						if base_tex != null:
+							var base_img := base_tex.get_image()
+							if base_img != null and not base_img.has_mipmaps():
+								if base_img.is_compressed():
+									base_img.decompress()
+								base_img.generate_mipmaps()
+								bm.albedo_texture = ImageTexture.create_from_image(base_img)
 					else:
 						# No mipmaps here: they blur + darken alpha-scissor pixel skins.
 						bm.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
@@ -854,11 +896,24 @@ func _force_unshaded_if_needed(node: Node, repeat_textures: bool = false) -> voi
 					bm.texture_repeat = repeat_textures
 					bm.metallic = 0.0
 					bm.roughness = 1.0
-					bm.disable_receive_shadows = true
 					bm.diffuse_mode = BaseMaterial3D.DIFFUSE_LAMBERT
 					bm.specular_mode = BaseMaterial3D.SPECULAR_DISABLED
 					mi.set_surface_override_material(i, bm)
-			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			# Reported live again (2026-08-10, this round): "the lighting
+			# effects from the original game are missing" / "there is light
+			# and shadows that don't exist in the current graphics" -- this
+			# was previously left off deliberately (GB-22/GB-23, NB-3) as a
+			# "needs live visual verification, not a blind guess" deferral,
+			# but shadows off entirely is a structural, unconditional gap,
+			# not a tuning question -- every level's WMB point lights
+			# (0-6 per level, corpus-wide -- cheap) plus the one directional
+			# "sun" light (level_runner.gd) now cast, and every brush/prop
+			# surface both casts and receives, matching how the original
+			# engine's own real-time lighting looked (WMB OmniLight3D
+			# entities were already spawned as real lights -- see this
+			# function's own docstring above -- they just had nothing able
+			# to cast or receive a shadow from them).
+			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	for c in node.get_children():
 		_force_unshaded_if_needed(c, repeat_textures)
 
@@ -894,6 +949,10 @@ func _spawn_light(obj: Dictionary) -> void:
 	var rng := float(obj.get("range", 300.0))
 	light.omni_range = clampf(rng * 0.05, 4.0, 120.0)
 	light.light_energy = 1.1
+	# See _force_unshaded_if_needed()'s own note on this round's shadow
+	# fix -- corpus-wide light counts are small (0-6 per level), so real
+	# shadow casting from every WMB point light is cheap.
+	light.shadow_enabled = true
 	_entities_root.add_child(light)
 
 
