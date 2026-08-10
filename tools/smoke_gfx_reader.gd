@@ -63,10 +63,12 @@ func _init() -> void:
 	var no_ref := 0
 	var failed := 0
 	var ambiguous := 0
+	var agreed_reject := 0
 	var pixels := 0
 	var fail_detail: Array[String] = []
 	var mism_detail: Array[String] = []
 	var ambig_detail: Array[String] = []
+	var reject_detail: Array[String] = []
 
 	var t0 := Time.get_ticks_usec()
 	var decode_usec := 0
@@ -78,9 +80,18 @@ func _init() -> void:
 		decode_usec += Time.get_ticks_usec() - d0
 
 		if img == null:
-			failed += 1
-			if fail_detail.size() < 12:
-				fail_detail.append("%s -> %s" % [fname, GfxBitmap.last_error])
+			# Refusing a file the oracle also refused is AGREEMENT, not a defect:
+			# convert_gfx.py writes no PNG for sources it cannot read (stat0.pcx
+			# is 92 bytes and is not a PCX at all). Only count it against us when
+			# Python succeeded and we did not.
+			if FileAccess.file_exists("%s/%s.png" % [REF_DIR, fname.get_basename()]):
+				failed += 1
+				if fail_detail.size() < 12:
+					fail_detail.append("%s -> %s" % [fname, GfxBitmap.last_error])
+			else:
+				agreed_reject += 1
+				if reject_detail.size() < 12:
+					reject_detail.append("%s (%s)" % [fname, GfxBitmap.last_error])
 			continue
 
 		pixels += img.get_width() * img.get_height()
@@ -140,7 +151,8 @@ func _init() -> void:
 	print("files            : %d" % names.size())
 	print("PIXEL-EXACT      : %d" % exact)
 	print("mismatched       : %d" % mismatch)
-	print("decode failed    : %d" % failed)
+	print("decode failed    : %d  (Python produced a PNG and we did not)" % failed)
+	print("agreed reject    : %d  (Python could not read it either)" % agreed_reject)
 	print("no reference PNG : %d" % no_ref)
 	print("ambiguous ref    : %d  (stem exists as both .bmp and .pcx —" % ambiguous)
 	print("                      convert_gfx.py overwrites one with the other)")
@@ -153,6 +165,8 @@ func _init() -> void:
 		print("  MISMATCH %s" % m)
 	for m in fail_detail:
 		print("  FAIL     %s" % m)
+	for m in reject_detail:
+		print("  agreed   %s" % m)
 
 	var bad := mismatch + failed
 	print("")
