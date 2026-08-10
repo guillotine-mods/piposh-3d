@@ -755,11 +755,98 @@ func _force_unshaded_if_needed(node: Node, repeat_textures: bool = false) -> voi
 				if mat == null and mi.mesh.surface_get_material(i) != null:
 					mat = mi.mesh.surface_get_material(i)
 				if mat is BaseMaterial3D:
+					# Reported live (2026-08-10): "the Smash level still has
+					# the weird cloud artifacts" -- traced via direct
+					# isolation (hiding AcknexSky's own cylinder AND forcing
+					# a flat BG_COLOR background both left the pattern fully
+					# intact) to something entirely outside AcknexSky: real
+					# WMB BRUSH GEOMETRY. A genuine, corpus-wide Acknex/
+					# Quake-family convention -- confirmed via a plain
+					# filename scan across every converted level -- surface
+					# textures literally named "sky*" (`skywhite.png`/
+					# `skyblue.png`, 18 levels including Town/Smash) mark
+					# polygons the REAL engine renders as an infinite-
+					# distance backdrop (same idea as this port's own
+					# AcknexSky), not literal tiled wall/ceiling geometry.
+					# This port's own WMB extraction (`tools/extract_wmb_
+					# mesh.py`) has no such special case at all -- it just
+					# emits these faces as ordinary textured triangles, so
+					# they render as a real, static, densely-repeating
+					# cloud-pattern surface hanging above the level instead
+					# of the (already-correct) procedural sky showing
+					# through. Fixed here rather than in the offline
+					# conversion pipeline (narrower blast radius, no
+					# regeneration of 18 levels' own GLBs needed): any
+					# surface whose own texture file is named "sky*" is
+					# made fully transparent instead of getting the normal
+					# lit material, letting AcknexSky's own sky dome show
+					# through in its place.
+					# NOTE: brush materials/textures are loaded at runtime straight
+					# out of "{Level}_brush.glb" (see _resolve_brush_glb below), so
+					# Texture2D.resource_path is an internal glTF-packed path like
+					# "Town_brush.glb::ImageTexture_bkbhm" -- it never contains the
+					# original texture's name. The glTF material *name* does,
+					# though (confirmed live via tools/diag_town_brush_mats.gd:
+					# mat.resource_name == "skywhite" for exactly this surface),
+					# since the exporter carries the original Acknex texture name
+					# through as the glTF material name. Check that instead of the
+					# texture path.
+					#
+					# Reported live again after the "sky"-substring fix (2026-08-10,
+					# Town): the cloud wallpaper was gone but the sky itself still
+					# rendered as a flat, featureless wall of color instead of the
+					# real starry AcknexSky gradient. Traced via a physics raycast
+					# fanned out from the live camera (every pitch from 0 to 89
+					# degrees hit real collision geometry, never "no hit") to a
+					# SEPARATE brush surface: a flat ceiling polygon capping the
+					# entire level at its own bounding box's top, using a texture
+					# whose name is a literal empty string in the source WMB data
+					# (`tools/extract_wmb_mesh.py`'s `_load_textures()` reads a raw
+					# 16-byte name field straight from the WMB texture lump --
+					# Godot's own glTF importer then labels the resulting anonymous
+					# material "#default"). A corpus scan (multiple levels' own
+					# `_brush.glb` files) found this exact blank-name pattern is not
+					# Town-specific -- Desert and MOI have it too, always as a face
+					# sealing the level from above/outside -- and also turned up a
+					# SECOND sky-naming convention this corpus uses beyond "sky*"/
+					# "zSKYNEW": French "ciel" ("sky"/"ceiling") -- Mansion's
+					# mansion_ciel/mansion_ciel2/mansion_roomcie, MOI's CIEL, and
+					# Shiks's CIELIN/shiks_ciel are all real, named backdrop-type
+					# surfaces in the actual source data, not a guess. Both new
+					# signals are genuine properties of the original WMB/WED data
+					# (a designer-left-blank texture name, or a French synonym for
+					# "sky"), not heuristics invented from this port's own geometry.
+					var mat_name := mat.resource_name.to_lower()
+					if mat_name.contains("sky") or mat_name.contains("ciel") or mat_name == "" or mat_name == "#default":
+						var invis := StandardMaterial3D.new()
+						invis.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+						invis.albedo_color = Color(1, 1, 1, 0)
+						mi.set_surface_override_material(i, invis)
+						continue
 					# Duplicate so we don't mutate the shared imported resource.
 					var bm := (mat as BaseMaterial3D).duplicate() as BaseMaterial3D
 					bm.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
-					# No mipmaps: they blur + darken alpha-scissor pixel skins.
-					bm.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+					# Reported live (2026-08-10), confirmed via a real non-
+					# headless capture of this port's own Town level: ground/
+					# terrain brush geometry rendered as visibly blocky,
+					# stair-stepped color bands instead of the original's
+					# smooth gradient slope. `repeat_textures` (true only for
+					# `_spawn_brush_geometry()`'s own WMB level geometry --
+					# terrain/walls/floors -- false for MDL character/prop
+					# skins) already exists as exactly this distinction, just
+					# not applied to filtering: NEAREST was chosen (with the
+					# comment below) specifically to keep hard, crisp edges on
+					# alpha-scissor CHARACTER skins, but the same reasoning
+					# doesn't apply to solid, non-cutout brush textures like
+					# terrain -- there smooth filtering is what actually
+					# matches "a gradient", not blocky texel edges. Nearest
+					# stays for props/characters (repeat_textures=false); brush
+					# geometry now gets real mipmapped linear filtering.
+					if repeat_textures:
+						bm.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+					else:
+						# No mipmaps here: they blur + darken alpha-scissor pixel skins.
+						bm.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 					bm.cull_mode = BaseMaterial3D.CULL_DISABLED
 					# Color-key cutout (RGB565 0 / palette index 0).
 					bm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR

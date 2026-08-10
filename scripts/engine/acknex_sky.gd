@@ -5,8 +5,32 @@ extends Node3D
 const GFX := "res://assets/converted/gfx/"
 const META_PATH := "res://assets/converted/wdl_meta.json"
 const SCENE_REPEAT := 6.0
+## Reported live (2026-08-10), confirmed via direct inspection of a real
+## running Town instance: the horizon cylinder is a real, literal piece
+## of world-space geometry sized off the LEVEL's OWN bounding box
+## (`WmbLevelLoader.level_bounds`) -- for Town that produced a radius of
+## ~4768 and height of ~2146 GS units. A real Acknex horizon/"scene" band
+## is NOT world-space geometry at all -- like the sky dome itself, it's
+## an infinite-distance backdrop that always appears the same apparent
+## size regardless of where the camera physically stands in the level
+## (only rotating with view direction, never translating with camera
+## position). Sizing it off the level's own raw bounds instead meant its
+## apparent size on screen varied wildly by level (and by where in a
+## level the camera happened to be relative to the cylinder's own fixed
+## world position) -- for a level with large bounds like Town, the
+## texture ended up filling a huge vertical arc of the screen instead of
+## a thin horizon strip, and its own 6x horizontal tiling read as a dense
+## repeating "wallpaper" pattern rather than a scattered few repeats at
+## the true horizon. Fixed by decoupling the cylinder's own size from
+## level bounds entirely (fixed radius/height, chosen to read as a
+## reasonably thin band) and re-centering it on the camera's own XZ
+## position every frame (`_process()`, see `_follow_camera()`) so it
+## behaves like the infinite-distance backdrop it's meant to be.
+const SCENE_RADIUS := 3000.0
+const SCENE_HEIGHT := 650.0
 
 var _meta: Dictionary = {}
+var _scene_map_node: MeshInstance3D
 
 
 ## `live_scene_map`/`live_sky_map`/`live_cloud_map`, when non-empty,
@@ -97,9 +121,48 @@ func _apply_sky_maps(env: Environment, sky_file: String, cloud_file: String) -> 
 		env.background_mode = Environment.BG_COLOR
 		return
 	var sky := Sky.new()
+	# Reported live (2026-08-10), confirmed via direct isolation (hiding
+	# the horizon cylinder entirely made NO difference -- the artifact is
+	# the sky dome itself): a dense, fine repeating noise pattern covered
+	# the whole visible sky in a real non-headless capture, even though
+	# reading the panorama's own `Image` back directly (raw pixels, no
+	# rendering pipeline involved) showed the correct, sparse cloud
+	# layout. Root cause: Godot's own `Sky` resource never renders the
+	# raw panorama texture directly for the visible background -- it
+	# always bakes it into a bounded-resolution radiance cubemap first
+	# (`radiance_size`, default `RADIANCE_SIZE_256`) and samples THAT for
+	# both reflections and the direct background view. This panorama's
+	# own sky.png layer is mostly a handful of ISOLATED, SHARP, near-
+	# single-pixel star dots against large empty regions -- exactly the
+	# kind of high-frequency content that aliases severely when baked
+	# down into a comparatively low-resolution (256) cubemap, producing
+	# visible Moire/noise-like artifacts unrelated to the source image's
+	# own actual (correct) content. Raised to the max available
+	# resolution so the bake has enough headroom to represent those
+	# sharp points faithfully instead of aliasing.
 	var mat := PanoramaSkyMaterial.new()
 	mat.panorama = ImageTexture.create_from_image(_make_sky_panorama(img, _load_tex(cloud_file)))
 	sky.sky_material = mat
+	sky.radiance_size = Sky.RADIANCE_SIZE_1024
+	# Reported live (2026-08-10), confirmed via a real non-headless Town
+	# capture: even at RADIANCE_SIZE_1024 the visible sky rendered as a
+	# nearly flat, featureless medium blue -- no visible gradient, no star
+	# dots, no cloud puffs, despite `_make_sky_panorama()`'s own `Image`
+	# (verified directly, headless) containing all three correctly. Root
+	# cause is Sky's default `process_mode` (PROCESS_MODE_AUTOMATIC, which
+	# for a PanoramaSkyMaterial resolves to QUALITY): that mode convolves
+	# the panorama with importance-sampled blur for physically-plausible
+	# rough-reflection use, which spreads a handful of near-single-pixel
+	# bright star dots' energy across a huge solid-angle radius -- exactly
+	# the kind of sparse high-frequency content this panorama has --
+	# washing them down to near-invisible while also smearing the gradient
+	# and cloud silhouette toward a flat average. This sky is 2D stylized
+	# backdrop art, not a physically-based environment probe feeding rough
+	# reflections, so the accuracy QUALITY mode buys isn't wanted here.
+	# REALTIME mode does a cheap mip-based downsample instead (no
+	# importance-sampled convolution), preserving sharp point/edge detail
+	# like the star dots and cloud silhouette edges.
+	sky.process_mode = Sky.PROCESS_MODE_REALTIME
 	env.sky = sky
 	env.background_mode = Environment.BG_SKY
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
@@ -152,20 +215,28 @@ func _apply_sky_maps(env: Environment, sky_file: String, cloud_file: String) -> 
 ##    saturated mid-blue near the horizon -- not the previous version's
 ##    pale, washed-out blue. Re-picked directly from the reference
 ##    screenshots (visual color estimate, not a measured constant).
-## Cloud puffs sit in a narrow band centered on `CLOUD_BAND_CENTER` (v,
-## zenith=0/horizon=0.5), `CLOUD_BAND_HALF_HEIGHT` tall each side, softly
-## fading at the band's own top/bottom edges. `CLOUD_CELLS` splits the
-## panorama into that many equal horizontal cells; within each cell the
-## cloud texture is scaled down to `CLOUD_FILL` of the cell (leaving
-## clear sky around it, not tiled edge-to-edge) so puffs read as
-## separate, sparse clusters -- confirmed against the reference
-## screenshots' own look (roughly 1-2 distinct puffs visible in a normal
-## ~90-100 degree forward view, i.e. ~3-4 per full 360 degree wrap, with
-## most of the sky clear between them).
-const CLOUD_CELLS := 4
+## Reported live (2026-08-10), confirmed via a real non-headless capture
+## of this port's own Town level: the first cell-tiling attempt (4 equal,
+## identical cells around the full 360 degree wrap) still read as an
+## obvious repeating "wallpaper" pattern -- evenly-spaced identical puffs
+## are exactly the kind of regularity the human eye latches onto, even
+## though the earlier flat 2D panorama render looked reasonable in
+## isolation. The reference screenshots' own clouds are irregular: varied
+## size, uneven spacing, some areas of clear sky much larger than others.
+## Fixed by using a deterministic per-cell RNG (`CLOUD_SEED`, fixed so the
+## generated sky doesn't change between runs) across many more, smaller
+## candidate cells (`CLOUD_CELLS`): each cell independently rolls whether
+## it gets a puff at all (`CLOUD_DENSITY`), and if so, its own scale and
+## position jitter within the cell -- breaking the obvious grid regularity
+## while keeping the same underlying sparse/separated silhouette+shading
+## logic from the first pass.
+const CLOUD_CELLS := 14
+const CLOUD_DENSITY := 0.4
+const CLOUD_SEED := 20260810
 const CLOUD_BAND_CENTER := 0.22
 const CLOUD_BAND_HALF_HEIGHT := 0.16
-const CLOUD_FILL := 0.55
+const CLOUD_FILL_MIN := 0.5
+const CLOUD_FILL_MAX := 0.85
 func _make_sky_panorama(sky_img: Image, cloud_tex: Texture2D) -> Image:
 	var w := 1024
 	var h := 512
@@ -183,6 +254,22 @@ func _make_sky_panorama(sky_img: Image, cloud_tex: Texture2D) -> Image:
 	var band_hi := CLOUD_BAND_CENTER + CLOUD_BAND_HALF_HEIGHT
 	var cell_w := float(w) / float(CLOUD_CELLS)
 	var cell_h := band_hi - band_lo
+
+	# Precompute each cell's own roll once (not per-pixel): has_cloud,
+	# fill fraction, and a small [-0.5,0.5]-ish center offset within the
+	# cell so puffs don't all sit dead-center either.
+	var rng := RandomNumberGenerator.new()
+	rng.seed = CLOUD_SEED
+	var cell_active: Array[bool] = []
+	var cell_fill: Array[float] = []
+	var cell_offset_u: Array[float] = []
+	var cell_offset_v: Array[float] = []
+	for i in CLOUD_CELLS:
+		cell_active.append(cloud_img != null and rng.randf() < CLOUD_DENSITY)
+		cell_fill.append(rng.randf_range(CLOUD_FILL_MIN, CLOUD_FILL_MAX))
+		cell_offset_u.append(rng.randf_range(-0.15, 0.15))
+		cell_offset_v.append(rng.randf_range(-0.15, 0.15))
+
 	for y in h:
 		var v := float(y) / float(h - 1)
 		var src_v := clampf(v * 1.6, 0.0, 0.999)
@@ -192,10 +279,6 @@ func _make_sky_panorama(sky_img: Image, cloud_tex: Texture2D) -> Image:
 			base = Color(0.14, 0.16, 0.42).lerp(Color(0.32, 0.42, 0.75), clampf(v / 0.5, 0.0, 1.0))
 		else:
 			base = Color(0.32, 0.42, 0.75).darkened(clampf((v - 0.5) / 0.5, 0.0, 0.8))
-		# Position within the cloud band, centered, [-0.5, 0.5] in each
-		# axis, scaled up by 1/CLOUD_FILL so only the middle CLOUD_FILL
-		# fraction of the cell maps onto the real texture -- outside that
-		# stays clear sky (band_frac out of [0,1]).
 		var band_frac := (v - band_lo) / cell_h if cell_h > 0.0 else -1.0
 		var in_band := cloud_img != null and band_frac >= 0.0 and band_frac <= 1.0
 		for x in w:
@@ -205,17 +288,20 @@ func _make_sky_panorama(sky_img: Image, cloud_tex: Texture2D) -> Image:
 			if star.a > 0.01:
 				col = col.lerp(Color(star.r, star.g, star.b), star.a)
 			if in_band:
-				var cell_frac := fmod(float(x), cell_w) / cell_w
-				var lu := (cell_frac - 0.5) / CLOUD_FILL + 0.5
-				var lv := (band_frac - 0.5) / CLOUD_FILL + 0.5
-				if lu >= 0.0 and lu <= 1.0 and lv >= 0.0 and lv <= 1.0:
-					var cx := clampi(int(lu * float(cloud_w)), 0, cloud_w - 1)
-					var cy := clampi(int(lv * float(cloud_h)), 0, cloud_h - 1)
-					var cc := cloud_img.get_pixel(cx, cy)
-					if cc.a > 0.01:
-						var luma := (cc.r + cc.g + cc.b) / 3.0
-						var strength := cc.a * clampf(0.35 + 1.4 * luma, 0.0, 1.0)
-						col = col.lerp(cloud_tint, strength)
+				var cell_i := clampi(int(float(x) / cell_w), 0, CLOUD_CELLS - 1)
+				if cell_active[cell_i]:
+					var fill: float = cell_fill[cell_i]
+					var cell_frac := fmod(float(x), cell_w) / cell_w
+					var lu := (cell_frac - 0.5 - cell_offset_u[cell_i]) / fill + 0.5
+					var lv := (band_frac - 0.5 - cell_offset_v[cell_i]) / fill + 0.5
+					if lu >= 0.0 and lu <= 1.0 and lv >= 0.0 and lv <= 1.0:
+						var cx := clampi(int(lu * float(cloud_w)), 0, cloud_w - 1)
+						var cy := clampi(int(lv * float(cloud_h)), 0, cloud_h - 1)
+						var cc := cloud_img.get_pixel(cx, cy)
+						if cc.a > 0.01:
+							var luma := (cc.r + cc.g + cc.b) / 3.0
+							var strength := cc.a * clampf(0.35 + 1.4 * luma, 0.0, 1.0)
+							col = col.lerp(cloud_tint, strength)
 			out.set_pixel(x, y, col)
 	return out
 
@@ -294,14 +380,15 @@ func _spawn_scene_cylinder(scene_file: String, bounds: AABB) -> void:
 	var tex := _load_tex(scene_file)
 	if tex == null:
 		return
-	var center := bounds.get_center()
-	var radius := maxf(maxf(bounds.size.x, bounds.size.z) * 0.65, 400.0)
-	var height := maxf(radius * 0.45, 180.0)
-	var y_center := center.y + height * 0.15
 	var mi := MeshInstance3D.new()
 	mi.name = "SceneMap"
-	mi.mesh = _build_scene_cylinder_mesh(radius, height, 48)
-	mi.position = Vector3(center.x, y_center, center.z)
+	mi.mesh = _build_scene_cylinder_mesh(SCENE_RADIUS, SCENE_HEIGHT, 48)
+	# Centered on whatever camera is active right now; _process() re-centers
+	# it every frame from here on (see this file's own SCENE_RADIUS
+	# docstring for why world-space level bounds were the wrong anchor).
+	var cam := get_viewport().get_camera_3d() if is_inside_tree() else null
+	mi.position = cam.global_position if cam else bounds.get_center()
+	_scene_map_node = mi
 	var mat := StandardMaterial3D.new()
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat.cull_mode = BaseMaterial3D.CULL_FRONT
@@ -362,6 +449,21 @@ func _tex_image(tex: Texture2D) -> Image:
 
 
 func _clear_children() -> void:
+	_scene_map_node = null
 	for c in get_children():
 		remove_child(c)
 		c.free()
+
+
+## Re-centers the horizon cylinder on whatever camera is actually
+## rendering right now, every frame -- see SCENE_RADIUS's own docstring.
+## `get_viewport().get_camera_3d()` (not a stored reference) since this
+## project's own CameraAuthority switches which Camera3D is active
+## (player FP vs. WDL-scripted) during normal play; querying fresh each
+## frame always follows whichever one is really driving the view.
+func _process(_delta: float) -> void:
+	if _scene_map_node == null or not is_instance_valid(_scene_map_node):
+		return
+	var cam := get_viewport().get_camera_3d()
+	if cam:
+		_scene_map_node.global_position = cam.global_position

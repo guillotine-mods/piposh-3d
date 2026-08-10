@@ -243,12 +243,37 @@ func _process(_delta: float) -> void:
 ## daytime gray haze) -- so this now reads the real live `fog_color`
 ## value and applies it as the actual fog tint instead of a fixed guess.
 ##
-## The exact numeric mapping from Acknex's own `camera.fog` value to
-## Godot's depth-fog distance is still a reasoned guess, not a measured
-## constant -- headless Godot can't render a frame to tune it against a
-## live reference, and the one live capture session got a real screenshot
-## of Smash's own default (no-fog) state, not a moment with fog actually
-## active, to compare against directly.
+## Follow-up (2026-08-10): "now the plane3 level is really dark. It
+## looked better before you added the fog." Got a real, live A5 capture
+## of Plane3 itself this time (same dgVoodoo2 harness): distant trees are
+## completely crisp and unfogged even near the edge of view -- confirmed
+## `camera.fog=10;` (Plane3's own value) produces NO perceptible fog in
+## the real engine. Also captured this port's own Plane3 non-headless
+## (loading `level_runner.tscn` directly, real GPU rendering, not the
+## headless dummy renderer): the ENTIRE screen was solid black except a
+## small foreground character. Root cause: the previous `fog_depth_end =
+## 60000.0/value` guess treated `camera.fog`'s own small values (0/10/30
+## corpus-wide) as if they scaled inversely to a literal GS-unit
+## distance -- but Plane3's own falling/aerial scene naturally has the
+## camera thousands of units from most geometry (confirmed elsewhere this
+## session: `PipFall`'s own Z sits around 4100+), so a fixed 6000-unit
+## fog_depth_end put nearly the WHOLE visible scene beyond full fog
+## density, at the SAME near-black `fog_color` GB-24 correctly derived --
+## a level-agnostic constant can't work when GS scene scale varies this
+## much between levels (Town's close-quarters street vs. Plane3's
+## kilometers-wide open-sky fall).
+##
+## Not guessing at a new constant this time -- anchored to something the
+## engine actually knows regardless of level: `loader.level_bounds`, the
+## same real per-level AABB `_spawn_scene_cylinder()` already sizes the
+## horizon cylinder from. Fog now only reaches full density well beyond
+## the level's own diagonal extent, so it can act as a distant depth cue
+## at the true edges of a level's geometry without ever fogging out
+## normal gameplay framing, on any level, regardless of its own absolute
+## scale -- matching the real engine's own observed "not perceptible in
+## ordinary play" behavior. `camera.fog`'s own numeric value now only
+## controls a mild relative thickening (higher = a little closer/denser
+## within that safe range), not the primary distance driver.
 func _apply_wdl_fog() -> void:
 	if _script_cam == null:
 		return
@@ -279,8 +304,15 @@ func _apply_wdl_fog() -> void:
 		else:
 			env.fog_light_color = Color(0.5, 0.5, 0.5)
 		env.fog_light_energy = 1.0
-		env.fog_depth_begin = 0.0
-		env.fog_depth_end = clampf(60000.0 / value, 800.0, 20000.0)
+		# Anchor to the level's own real size instead of a fixed guess --
+		# see this function's own docstring for why a level-agnostic
+		# constant broke Plane3 specifically. `value` (0-30ish in the
+		# corpus) only nudges thickness within that safe range, never
+		# drives the primary distance.
+		var diag: float = loader.level_bounds.size.length() if loader else 10000.0
+		var safe_end: float = maxf(diag * 1.5, 4000.0)
+		env.fog_depth_begin = safe_end * 0.6
+		env.fog_depth_end = safe_end * clampf(1.6 - value * 0.02, 1.0, 1.6)
 
 
 func _entity_mesh_aabb(root: Node3D) -> AABB:
