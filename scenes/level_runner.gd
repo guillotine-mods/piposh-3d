@@ -134,7 +134,8 @@ func _ready() -> void:
 	_use_fp = use_fp
 	_player_cam = player.get_node_or_null("Camera3D") as Camera3D
 	if use_fp:
-		_camera_authority.configure(_player_cam, _script_cam, _director.get("_wdl_interp"))
+		var fp_body := loader.first_person_spawn.get("node") as Node3D
+		_camera_authority.configure(_player_cam, _script_cam, _director.get("_wdl_interp"), fp_body)
 
 	if use_fp:
 		_enable_first_person()

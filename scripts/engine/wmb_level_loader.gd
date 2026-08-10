@@ -885,7 +885,7 @@ func _spawn_entity(obj: Dictionary) -> bool:
 			and not flag_passable
 			and not _is_camera_action(action)
 			and not _is_first_person_action(action)
-			and stem.to_lower() != "cam"
+			and not _is_camera_stem(stem)
 		):
 			_add_mesh_collision(inst)
 	else:
@@ -904,7 +904,23 @@ func _spawn_entity(obj: Dictionary) -> bool:
 	# shouldn't appear visually or at all... don't know how it reached the
 	# Ami level" -- it's not level-specific, `action Dummy` is used the
 	# same way everywhere.
-	if _is_camera_action(action) or stem.to_lower() == "cam" or flag_invisible or action.to_lower() == "dummy":
+	#
+	# Reported live again (2026-08-11), Inn: "there's no Piposh character
+	# in the Inn level... there's a black ball floating statically
+	# instead." The literal `action.to_lower() == "dummy"` check above only
+	# ever matched a placement whose WED-assigned action is literally named
+	# "Dummy" -- but a corpus scan of every `"file": "Dummy.MDL"` placement
+	# found the SAME model reused with dozens of different custom action
+	# names (Inn's own RightEye/Quit/Flash/LimitIt among them, plus Torch/
+	# Light/Gayser/Creator/Fountain/CamDrive/... across Credits/InShrine/
+	# Mine/Intro5/Mansion/Fight/and more) -- one generic placeholder MODEL
+	# reused for many different pieces of level-specific trigger logic,
+	# each with its own action name, exactly like the WED-authoring pattern
+	# already fixed for camera markers above (`Camera.MDL` vs `Cam.MDL`).
+	# The action-name check alone was blind to every one of these; checking
+	# the STEM (the model file itself, not what script runs on it) catches
+	# all of them regardless of what the level author named the action.
+	if _is_camera_action(action) or _is_camera_stem(stem) or flag_invisible or action.to_lower() == "dummy" or stem.to_lower() == "dummy":
 		_hide_meshes(root)
 		# GB-8 continued (2026-08-07, Range): "none of my shots were
 		# triggered even when they were accurate." A `Cam.MDL`-stem
@@ -982,7 +998,7 @@ func _should_feet_snap(action: String, stem: String) -> bool:
 	## playtest report ("fans, lights and curtains a bit down under the
 	## floor" in Studio); see docs/SESSION_LOG.md. Only exclude entities
 	## whose origin is deliberately NOT a floor/feet reference.
-	if _is_camera_action(action) or stem.to_lower() == "cam":
+	if _is_camera_action(action) or _is_camera_stem(stem):
 		return false
 	var a := action.to_lower()
 	var s := stem.to_lower()
@@ -1445,6 +1461,38 @@ func _is_camera_action(action: String) -> bool:
 		"cam", "thecam", "thecam2", "farcam", "scam", "cammy", "lookatme",
 		"mycamera", "pipicam",
 	]
+
+
+## Reported live (2026-08-11): "starting the Taxi level doesn't show
+## Piposh model on screen... I think it's a system-wide issue"; separately,
+## Inn: "pressing on the Inn to start the level just shows a dark screen."
+## Traced Inn's own black screen to a real, corpus-wide gap: every
+## stem/action-based "this is a camera placeholder, not real geometry"
+## check in this file (`_should_feet_snap`'s exclusion,
+## `_hide_meshes`/`wdl_non_physical` marking, the FP-level collision skip)
+## only ever matched the exact stem "cam" -- but 12 levels' own WMB data
+## (confirmed via a corpus scan, Inn/Taxi/Smash among them, matching every
+## level named in this same report) place a camera-marker entity using
+## `Camera.MDL` (stem "camera") instead, which slipped through every one
+## of those checks entirely. For Inn specifically: its own always-active
+## `action Watch` (`while(1){camera.x=my.x;...}`, no gating condition --
+## a real, unconditional camera-marker WDL pattern used corpus-wide for a
+## fixed alternate viewpoint) drives the render camera to this entity's
+## own position every tick, and being wrongly FEET-SNAPPED (its stem
+## "camera" wasn't excluded) shifted it ~16 units off its authored WED
+## placement -- confirmed via a live reference capture of the actual
+## original engine (Inn.exe, same `piposh_3d_cursor` environment used
+## earlier this session) that the REAL game shows a normal, warmly-lit
+## ceiling from this exact camera entity, not black -- into solid ceiling
+## geometry, rendering as a solid black screen (camera embedded inside a
+## mesh). Broadened from an exact-match to a shared helper so "cam" and
+## "camera" (and by extension any future camera-prop stem sharing this
+## naming family) are both covered everywhere this file already special-
+## cases camera placeholders, not just the one call site that happened to
+## reproduce as a reported bug.
+func _is_camera_stem(stem: String) -> bool:
+	var s := stem.to_lower()
+	return s == "cam" or s == "camera"
 
 
 func _hide_meshes(node: Node) -> void:
