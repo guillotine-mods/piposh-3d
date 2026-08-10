@@ -208,6 +208,22 @@ static func read_level_bytes(data: PackedByteArray, source_name: String) -> Dict
 # Records
 # ---------------------------------------------------------------------------
 
+## Raw list table for the BRUSH path. Deliberately different from _read_lists:
+## extract_wmb_mesh.py reads 16 lists and performs NO bounds validation, while
+## extract_wmb_full.py reads 20 WITH validation and stops early on a bad entry.
+## Using either one for both paths changes which lists are visible on malformed
+## files, so both behaviours are reproduced separately.
+static func _read_lists_raw(data: PackedByteArray, n: int = 16) -> Array:
+	var lists: Array = []
+	var off := 4
+	for _i in n:
+		if off + 8 > data.size():
+			break
+		lists.append([data.decode_u32(off), data.decode_u32(off + 4)])
+		off += 8
+	return lists
+
+
 static func _read_lists(data: PackedByteArray) -> Array:
 	var lists: Array = []
 	var off := 4
@@ -406,6 +422,305 @@ static func _max_of(a: Array) -> float:
 		if v > m:
 			m = v
 	return m
+
+
+# ---------------------------------------------------------------------------
+# Brush / BSP geometry
+# ---------------------------------------------------------------------------
+#
+# WMB5 list layout (Acknex A5):
+#   L2  textures (RGB565 + mipmaps, type 40)
+#   L3  vertices (float3, GS Z-up)
+#   L6  texinfo (64 bytes: s/t vec4 + texture index)
+#   L7  faces (24 bytes: ..., firstedge, numedges, texinfo, ...)
+#   L12 edges (8-byte header, then uint32 v0,v1 pairs)
+#   L13 surfedges (int32, Quake-style signed edge refs)
+#
+# NOTE for Phase 2: face records are 24 bytes and only bytes 4-11 are read here,
+# matching the Python. Bytes 0-3 (plane index -> authored NORMAL, free) and
+# 12-23 (light styles + lightmap offset) are still unread. Recovering them is
+# the whole point of doing this in-engine, but it must not happen in the same
+# change that establishes parity -- the oracle can only prove equivalence while
+# this reproduces the Python exactly.
+
+
+## Extract brush geometry. Returns {} when the file has no usable brush data,
+## matching the Python's `return None`.
+##
+## `decode_textures` controls whether texture PIXELS are decoded. Dimensions are
+## always read, because UVs are divided by them. The runtime needs the pixels;
+## the parity test does not, and skipping them keeps it geometry-focused.
+static func read_brush(data: PackedByteArray, decode_textures: bool = true) -> Dictionary:
+	var magic := ""
+	for i in mini(4, data.size()):
+		magic += char(data[i])
+	if not ["WMB4", "WMB5", "WMB6"].has(magic):
+		return {}
+
+	var lists := _read_lists_raw(data, 16)
+	if lists.size() < 14:
+		return {}
+	if lists[3][1] < 12 or lists[7][1] < 24 or lists[12][1] < 16 or lists[13][1] < 4:
+		return {}
+
+	# Vertices (GS Z-up, float3).
+	var v_off: int = lists[3][0]
+	var nv: int = int(lists[3][1] / 12)
+	if nv == 0:
+		return {}
+
+	# Edges: 8-byte header, then uint32 pairs.
+	var e_off: int = lists[12][0]
+	var e_len: int = lists[12][1]
+	var n_edges: int = int((e_len - 8) / 8)
+
+	# Surfedges: signed int32.
+	var s_off: int = lists[13][0]
+	var n_surf: int = int(lists[13][1] / 4)
+
+	var textures := _read_texture_headers(data, lists, decode_textures)
+	if textures.is_empty():
+		textures = [{"name": "_default", "w": 8, "h": 8, "image": null}]
+
+	# Texinfo: s vec4, t vec4, texture index.
+	var t_off: int = lists[6][0]
+	var t_len: int = lists[6][1]
+	var n_texinfo: int = int(t_len / 64) if t_len >= 64 else 0
+	var texinfos: Array = []
+	for i in n_texinfo:
+		var b := t_off + i * 64
+		var s := [data.decode_float(b), data.decode_float(b + 4),
+				  data.decode_float(b + 8), data.decode_float(b + 12)]
+		var t := [data.decode_float(b + 16), data.decode_float(b + 20),
+				  data.decode_float(b + 24), data.decode_float(b + 28)]
+		var ti := data.decode_s32(b + 32)
+		if ti < 0 or ti >= textures.size():
+			ti = 0
+		texinfos.append([s, t, ti])
+
+	var f_off: int = lists[7][0]
+	var n_faces: int = int(lists[7][1] / 24)
+	var buckets := {}
+	var skipped := 0
+
+	for fi in n_faces:
+		var b := f_off + fi * 24
+		var first := data.decode_s32(b + 4)
+		var num := data.decode_s16(b + 8)
+		var ti := data.decode_s16(b + 10)
+
+		var poly := _poly_verts(data, s_off, n_surf, e_off, n_edges, nv, first, num)
+		if poly.is_empty():
+			skipped += 1
+			continue
+
+		var s_vec: Array
+		var t_vec: Array
+		var tex_idx: int
+		if ti >= 0 and ti < texinfos.size():
+			s_vec = texinfos[ti][0]
+			t_vec = texinfos[ti][1]
+			tex_idx = texinfos[ti][2]
+		else:
+			s_vec = [1.0, 0.0, 0.0, 0.0]
+			t_vec = [0.0, 1.0, 0.0, 0.0]
+			tex_idx = 0
+
+		var tex: Dictionary = textures[tex_idx]
+		var tw: int = tex["w"]
+		var th: int = tex["h"]
+
+		if not buckets.has(tex_idx):
+			buckets[tex_idx] = {"pos": [], "uv": [], "idx": [], "name": tex["name"]}
+		var bucket: Dictionary = buckets[tex_idx]
+		var base_idx: int = (bucket["pos"] as Array).size()
+
+		for vi in poly:
+			var p := _vec3(data, v_off + vi * 12)
+			bucket["pos"].append(_pos_to_godot(p))
+			# UVs are computed from the UNREMAPPED GS vertex, then divided by
+			# the texture size to reach 0..1. Using the Godot-space position
+			# here would shear every texture.
+			# Explicitly typed: element access on an untyped Array yields
+			# Variant, which `:=` cannot infer from.
+			var u: float = p[0] * s_vec[0] + p[1] * s_vec[1] + p[2] * s_vec[2] + s_vec[3]
+			var v: float = p[0] * t_vec[0] + p[1] * t_vec[1] + p[2] * t_vec[2] + t_vec[3]
+			if tw > 0:
+				u /= float(tw)
+			if th > 0:
+				v /= float(th)
+			bucket["uv"].append([u, v])
+
+		# Fan triangulate, winding flipped for right-handed Godot after the
+		# axis remap.
+		for k in range(1, poly.size() - 1):
+			bucket["idx"].append_array([base_idx, base_idx + k + 1, base_idx + k])
+
+	if buckets.is_empty():
+		return {}
+
+	return {
+		"buckets": buckets,
+		"textures": textures,
+		"faces": n_faces,
+		"skipped": skipped,
+		"verts": nv,
+	}
+
+
+## Walk a face's surfedges into an ordered vertex ring. Returns [] when the ring
+## does not close, matching the Python's `return None` (the caller counts it as
+## a skipped face rather than emitting broken geometry).
+static func _poly_verts(data: PackedByteArray, s_off: int, n_surf: int,
+		e_off: int, n_edges: int, nv: int, first: int, num: int) -> Array:
+	if num < 3 or first < 0 or first + num > n_surf:
+		return []
+
+	var pair := _edge_verts(data, e_off, n_edges, data.decode_s32(s_off + first * 4))
+	var vs: Array = [pair[0]]
+	var cur: int = pair[1]
+
+	for i in range(1, num):
+		var ei := data.decode_s32(s_off + (first + i) * 4)
+		var e := _edge_verts(data, e_off, n_edges, ei)
+		var a: int = e[0]
+		var b: int = e[1]
+		if a == cur:
+			vs.append(a)
+			cur = b
+		elif b == cur:
+			vs.append(b)
+			cur = a
+		else:
+			return []
+
+	if cur != vs[0] or vs.size() != num:
+		return []
+	for v in vs:
+		if v < 0 or v >= nv:
+			return []
+	return vs
+
+
+## Quake-style signed edge reference: positive uses the edge forward, anything
+## else uses it reversed. Index 0 takes the `else` branch and resolves to
+## edges[-1] -- Python's negative indexing, i.e. the LAST edge, not the first.
+## Reproducing that literally matters: treating it as edge 0 changes the ring.
+static func _edge_verts(data: PackedByteArray, e_off: int, n_edges: int, ei: int) -> Array:
+	var base := e_off + 8
+	if ei > 0:
+		var j := ei - 1
+		if j >= n_edges:
+			return [-1, -1]
+		return [data.decode_u32(base + j * 8), data.decode_u32(base + j * 8 + 4)]
+	var j := -ei - 1
+	if j < 0:
+		j += n_edges
+	if j < 0 or j >= n_edges:
+		return [-1, -1]
+	return [data.decode_u32(base + j * 8 + 4), data.decode_u32(base + j * 8)]
+
+
+## Texture table. Dimensions follow the Python's fallbacks exactly, because UVs
+## are divided by them: an invalid size yields a 4x4 placeholder, and an absent
+## texture list yields a single 8x8 "_default".
+static func _read_texture_headers(data: PackedByteArray, lists: Array, decode_pixels: bool) -> Array:
+	var o: int = lists[2][0]
+	var ln: int = lists[2][1]
+	if ln < 8:
+		return []
+	var count := data.decode_u32(o)
+	if count == 0 or count > 4096:
+		return []
+	var out: Array = []
+	for i in count:
+		var rel := data.decode_u32(o + 4 + i * 4)
+		var to := o + rel
+		if to + 40 > data.size():
+			break
+		var name := _c_str(data, to, 16)
+		var w := data.decode_s32(to + 16)
+		var h := data.decode_s32(to + 20)
+		var typ := data.decode_s32(to + 24)
+		if w <= 0 or h <= 0 or w > 4096 or h > 4096:
+			out.append({"name": name, "w": 4, "h": 4, "image": null})
+			continue
+		var img: Image = null
+		if decode_pixels:
+			img = _decode_texture(data, to + 40, w, h, typ)
+		out.append({"name": name, "w": w, "h": h, "image": img})
+	return out
+
+
+## A5 WMB usually stores RGB565+mips as type 40 (0x28). Colour index 0 is
+## transparent, matching the Python's `a = where(arr == 0, 0, 255)`.
+static func _decode_texture(data: PackedByteArray, off: int, w: int, h: int, typ: int) -> Image:
+	var base := typ & 7
+	var px := PackedByteArray()
+	px.resize(w * h * 4)
+
+	if base == 4:
+		if off + w * h * 3 > data.size():
+			return _flat_image(w, h, Color8(160, 80, 80, 255))
+		for i in w * h:
+			px[i * 4] = data[off + i * 3]
+			px[i * 4 + 1] = data[off + i * 3 + 1]
+			px[i * 4 + 2] = data[off + i * 3 + 2]
+			px[i * 4 + 3] = 255
+		return Image.create_from_data(w, h, false, Image.FORMAT_RGBA8, px)
+
+	if base == 5:
+		if off + w * h * 4 > data.size():
+			return _flat_image(w, h, Color8(160, 80, 80, 255))
+		return Image.create_from_data(w, h, false, Image.FORMAT_RGBA8,
+			data.slice(off, off + w * h * 4))
+
+	# RGB565 for base 2/0 and the type 10/40/42 forms, and as the fallback.
+	if off + w * h * 2 > data.size():
+		return _flat_image(w, h, Color8(160, 80, 80, 255))
+	for i in w * h:
+		var c := data.decode_u16(off + i * 2)
+		px[i * 4] = ((c >> 11) & 0x1F) * 255 / 31
+		px[i * 4 + 1] = ((c >> 5) & 0x3F) * 255 / 63
+		px[i * 4 + 2] = (c & 0x1F) * 255 / 31
+		px[i * 4 + 3] = 0 if c == 0 else 255
+	return Image.create_from_data(w, h, false, Image.FORMAT_RGBA8, px)
+
+
+static func _flat_image(w: int, h: int, c: Color) -> Image:
+	var img := Image.create(maxi(w, 1), maxi(h, 1), false, Image.FORMAT_RGBA8)
+	img.fill(c)
+	return img
+
+
+## Build a renderable ArrayMesh from read_brush() output -- one surface per
+## texture bucket, in sorted texture order to match the glTF the offline
+## pipeline emits.
+static func build_mesh(brush: Dictionary) -> ArrayMesh:
+	var mesh := ArrayMesh.new()
+	if brush.is_empty():
+		return mesh
+	var keys: Array = brush["buckets"].keys()
+	keys.sort()
+	for tex_idx in keys:
+		var b: Dictionary = brush["buckets"][tex_idx]
+		if (b["idx"] as Array).is_empty():
+			continue
+		var pos := PackedVector3Array()
+		for p in b["pos"]:
+			pos.append(Vector3(p[0], p[1], p[2]))
+		var uv := PackedVector2Array()
+		for t in b["uv"]:
+			uv.append(Vector2(t[0], t[1]))
+		var idx := PackedInt32Array(b["idx"])
+		var arrays := []
+		arrays.resize(Mesh.ARRAY_MAX)
+		arrays[Mesh.ARRAY_VERTEX] = pos
+		arrays[Mesh.ARRAY_TEX_UV] = uv
+		arrays[Mesh.ARRAY_INDEX] = idx
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+		mesh.surface_set_name(mesh.get_surface_count() - 1, str(b["name"]))
+	return mesh
 
 
 # ---------------------------------------------------------------------------
