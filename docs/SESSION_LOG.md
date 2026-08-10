@@ -8888,3 +8888,52 @@ new reader misbehaved in a confusing way this session -- a hang, a PASS with zer
 comparisons, and an immediate exit -- the cause was `:=` inferring from a Variant
 expression. Type the variable explicitly whenever the right-hand side indexes or
 iterates an untyped Array.
+
+## 2026-08-10 — Menu walls rendered as RGB static: WMB 8-bit textures decoded as RGB565
+
+Checked: took an actual screenshot of `res://scenes/main_menu.tscn` and looked at
+it, rather than trusting logs. Every wall and ceiling band was dense RGB static,
+identical across early and late frames, so a stable wrong decode rather than a
+one-frame glitch or an uninitialised first frame.
+
+Result: WMB texture type 40 (0x28) is used for BOTH RGB565 and 8-bit palettized
+textures. `_load_textures` assumed RGB565 for all of them; for an 8-bit texture
+that reads ~1.5x past the payload into unrelated file bytes, which renders as
+static. Menu.WMB's `black` has 102,000 bytes of payload: RGB565 would need
+153,600 and does not fit, while 8-bit + mips is 320x240 + mips = exactly 102,000.
+
+Measured across all 134 WMBs so the rule is not a heuristic: **984 textures, 978
+fit RGB565 exactly, 6 fit 8-bit exactly, 0 fit neither.** Payload size decides
+unambiguously. Both `tools/extract_wmb_mesh.py` and `scripts/engine/wmb_file.gd`
+now select on it, kept in lockstep so the oracle stays meaningful.
+
+The six affected are all named `black` -- Menu, Smash, Outro, Intro7, Intro8,
+LavaEnd2 -- and each is a single uniform palette index that `game_palette.raw`
+maps to pure RGB(0,0,0). Smash and Outro are levels currently under playtest.
+After the fix the menu walls are black and the Hebrew scrolling text on them,
+previously buried under noise, is legible. The regenerated GLBs all got SMALLER
+(Menu 812,652 -> 767,912 bytes), which corroborates it independently: solid
+black compresses far better than noise.
+
+**The trap worth remembering.** Fixing the GLB appeared to do nothing. Godot's
+glTF import extracts embedded textures to SIBLING PNG files
+(`Menu_brush_black.png`), those are committed, and regenerating the GLB does not
+refresh them -- the stale extract keeps winning. They had to be deleted and the
+project re-imported. Any future texture-level fix must delete the extracted
+sibling, not just regenerate the GLB.
+
+Two capture facts, both of which cost time here:
+- `--headless` CANNOT produce pixels in this project: it forces the dummy
+  rendering driver and `viewport.get_texture().get_image()` returns null. Use
+  `--write-movie <dir>\f.png` on a normal run and take a late frame.
+- That capture produces ALL-BLACK frames if the game window is MINIMIZED. The
+  window must be visible. An all-black capture is not evidence of a broken
+  scene: throughout, the scene logged `WmbLevelLoader: Menu spawned=8 skipped=0
+  brush=true` with zero errors. Nearly mistook this for a regression I had
+  caused.
+
+Separately: two Godot processes from an earlier screenshot run were left alive
+for ~100 minutes (376 s CPU, ~6% of a core). `tools/visual_check.gd` never
+quits by design, so anything launching it must kill it. No disk or data harm --
+scratch output was cleaned and free space actually rose -- but sweep for stray
+`Godot*` processes after any non-headless run.
