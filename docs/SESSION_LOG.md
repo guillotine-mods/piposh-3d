@@ -9289,3 +9289,271 @@ check, smoke_sky_brush_transparency_check (new), smoke_fog_check
 (extended), smoke_click_survey (16 levels, 307 clickables, zero script
 errors), smoke_smash_visuals_check, smoke_plane3_dome_scale_check --
 all green.
+
+## 2026-08-11 (GB-26/GB-27) -- root-caused Inn's black screen and two more
+corpus-wide "generic placeholder model, custom action name" gaps (a black
+ball instead of Piposh, and Piposh's own body never showing during a
+scripted third-person shot); fixed Map's mismatched background and the
+pee stream's still-wrong direction; investigated but didn't conclusively
+resolve Plane3's dark background and Plane2's takeoff-wing framing before
+the machine's own Windows session locked mid-session
+
+### Inn: black screen, then a black ball, then no Piposh
+
+User: "pressing on the Inn to start the level just shows a dark screen
+instead of showing the Inn." Reproduced live immediately (non-headless
+capture -- solid black window). Investigated headlessly first: `Inn`'s
+own `WorldEnvironment` looked completely normal (BG_SKY, real panorama,
+ambient light present) -- the DATA said the scene should be lit. The
+active camera, though, was `ScriptCamera` sitting at a position/rotation
+that didn't match the player's own spawn point at all. Traced the camera
+authority: Inn's own `action Watch` (a real, corpus-wide "camera marker"
+WDL pattern -- `while(1){camera.x=my.x;camera.y=my.y;...}`, no gating
+condition at all) is placed on a `Camera.MDL` entity, and this port's own
+camera-authority arbitration correctly favors any actively-writing script
+camera over the player's FP view -- so the render camera locks onto this
+entity's own position every tick, permanently, for the whole level.
+
+Checked whether this is even what the real game does, rather than assume
+it's wrong: launched the actual original engine (`Inn.exe`, same
+`piposh_3d_cursor` dgVoodoo2 environment as GB-24/25) and captured a real
+reference frame from this exact camera. It shows a normal, warmly-lit
+ceiling with recessed lights and patterned wallpaper -- not black. So the
+camera-follows-Watch behavior itself is correct/faithful; something else
+about THIS port's own handling of that specific entity was wrong.
+
+Checked the entity's own live transform: its origin (224, -83, 278) had
+drifted to (224, -66.96, 278) -- a ~16-unit lift from `_snap_mesh_feet_
+to_origin()`. `WmbLevelLoader._should_feet_snap()` already excludes
+camera placeholders from this correction (feet-snapping assumes an
+entity's origin is a floor/attachment point, wrong for a fixed camera
+marker whose own transform IS the shot), but the exclusion only ever
+checked `stem.to_lower() == "cam"` -- an exact match. This entity's own
+stem is "camera" (`Camera.MDL`), not "cam" (`Cam.MDL`) -- a different
+file, same intent, missed entirely. The ~16-unit lift was apparently
+enough to push the camera from "just below a low ceiling" into "inside
+the ceiling mesh" -- camera embedded in solid geometry, which renders as
+solid black (whatever surface it's inside of fills the whole view, and
+depending on winding/culling that can read as nothing rendering at all).
+
+Confirmed this isn't Inn-specific: grepped every level's own converted
+level JSON for `"file": "Camera.MDL"` and found 12 levels use it --
+AsyAct1/2/3, Cardgame, Desert, Fight, Inn, intro14, Smash, Taxi, VilEnd,
+VilInt. Every place this port already special-cased the "cam" stem
+(`_should_feet_snap`'s own exclusion, `_hide_meshes`'s "don't render a
+camera-rig blob" call, the FP-level "skip collision for camera props"
+check) had the exact same blind spot for "camera". Factored all three
+into a shared `_is_camera_stem()` helper matching both.
+
+Live re-test: Inn's black screen is gone, replaced by a normal, well-lit
+lobby/reception scene matching the reference capture (orange
+diamond-patterned walls, red carpet, reception desk, a glimpse of blue
+sky through a window). Also re-tested Taxi (also on the Camera.MDL list,
+also user-reported "doesn't show Piposh model on screen, I think it's a
+system-wide issue for parsing the WDL and WMB files") -- captured both of
+its own two Cam-driven angles live (a close dramatic wheel/taxi shot, and
+a wider street shot); Piposh is clearly visible riding the taxi in both.
+Didn't reproduce Taxi's own report as a currently-live bug, but given the
+shared root cause (also a Camera.MDL level) this is very likely the same
+fix, not a coincidence.
+
+User, immediately after the Inn fix landed: "there's no Piposh character
+in the Inn level, so what you did to fix was partial, and there's a
+black ball floating statically instaed." Two more real bugs, found via a
+headless dump of every Piposh/Camera/Dummy-named entity's own visibility
+state in a live Inn instance:
+
+- `Piposh_mdl_002` (the WED-placed player body, `action player_walkInn`)
+  had `visible=false` on every one of its mesh children. Traced to
+  `_spawn_entity()`'s own `move_view_1st GENIUS -- don't draw the player
+  body in FP` comment: correct for genuine first-person gameplay (you
+  don't see your own body), but a ONE-TIME, spawn-time decision --
+  doesn't account for a level like Inn that ALSO has a real scripted
+  third-person establishing shot (the same `action Watch` from above)
+  where an external viewer SHOULD see Piposh. Fixed by moving body
+  visibility from a static spawn-time flag into `CameraAuthority`'s own
+  per-frame script/FP arbitration -- when the authority switches to
+  SCRIPT, show the body (recursively, matching how `_hide_meshes()`
+  itself hides per-mesh, not just the parent); switch back to PLAYER_FP,
+  hide it again. `CameraAuthority.configure()` now takes an optional
+  `fp_body` node.
+
+- Four DIFFERENT entities, all `Dummy_mdl_NNN` (`Dummy.MDL`), were
+  `visible=true` -- exactly the "black ball floating statically" report.
+  `_hide_meshes()`'s own "hide this generic placeholder sphere" trigger
+  only ever matched `action.to_lower() == "dummy"` -- but Inn's own four
+  Dummy.MDL placements have real, level-specific custom action names
+  (RightEye, Quit, Flash, LimitIt), not literally "Dummy". Scanned the
+  full corpus for `"file": "Dummy.MDL"` and its neighboring `"action"`
+  field: dozens of distinct custom names across a dozen-plus levels --
+  Credits' own Torch (20 placements), InShrine's Light (13), intro10's
+  Flash (9), Mine's Gayser (8), Intro5's Creator (8), Fight's LightX (5),
+  Mansion's Fountain (4) and Exiter (3), and more -- one generic
+  placeholder MODEL reused corpus-wide for many different pieces of
+  level-specific trigger logic, each under its own action name, the
+  identical shape of problem as the camera-stem bug above. Added a stem
+  check (`stem.to_lower() == "dummy"`) alongside the existing action
+  check.
+
+Live re-test after both fixes: no black ball, Inn's exterior establishing
+shot renders cleanly (orange building, sidewalk, no stray spheres).
+Didn't get a live frame of the interior Watch shot specifically WITH
+Piposh in view before the machine locked (see below) -- the fix is
+verified correct by inspection and via the two component bugs it targets
+(both directly reproduced and independently confirmed fixed), just not
+re-confirmed against that one exact camera cut.
+
+### Map: mismatched 3D background behind a 2D screen
+
+User: "when we reach the MAP level, there's a background that doesn't
+seem related next to the map (which actually works well)." Confirmed
+directly: `Map.wdl` never calls `load_level()` anywhere in its own
+source -- it's a pure panel/UI screen (`panel pMap { bmap = map; ...}`,
+the actual world-map artwork, plus a set of location-icon panels drawn
+over it, matching Menu's own shape exactly). With no real 3D level ever
+loaded, the default `AcknexSky` treatment (a full sky dome + the generic
+`horizon.png` factory-skyline backdrop, used when a level isn't
+explicitly flagged "indoor") was still rendering full-screen behind the
+2D map artwork -- a real factory skyline with zero thematic relationship
+to a travel/location-select menu. Added "map" to `AcknexSky.apply()`'s
+own indoor list, alongside Menu/Credits/Studio/VilEnd (every other
+confirmed panel-only, no-`load_level()` screen already treated this way).
+
+### Pee stream: still pointing the wrong way
+
+User: "the pee still doesn't have the same path of flow like in the
+original game." GB-23 (earlier this session) already fixed the FORMULA
+(reading `stream()`'s own real, live-evaluated `MY_SPEED.X/Y/Z`
+expressions instead of a random burst) but only ever applied the raw
+GS->Godot axis remap to the result -- never rotated it by the emitting
+entity's own pan/tilt/roll. `MY_SPEED` in Acknex's own particle model is
+specified relative to the emitter (the same convention already
+established and fixed once this session for `move(ENT,dist,absdist)`'s
+own `dist` argument -- see `_do_move_call()`, GB-20), so without that
+rotation step the stream always pointed the exact same fixed WORLD
+direction no matter which way Piposh happened to be facing during the
+scene -- right only by coincidence at whatever angle it was first tuned
+against. Fixed `_particle_base_dir_for_action()` to take the emitting
+entity (`my`) and apply the identical `_acknex_entity_basis(pan,tilt,
+roll)` rotation `_do_move_call()` already uses, after the axis remap (a
+relative direction has to be rotated after remapping into Godot's own
+axis convention, not before). Threaded `my` through `_call()`'s own
+"emit" case and `_do_emit()`. Verified via `smoke_particle_texture_check.
+gd` (unaffected, still resolves Pee.png correctly) and
+`smoke_gib_debris_movement_check.gd` (unaffected -- gib debris has no
+`MY_SPEED` assignment of its own, still uses the random-burst fallback
+path, confirming the new rotation step doesn't change behavior for
+effects that never had directionality to begin with).
+
+### Investigated, not conclusively resolved this round
+
+**Plane3's dark background** ("the Plane3 background is dark, like the
+background itself"): reproduced live by forcing `Stage=2` directly via
+the WDL interpreter (`_set_var`, a new capability added to `tools/
+visual_check.gd` this round -- `stage=N`/`scene=N` cmdline modes) --
+solid black background during the fall sequence, Piposh's own falling
+sprite visible against it. Checked every value this session's own fog/
+sky fixes touch: panorama data correct (dark-navy-to-blue gradient,
+confirmed via direct pixel read on the LIVE running instance, not just
+an isolated call), `fog_sky_affect=0` (this round's own GB-25 fix, still
+applied), `fog_enabled=true` (expected, Plane3's own `main()` sets
+`camera.fog=10`), sky material rebuilt only once over 120 frames (ruling
+out a "never finishes baking because it keeps getting replaced" race).
+Tried to isolate fog as a variable directly (`tools/visual_check.gd`'s
+new `nofog` mode, forcing `fog_enabled=false` after the Stage force) but
+the machine's own Windows session locked between launching that test and
+capturing it -- confirmed genuinely locked (not a screensaver: a
+synthetic Alt-tap dismiss attempt didn't clear it, `CopyFromScreen`
+started throwing "handle invalid" intermittently, and repeat captures
+kept landing on the OS lock screen itself). Left open, real leads
+documented, no further live capture possible this round.
+
+**Plane2's takeoff wings** ("the wings appear after the plane starts to
+take off but not before... I think the issue is that the floor is a bit
+higher than it should"): forced `Stage=2` the same way and tried to get
+a clear look at the B747 and its surroundings via a manually-positioned
+camera, since the scripted `action CamPlane` shot is a wide, steep,
+constantly-drifting angle unsuited to inspecting a specific occlusion
+close up. First attempt (a one-time camera jump) got silently undone --
+`action CamPlane` writes `camera.x/y/z` every tick for the whole `Scene==
+2` duration, and this port's own camera-authority arbitration (correctly)
+re-asserts the script's own position every single frame, discarding a
+one-time override before an external screenshot could ever land on it.
+Fixed the METHODOLOGY, not just this one investigation: added a small
+always-on watcher node (`_process()`-based) that re-applies the manual
+override continuously, matching the update cadence of the thing it's
+overriding -- a reusable technique, not a one-off hack. Even with a
+persistent override, though, camera offsets of both 600 and 3200 units
+from the B747's own center still landed inside or immediately adjacent
+to its own geometry -- the model's own AABB is enormous (2824x650x2996
+units, a real 747-scale airliner), large enough that "a few hundred to a
+few thousand units away" isn't actually clear of it in every direction.
+Didn't get a genuinely unobstructed view of the wing/floor relationship
+before time ran out on this investigation. Left open.
+
+**Plane2 lighting** ("a bit too dark for what it should have been, but
+it does have some lighting, which is well") and **Smash lighting**
+("doesn't have lighting like the orig game") plus its own still-open
+ground-spread-on-impact report (carried over from GB-23): this round's
+own shadow/lighting turn-on (GB-25, same day) already applies uniformly
+to every level via shared code, not per-level tuning -- neither has been
+re-confirmed live against this SPECIFIC "still a bit dark" framing since
+that fix shipped. Smash's ground-spread report still has no corresponding
+WDL mechanism found near `action PiposhFall`'s own landing transition
+(re-checked, same conclusion as GB-23) -- still flagged as needing either
+a live repro moment or more specific detail before guessing at an
+entirely new visual mechanism.
+
+**Smash's "Yachdal" big screen** ("theres a big screen with yachdal video
+that should be a moving video but its just a static picture now"):
+`Yachdal.MDL` and `action Yachdal` are real, corpus-wide assets (a
+reusable crowd/spectator idle-animation action) -- but grepped the
+literal string "Yachdal" against `Smash.wdl`, every `WDL/*.wdl` shared
+library, and Smash's own converted level JSON, and it appears in NONE of
+them. The action is only ever used by Cardgame.wdl, Intro10.wdl, and
+Mansion.wdl. GB-23's own "Smash big screen shows a static picture" fix
+(the Wart-creature `create()`-as-billboard-sprite bridge) is confirmed
+still in place and unregressed (`_resolve_gfx_texture_by_stem`/`_do_
+create`'s own sprite-fallback path, checked directly in source). Given
+"Yachdal" genuinely doesn't belong to Smash in the source data at all,
+this specific report is most likely describing a DIFFERENT level's own
+big-screen moment (matching the corpus's real Yachdal usage, or Start's
+own crowd scene referenced early this whole multi-session arc)
+misattributed to Smash while playtesting several levels in sequence --
+flagged honestly as needing clarification on which level, rather than
+guessing at a mechanism that doesn't exist in Smash's own script.
+
+### Process note: the machine locked again, mid-investigation
+
+Same class of interruption as earlier this session (see the prior
+GB-25 entry's own process note): live non-headless verification (launch,
+bring to foreground, screenshot, read) worked for a while -- captured
+real, useful reference frames for Inn (both the original engine and this
+port, before and after each fix) and Taxi -- but the session locked again
+partway through the Plane3/Plane2 investigations. Also hit a second,
+unrelated interference this round: an already-running Chrome process
+(PID 50824, running continuously since 2026-08-03) was aggressively
+stealing foreground window focus every time the game window was brought
+forward, serving a rotating sequence of ad-link-bypass sites and, at
+several points, content that looked like a stolen/leaked private-photo
+aggregation site with real personal images -- flagged directly and
+clearly to the user as a likely security/privacy concern unrelated to
+this session's own work, separate from the lock-screen interruption.
+Worked around the focus-stealing (not the lock) via `SetWindowPos` with
+`HWND_TOPMOST`, which affects z-order/paint visibility rather than input
+focus and kept working even while that other process kept grabbing
+focus. Switched fully to headless verification once the session
+genuinely locked and stayed locked.
+
+### Git
+
+Pushed twice this round, both clean fast-forwards, no conflicts:
+Inn/camera-stem/Dummy-stem/body-visibility (GB-26) as its own commit,
+Map/pee-direction (GB-27, plus this doc update) as a second.
+
+Full regression sweep, run after every fix and again before each push:
+`smoke_dispatch` (19/19), `smoke_town_traffic_check`, `smoke_click_survey`
+(16 levels, 307 clickables, zero script errors), `smoke_plane2_playtest`
+(camera-authority regression, unchanged), `smoke_sky_brush_transparency_
+check`, `smoke_fog_check`, `smoke_particle_texture_check`, `smoke_gib_
+debris_movement_check` -- all green throughout.
