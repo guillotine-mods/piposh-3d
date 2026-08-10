@@ -20,6 +20,70 @@ this baseline is for the *unused* `WDL/menu.wdl` copy, see parse_wdl.py's
 top-level-file-wins dedup) are known-imperfect and out of scope; confirmed
 via include-graph search that none of these are referenced by any real
 level script.
+
+REBASELINE 2026-08-10 -- four entries (final/race/weather/war) were RAISED.
+Read this before assuming a bug was papered over.
+-------------------------------------------------------------------------
+This was NOT "the numbers moved, so update the numbers". The four counts
+below rose because commit a378bc0 (2026-08-01) made parse_wdl.py parse two
+constructs it had previously thrown away *silently*; the recorded baselines
+were last written in commit 0937726 (2026-07-28) and were never updated with
+it, so they had been describing a parser that no longer exists for nine days.
+Four independent checks, each of which alone would settle it:
+
+1. The committed assets already agree with the new numbers. Every one of the
+   85 files parses today to exactly the `skip_count` stored in the committed
+   `assets/converted/wdl_ast/<Stem>.json` (Final 2/2, Race 3/3, Weather
+   19/19, war 33/33 -- 0 files differing, and the stored `skipped` lists are
+   element-for-element identical too). The verifier's baselines disagreed
+   with the very artifacts the parser produces.
+2. Running the PRE-a378bc0 parser (`git show a378bc0^:tools/parse_wdl.py`)
+   over the same four sources reproduces 0 / 1 / 17 / 27 -- the four stale
+   baseline values, exactly. The baselines are a fingerprint of the old
+   parser, not of a healthy corpus.
+3. `verify_wdl_parse.py` itself is byte-identical (modulo line endings) to
+   its 0937726 version, i.e. nothing here was edited between then and now --
+   the drift is entirely on the parser side.
+4. Diffing the old and new skip LISTS shows only additions, never a lost
+   line: the parser did not start failing on anything it used to handle.
+
+What actually changed, per file, from that list diff:
+
+* final (0 -> 2), race (1 -> 3), weather (17 -> 19) -- a378bc0 added
+  `Parser.parse_panel()`, so `panel NAME { ... }` blocks now become real AST
+  data (they previously fell through the generic "unknown top-level
+  construct" path, which consumes a balanced brace group and records
+  NOTHING). Each of these three files has one panel field whose value is a
+  dotted engine reference -- `window ...,player.health` (Final.wdl:86),
+  `digits ...,player.lap` (Race.wdl:85), `DIGITS ...,camera.fog`
+  (Weather.wdl:43). `_parse_panel_atom()` has no dotted-reference form, so
+  the field errors out ("expected a name, got '.'") and the panel's own
+  closing `}` is then left at top level, producing the paired "stray '}'".
+  Hence exactly +2 each, in the same panel, every time.
+* war (27 -> 33) -- a378bc0 also added the bare top-level assignment branch
+  (`ident` followed by `=`/`+=`/...) so bindings like Range's
+  `on_mouse_left = Fire;` become executable statements. All six new war
+  entries are that shape and all are bit shifts the expression grammar does
+  not implement: `pap_pack1 += temp << 6;` (1977), `<< 12` (1986),
+  `<< 10` (2003), `<< 15` (2021), `<< 5` (2030), `>> 10` (2040). These lines
+  sit inside function bodies and are only seen at top level because an
+  earlier recovery already resynced there; before a378bc0 they were eaten by
+  the same silent unknown-decl skip.
+
+So both deltas are previously-INVISIBLE discards becoming visible, plus two
+genuine grammar gaps now named out loud: (a) dotted refs as panel field
+values, (b) the `<<`/`>>` operators. Neither is a parse regression, and
+neither is newly broken -- the data was being dropped before, just without a
+number attached. Fixing either gap is a parse_wdl.py change; when that
+happens these counts will DROP, and dropping is always allowed here.
+
+`war` is recorded as 33, NOT 20. The AST's `"skipped"` array is truncated by
+`p.skipped[:20]` in parse_wdl.py's `to_json()`, so `war.json` lists only 20
+lines -- but its sibling `"skip_count"` field records the true 33, and this
+verifier compares against `len(p.skipped)`, the uncapped in-memory list.
+Baselining war at 20 would leave the gate permanently red for no reason.
+Same cap applies to adept2/animate/venture, whose existing entries (38/29/32)
+are likewise the true counts, not the stored 20.
 """
 from __future__ import annotations
 
@@ -31,9 +95,11 @@ sys.path.insert(0, str(ROOT / "tools"))
 
 import parse_wdl as pw  # noqa: E402
 
-# Recorded 2026-07-28 after the stray-top-level-`}` recovery fix. A file not
-# listed here must parse with 0 skips; a listed file may not regress past
-# its recorded count.
+# Recorded 2026-07-28 after the stray-top-level-`}` recovery fix; four
+# entries refreshed 2026-08-10 for the a378bc0 parser changes (see the
+# REBASELINE note in the module docstring -- each of those four is marked
+# inline below). A file not listed here must parse with 0 skips; a listed
+# file may not regress past its recorded count.
 KNOWN_SKIPS = {
     "adept2": 38,
     "aftermin": 1,
@@ -49,6 +115,11 @@ KNOWN_SKIPS = {
     "doors": 18,
     "dutyfree": 2,
     "ending": 1,
+    # 2026-08-10: 0 -> 2 (was absent, i.e. implicitly 0). `panel bpwr`'s
+    # `window 5,5,19,346,bpwr,0,player.health;` (Final.wdl:86) -- dotted ref
+    # in a panel field, + the panel's orphaned `}`. Not a regression; see
+    # the REBASELINE note above.
+    "final": 2,
     # Genuine source typo, not a grammar gap: `if (player.health) > 0 { ... }`
     # -- an extra `)` after the condition, which then desyncs a few
     # subsequent stray-`}` recoveries. Confirmed 2026-07-27/28, not chasing
@@ -82,7 +153,10 @@ KNOWN_SKIPS = {
     "plane": 2,
     "plane2": 2,
     "plane3": 1,
-    "race": 1,
+    # 2026-08-10: 1 -> 3. `digits 250,60,1,standard_font,1,player.lap;`
+    # (Race.wdl:85) -- same dotted-ref-in-panel gap as final/weather, + the
+    # panel's orphaned `}`. Not a regression; see the REBASELINE note above.
+    "race": 3,
     "range": 1,
     "shiks": 1,
     "shooter": 1,
@@ -95,8 +169,17 @@ KNOWN_SKIPS = {
     "venture": 32,
     "vilend": 3,
     "vilint": 1,
-    "war": 27,
-    "weather": 17,
+    # 2026-08-10: 27 -> 33, and 33 is deliberate -- the AST's `skipped` list
+    # is capped at 20 by parse_wdl.py's `p.skipped[:20]`, but its
+    # `skip_count` field and this check both use the true, uncapped count.
+    # The six added lines are all `pap_pack1/2 += temp <</>> N;` bit shifts
+    # (war.wdl:1977/1986/2003/2021/2030/2040), newly *visible* via a378bc0's
+    # top-level bare-assignment branch. Not a regression; see above.
+    "war": 33,
+    # 2026-08-10: 17 -> 19. `DIGITS 065,25,3,standard_font,1,camera.fog;`
+    # (Weather.wdl:43) -- same dotted-ref-in-panel gap as final/race, + the
+    # panel's orphaned `}`. Not a regression; see the REBASELINE note above.
+    "weather": 19,
     "ziggy": 1,
 }
 
