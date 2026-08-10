@@ -70,7 +70,6 @@ func _init() -> void:
 			magic += char(src[i])
 		if magic == "IDPO":
 			idpo += 1
-			continue
 
 		var ref_bytes := _read("%s/%s.glb" % [REF, stem])
 		if ref_bytes.is_empty():
@@ -103,11 +102,11 @@ func _init() -> void:
 
 	print("")
 	print("=== MDL runtime reader vs Python oracle ===")
-	print("Conitec models   : %d" % (exact + differ + reader_err))
+	print("models compared  : %d" % (exact + differ + reader_err))
 	print("EXACT MATCH      : %d" % exact)
 	print("differ           : %d" % differ)
 	print("reader error     : %d" % reader_err)
-	print("IDPO (not ported): %d" % idpo)
+	print("  of which IDPO  : %d" % idpo)
 	print("no reference GLB : %d" % no_ref)
 	print("vertices compared: %d" % verts)
 	print("read time        : %.1f ms" % (read_usec / 1000.0))

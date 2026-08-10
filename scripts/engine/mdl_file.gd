@@ -53,7 +53,7 @@ static func read_mdl_bytes(data: PackedByteArray, stem: String,
 	for i in 4:
 		magic += char(data[i])
 	if magic == "IDPO":
-		return {"error": "IDPO (Quake) not supported by this reader yet"}
+		return _read_idpo(data, stem, decode_skins)
 	if not ["MDL2", "MDL3", "MDL4", "MDL5"].has(magic):
 		return {"error": "unsupported MDL magic %s" % magic}
 
@@ -238,6 +238,198 @@ static func read_mdl_bytes(data: PackedByteArray, stem: String,
 	}
 	_apply_yaw_allowlist(out, stem)
 	return out
+
+
+# ---------------------------------------------------------------------------
+# Quake IDPO
+# ---------------------------------------------------------------------------
+#
+# Port of `parse_quake_mdl`. This game stores Conitec-style skin types (RGB565,
+# RGBA4444) under an IDPO header as well as classic Quake 8-bit palette skins,
+# so the skin loop handles both. `orient_mesh_face_plus_x` is NOT ported: it
+# returns immediately because FACE_ORIENT is False, i.e. it is dead code that
+# deliberately relies on WED pan rather than skin-pixel guessing.
+
+static func _read_idpo(data: PackedByteArray, stem: String, decode_skins: bool) -> Dictionary:
+	if data.size() < 84:
+		return {"error": "truncated IDPO header"}
+
+	# Header "<4si10f9i": ident, version, scale[3], offset[3], radius, eye[3],
+	# then the nine counts.
+	var scale := [data.decode_float(8), data.decode_float(12), data.decode_float(16)]
+	var origin := [data.decode_float(20), data.decode_float(24), data.decode_float(28)]
+	var numskins := data.decode_s32(48)
+	var sw := data.decode_s32(52)
+	var sh := data.decode_s32(56)
+	var numverts := data.decode_s32(60)
+	var numtris := data.decode_s32(64)
+	var numframes := data.decode_s32(68)
+
+	if numverts <= 0 or numtris <= 0:
+		return {"error": "degenerate IDPO verts=%d tris=%d" % [numverts, numtris]}
+
+	var o := 84
+	var skins: Array = []
+	for _s in numskins:
+		if o + 4 > data.size():
+			break
+		var group := data.decode_s32(o)
+		o += 4
+		var img: Image = null
+		match group:
+			0:
+				# Classic Quake 8-bit palette skin.
+				if decode_skins:
+					img = null  # palette decode not ported yet; stride is what matters
+				o += sw * sh
+			1:
+				var nb := data.decode_s32(o)
+				o += 4
+				o += 4 * nb          # frame times
+				o += sw * sh * nb    # the frames themselves
+			2, 10:
+				if decode_skins:
+					img = _decode_skin(data, o, sw, sh, 2)
+				o += sw * sh * 2
+				if group == 10:
+					for div in [2, 4, 8]:
+						o += 2 * maxi(int(sw / div), 1) * maxi(int(sh / div), 1)
+			3, 11:
+				if decode_skins:
+					img = _decode_skin(data, o, sw, sh, 3)
+				o += sw * sh * 2
+				if group == 11:
+					for div in [2, 4, 8]:
+						o += 2 * maxi(int(sw / div), 1) * maxi(int(sh / div), 1)
+			_:
+				# Unknown: skip one 8-bit skin's worth to stay aligned.
+				o += sw * sh
+		skins.append({"w": sw, "h": sh, "image": img})
+	if skins.is_empty():
+		skins.append({"w": maxi(sw, 4), "h": maxi(sh, 4), "image": null})
+
+	# stverts: onseam, s, t (int32 each)
+	if o + numverts * 12 > data.size():
+		return {"error": "truncated IDPO stvert block"}
+	var st_off := o
+	o += numverts * 12
+
+	# triangles: facesfront, v0, v1, v2 (int32 each)
+	if o + numtris * 16 > data.size():
+		return {"error": "truncated IDPO triangle block"}
+	var tri_off := o
+	o += numtris * 16
+
+	# frames
+	var frames: Array = []
+	for _fi in numframes:
+		if o + 4 > data.size():
+			break
+		var typ := data.decode_s32(o)
+		o += 4
+		if typ == 0:
+			o += 8  # bbox min/max (2 x trivertx)
+			var name := _c_str(data, o, 16)
+			o += 16
+			if o + 4 * numverts > data.size():
+				break
+			frames.append([name, _idpo_frame(data, o, numverts, scale, origin)])
+			o += 4 * numverts
+		else:
+			var n := data.decode_s32(o)
+			o += 4
+			o += 8       # group min/max
+			o += 4 * n   # times
+			for gi in n:
+				if o + 8 + 16 + 4 * numverts > data.size():
+					break
+				o += 8
+				var nm := _c_str(data, o, 16)
+				o += 16
+				frames.append([nm, _idpo_frame(data, o, numverts, scale, origin)])
+				o += 4 * numverts
+
+	if frames.is_empty():
+		return {"error": "IDPO has no frames"}
+
+	# --- corners ------------------------------------------------------------
+	var corner_map := {}
+	var indices := PackedInt32Array()
+	var pos_idx_list := PackedInt32Array()
+	var uv_list: Array = []
+
+	for t in numtris:
+		var tb := tri_off + t * 16
+		var facesfront := data.decode_s32(tb)
+		var v0 := data.decode_s32(tb + 4)
+		var v1 := data.decode_s32(tb + 8)
+		var v2 := data.decode_s32(tb + 12)
+		# The legacy (det -1) map was a reflection, so authored winding already
+		# read correct after mirroring. FIX_IDPO uses a proper rotation
+		# (det +1), so winding must flip exactly once to keep faces outward.
+		for vi_v in [v0, v2, v1]:
+			# Explicitly typed: iterating an untyped Array literal yields
+			# Variant, and `:=` cannot infer from it.
+			var vi: int = vi_v
+			if vi < 0 or vi >= numverts:
+				continue
+			var sb := st_off + vi * 12
+			var onseam := data.decode_s32(sb)
+			var ss := data.decode_s32(sb + 4)
+			var tt := data.decode_s32(sb + 8)
+			if onseam != 0 and facesfront == 0:
+				ss += int(sw / 2)
+			var key := "%d:%d:%d:%d" % [vi, ss, tt, facesfront]
+			if not corner_map.has(key):
+				corner_map[key] = pos_idx_list.size()
+				pos_idx_list.append(vi)
+				uv_list.append([
+					(float(ss) + 0.5) / float(maxi(sw, 1)),
+					(float(tt) + 0.5) / float(maxi(sh, 1)),
+				])
+			indices.append(corner_map[key])
+
+	if indices.is_empty():
+		return {"error": "no valid IDPO triangles"}
+
+	var base: Array = frames[0][1]
+	var positions: Array = []
+	for i in pos_idx_list:
+		positions.append(base[i])
+
+	# Unlike the Conitec path, every frame is remapped with no length filter.
+	var remapped: Array = []
+	for fr in frames:
+		var p: Array = fr[1]
+		var rp: Array = []
+		for i in pos_idx_list:
+			rp.append(p[i])
+		remapped.append([fr[0], rp])
+
+	var out := {
+		"positions": positions,
+		"uvs": uv_list,
+		"indices": indices,
+		"frames": remapped,
+		"skins": skins,
+	}
+	_apply_yaw_allowlist(out, stem)
+	return out
+
+
+## One IDPO frame: uint8 xyz (4th byte is the normal index), scaled and offset
+## in float32, then remapped (x, y, z) -> (x, z, -y). That map is det +1, which
+## is why the triangle winding is flipped above.
+static func _idpo_frame(data: PackedByteArray, off: int, numverts: int,
+		scale: Array, origin: Array) -> Array:
+	var pos: Array = []
+	for v in numverts:
+		var vb := off + v * 4
+		var wx := _f32(_f32(float(data[vb]) * float(scale[0])) + float(origin[0]))
+		var wy := _f32(_f32(float(data[vb + 1]) * float(scale[1])) + float(origin[1]))
+		var wz := _f32(_f32(float(data[vb + 2]) * float(scale[2])) + float(origin[2]))
+		pos.append([wx, wz, -wy])
+	return pos
 
 
 ## The only sanctioned per-model correction. Applied to the base positions and
