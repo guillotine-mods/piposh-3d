@@ -162,6 +162,76 @@ func _make_sky_panorama(sky_img: Image, cloud_tex: Texture2D) -> Image:
 	return out
 
 
+## See `_spawn_scene_cylinder()`'s own docstring for why this exists
+## instead of a plain `CylinderMesh`. Open-ended (no caps -- matches the
+## old `cap_top=false, cap_bottom=false`), outward-facing normals/winding
+## so `CULL_FRONT` (set by the caller) hides the outside and shows the
+## inside, matching the old mesh's own visible-from-inside behavior.
+func _build_scene_cylinder_mesh(radius: float, height: float, radial_segments: int) -> ArrayMesh:
+	var verts := PackedVector3Array()
+	var normals := PackedVector3Array()
+	var uvs := PackedVector2Array()
+	var indices := PackedInt32Array()
+	var half_h := height * 0.5
+	for i in radial_segments + 1:
+		var t := float(i) / float(radial_segments)
+		var angle := t * TAU
+		var x := cos(angle) * radius
+		var z := sin(angle) * radius
+		var u := t * SCENE_REPEAT
+		verts.append(Vector3(x, half_h, z))
+		normals.append(Vector3(cos(angle), 0.0, sin(angle)))
+		uvs.append(Vector2(u, 0.0))
+		verts.append(Vector3(x, -half_h, z))
+		normals.append(Vector3(cos(angle), 0.0, sin(angle)))
+		uvs.append(Vector2(u, 1.0))
+	for i in radial_segments:
+		var top0 := i * 2
+		var bot0 := i * 2 + 1
+		var top1 := (i + 1) * 2
+		var bot1 := (i + 1) * 2 + 1
+		# Outward normal at this column ~ (cos, 0, sin); CCW as seen from
+		# outside (matching that normal, right-hand rule) is top0,bot0,bot1
+		# then top0,bot1,top1.
+		indices.append(top0)
+		indices.append(bot0)
+		indices.append(bot1)
+		indices.append(top0)
+		indices.append(bot1)
+		indices.append(top1)
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = verts
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	arrays[Mesh.ARRAY_INDEX] = indices
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return mesh
+
+
+## Reported live (2026-08-10), with a direct original-vs-port screenshot
+## comparison: the horizon in this port tiles as a broken, diagonally-
+## sheared repeating pattern, while the original shows the SAME texture
+## (`horizon1.png`, confirmed identical via direct pixel inspection --
+## a single coherent factory skyline with chimney smoke over water) once,
+## cleanly, filling the frame. Root cause: `CylinderMesh`'s own built-in
+## UV generation does NOT produce a clean U/V grid -- dumped its raw
+## `ARRAY_TEX_UV` data directly and confirmed each horizontal ring has a
+## DIFFERENT U phase offset than the ring above/below it (e.g. two
+## vertices at the same angular column but different heights land at
+## u=0.417 and u=0.229, not the same u), a spiral/shear baked into
+## Godot's own primitive-mesh algorithm (apparently meant for genuine
+## cone taper, degenerating into a uniform-but-nonzero per-ring twist even
+## with top_radius==bottom_radius). Combined with `uv1_scale.x`
+## repeating the texture `SCENE_REPEAT` times, that per-ring shear reads
+## exactly as the reported diagonal banding. Fixed by building the
+## cylinder's side surface as a hand-authored `ArrayMesh` instead of
+## relying on `CylinderMesh`'s own UV algorithm at all -- a simple ring of
+## quads with UVs computed directly (u = column/radial_segments *
+## SCENE_REPEAT, v = 0 at the top ring / 1 at the bottom, identical phase
+## at every height), guaranteeing a clean, non-sheared wrap regardless of
+## Godot's own primitive-mesh internals.
 func _spawn_scene_cylinder(scene_file: String, bounds: AABB) -> void:
 	var tex := _load_tex(scene_file)
 	if tex == null:
@@ -172,21 +242,18 @@ func _spawn_scene_cylinder(scene_file: String, bounds: AABB) -> void:
 	var y_center := center.y + height * 0.15
 	var mi := MeshInstance3D.new()
 	mi.name = "SceneMap"
-	var cyl := CylinderMesh.new()
-	cyl.top_radius = radius
-	cyl.bottom_radius = radius
-	cyl.height = height
-	cyl.radial_segments = 48
-	cyl.cap_top = false
-	cyl.cap_bottom = false
-	mi.mesh = cyl
+	mi.mesh = _build_scene_cylinder_mesh(radius, height, 48)
 	mi.position = Vector3(center.x, y_center, center.z)
 	var mat := StandardMaterial3D.new()
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat.cull_mode = BaseMaterial3D.CULL_FRONT
 	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 	mat.albedo_texture = tex
-	mat.uv1_scale = Vector3(SCENE_REPEAT, 1.0, 1.0)
+	# SCENE_REPEAT is already baked directly into the mesh's own UVs
+	# (_build_scene_cylinder_mesh()) -- no uv1_scale here, that would
+	# double-apply the repeat (SCENE_REPEAT^2 copies instead of SCENE_
+	# REPEAT). texture_repeat still needs to be on so values > 1.0 wrap
+	# instead of clamping to the texture's last-pixel-column edge.
 	mat.texture_repeat = true
 	# Reported live (2026-08-09, Smash): "the backgrounds... look like a
 	# weird cloud pattern with black background." These horizon strips

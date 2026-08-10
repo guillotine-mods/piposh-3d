@@ -675,8 +675,21 @@ func _resolve_bmap_texture(bmap_var_name: String) -> Texture2D:
 				break
 	if file == "":
 		return null
-	var stem := file.get_basename()
-	var candidates := [GFX_DIR + stem + ".png", GFX_DIR + stem.to_lower() + ".png", GFX_DIR + file]
+	return _resolve_gfx_texture_by_stem(file.get_basename(), file)
+
+
+## Given a bare stem (e.g. "Wart", from `create(<Wart.pcx>,...)`'s own
+## literal filename argument, get_basename()'d), finds the matching
+## converted PNG under assets/converted/gfx/ -- shared by
+## `_resolve_bmap_texture()` (which first resolves a `bmap` symbol name to
+## its own declared file) and `_do_create()`'s own bitmap-sprite fallback
+## (which already has a raw filename, no symbol indirection needed).
+## `full_file`, when given, is tried as a last-resort literal path (some
+## converted names don't lowercase-stem cleanly).
+func _resolve_gfx_texture_by_stem(stem: String, full_file: String = "") -> Texture2D:
+	var candidates := [GFX_DIR + stem + ".png", GFX_DIR + stem.to_lower() + ".png"]
+	if full_file != "":
+		candidates.append(GFX_DIR + full_file)
 	for path in candidates:
 		if ResourceLoader.exists(path):
 			var tex := load(path) as Texture2D
@@ -2561,6 +2574,22 @@ func _set_camera_field(low: String, value: Variant, my) -> void:
 			var fwd := _gs_view_forward(pan, tilt)
 			if fwd.length() > 0.001:
 				_camera.look_at(_camera.global_position + fwd, Vector3.UP)
+		"fog":
+			# Reported live (2026-08-10): "when Piposh falls there's fog...
+			# that don't exist in the current graphics." `camera.fog = N;`
+			# (11 corpus levels, e.g. Plane2/Plane3/Smash's own main(), and
+			# Plane2's own `camera.fog=0;` mid-level to disable it again)
+			# was entirely unbridged -- `_set_camera_field()`'s own match
+			# had no "fog" case at all, a silent no-op via GDScript's own
+			# "unmatched value, do nothing" behavior. Stored as camera meta
+			# here (same pattern as pan/tilt/roll) since this interpreter
+			# has no direct Environment reference of its own to apply it
+			# to -- `level_runner.gd`'s own live-poll loop (see its
+			# `_apply_wdl_fog()`) reads this meta and drives the real
+			# WorldEnvironment fog settings, the same "poll a value this
+			# layer can't reach the renderer with directly" shape already
+			# used for scene_map/sky_map/cloud_map.
+			_camera.set_meta("fog", _to_num(value))
 
 
 # ---------------------------------------------------------------------------
@@ -3892,6 +3921,12 @@ func _do_emit(quantity: float, pos_gs: Vector3, particle_action: String = "") ->
 	var n := clampi(int(quantity), 1, PARTICLE_MAX_QUANTITY)
 	var tex := _get_particle_texture_for_action(particle_action)
 	var real_tex: bool = tex != _get_particle_texture()
+	# See _particle_base_dir_for_action()'s own docstring. A real,
+	# evaluated direction (not the generic random-burst default) makes a
+	# directional effect like `stream()` (pee) actually read as a STREAM
+	# instead of an omnidirectional splash.
+	var base_dir := _particle_base_dir_for_action(particle_action)
+	var has_base_dir: bool = base_dir.length() > 0.001
 	for i in n:
 		var spr := Sprite3D.new()
 		spr.texture = tex
@@ -3906,13 +3941,87 @@ func _do_emit(quantity: float, pos_gs: Vector3, particle_action: String = "") ->
 		spr.modulate = Color(1, 1, 1, 0.95) if real_tex else Color(0.8, 0.87, 1.0, 0.85)
 		_particle_parent.add_child(spr)
 		spr.global_position = origin
-		var dir := Vector3(randf_range(-1.0, 1.0), randf_range(0.3, 1.0), randf_range(-1.0, 1.0)).normalized()
+		var jitter := Vector3(randf_range(-1.0, 1.0), randf_range(0.3, 1.0), randf_range(-1.0, 1.0))
+		var dir: Vector3 = (base_dir + jitter * 0.35).normalized() if has_base_dir else jitter.normalized()
 		_particles.append({
 			"node": spr,
 			"velocity": dir * randf_range(PARTICLE_SPEED_MIN, PARTICLE_SPEED_MAX),
 			"age": 0.0,
 			"lifetime": randf_range(PARTICLE_LIFETIME_MIN, PARTICLE_LIFETIME_MAX),
 		})
+
+
+## Reported live (2026-08-10): "the pee still isn't 'flowing' in the
+## right angle." The particle system's own default direction (a generic
+## random outward-and-up burst) is a reasonable approximation for a
+## splash/scatter effect (blood, sparks, debris), but wrong for a
+## genuinely DIRECTIONAL emitter -- Smash's own `function stream()`
+## (`action PipPee`'s particle function) computes a real, non-random
+## initial velocity for its "just born" particles: `MY_SPEED.X=-PeeStr+
+## jitter; MY_SPEED.Y=PeeStr+jitter; MY_SPEED.Z=PeeStr+jitter;` -- every
+## particle flies in roughly the SAME direction (scaled by `PeeStr`, a
+## real WDL global), which is what makes it read as a coherent stream
+## rather than a splash. Unlike `MY_MAP` (a static texture assignment,
+## same session, same section), this can't be read as a literal off the
+## AST -- `PeeStr` is a live global that changes over time (`PeeStr -=
+## 0.03*time;` while peeing) -- so this actually EVALUATES the found
+## expressions via `_eval()` at the moment `emit()` fires, using the
+## interpreter's own real global state, not a byte-faithful continuous
+## per-particle simulation (still out of scope, see this section's own
+## top-level docstring) but a real one-time read of the SAME formula the
+## original uses to seed each particle's own initial direction. Falls
+## back to the existing random-burst behavior (Vector3.ZERO here) for any
+## particle action with no MY_SPEED assignment found -- never a
+## regression for smoke/lava/blood/debris-style effects that were already
+## working as an omnidirectional scatter.
+func _particle_base_dir_for_action(action_name: String) -> Vector3:
+	if action_name == "":
+		return Vector3.ZERO
+	var resolved_fn := _resolve_function(action_name)
+	if resolved_fn == "":
+		return Vector3.ZERO
+	var exprs := _find_my_speed_assignments(_functions[resolved_fn].get("body", {}))
+	if exprs.is_empty():
+		return Vector3.ZERO
+	var vx := _to_num(_eval(exprs["x"], null)) if exprs.has("x") else 0.0
+	var vy := _to_num(_eval(exprs["y"], null)) if exprs.has("y") else 0.0
+	var vz := _to_num(_eval(exprs["z"], null)) if exprs.has("z") else 0.0
+	var dir_gs := Vector3(vx, vy, vz)
+	if dir_gs.length() < 0.001:
+		return Vector3.ZERO
+	return _gs_to_godot(dir_gs).normalized()
+
+
+## Depth-first search for `MY_SPEED.X`/`.Y`/`.Z` assignments in a
+## particle function's own body -- see _particle_base_dir_for_action().
+## Returns a dict of whichever axes were found (`{"x": expr, ...}`), raw
+## AST value-expression nodes (not evaluated here, by-reference like
+## _find_my_map_assignment()'s own "id" case).
+func _find_my_speed_assignments(node: Variant, into: Dictionary = {}) -> Dictionary:
+	if typeof(node) != TYPE_DICTIONARY:
+		return into
+	var t := str(node.get("t", ""))
+	if t == "expr_stmt":
+		return _find_my_speed_assignments(node.get("expr"), into)
+	if t == "assign" and str(node.get("op", "")) == "=":
+		var target = node.get("target")
+		if typeof(target) == TYPE_DICTIONARY and str(target.get("t", "")) == "field":
+			var obj = target.get("obj")
+			if typeof(obj) == TYPE_DICTIONARY and str(obj.get("t", "")) == "id" \
+					and str(obj.get("name", "")).to_lower() == "my_speed":
+				var axis := str(target.get("name", "")).to_lower()
+				if axis in ["x", "y", "z"] and not into.has(axis):
+					into[axis] = node.get("value")
+		return into
+	if t == "block":
+		for stmt in node.get("body", []):
+			_find_my_speed_assignments(stmt, into)
+		return into
+	if t == "if":
+		_find_my_speed_assignments(node.get("then"), into)
+		_find_my_speed_assignments(node.get("else"), into)
+		return into
+	return into
 
 
 ## Reported live (2026-08-10): "the pee animation is still not working
@@ -4448,17 +4557,52 @@ func _do_remove(a: Array, my) -> float:
 	return 0.0
 
 
+## Reported live (2026-08-10): "there's an animation that should run on
+## a big screen in the smash WDL that's just a single picture now" --
+## traced to Smash.wdl's own wart mini-game (`DialogChoice==3` inside
+## `DialogIndex==8`): its "wart counter" panel (`pWart.bmap=...`, a real
+## 2D overlay) already updates correctly through the existing panel-bmap
+## bridge (confirmed directly: calling `_set_panel_field` with each of
+## Wart1..Wart7 in turn genuinely swaps the rendered texture) -- the
+## actual missing piece is the wart CREATURES themselves, spawned via
+## `create(<Wart.pcx>,camera.x,Warty);` inside the same loop. `create()`
+## only ever resolved its 1st argument against `assets/converted/mdl/
+## {stem}.glb` -- a `.pcx`/bitmap argument (Acknex's own "spawn a sprite,
+## not a full 3D model" idiom, confirmed corpus-wide: `WDL/doors.wdl`'s
+## arrow marker, `WDL/venture.wdl`'s blood splats/fireballs, `WDL/war.wdl`'s
+## target-loc arrow all use the identical shape) silently failed to
+## resolve and returned null every time -- so the whole "screen" (really
+## the special `wartcamx` camera view this scene cuts to) showed nothing
+## moving at all except the counter icon, reading as "just a single
+## picture" instead of the intended animated wart-critter scene.
 func _do_create(a: Array, my) -> Node3D:
 	if a.size() < 1 or _loader == null:
 		return null
 	var stem := String(a[0]).get_basename()
 	var path := "res://assets/converted/mdl/%s.glb" % stem
-	if not ResourceLoader.exists(path):
-		return null
-	var packed := load(path)
-	if not (packed is PackedScene):
-		return null
-	var inst := (packed as PackedScene).instantiate() as Node3D
+	var inst: Node3D = null
+	var is_sprite := false
+	if ResourceLoader.exists(path):
+		var packed := load(path)
+		if not (packed is PackedScene):
+			return null
+		inst = (packed as PackedScene).instantiate() as Node3D
+	else:
+		var sprite_tex := _resolve_gfx_texture_by_stem(stem)
+		if sprite_tex == null:
+			return null
+		is_sprite = true
+		var spr := Sprite3D.new()
+		spr.name = "Sprite"
+		spr.texture = sprite_tex
+		# Acknex's own bitmap-`create()` entities are always billboard
+		# sprites (real per-instance "facing" props like Smash's own
+		# Warty, WDL/venture.wdl's blood splats) -- there's no 3D geometry
+		# to orient any other way.
+		spr.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		spr.shaded = false
+		spr.pixel_size = 0.5
+		inst = spr
 	if inst == null:
 		return null
 	var parent: Node = (my.get_parent() if my else null)
@@ -4479,10 +4623,11 @@ func _do_create(a: Array, my) -> Node3D:
 	# never goes through that spawn path at all. Without it, a retry
 	# reset would have nothing to put a runtime-created entity back to.
 	inst.set_meta("wdl_spawn_position", inst.global_position)
-	var anim := MdlAnimator.new()
-	anim.name = "MdlAnimator"
-	inst.add_child(anim)
-	anim.setup_from_stem(stem, inst)
+	if not is_sprite:
+		var anim := MdlAnimator.new()
+		anim.name = "MdlAnimator"
+		inst.add_child(anim)
+		anim.setup_from_stem(stem, inst)
 	inst.set_meta("action", str(a[2]) if a.size() > 2 else "")
 	inst.set_meta("wdl_skills", [])
 	var action := str(inst.get_meta("action", ""))

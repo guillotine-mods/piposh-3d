@@ -45,6 +45,8 @@ var _camera_authority := CameraAuthority.new()
 var _last_applied_scene_map := ""
 var _last_applied_sky_map := ""
 var _last_applied_cloud_map := ""
+## See `_apply_wdl_fog()`'s own docstring. -1.0 = "no value read yet".
+var _last_applied_fog := -1.0
 
 
 func _ready() -> void:
@@ -198,9 +200,51 @@ func _process(_delta: float) -> void:
 		or (live_cloud != "" and live_cloud != _last_applied_cloud_map)
 	):
 		_apply_wdl_sky(GameState.current_level)
+	_apply_wdl_fog()
 	if not _use_fp:
 		return
 	_camera_authority.update()
+
+
+## Reported live (2026-08-10): "when Piposh falls there's fog... that
+## don't exist in the current graphics." `camera.fog = N;` (11 corpus
+## levels, e.g. Plane2/Plane3/Smash's own main()) was entirely unbridged
+## in the interpreter before this session -- see `WdlInterpreter._set_
+## camera_field()`'s own "fog" case, which now stores the live value as
+## camera meta since the interpreter has no direct Environment reference
+## of its own. Polled continuously here (same shape as sky_map/cloud_map/
+## scene_map above) since some levels change it mid-level too (Plane2's
+## own `camera.fog=0;` partway through, to clear fog for a specific
+## moment).
+##
+## The exact numeric mapping from Acknex's own `camera.fog` value to
+## Godot's depth-fog distance is a reasoned guess, not a measured
+## constant -- headless Godot can't render a frame to tune it against a
+## real reference screenshot. `fog_color` (a real corpus global, always
+## seen set to a bare `1`) is NOT applied as a literal RGB tint: per this
+## session's own "VECTOR = SCALAR sets only .x" finding, `fog_color=1;`
+## would mean (red=1, green=0, blue=0) -- almost pure black in Acknex's
+## 0-100ish color scale, which reads as "boilerplate/unused legacy
+## default" rather than a deliberately authored dark-red fog, so a
+## neutral fog color is used instead of guessing at that literal value.
+func _apply_wdl_fog() -> void:
+	if _script_cam == null:
+		return
+	var raw = _script_cam.get_meta("fog", -1.0)
+	var value := float(raw)
+	if value == _last_applied_fog:
+		return
+	_last_applied_fog = value
+	var we := get_node_or_null("WorldEnvironment") as WorldEnvironment
+	if we == null or we.environment == null:
+		return
+	var env := we.environment
+	env.fog_enabled = value > 0.0
+	if value > 0.0:
+		env.fog_light_color = Color(0.65, 0.68, 0.72)
+		env.fog_light_energy = 1.0
+		env.fog_depth_begin = 0.0
+		env.fog_depth_end = clampf(60000.0 / value, 800.0, 20000.0)
 
 
 func _entity_mesh_aabb(root: Node3D) -> AABB:

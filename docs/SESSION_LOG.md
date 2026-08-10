@@ -8351,3 +8351,206 @@ scene_map_check`, `smoke_plane2_all_goals`, `smoke_plane2_playtest`,
 `smoke_town_traffic_check`, `smoke_particle_texture_check`, `smoke_emit_
 particles_check`, `smoke_genia_walk_percent_check`, `smoke_scan_path_
 gate`, `smoke_remove_race` -- all green.
+
+
+## 2026-08-10 (GB-23) -- found and fixed a real, corpus-wide horizon
+UV-shear bug via a direct screenshot comparison; added fog, real
+particle-flow direction, and bitmap-based create()
+
+Same-day follow-up after GB-21/GB-22 shipped. This time the user provided
+three screenshots: two from this port (Town, the Tofu-stand scene, two
+angles) and one from the ORIGINAL game at the exact same moment (visible
+screen-recorder overlay in the corner) -- the first time this session had
+a direct, byte-comparable reference to work from instead of reasoning
+from WDL source alone. That changed the whole approach: read the
+screenshots first, found the single most visually obvious difference,
+root-caused it concretely, then worked through the rest of the message's
+list.
+
+**The horizon's own diagonal tile pattern (the big one).** The port's two
+screenshots both show a broken, repeating DIAGONAL band pattern in the
+sky -- alternating strips of cloud-like texture and solid blue, running
+consistently from lower-left to upper-right. The original screenshot
+shows the SAME moment (identical trees, "Tofu" sign, scooter) with a
+completely different, coherent background: a smooth sky with a factory
+skyline silhouette (chimneys, smoke) at the horizon, no visible repeats
+or seams at all. First checked whether the SOURCE TEXTURE itself was
+wrong -- pulled `horizon1.png` (Town's own `scene_map`, confirmed via
+`wdl_meta.json`) and viewed it directly: a single, coherent, correctly-
+drawn factory skyline with chimney smoke over water, visually identical
+in content to what the original screenshot shows. So the texture was
+never the problem -- something in how it's mapped onto the horizon
+cylinder was.
+
+Wrote a small diagnostic that builds the exact same `CylinderMesh` this
+port uses (`AcknexSky._spawn_scene_cylinder()`, `top_radius=bottom_
+radius`, `radial_segments=48`) and dumps its own raw `ARRAY_TEX_UV` data
+directly (no rendering needed -- this is a data-correctness check, not a
+visual one). Found the smoking gun: two vertices at the SAME angular
+column but DIFFERENT heights land at different U values (e.g. u=0.417 at
+the top ring, u=0.229 at a lower ring, same column) -- every horizontal
+ring has its own, different U phase offset from the ring above/below it.
+This is a real quirk in Godot's own `CylinderMesh` UV-generation
+algorithm (most likely written for a general TRUNCATED CONE, where each
+ring legitimately needs a different circumference and therefore a
+different per-ring UV origin, and degenerating into a uniform-but-
+nonzero twist even when `top_radius==bottom_radius` makes it a true
+cylinder) -- not something tunable via any exposed `CylinderMesh`
+property. Combined with the existing `uv1_scale.x = SCENE_REPEAT` (6x
+horizontal tiling), that per-ring shear is exactly what reads as a
+diagonal band pattern once viewed from an angle.
+
+Fixed by not using `CylinderMesh` for this at all: added `AcknexSky.
+_build_scene_cylinder_mesh()`, a hand-authored `ArrayMesh` -- a simple
+ring of quads (48 segments, matching the old subdivision) with UVs
+computed directly (`u = column/radial_segments * SCENE_REPEAT`, `v=0` at
+the top ring / `v=1` at the bottom, identical U phase at every height by
+construction, no possibility of the same shear). Verified via a second
+diagnostic dumping the NEW mesh's own UV array: every column's top and
+bottom vertex now share the exact same U, and U increases evenly and
+monotonically all the way around (0.0 to 6.0 across 49 columns for 48
+segments). Also removed the now-redundant `mat.uv1_scale` (the repeat
+count is baked directly into the mesh's own UVs now -- leaving the old
+`uv1_scale` in place would have double-applied it, SCENE_REPEAT² instead
+of SCENE_REPEAT). New `smoke_scene_cylinder_uv_check.gd` asserts the
+no-shear property generically (every column's top/bottom U match, U is
+monotonic) so this can't silently regress. This is corpus-wide, not
+Town-specific -- every level with an outdoor `scene_map` cylinder was
+rendering this same shear; Town's screenshot just happened to be the one
+that made it undeniable.
+
+**Fog.** `camera.fog = N;` (11 corpus levels, including Smash's own
+`main()`, right where `PiposhFall` runs) and `fog_color` were entirely
+unbridged -- `WdlInterpreter._set_camera_field()`'s own `match` had no
+"fog" case at all, a silent no-op via GDScript's default "unmatched
+value, do nothing" behavior; confirmed via a plain corpus grep that
+nothing in the interpreter ever even mentioned "fog". Fixed: `_set_
+camera_field()` now stores the live value as camera meta (same pattern
+as pan/tilt/roll, since the interpreter has no direct `Environment`
+reference of its own to push it to); `level_runner.gd` gained a new `_
+apply_wdl_fog()`, polled continuously in `_process()` alongside the
+existing sky_map/cloud_map/scene_map polls, applying real Godot depth
+fog (`fog_enabled`/`fog_light_color`/`fog_depth_begin`/`fog_depth_end`)
+to the level's own `WorldEnvironment` whenever the polled value changes
+(covers Plane2's own `camera.fog=0;` mid-level toggle too). The exact
+numeric mapping from Acknex's own small `camera.fog` values (0/10/30
+seen in the corpus) to Godot's depth-fog distance is a reasoned,
+un-tuned guess -- flagged honestly in both the code comment and `docs/
+BUGS.md`, since headless Godot still can't render a frame to compare
+against a real reference for this specific effect. `fog_color` (always
+seen set to a bare `1` in the corpus) was deliberately NOT applied as a
+literal RGB tint -- per this session's own earlier "VECTOR = SCALAR sets
+only .x" finding (GB-20), that would mean (red=1, green=0, blue=0), all
+but pure black, which reads as unused boilerplate rather than a
+deliberate dark-red fog authoring choice; a neutral gray fog tint is used
+instead. Verified via new `smoke_fog_check.gd`: Plane3 (whose own
+`main()` sets `camera.fog=10;`) ends up with `fog_enabled=true` and a
+real, positive `fog_depth_end` on its own environment.
+
+**Pee flow angle, still wrong after the earlier texture fix.** GB-20
+fixed the pee particles' own COLOR (reading the real `Pee.png` bitmap
+instead of a generic tint) but left their DIRECTION alone -- the
+particle system's own default is a random outward-and-up burst, a
+reasonable approximation for splash/scatter effects (blood, sparks,
+debris) but wrong for `stream()` (Smash's own pee particle function),
+which computes a real, non-random initial velocity for each "just born"
+particle: `MY_SPEED.X=-PeeStr+jitter; MY_SPEED.Y=PeeStr+jitter; MY_
+SPEED.Z=PeeStr+jitter;` -- every particle flies in roughly the SAME
+direction (scaled by `PeeStr`, a real WDL global that decreases over
+time while peeing), which is what makes a real stream read as a stream
+instead of a splash. Unlike `MY_MAP` (a single, static texture-symbol
+assignment, safely read once off the AST without running any code --
+GB-20's own approach), this can't be read statically: `PeeStr` is a live
+global whose value changes over time, so the SAME static extraction
+technique would freeze the direction at whatever `PeeStr` happened to be
+at parse time (never, since parsing has no runtime state at all) rather
+than reflecting the real, current pee-strength. Added `_particle_base_
+dir_for_action()`: depth-first-searches the particle function's own body
+for `MY_SPEED.X`/`.Y`/`.Z` assignments (`_find_my_speed_assignments()`,
+same traversal shape as `_find_my_map_assignment()`), but this time
+EVALUATES the found expressions via the interpreter's own real `_eval()`
+at the moment `emit()` fires (using current global state, e.g. whatever
+`PeeStr` is right now) instead of just reading a literal identifier --
+still a one-time read per `emit()` call, not a byte-faithful continuous
+per-particle simulation (deliberately still out of scope, same reasoning
+as GB-20's own top-level docstring), but a real evaluation of the SAME
+formula the original uses to seed each particle's own initial direction.
+Blended with a reduced jitter term (0.35x, down from the old fully-
+random burst) so particles still fan out slightly rather than flying in
+one perfectly rigid line. Falls back to the old random-burst behavior
+(`Vector3.ZERO` base direction) for any particle action with no `MY_
+SPEED` assignment found -- never a regression for the smoke/lava/blood/
+debris-style effects that already read correctly as an omnidirectional
+scatter. Verified via a live trace: `PeeStr=5` evaluates to a real
+direction vector (`(-0.577, 0.583, -0.572)` roughly, matching `(-PeeStr,
+PeeStr, PeeStr)` normalized with jitter), and an unrelated/unknown
+particle-action name still correctly falls back to zero (generic burst).
+
+**"Big screen" showing a static picture in Smash.** Traced Smash.wdl's
+own wart mini-game (`DialogIndex==8`, `DialogChoice==3` -- a real, deep
+dialogue-choice-gated sequence) end to end. First found `panel pWart`
+(`bmap=Wart1;` initially, later reassigned to `Wart2` through `Wart7` as
+a `Warts` countdown decreases) -- confirmed directly, by calling `_set_
+panel_field` with each Wart bmap in turn, that this mechanism ALREADY
+works correctly (the panel's own texture genuinely swaps each time,
+using the exact same bridge GB-4 fixed for Range's HUD icons back on
+2026-08-03). So the "big screen" report wasn't about that panel at all
+-- it's about the actual 3D scene the wart-game camera (`wartcamx`) cuts
+to: `create(<Wart.pcx>,camera.x,Warty);`, called repeatedly inside the
+same loop to spawn animated "wart" critters (`action Warty`: random per-
+instance color/scale, a real WDL-driven random-walk while `Warts>0`,
+`remove(my)` once it hits zero) -- confirmed via a corpus grep that
+`create()` with a BITMAP argument (not an `.mdl`) is a real, if
+uncommon, Acknex idiom (also present, unreached by this game's actual
+level scripts, in `WDL/doors.wdl`'s arrow marker and `WDL/venture.wdl`'s
+blood splats/fireballs). `WdlInterpreter._do_create()` only ever resolved
+its 1st argument against `assets/converted/mdl/{stem}.glb` -- a `.pcx`
+argument never matched, silently returning null every single time, so
+the entire wart-critter scene showed literally nothing moving except the
+counter icon -- reading exactly as "just a single picture" instead of
+the intended lively animated scene.
+
+Fixed generically, not Smash-specific: when the `.glb` resolution fails,
+`_do_create()` now tries the SAME stem against `assets/converted/gfx/`
+(via a new, shared `_resolve_gfx_texture_by_stem()`, factored out of
+`_resolve_bmap_texture()`'s own existing candidate-path logic so both
+share one resolution path instead of duplicating it) and, if a real
+texture is found, spawns a genuine billboard `Sprite3D` (Acknex's own
+bitmap-`create()` entities are always billboards -- there's no 3D
+geometry to orient any other way) instead of returning null. The
+resulting entity flows through the exact same downstream machinery an
+MDL-based one does (parent assignment, position, `wdl_spawn_position`
+meta for retry-reset, action-coroutine start) except the `MdlAnimator`
+setup, which only makes sense for a real mesh. Verified via new `smoke_
+bitmap_create_check.gd`: calling `_do_create()` with `"Wart.pcx"` (after
+setting `Warts=100` so `action Warty`'s own `while(Warts>0){...} remove(
+my);` tail doesn't immediately self-destruct the fresh entity, exactly
+matching the real script's own `Warts=100;` right before it starts
+creating these) spawns a real, visible, billboard-enabled sprite with
+the correct texture, and its own `action Warty` coroutine genuinely
+starts and moves it via the normal generic entity-field-write path.
+
+**Ground spreading on smash-fall impact and shadows -- still open,
+honestly.** Grepped `Smash.wdl` for `emit`/`dust`/`impact`/`crack`/
+`shake` near `action PiposhFall` or its own landing/`MoviePhase`
+transition and found nothing at all -- the one `emit()` call anywhere
+near it (`action Vespa`, line 368) is the scooter's own unrelated
+exhaust-trail effect, not a ground/impact effect. No corresponding WDL
+anchor to fix against without more specific detail (which moment
+exactly, what it should look like) -- not guessed at blind. Shadows:
+GB-22's own directional light (added earlier the same day) is a
+structural first step, but every mesh in the game still has real shadow
+casting/receiving forced off (`_force_unshaded_if_needed()`) -- turning
+that on is a separate, higher-risk change (performance + visual quality
+on this corpus's low-poly models) still deferred, tracked under NB-3.
+
+Full regression sweep (generous per-test timeouts -- `smoke_dispatch
+--all` alone took ~150s this run, longer than earlier in the session,
+apparently just system load variance, not a real hang, confirmed by
+re-running with more time and getting the same 55/56 clean result):
+`smoke_dispatch --all`, `smoke_scene_cylinder_uv_check` (new), `smoke_
+sky_panorama_check`, `smoke_live_sky_poll_check`, `smoke_fog_check`
+(new), `smoke_bitmap_create_check` (new), `smoke_particle_texture_
+check`, `smoke_emit_particles_check`, `smoke_town_traffic_check`,
+`smoke_plane2_all_goals`, `smoke_gib_debris_movement_check`, `smoke_
+range_shoot` -- all green.
