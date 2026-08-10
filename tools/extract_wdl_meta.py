@@ -50,6 +50,28 @@ def _png_name(src: str) -> str:
     return f"{stem}.png".lower() if stem.lower() == stem.lower() else f"{stem}.png"
 
 
+# Strips `//` line comments and `/* ... */` block comments before any regex
+# scan runs. Found 2026-08-10 (GB-20 continued): AfterRac.wdl has a
+# commented-out `//bmap sky = <GOlfSKY.pcx>;` line that BMAP_RE matched
+# anyway (comments were never stripped), poisoning the single shared
+# `bmaps` dict this whole scan mutates across every file in corpus order
+# -- `Desert.wdl`/`Final.wdl`/`Intro3.wdl` all resolve their own real
+# `SKY_MAP = sky;` assignments to that poisoned "sky" -> GOlfSKY.pcx
+# entry instead of `WDL/Weather.wdl`'s real `BMAP sky = <sky.pcx>;`
+# (scanned later, too late to correct files already processed), silently
+# swapping in a fully-opaque, wrong-looking sky texture (a light cyan sky
+# with soft white clouds) in place of the intended one (99.9% transparent,
+# a handful of star-dot pixels) for those three levels specifically.
+_LINE_COMMENT_RE = re.compile(r"//[^\n]*")
+_BLOCK_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
+
+
+def _strip_comments(text: str) -> str:
+    text = _BLOCK_COMMENT_RE.sub("", text)
+    text = _LINE_COMMENT_RE.sub("", text)
+    return text
+
+
 def main() -> int:
     bmaps: dict[str, str] = dict(DEFAULT_BMAPS)
     levels: dict[str, dict] = {}
@@ -61,7 +83,7 @@ def main() -> int:
             files.extend(sorted(d.glob("*.WDL")))
 
     for path in files:
-        text = path.read_text(encoding="latin-1", errors="replace")
+        text = _strip_comments(path.read_text(encoding="latin-1", errors="replace"))
         for m in BMAP_RE.finditer(text):
             bmaps[m.group(1).lower()] = m.group(2)
 

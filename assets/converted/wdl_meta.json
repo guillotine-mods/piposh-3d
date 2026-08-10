@@ -377,7 +377,7 @@
       "scene_map_symbol": "horizon_map",
       "scene_map": "horizon.png",
       "sky_map_symbol": "sky",
-      "sky_map": "golfsky.png"
+      "sky_map": "sky.png"
     },
     "auftrag": {
       "script": "auftrag.wdl",
@@ -395,7 +395,7 @@
       "scene_map_symbol": "bmapback6",
       "scene_map": "horizon6.png",
       "sky_map_symbol": "sky",
-      "sky_map": "golfsky.png"
+      "sky_map": "sky.png"
     },
     "fight": {
       "script": "Fight.wdl",
@@ -407,7 +407,7 @@
       "scene_map_symbol": "bmapback1",
       "scene_map": "horizon1.png",
       "sky_map_symbol": "sky",
-      "sky_map": "golfsky.png"
+      "sky_map": "sky.png"
     },
     "intro11": {
       "script": "Intro11.wdl",
@@ -429,7 +429,7 @@
       "scene_map_symbol": "bmapback6",
       "scene_map": "horizon6.png",
       "sky_map_symbol": "sky",
-      "sky_map": "golfsky.png"
+      "sky_map": "sky.png"
     },
     "intro4": {
       "script": "Intro4.wdl",

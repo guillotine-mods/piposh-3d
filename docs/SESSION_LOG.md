@@ -8179,3 +8179,175 @@ panorama_check` (new), `smoke_audio_volume_settings_check`, `smoke_emit_
 particles_check`, `smoke_particle_texture_check` (new), `smoke_file_io_
 scene_map_check`, `smoke_town_traffic_check` (new), `smoke_scan_path_
 gate`, `smoke_shiks_dialog2_choice3` -- all green.
+
+
+## 2026-08-10 (GB-21/GB-22) -- fixed a real cross-file metadata-extraction
+bug, generalized sky_map/cloud_map to poll live for a level's whole
+runtime (not just scene_map for a bounded window), and added a first
+directional light; PiposhFall's own cyan/cloud report investigated at
+length but not conclusively reproduced
+
+Same-day follow-up after GB-20 shipped, on a fresh batch of reports: "the
+background in some places is still the wrong asset," "there's a cyan
+colored sky in the background where Piposh falls, that swaps to a cloud
+background and back, it should be the cloud," "there are layers
+missing... a vastly different background and sky for scenes and images
+that are not seen in the back that should be," and "the lighting effects
+are vastly different than the ones from the original game." Delegated
+the initial mapping to a research agent (find the "Piposh falls" scene,
+and catalogue every level that changes sky_map/cloud_map/scene_map
+mid-script vs. at main()-start-only) before touching any code, since the
+ask was broad ("re-verify ALL the backgrounds") and guessing per-level
+without that map first would have meant re-deriving the same ground
+several times over.
+
+**Wrong asset, corpus-wide.** The agent's report flagged `tools/extract_
+wdl_meta.py` as never stripping comments before scanning: `AfterRac.wdl`
+has `//bmap sky = <GOlfSKY.pcx>;`, commented out, but `BMAP_RE` matched
+it anyway (no comment-stripping existed at all). `bmaps` is a SINGLE
+dict this script mutates across every file in the corpus, scanned in a
+fixed order (main `piposh3d/` directory alphabetically, then `WDL/` as a
+second batch) -- so `bmaps["sky"]` got poisoned to `"GOlfSKY.pcx"` before
+`WDL/Weather.wdl`'s own real `BMAP sky = <sky.pcx>;` declaration was ever
+scanned (too late, in the second batch, to correct files already
+processed). `Desert.wdl`, `Final.wdl`, and `Intro3.wdl` each have their
+own real `SKY_MAP = sky;` assignment (`Desert.wdl`'s and `Final.wdl`'s in
+`main()`; `Intro3.wdl`'s inside its own local `lightning()`/`lightning1
+()`/`lightning2()` storm-flicker functions) -- all three resolved
+against the poisoned entry, silently getting a fully-opaque, plausible-
+but-wrong sky (`GOlfSKY.png`, viewed directly: a light cyan sky with soft
+white cloud shapes) instead of the real one (`sky.png`, confirmed in
+GB-20: 99.9% transparent, a handful of star-dot pixels). Fixed by
+stripping both `//` line comments and `/* */` block comments (confirmed
+both forms exist in the corpus, e.g. `AsyAct1.wdl` has 4 block comments)
+from each file's text before ANY regex scan runs -- not just the `BMAP_
+RE` one, since `SCENE_RE`/`SKY_RE` could just as easily hit a commented-
+out assignment too, even though no current corpus file happens to trigger
+that specific combination. Regenerated `assets/converted/wdl_meta.json`
+(`python tools/extract_wdl_meta.py`) -- a 4-line diff, confirming this
+was a narrow, well-contained fix: `desert`/`final`/`intro3` all now
+correctly show `"sky_map_symbol": "sky", "sky_map": "sky.png"`.
+
+**Missing layers / "not seen in the back."** The agent's report also
+found the real, deeper architectural gap: `sky_map`/`cloud_map` were
+NEVER live-polled at all, at any point in a level's runtime -- only
+`scene_map` had a live-value hook (`_live_scene_map_file()`, added in
+GB-18), and even that was bounded to a 300-frame (~5s) post-load window,
+sized specifically to catch `main()`'s own `wait(3)` settling delay. But
+several real, correctly-interpreted `WDL/Weather.wdl`-driven effects
+change `SKY_MAP`/`CLOUD_MAP` for the REST of a level's own runtime, well
+past that window: `Ziggy.wdl`'s own `function SetWeather()` (`if(Level==
+1){Storm();} if(Level==3){let_it_rain();} ...`), re-dispatched from
+`function UpdatePanel()` and a boss-defeat branch every single time the
+player clears a wave (`Level = Level + 1; SetLevel();`) -- a single
+loaded level that deliberately re-applies a new weather/sky look per
+internal wave, entirely disconnected from `main()`; `Desert.wdl`'s own
+Mansion-stage `storm()` and `Intro3.wdl`'s own `storm()` (both with
+local `lightning()/lightning1()/lightning2()` companions that cycle `SKY_
+MAP` through 4 different textures in a genuine forever-loop for as long
+as the storm runs); and `Mount.wdl`'s own `let_it_snow()`. The WDL
+interpreter genuinely executes every one of these correctly (confirmed:
+`_globals["SKY_MAP"]`/`["CLOUD_MAP"]` really do update live) -- none of
+it ever reached the actual rendered sky, since nothing ever read those
+two globals back out.
+
+Fixed by generalizing the existing scene_map-only mechanism:
+`_live_scene_map_file()` -> `_live_bmap_file(var_name: String)`, and
+`_process()` now polls all three of `scene_map`/`sky_map`/`cloud_map`
+continuously, for the level's entire runtime, not a bounded window --
+three cheap string reads and compares per frame is not worth special-
+casing away, and `_apply_wdl_sky()` (now taking `live_sky_map`/`live_
+cloud_map` alongside the existing `live_scene_map`) only does real work
+(clearing and rebuilding the sky dome + cylinder) when a value actually
+changed. `AcknexSky.apply()`'s own signature grew the same way, with
+`live_sky_map`/`live_cloud_map` overriding the static `wdl_meta.json`
+guess exactly like `live_scene_map` already did. Verified via new
+`smoke_live_sky_poll_check.gd`: forces `sky_map`/`cloud_map` to a
+DIFFERENT real bmap symbol several seconds into an already-loaded level
+(simulating what `storm()`/`SetWeather()` do mid-level) and confirms
+`LevelRunner` picks up the change on a later frame -- both `_last_
+applied_sky_map`/`_last_applied_cloud_map` correctly transition away from
+their level-load values.
+
+**PiposhFall's own cyan/cloud swap.** Chased this at length, and got the
+level wrong on the first pass: assumed it was Plane3's own `action
+PipFall` (a similarly-named, but unrelated, parachute-fall sequence
+involving `Dude`/`TheVase`) before the research agent's report pointed at
+the real one, `Smash.wdl`'s `action PiposhFall`. Independently (before
+the agent's report came back) spent real time on Plane3's own background
+system anyway: confirmed its `action Dome` (`BackDome.MDL`) has THREE
+real embedded skins in its `.skins` sidecar (pale cyan, dark navy, bright
+white -- extracted and inspected directly via a small Python script
+replicating `MdlAnimator._load_skins()`'s own binary format), that `my.
+skin=1;` (Acknex's own 1-based skin numbering) correctly maps to skin
+index 0 (the cyan one) via `MdlAnimator.set_skin()`'s own `if(i>=1){i-=1;}`
+conversion -- initially looked like a bug (a live trace showed `_skin_
+index` stuck at 0 despite `my.skin=1` being written) until re-deriving
+that this IS the correct, intended mapping, not a stuck value. Also
+confirmed Plane3's own `action Clouds`/`Clouds2` (real, drifting 3D cloud
+PROP entities, `GaGa.MDL`/`Cloud.MDL`, wrapping within a fixed altitude
+band) spawn and render correctly. None of this turned out to be the
+report's actual target level, but it's a real, verified piece of how
+Plane3's own background layering works, kept here for the record in case
+it's needed later.
+
+Once correctly on `Smash.wdl`: confirmed via a live trace that Smash's
+own `scene_map` resolves to `Horizon1.pcx` and stabilizes within the
+first ~3 real frames of level load and never changes again for the rest
+of a 400-frame (~6.5s) window -- ruling out a scene_map/sky_map flicker
+as the direct cause for THIS level (unlike the corpus-wide bug above,
+Smash's own `main()` has exactly one unconditional `scene_map=bmapBack1;`
+assignment, no branching). Traced `action PiposhFall`'s own gating
+(`while(MoviePhase==0){ if((player.skill2>0)&&(player.skill3<=5)){...} }`)
+and found it sits completely idle until `player.skill2` is set by a
+SEPARATE entity, `action Genia` (Genia physically walking up to and
+catching the player, setting `player.skill2=10` then `=20` once specific
+Z/Y proximity conditions are met) -- a multi-stage cutscene chain a
+synthetic headless trigger could only partially replicate (forcing `my.
+skill2=20` directly did make Piposh's own Z position start falling and
+`MoviePhase` correctly flip to 1 partway through, confirming the fall
+logic itself runs correctly end to end) without ever observing the
+CAMERA move at all across the whole traced window -- Smash has several
+separate camera entities (`Cam`/`Cam2`/`IntroCam`/`WartCam`) gated on
+`Stage`/`CamShow`/`MoviePhase` combinations the synthetic trigger didn't
+happen to hit. Left open, honestly: the most likely remaining
+explanation, by analogy to GB-20's own Plane2 wings finding, is a
+scripted camera actively swinging its own view angle between shots in a
+way that reveals more/less of the horizon-cylinder silhouette vs. open
+sky as MoviePhase/CamShow advance during the real trigger sequence -- not
+a background-swapping bug at all -- but this specific level's camera
+behavior during the real fall sequence was not directly observed, so
+this remains a documented, reasoned hypothesis, not a confirmed finding.
+
+**Lighting ("vastly different than the original").** Structural audit
+found the port has ZERO directional light sources anywhere -- every
+level is lit purely by flat ambient (`_ensure_environment()`'s own fixed
+color/energy) plus WMB-placed `OmniLight3D` point lights (`WmbLevelLoader.
+_spawn_light()`), with `cast_shadow`/`disable_receive_shadows` forced off
+on every mesh (`_force_unshaded_if_needed()`) -- matching the existing,
+previously-deprioritized NB-3 ("no shadows, doesn't match"). Checked
+whether Acknex's own WDL corpus has a real directional-light concept to
+match against: `WDL/lflare.wdl` does reference a `sun_pos` global (used
+by every level's lens-flare code, `lensflare_start()`), but grepped the
+whole corpus and found no script anywhere ever ASSIGNS it a value -- so
+there's no live per-level sun direction to read back and match, only a
+generic concept. Given no concrete repro detail (unlike the background
+reports, which named a specific level/moment) and no way to render a
+frame headless to compare against a reference screenshot, made a
+deliberately conservative, clearly-scoped first move rather than
+guessing at a full lighting rework: added one `DirectionalLight3D` (fixed
+angle, warm-neutral color, moderate energy chosen to complement rather
+than overpower the existing ambient/point-light look) with shadows left
+OFF (enabling those is a separate, higher-risk change needing real visual
+verification on this corpus's low-poly models, not a blind guess).
+Verified this doesn't regress dispatch or any existing test; flagged
+explicitly in `docs/BUGS.md` as a first-pass structural fix ("a
+directional light now exists where none did"), not a tuned, confirmed
+match to the original's own look.
+
+Full regression sweep: `smoke_dispatch --all` (55/56, unchanged), `smoke_
+sky_panorama_check`, `smoke_live_sky_poll_check` (new), `smoke_file_io_
+scene_map_check`, `smoke_plane2_all_goals`, `smoke_plane2_playtest`,
+`smoke_town_traffic_check`, `smoke_particle_texture_check`, `smoke_emit_
+particles_check`, `smoke_genia_walk_percent_check`, `smoke_scan_path_
+gate`, `smoke_remove_race` -- all green.

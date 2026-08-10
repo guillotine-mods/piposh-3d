@@ -31,13 +31,20 @@ var _use_fp := false
 var _player_cam: Camera3D
 var _camera_authority := CameraAuthority.new()
 
-## See _apply_wdl_sky()'s own docstring -- polled for this many frames
-## after level load (5s @ 60fps, generous enough for main()'s own
-## opening wait(3) plus a few more statements/frames before its own
-## scene_map assignment, without polling for the level's entire runtime).
-const SCENE_MAP_POLL_FRAMES := 300
-var _scene_map_poll_frames_left := SCENE_MAP_POLL_FRAMES
+## See _apply_wdl_sky()'s own docstring. Originally a short (300-frame)
+## post-load-only window sized for main()'s own opening wait(3), but
+## `sky_map`/`cloud_map` genuinely change for the REST of a level's
+## runtime in several real scripts (Ziggy's own per-wave `SetWeather()`,
+## Desert's Mansion-stage storm, Intro3's storm, Mount's snow -- all real,
+## ongoing `WDL/Weather.wdl`-driven effects, not one-shot setup) --
+## reported live (2026-08-10): "vastly different background and sky for
+## scenes... not seen in the back." Polls for the whole level's lifetime
+## now; three cheap string reads per frame is not worth special-casing
+## away, and `_apply_wdl_sky()` itself only does real work (clearing/
+## rebuilding the sky dome + cylinder) when a value actually changed.
 var _last_applied_scene_map := ""
+var _last_applied_sky_map := ""
+var _last_applied_cloud_map := ""
 
 
 func _ready() -> void:
@@ -182,11 +189,15 @@ func _is_cutscene(level: String) -> bool:
 ## affects what the player sees. Delegated to CameraAuthority (see
 ## docs/CONTRACT.md §4.1.1); fixed-camera-mode levels never call update().
 func _process(_delta: float) -> void:
-	if _scene_map_poll_frames_left > 0:
-		_scene_map_poll_frames_left -= 1
-		var live := _live_scene_map_file()
-		if live != "" and live != _last_applied_scene_map:
-			_apply_wdl_sky(GameState.current_level)
+	var live_scene := _live_scene_map_file()
+	var live_sky := _live_bmap_file("sky_map")
+	var live_cloud := _live_bmap_file("cloud_map")
+	if (
+		(live_scene != "" and live_scene != _last_applied_scene_map)
+		or (live_sky != "" and live_sky != _last_applied_sky_map)
+		or (live_cloud != "" and live_cloud != _last_applied_cloud_map)
+	):
+		_apply_wdl_sky(GameState.current_level)
 	if not _use_fp:
 		return
 	_camera_authority.update()
@@ -300,6 +311,27 @@ func _disable_player_controller() -> void:
 	player.global_position = Vector3(0.0, -10000.0, 0.0)
 
 
+## Reported live (2026-08-10): "the lighting effects are vastly different
+## than the ones from the original game." This port had NO directional
+## light source anywhere -- every level was lit purely by flat ambient
+## (`_ensure_environment()`'s own fixed color/energy) plus WMB-placed
+## `OmniLight3D` point lights (`WmbLevelLoader._spawn_light()`), and every
+## mesh has `cast_shadow`/`disable_receive_shadows` forced off
+## (`_force_unshaded_if_needed()`) -- the whole game is flat-lit with zero
+## directional shading or shadows, structurally, not per-level. Acknex
+## itself has a real directional "sun" concept (`WDL/lflare.wdl`'s own
+## `sun_pos`, read by every level's lens-flare code -- see
+## `lensflare_start()`), but no WDL script in this corpus ever assigns it
+## a value, so there's no live per-level direction to read back. Adds one
+## generic `DirectionalLight3D` (fixed angle, warm-neutral, moderate
+## energy so it complements rather than overrides the existing ambient +
+## WMB point lights) -- shadows deliberately left off, since enabling them
+## is a separate, higher-risk change (performance + visual quality on
+## this corpus's low-poly models) that needs to be verified visually, not
+## guessed at blind. This is a first-pass structural fix for "no
+## directional light at all", not a tuned match to a specific reference
+## screenshot -- flagged as such since headless Godot can't render a
+## frame to compare against the original directly.
 func _ensure_environment() -> void:
 	if has_node("WorldEnvironment"):
 		return
@@ -313,6 +345,15 @@ func _ensure_environment() -> void:
 	env.ambient_light_energy = 0.85
 	we.environment = env
 	add_child(we)
+
+	if not has_node("Sun"):
+		var sun := DirectionalLight3D.new()
+		sun.name = "Sun"
+		sun.light_color = Color(1.0, 0.96, 0.88)
+		sun.light_energy = 0.75
+		sun.shadow_enabled = false
+		sun.rotation_degrees = Vector3(-50.0, -35.0, 0.0)
+		add_child(sun)
 
 
 ## 2026-08-09: "some of the world backgrounds are not correct still."
@@ -368,24 +409,29 @@ func _apply_wdl_sky(level: String) -> void:
 	if we == null or we.environment == null or _acknex_sky == null:
 		return
 	_last_applied_scene_map = _live_scene_map_file()
-	_acknex_sky.apply(level, loader.level_bounds, we.environment, _last_applied_scene_map)
+	_last_applied_sky_map = _live_bmap_file("sky_map")
+	_last_applied_cloud_map = _live_bmap_file("cloud_map")
+	_acknex_sky.apply(
+		level, loader.level_bounds, we.environment,
+		_last_applied_scene_map, _last_applied_sky_map, _last_applied_cloud_map
+	)
 
 
 ## See _apply_wdl_sky()'s own docstring. Returns "" (meaning "no live
 ## value yet, fall back to the static wdl_meta.json guess") until the
 ## level's own WDL script has actually assigned a real `bmap` symbol to
-## `scene_map`.
-func _live_scene_map_file() -> String:
+## the given global (`scene_map`/`sky_map`/`cloud_map`).
+func _live_bmap_file(var_name: String) -> String:
 	var interp: Node = _director.get("_wdl_interp") if _director else null
 	if interp == null:
 		return ""
-	# `scene_map = bmapBack1;` -- the RHS is a bare `bmap` symbol name,
-	# not a string; `_get_var()` already resolves it to that symbol's own
+	# `sky_map = bsky;` -- the RHS is a bare `bmap` symbol name, not a
+	# string; `_get_var()` already resolves it to that symbol's own
 	# canonical name (GB-4, 2026-08-03), not the actual filename, so it
 	# still needs one more lookup through the interpreter's own `_bmaps`
 	# table (symbol name -> real file, e.g. "Horizon1.pcx") to get
 	# something AcknexSky._load_tex() can actually open.
-	var raw = interp.call("_get_var", "scene_map", null)
+	var raw = interp.call("_get_var", var_name, null)
 	if raw == null or typeof(raw) != TYPE_STRING or str(raw) == "":
 		return ""
 	var sym := str(raw)
@@ -397,6 +443,10 @@ func _live_scene_map_file() -> String:
 		if String(k).to_lower() == low:
 			return str(bmaps[k])
 	return ""
+
+
+func _live_scene_map_file() -> String:
+	return _live_bmap_file("scene_map")
 
 
 func _unhandled_input(event: InputEvent) -> void:

@@ -10,22 +10,37 @@ const SCENE_REPEAT := 6.0
 var _meta: Dictionary = {}
 
 
-## `live_scene_map`, when non-empty, overrides the static
-## `wdl_meta.json` guess for this level's own `scene_map`. Reported live
-## (2026-08-09): "some of the world backgrounds are not correct still."
-## `wdl_meta.json`'s own extraction takes whichever `scene_map = X;`
-## assignment appears textually LAST in a level's own source -- correct
-## for a level with one unconditional assignment, but wrong for one that
-## branches on runtime state (Desert.wdl picks one of six horizon
-## textures based on `Stage`, read from a save file at level start) --
-## the static guess always landed on the last `if` branch in the file
-## regardless of which one actually ran. `level_runner.gd`'s own
-## `_apply_wdl_sky()` now runs AFTER `_director.setup()` (previously
-## before it) specifically so it can pass the REAL WDL interpreter's own
-## live `scene_map` global here once that setup's own synchronous init
-## has actually run it -- see that call site's own comment for why this
-## is safe to rely on.
-func apply(level_name: String, bounds: AABB, env: Environment, live_scene_map: String = "") -> void:
+## `live_scene_map`/`live_sky_map`/`live_cloud_map`, when non-empty,
+## override the static `wdl_meta.json` guess for this level's own
+## `scene_map`/`sky_map`/`cloud_map`. Reported live (2026-08-09): "some of
+## the world backgrounds are not correct still." `wdl_meta.json`'s own
+## extraction takes whichever assignment appears textually LAST in a
+## level's own source -- correct for a level with one unconditional
+## assignment, but wrong for one that branches on runtime state
+## (Desert.wdl picks one of six horizon textures based on `Stage`, read
+## from a save file at level start) -- the static guess always landed on
+## the last `if` branch in the file regardless of which one actually ran.
+## `level_runner.gd`'s own `_apply_wdl_sky()` runs AFTER `_director.
+## setup()` and polls continuously for the rest of the level (not just a
+## short post-load window) specifically so this can pick up the REAL WDL
+## interpreter's own live values whenever they change -- see that call
+## site's own comment.
+##
+## `sky_map`/`cloud_map` didn't get this treatment at all until 2026-08-10
+## (GB-20 continued), reported live: "the background has the same weird
+## cloud pattern... vastly different background and sky for scenes...
+## not seen in the back." `WDL/Weather.wdl`'s own `storm()`/`lightning()`/
+## `let_it_snow()`/`SetWeather()`-style functions (Desert's Mansion stage,
+## Intro3, Mount, and Ziggy's own per-wave `SetWeather()` re-dispatch, all
+## confirmed via a full corpus grep) write `SKY_MAP`/`CLOUD_MAP` -- some
+## repeatedly, for the rest of the level, as a genuine ongoing weather
+## effect -- and the WDL interpreter genuinely executes all of it
+## correctly. None of it ever reached the actual rendered sky before this,
+## since only `scene_map` had a live-value hook at all.
+func apply(
+	level_name: String, bounds: AABB, env: Environment,
+	live_scene_map: String = "", live_sky_map: String = "", live_cloud_map: String = ""
+) -> void:
 	_clear_children()
 	_ensure_meta()
 	var key := level_name.to_lower()
@@ -35,6 +50,10 @@ func apply(level_name: String, bounds: AABB, env: Environment, live_scene_map: S
 	var level_meta: Dictionary = _meta.get("levels", {}).get(key, {})
 	if level_meta.has("sky_map") and str(level_meta["sky_map"]) != "":
 		sky_file = str(level_meta["sky_map"])
+	if live_sky_map != "":
+		sky_file = live_sky_map
+	if live_cloud_map != "":
+		cloud_file = live_cloud_map
 
 	_apply_sky_maps(env, sky_file, cloud_file)
 
