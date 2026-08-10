@@ -8774,3 +8774,83 @@ Found while doing it: `convert_gfx.py` writes every source to `<stem>.png`, but
 which one survives depends on ASCII case ordering (`CaseOff.bmp` loses to
 `caseoff.pcx`; `CLOUDS.PCX` loses to `Clouds.bmp`). 17 source images are silently
 discarded today. Filed as NB-7.
+
+## 2026-08-10 — 0-py migration: five runtime readers, each validated against the Python as an oracle
+
+Checked: the goal is to delete `tools/*.py` and read the original A5 files
+in-game, the way the Director player already reads .dir/.cst. The precondition
+was the full pipeline re-run earlier today, which proved conversion is a
+deterministic function of the original bytes -- that is what makes the committed
+output usable as an ORACLE. Every reader below is validated by decoding the
+originals in GDScript and comparing against the Python's committed output. None
+is "verified" by reading the code.
+
+Result, all committed on branch `pipeline-rerun-gfx-reader`:
+
+| reader | replaces | result |
+|---|---|---|
+| `gfx_bitmap.gd` | convert_gfx.py | 507 pixel-exact, 0 mismatched |
+| `wdl_parser.gd` | parse_wdl.py | 85/85 ASTs identical |
+| `wmb_file.gd` (objects) | extract_wmb_full.py | 134/134, 6,291 objects |
+| `wmb_file.gd` (brush) | extract_wmb_mesh.py | 134/134, 1,313,543 verts / 689,151 tris |
+| `mdl_file.gd` | convert_mdl.py (Conitec half) | 273/273 Conitec models, 161,077 verts |
+
+**Coverage is NOT complete.** 375 of 648 models are Quake IDPO and
+`parse_quake_mdl` is not ported; `mdl_file.gd` refuses IDPO explicitly rather
+than mis-decoding it, and the test counts them separately. Also unported:
+`write_mdlanim`/`write_skins` (animation clip + skin sidecars) and the GLB
+writers, which a runtime reader does not need.
+
+Measured throughput (desktop): WMB objects 215 MB/s; WMB brush ~177 ms/level;
+MDL ~42 ms/model; GFX 3.4 Mpx/s; WDL 0.43 MB/s. The binary readers are
+comfortably viable with no cache. The two text/per-pixel readers are ~100x
+slower per byte and want a first-run `user://` cache. Note runtime WDL parsing is
+roughly an order of magnitude slower than loading the pre-built AST JSON (Godot
+parses that in C++), so for WDL the cache is the design, not an optimisation.
+
+Five bugs that ONLY the oracles caught — each would have shipped as a subtle
+visual or behavioural defect:
+
+1. `convert_gfx.py` silently discards 17 source bitmaps: 17 stems exist as both
+   .bmp and .pcx, both write `<stem>.png`, and the survivor depends on ASCII
+   case ordering (`CaseOff.bmp` loses to `caseoff.pcx`, but `CLOUDS.PCX` loses
+   to `Clouds.bmp`). Filed NB-7. A converter bug, not a reader bug.
+2. WDL: three files whose strings printed character-for-character identically
+   but differed. `Path.read_text()` opens in TEXT mode, so Python applies
+   universal-newline translation before its lexer ever runs; a byte-exact
+   latin-1 read leaves `\r` alive inside multi-line literals.
+3. WMB: 44 levels "failed" by ~1e-14. The defect was in the REFERENCE path --
+   float32 -> Python float64 -> decimal text -> Godot's JSON parser, whose
+   decimal-to-binary conversion differs in the last double bit. Comparison now
+   runs at float32 precision, the precision the data actually has.
+4. MDL: 269 of 273 models differed by ~4e-6. numpy evaluates
+   `packed * scale + offset` on float32 ARRAYS, rounding after the multiply and
+   again after the add; GDScript rounds once in float64. Rounding at each step
+   fixed it. Small enough to dismiss as noise, large enough to be real.
+5. Python's `sort` is stable and GDScript's is not, so "prefer a Cam entity for
+   spawn" needed an explicit index tie-breaker or a different camera can win.
+
+Also worth recording, because it cost time twice: **a GDScript compile error in
+a dependency does not look like a compile error.** In `wmb_file.gd` it presented
+as `read_brush` hanging with no output (redirected stdout buffering hid the
+message); in `mdl_file.gd` it presented as the test reporting PASS having
+compared ZERO models. Both were `var x := <expr>` where the expression indexes an
+untyped Array and therefore yields Variant. Check stderr for "Parse Error:
+Cannot infer the type" before profiling or debugging anything else. The MDL test
+now fails explicitly when it compares nothing.
+
+Deliberately NOT done in these commits: face records are still read at bytes
+4-11 only, exactly as the Python does. Bytes 0-3 (plane index -> authored
+NORMAL, free) and 12-23 (light styles + lightmap offset) remain unread. That is
+the entire prize of doing this in-engine and it is now unblocked, but it cannot
+land in the same change that establishes parity -- the oracle can only prove
+equivalence while the reader reproduces the Python exactly.
+
+Also this session: deleted the stale orphans `wmb/Shiks.glb` and
+`wmb/Plane2.glb`, so `verify_gltf_strict` passes for the first time (782 files,
+0 failed). Confirmed safe first -- neither is referenced as a prop by any level
+(71 distinct .wmb props referenced, neither among them). Note PORTING_MANUAL 3.4
+is slightly wrong about this: `_find_wmb_glb("Shiks")` reaching the broken copy
+first applies to the PROP path only; level brushes resolve via
+`_resolve_brush_glb`, which probes `levels/<name>_brush.glb` FIRST
+(wmb_level_loader.gd:227). The broken file was already unreachable at runtime.
