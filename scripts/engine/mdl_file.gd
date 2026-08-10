@@ -7,22 +7,55 @@ extends RefCounted
 ##
 ## Deliberately NO `class_name` (see commit 5c0adfa). Use via `preload`.
 ##
-## SCOPE: Conitec MDL2/3/4/5 only. Quake IDPO (`parse_quake_mdl`, plus its
-## winding flip and the `_idpo_to_godot` det+1 map) is NOT ported yet and
-## `read_mdl` refuses it explicitly rather than mis-decoding it. The two
-## families share a convention but not a layout.
+## SCOPE: Conitec MDL2/3/4/5 and Quake IDPO (`parse_quake_mdl`, including its
+## winding flip and the `_idpo_to_godot` det+1 map). The two families share a
+## convention but not a layout, so they have separate entry points.
 ##
 ## Skins are always TRAVERSED even when not decoded: the UV and triangle blocks
 ## follow them in the byte stream, and skin width/height feed the UV half-texel
 ## offset. Getting the skin stride wrong silently corrupts the geometry that
 ## comes after it, which is far worse than a wrong-looking texture.
+##
+## All five skin encodings decode: 8-bit palette (through the embedded game
+## palette, see GAME_PALETTE_B64), RGB565, RGBA4444, BGR888 and BGRA8888.
 
 ## `extra_yaw_deg` from tools/mdl_yaw_allowlist.json, the ONLY sanctioned
 ## per-model exception mechanism (CONTRACT.md #2). Every row must be a
 ## human-confirmed measurement, never a heuristic's opinion.
 const YAW_ALLOWLIST_PATH := "res://tools/mdl_yaw_allowlist.json"
 
+## The game's 256x3 RGB palette, base64 of `tools/game_palette.raw`
+## (768 bytes, sha256 5d548a3a3f14b87236079891bf5aab06b5dd2e70f388af14a112304801350afc).
+##
+## EMBEDDED, not loaded from disk, because export_presets.cfg excludes
+## `tools/*` (and `original/*`) from every preset: neither
+## `res://tools/game_palette.raw` nor the `original/piposh3d/GFX/palette.pcx`
+## that `convert_mdl.py::_game_palette` falls back to exists in an exported
+## build, so a file read would silently degrade every 8-bit skin to the
+## grayscale fallback in shipped builds only. Regenerate with:
+##   python -c "import base64;print(base64.b64encode(open('tools/game_palette.raw','rb').read()).decode())"
+##
+## NOTE: `tools/quake_palette.py` is NOT the source. It is stale and broken --
+## its table holds 864 bytes (its own `assert len(PALETTE) == 768` fails on
+## import), it differs from game_palette.raw in 54 of the first 768 bytes, and
+## nothing in convert_mdl.py imports it. The oracle uses game_palette.raw.
+const GAME_PALETTE_B64 := \
+	"AAAADw8PHx8fLy8vPz8/S0tLW1tba2tre3t7i4uLm5ubq6uru7u7y8vL29vb6+vrDwsHFw8LHxcLJxsPLyMTNysXPy8XSzcb" + \
+	"UzsbW0MfY0sfa1Mfc1cfe18jg2cjj28jCwsPExMbGxsnJyczLy8/NzdLPz9XR0dnT09zW1t/Y2OLa2uXc3Oje3uvg4O7i4vL" + \
+	"AAAABwcACwsAExMAGxsAIyMAKysHLy8HNzcHPz8HR0cHS0sLU1MLW1sLY2MLa2sPBwAADwAAFwAAHwAAJwAALwAANwAAPwAA" + \
+	"RwAATwAAVwAAXwAAZwAAbwAAdwAAfwAAExMAGxsAIyMALysANy8AQzcASzsHV0MHX0cHa0sLd1MPg1cTi1sTl18bo2Mfr2cj" + \
+	"IxMHLxcLOx8PSyMTVysXYy8fczcjfzsrj0Mzn08zr2Mvv3cvz48r36sn78sf//MbCwcAGxMAKyMPNysTRzMbUzcjYz8rb0cz" + \
+	"f1M/i19Hm2tTp3tft4drw5N706OL47OXq4ujn3+Xk3OHi2d7f1tvd1Nja0tXXz9LVzdDSy83QycvNx8jKxcbIxMTFwsLDwcH" + \
+	"u3Ofr2uPo1+Dl1d3i09rf0tfc0NTaztLXzM/Uys3RyMrOx8jLxcbIxMTFwsLDwcH28O7y7Onv6Obr5eLo4d7l3tvh29fe2NT" + \
+	"a1dHX0s7Uz8zQzMnNysfJx8XGxMPDwsHb4N7Z3tvX3NnV2tfT2NXR1tPP1NHN0s/L0M3KzsvIzMnHysfFyMXDxsTCxMLBwsH" + \
+	"//Mb798X28sTy7cPu6cPq5cLm4MHi3MHe2MHa1MAW0cASzcAOysAKx8AGw8ACwcAAAD/CwvvExPfGxvPIyO/KyuvLy+fLy+P" + \
+	"Ly9/Ly9vLy9fKytPIyM/GxsvExMfCwsPKwAAOwAASwcAXwcAbw8AfxcHkx8HoycLtzMPw0sbz2Mr238745dP56tf779399OL" + \
+	"p3s7t5s3x8M35+NXf7//q+f/1///ZwAAiwAAswAA1wAA/wAA//OT//fH/v7+////"
+
 static var _yaw_cache: Dictionary
+
+## Decoded GAME_PALETTE_B64, 768 bytes. Lazily built once per run.
+static var _palette_cache: PackedByteArray
 
 ## Reusable 1-element buffer for float32 rounding. A fresh PackedFloat32Array
 ## per call would allocate millions of times across the corpus.
@@ -107,7 +140,11 @@ static func read_mdl_bytes(data: PackedByteArray, stem: String,
 				o += bpp * maxi(int(w / div), 1) * maxi(int(h / div), 1)
 
 	if skins.is_empty():
-		skins.append({"w": 4, "h": 4, "image": null})
+		# Python: Image.new("RGBA", (4, 4), (180, 180, 180, 255)).
+		skins.append({
+			"w": 4, "h": 4,
+			"image": _solid_skin(4, 4, 180, 180, 180, 255) if decode_skins else null,
+		})
 
 	var skin_w: int = skins[0]["w"]
 	var skin_h: int = skins[0]["h"]
@@ -280,12 +317,16 @@ static func _read_idpo(data: PackedByteArray, stem: String, decode_skins: bool) 
 			0:
 				# Classic Quake 8-bit palette skin.
 				if decode_skins:
-					img = null  # palette decode not ported yet; stride is what matters
+					img = _apply_quake_palette(data, o, sw, sh)
 				o += sw * sh
 			1:
+				# Group skin: N animation frames sharing one size. The oracle
+				# keeps only the FIRST frame (`raw[: skinwidth * skinheight]`).
 				var nb := data.decode_s32(o)
 				o += 4
 				o += 4 * nb          # frame times
+				if decode_skins:
+					img = _apply_quake_palette(data, o, sw, sh)
 				o += sw * sh * nb    # the frames themselves
 			2, 10:
 				if decode_skins:
@@ -302,11 +343,26 @@ static func _read_idpo(data: PackedByteArray, stem: String, decode_skins: bool) 
 					for div in [2, 4, 8]:
 						o += 2 * maxi(int(sw / div), 1) * maxi(int(sh / div), 1)
 			_:
-				# Unknown: skip one 8-bit skin's worth to stay aligned.
+				# Unknown: skip one 8-bit skin's worth to stay aligned. The
+				# oracle shows these raw indices as grayscale (index 0 clear),
+				# NOT through the game palette -- see _palette_skin.
+				if decode_skins:
+					img = _palette_skin(data, o, sw, sh)
+					if img == null:
+						img = _solid_skin(sw if sw != 0 else 4,
+								sh if sh != 0 else 4, 180, 180, 180, 255)
 				o += sw * sh
 		skins.append({"w": sw, "h": sh, "image": img})
 	if skins.is_empty():
-		skins.append({"w": maxi(sw, 4), "h": maxi(sh, 4), "image": null})
+		# Python: Image.new("RGBA", (skinwidth or 4, skinheight or 4),
+		# (180, 180, 180, 255)) -- `or 4` substitutes only for ZERO, so this is
+		# not maxi(sw, 4).
+		var fw := sw if sw != 0 else 4
+		var fh := sh if sh != 0 else 4
+		skins.append({
+			"w": fw, "h": fh,
+			"image": _solid_skin(fw, fh, 180, 180, 180, 255) if decode_skins else null,
+		})
 
 	# stverts: onseam, s, t (int32 each)
 	if o + numverts * 12 > data.size():
@@ -476,6 +532,8 @@ static func _decode_skin(data: PackedByteArray, off: int, w: int, h: int, base: 
 	var px := PackedByteArray()
 	px.resize(w * h * 4)
 	match base:
+		0:  # 8-bit palette index
+			return _apply_quake_palette(data, off, w, h)
 		2:  # RGB565
 			if off + w * h * 2 > data.size():
 				return null
@@ -511,8 +569,76 @@ static func _decode_skin(data: PackedByteArray, off: int, w: int, h: int, base: 
 				px[i * 4 + 2] = data[off + i * 4]
 				px[i * 4 + 3] = data[off + i * 4 + 3]
 		_:
-			return null
+			# Python: Image.new("RGBA", (max(w,1), max(h,1)), (200,200,200,255)).
+			return _solid_skin(w, h, 200, 200, 200, 255)
 	return Image.create_from_data(w, h, false, Image.FORMAT_RGBA8, px)
+
+
+# ---------------------------------------------------------------------------
+# 8-bit palette skins
+# ---------------------------------------------------------------------------
+
+## Decode GAME_PALETTE_B64 once. 768 bytes = 256 RGB triples.
+static func _game_palette() -> PackedByteArray:
+	if _palette_cache.size() != 768:
+		_palette_cache = Marshalls.base64_to_raw(GAME_PALETTE_B64)
+	return _palette_cache
+
+
+## Port of `convert_mdl.py::_apply_quake_palette`: 8-bit indices through the
+## real game palette, FULLY OPAQUE.
+##
+## Index 0 in this game's palette is plain black (0,0,0), the start of an
+## ordinary grayscale shading ramp -- NOT a colorkey sentinel. Treating it as
+## transparent punched real holes in character skins wherever the artist used
+## that ramp for eyebrows, pupils and hairlines ("heads are transparent",
+## docs/SESSION_LOG.md 2026-07-31). Only the degraded `_palette_skin`
+## fallback, which has no real colour data to trust, still keys index 0.
+static func _apply_quake_palette(data: PackedByteArray, off: int, w: int, h: int) -> Image:
+	if w <= 0 or h <= 0 or off < 0 or off + w * h > data.size():
+		return null
+	var pal := _game_palette()
+	if pal.size() < 768:
+		return _palette_skin(data, off, w, h)
+	var px := PackedByteArray()
+	px.resize(w * h * 4)
+	for i in w * h:
+		var p := int(data[off + i]) * 3
+		px[i * 4] = pal[p]
+		px[i * 4 + 1] = pal[p + 1]
+		px[i * 4 + 2] = pal[p + 2]
+		px[i * 4 + 3] = 255
+	return Image.create_from_data(w, h, false, Image.FORMAT_RGBA8, px)
+
+
+## Port of `convert_mdl.py::_palette_skin`: the no-real-palette fallback.
+## Index used directly as grayscale, index 0 transparent.
+static func _palette_skin(data: PackedByteArray, off: int, w: int, h: int) -> Image:
+	if w <= 0 or h <= 0 or off < 0 or off + w * h > data.size():
+		return null
+	var px := PackedByteArray()
+	px.resize(w * h * 4)
+	for i in w * h:
+		var v := data[off + i]
+		px[i * 4] = v
+		px[i * 4 + 1] = v
+		px[i * 4 + 2] = v
+		px[i * 4 + 3] = 0 if v == 0 else 255
+	return Image.create_from_data(w, h, false, Image.FORMAT_RGBA8, px)
+
+
+## Flat placeholder, matching the oracle's `Image.new("RGBA", ..., colour)`.
+static func _solid_skin(w: int, h: int, r: int, g: int, b: int, a: int) -> Image:
+	var iw := maxi(w, 1)
+	var ih := maxi(h, 1)
+	var px := PackedByteArray()
+	px.resize(iw * ih * 4)
+	for i in iw * ih:
+		px[i * 4] = r
+		px[i * 4 + 1] = g
+		px[i * 4 + 2] = b
+		px[i * 4 + 3] = a
+	return Image.create_from_data(iw, ih, false, Image.FORMAT_RGBA8, px)
 
 
 static func _c_str(b: PackedByteArray, o: int, n: int) -> String:
