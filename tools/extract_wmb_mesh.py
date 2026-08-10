@@ -76,7 +76,7 @@ def _rgb565_to_rgba(data: bytes, w: int, h: int) -> Image.Image:
     b = (arr & 0x1F) * 255 // 31
     a = np.where(arr == 0, 0, 255).astype(np.uint8)
     rgba = np.stack([r.astype(np.uint8), g.astype(np.uint8), b.astype(np.uint8), a], axis=-1)
-    return Image.fromarray(rgba, "RGBA")
+    return Image.fromarray(rgba)
 
 
 _GAME_PALETTE_PATH = ROOT / "tools" / "game_palette.raw"
@@ -107,7 +107,7 @@ def _palette8_to_rgba(data: bytes, w: int, h: int) -> Image.Image:
     rgb = pal[idx]
     # Index 0 transparent, matching the RGB565 path's colour-0 convention.
     a = np.where(idx == 0, 0, 255).astype(np.uint8)
-    return Image.fromarray(np.dstack([rgb, a]), "RGBA")
+    return Image.fromarray(np.dstack([rgb, a]))
 
 
 def _mip_bytes(w: int, h: int, bpp: int) -> int:
@@ -159,7 +159,7 @@ def _load_textures(data: bytes, lists: list[tuple[int, int]]) -> list[tuple[str,
                 rgba = np.concatenate(
                     [arr, np.full((h, w, 1), 255, dtype=np.uint8)], axis=-1
                 )
-                img = Image.fromarray(rgba, "RGBA")
+                img = Image.fromarray(rgba)
             elif base == 5:
                 raw = pix[: w * h * 4]
                 img = Image.frombytes("RGBA", (w, h), raw)

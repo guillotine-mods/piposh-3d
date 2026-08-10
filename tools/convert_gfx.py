@@ -66,7 +66,7 @@ def color_key_black(im: Image.Image, threshold: int = 0) -> Image.Image:
             & (rgba[:, :, 2] <= threshold)
         )
     rgba[mask, 3] = 0
-    return Image.fromarray(rgba, "RGBA")
+    return Image.fromarray(rgba)
 
 
 def convert_one(src: Path, dst: Path) -> bool:

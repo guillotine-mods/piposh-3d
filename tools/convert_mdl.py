@@ -78,7 +78,7 @@ def _rgb565_to_rgba(data: bytes, w: int, h: int) -> Image.Image:
     b = (arr & 0x1F) * 255 // 31
     a = np.full((h, w), 255, dtype=np.uint8)
     rgba = np.dstack([r.astype(np.uint8), g.astype(np.uint8), b.astype(np.uint8), a])
-    return Image.fromarray(rgba, "RGBA")
+    return Image.fromarray(rgba)
 
 
 def _rgba4444_to_rgba(data: bytes, w: int, h: int) -> Image.Image:
@@ -90,7 +90,7 @@ def _rgba4444_to_rgba(data: bytes, w: int, h: int) -> Image.Image:
     rgba = np.dstack(
         [r.astype(np.uint8), g.astype(np.uint8), b.astype(np.uint8), a.astype(np.uint8)]
     )
-    return Image.fromarray(rgba, "RGBA")
+    return Image.fromarray(rgba)
 
 
 def _palette_skin(data: bytes, w: int, h: int) -> Image.Image:
@@ -101,7 +101,7 @@ def _palette_skin(data: bytes, w: int, h: int) -> Image.Image:
     rgba[..., 1] = idx
     rgba[..., 2] = idx
     rgba[..., 3] = np.where(idx == 0, 0, 255)
-    return Image.fromarray(rgba, "RGBA")
+    return Image.fromarray(rgba)
 
 
 def _image_to_png_bytes(im: Image.Image) -> bytes:
@@ -452,7 +452,7 @@ def _apply_quake_palette(data: bytes, w: int, h: int) -> Image.Image:
         rgb = pal[idx]
         a = np.full((h, w), 255, dtype=np.uint8)
         rgba = np.dstack([rgb[..., 0], rgb[..., 1], rgb[..., 2], a])
-        return Image.fromarray(rgba, "RGBA")
+        return Image.fromarray(rgba)
     return _palette_skin(data, w, h)
 
 
@@ -528,11 +528,11 @@ def parse_conitec_mdl(f: BinaryIO, magic: bytes) -> MeshData:
         elif base == 4:
             arr = np.frombuffer(raw, dtype=np.uint8).reshape(h, w, 3)
             rgba = np.dstack([arr[..., 2], arr[..., 1], arr[..., 0], np.full((h, w), 255, np.uint8)])
-            skins.append(Image.fromarray(rgba, "RGBA"))
+            skins.append(Image.fromarray(rgba))
         elif base == 5:
             arr = np.frombuffer(raw, dtype=np.uint8).reshape(h, w, 4)
             rgba = np.dstack([arr[..., 2], arr[..., 1], arr[..., 0], arr[..., 3]])
-            skins.append(Image.fromarray(rgba, "RGBA"))
+            skins.append(Image.fromarray(rgba))
         else:
             skins.append(Image.new("RGBA", (max(w, 1), max(h, 1)), (200, 200, 200, 255)))
         if has_mips:

@@ -104,7 +104,7 @@ def soft_render(pos, uvs, skin_rgba: np.ndarray, size=512, view="front"):
     comp = (out[:, :, :3].astype(np.float32) * a + bg[:, :, :3].astype(np.float32) * (1 - a)).astype(
         np.uint8
     )
-    return Image.fromarray(comp, "RGB")
+    return Image.fromarray(comp)
 
 
 def skin_from_mesh(mesh) -> np.ndarray:
