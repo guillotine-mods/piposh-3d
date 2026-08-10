@@ -645,11 +645,58 @@ static func _read_texture_headers(data: PackedByteArray, lists: Array, decode_pi
 		if w <= 0 or h <= 0 or w > 4096 or h > 4096:
 			out.append({"name": name, "w": 4, "h": 4, "image": null})
 			continue
+
+		# Type 40 (0x28) is used for BOTH RGB565 and 8-bit palettized textures,
+		# so the type alone cannot distinguish them -- and decoding an 8-bit
+		# texture as RGB565 reads ~1.5x past its payload into unrelated file
+		# data, which renders as dense RGB static. Measured over all 134 WMBs:
+		# 984 textures, 978 fit RGB565 exactly, 6 fit 8-bit exactly, 0 fit
+		# neither, so the payload SIZE decides unambiguously.
+		var next_off: int = (o + data.decode_u32(o + 4 + (i + 1) * 4)) if i + 1 < count else (o + ln)
+		var avail := next_off - (to + 40)
+		var fits_565 := avail == w * h * 2 or avail == w * h * 2 + _mip_bytes(w, h, 2)
+		var fits_8bit := avail == w * h or avail == w * h + _mip_bytes(w, h, 1)
+
 		var img: Image = null
 		if decode_pixels:
-			img = _decode_texture(data, to + 40, w, h, typ)
+			if fits_8bit and not fits_565:
+				img = _decode_palette8(data, to + 40, w, h)
+			else:
+				img = _decode_texture(data, to + 40, w, h, typ)
 		out.append({"name": name, "w": w, "h": h, "image": img})
 	return out
+
+
+static func _mip_bytes(w: int, h: int, bpp: int) -> int:
+	var t := 0
+	for d in [2, 4, 8]:
+		t += bpp * maxi(int(w / d), 1) * maxi(int(h / d), 1)
+	return t
+
+
+## 8-bit palettized, using the same tools/game_palette.raw the converters use.
+## NOTE: tools/ is excluded from the export preset, so if this reader is ever
+## wired into the shipping game the palette must move somewhere included.
+static func _decode_palette8(data: PackedByteArray, off: int, w: int, h: int) -> Image:
+	if off + w * h > data.size():
+		return null
+	var pf := FileAccess.open("res://tools/game_palette.raw", FileAccess.READ)
+	if pf == null:
+		return null
+	var pal := pf.get_buffer(768)
+	pf.close()
+	if pal.size() < 768:
+		return null
+	var px := PackedByteArray()
+	px.resize(w * h * 4)
+	for i in w * h:
+		var idx := data[off + i]
+		px[i * 4] = pal[idx * 3]
+		px[i * 4 + 1] = pal[idx * 3 + 1]
+		px[i * 4 + 2] = pal[idx * 3 + 2]
+		# Index 0 transparent, matching the RGB565 path's colour-0 convention.
+		px[i * 4 + 3] = 0 if idx == 0 else 255
+	return Image.create_from_data(w, h, false, Image.FORMAT_RGBA8, px)
 
 
 ## A5 WMB usually stores RGB565+mips as type 40 (0x28). Colour index 0 is

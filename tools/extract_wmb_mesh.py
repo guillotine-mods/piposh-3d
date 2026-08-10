@@ -56,6 +56,41 @@ def _rgb565_to_rgba(data: bytes, w: int, h: int) -> Image.Image:
     return Image.fromarray(rgba, "RGBA")
 
 
+_GAME_PALETTE_PATH = ROOT / "tools" / "game_palette.raw"
+_game_palette_cache: np.ndarray | None = None
+
+
+def _game_palette() -> np.ndarray | None:
+    """256x3 RGB palette shared with convert_mdl.py."""
+    global _game_palette_cache
+    if _game_palette_cache is None:
+        try:
+            raw = _GAME_PALETTE_PATH.read_bytes()[:768]
+            if len(raw) == 768:
+                _game_palette_cache = np.frombuffer(raw, dtype=np.uint8).reshape(256, 3)
+        except Exception:  # noqa: BLE001
+            _game_palette_cache = None
+    return _game_palette_cache
+
+
+def _palette8_to_rgba(data: bytes, w: int, h: int) -> Image.Image:
+    need = w * h
+    if len(data) < need:
+        raise ValueError(f"8-bit skin truncated: need {need}, got {len(data)}")
+    pal = _game_palette()
+    if pal is None:
+        raise ValueError("game_palette.raw unavailable")
+    idx = np.frombuffer(data[:need], dtype=np.uint8).reshape(h, w)
+    rgb = pal[idx]
+    # Index 0 transparent, matching the RGB565 path's colour-0 convention.
+    a = np.where(idx == 0, 0, 255).astype(np.uint8)
+    return Image.fromarray(np.dstack([rgb, a]), "RGBA")
+
+
+def _mip_bytes(w: int, h: int, bpp: int) -> int:
+    return sum(bpp * max(w // d, 1) * max(h // d, 1) for d in (2, 4, 8))
+
+
 def _load_textures(data: bytes, lists: list[tuple[int, int]]) -> list[tuple[str, Image.Image]]:
     o, ln = lists[2]
     if ln < 8:
@@ -63,9 +98,9 @@ def _load_textures(data: bytes, lists: list[tuple[int, int]]) -> list[tuple[str,
     count = struct.unpack_from("<I", data, o)[0]
     if count == 0 or count > 4096:
         return []
-    offs = struct.unpack_from(f"<{count}I", data, o + 4)
+    offs = list(struct.unpack_from(f"<{count}I", data, o + 4))
     out: list[tuple[str, Image.Image]] = []
-    for rel in offs:
+    for i, rel in enumerate(offs):
         to = o + rel
         if to + 40 > len(data):
             break
@@ -76,10 +111,24 @@ def _load_textures(data: bytes, lists: list[tuple[int, int]]) -> list[tuple[str,
             continue
         base = typ & 7
         has_mips = bool(typ & 8)
-        # A5 WMB often stores RGB565+mips as type 40 (0x28): treat low bits / size heuristic.
         pix = data[to + 40 :]
+
+        # Type 40 (0x28) is used for BOTH RGB565 and 8-bit palettized textures,
+        # so the type alone cannot tell them apart — and assuming RGB565 for an
+        # 8-bit texture reads ~1.5x past its payload into unrelated file data,
+        # which renders as dense RGB static. Measured across all 134 WMBs: 984
+        # textures, 978 fit RGB565 exactly, 6 fit 8-bit exactly, 0 fit neither,
+        # so the payload SIZE decides it unambiguously. The 6 are all named
+        # "black" (Menu, Smash, Outro, Intro7, Intro8, LavaEnd2) and each is a
+        # single uniform palette index that game_palette.raw maps to pure black.
+        avail = (o + offs[i + 1] if i + 1 < len(offs) else o + ln) - (to + 40)
+        fits_565 = avail in (w * h * 2, w * h * 2 + _mip_bytes(w, h, 2))
+        fits_8bit = avail in (w * h, w * h + _mip_bytes(w, h, 1))
+
         try:
-            if base in (2, 0) or typ in (10, 40, 42):
+            if fits_8bit and not fits_565:
+                img = _palette8_to_rgba(pix, w, h)
+            elif base in (2, 0) or typ in (10, 40, 42):
                 img = _rgb565_to_rgba(pix, w, h)
             elif base == 4:
                 raw = pix[: w * h * 3]
