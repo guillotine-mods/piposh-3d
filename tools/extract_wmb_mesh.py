@@ -6,9 +6,32 @@ WMB5 list layout (Acknex A5):
   L2  textures (RGB565 + mipmaps, type 40)
   L3  vertices (float3, GS Z-up)
   L6  texinfo (64 bytes: s/t vec4 + texture index …)
-  L7  faces (24 bytes: … firstedge, numedges, texinfo, …)
+  L7  faces (24 bytes, see below)
   L12 edges (8-byte header + uint32 v0,v1 pairs)
   L13 surfedges (int32, Quake-style signed edge refs)
+
+Face record (24 bytes), field offsets measured by tools/normals_probe.py over
+all 134 WMBs — PORTING_MANUAL.md §3.3(a) guessed bytes 0-3 for the plane
+index; the measurement puts it at bytes 20-23:
+
+     0..1   uint16  unidentified
+     2..3   uint16  SIDE flag, only ever 0 or 1
+     4..7   int32   firstedge
+     8..9   int16   numedges
+    10..11  int16   texinfo
+    12..15  4 bytes light styles (0xFFFFFFFF == unused)
+    16..19  int32   lightmap offset (-1 == none)   [Phase 2 step 2, unused here]
+    20..23  int32   PLANE INDEX into L1
+
+Outward normal, Quake dface_t convention (verified: 580/668 faces of compact
+solid prop brushes point away from the brush centroid; the only two
+majority-inward brushes are FlyBor and Stomach, which are hulls you stand
+*inside*):
+
+    n_gs = +plane.normal  if side == 0
+    n_gs = -plane.normal  if side == 1
+
+Emitted only with --normals (default off).
 """
 from __future__ import annotations
 
@@ -156,7 +179,32 @@ def _png_bytes(img: Image.Image) -> bytes:
     return buf.getvalue()
 
 
-def extract_brush(data: bytes) -> dict | None:
+def _read_planes(data: bytes, lists: list[tuple[int, int]]) -> np.ndarray:
+    """L1 as an (n, 4) array of (normal.xyz, dist); 20-byte stride, type ignored."""
+    off, ln = lists[1]
+    n = ln // 20
+    if n <= 0 or off + n * 20 > len(data):
+        return np.zeros((0, 4))
+    raw = np.frombuffer(data[off : off + n * 20], dtype=np.uint8).reshape(n, 20)
+    return raw[:, :16].copy().view("<f4").astype(np.float64)
+
+
+def _newell(pts: np.ndarray) -> np.ndarray:
+    """Unit normal of a polygon loop, right-hand rule (CCW loop -> +normal)."""
+    a = pts
+    b = np.roll(pts, -1, axis=0)
+    n = np.array(
+        [
+            float(np.sum((a[:, 1] - b[:, 1]) * (a[:, 2] + b[:, 2]))),
+            float(np.sum((a[:, 2] - b[:, 2]) * (a[:, 0] + b[:, 0]))),
+            float(np.sum((a[:, 0] - b[:, 0]) * (a[:, 1] + b[:, 1]))),
+        ]
+    )
+    ln = float(np.linalg.norm(n))
+    return n / ln if ln > 1e-12 else np.zeros(3)
+
+
+def extract_brush(data: bytes, normals: bool = False) -> dict | None:
     if data[:4] not in (b"WMB4", b"WMB5", b"WMB6"):
         return None
     lists = _read_lists(data)
@@ -193,6 +241,10 @@ def extract_brush(data: bytes) -> dict | None:
         if tex_idx < 0 or tex_idx >= len(textures):
             tex_idx = 0
         texinfos.append((s, t, tex_idx))
+
+    planes = _read_planes(data, lists) if normals else np.zeros((0, 4))
+    n_planes = len(planes)
+    n_from_plane = n_from_winding = n_fallback = 0
 
     f_off, f_len = lists[7]
     n_faces = f_len // 24
@@ -257,14 +309,49 @@ def extract_brush(data: bytes) -> dict | None:
             tex_idx = 0
         name, img = textures[tex_idx]
         tw, th = img.size
-        bucket = buckets.setdefault(tex_idx, {"pos": [], "uv": [], "idx": [], "name": name})
+        bucket = buckets.setdefault(
+            tex_idx, {"pos": [], "uv": [], "nrm": [], "idx": [], "name": name}
+        )
         base_idx = len(bucket["pos"])
+
+        n_god = None
+        if normals:
+            # Authored plane normal first; fall back to the face's own winding
+            # only if the plane index is unusable (never observed in the 134
+            # shipped WMBs, but the GLB must stay valid regardless).
+            pidx = struct.unpack_from("<i", data, base + 20)[0]
+            side = struct.unpack_from("<H", data, base + 2)[0]
+            n_gs = None
+            if 0 <= pidx < n_planes:
+                pn = planes[pidx, :3]
+                ln = float(np.linalg.norm(pn))
+                if ln > 1e-9:
+                    n_gs = (pn / ln) if side == 0 else (-pn / ln)
+                    n_from_plane += 1
+            if n_gs is None:
+                # -Newell: WMB polygons wind CW about their outward normal.
+                w = -_newell(verts_gs[poly].astype(np.float64))
+                if float(np.linalg.norm(w)) > 0.5:
+                    n_gs = w
+                    n_from_winding += 1
+            if n_gs is None:
+                n_gs = np.array([0.0, 0.0, 1.0])
+                n_fallback += 1
+            # Same transform positions use — gs_pos_to_godot is the linear map
+            # (x, y, z) -> (x, z, -y), det +1, so it is a proper rotation and
+            # is therefore also the correct map for a direction vector.
+            n_god = gs_pos_to_godot(float(n_gs[0]), float(n_gs[1]), float(n_gs[2]))
+            ln = (n_god[0] ** 2 + n_god[1] ** 2 + n_god[2] ** 2) ** 0.5
+            n_god = [c / ln for c in n_god]
+
         for vi in poly:
             p = verts_gs[vi]
             g = gs_pos_to_godot(float(p[0]), float(p[1]), float(p[2]))
             bucket["pos"].append(g)
             u, v = uv_for(p, s_vec, t_vec, tw, th)
             bucket["uv"].append([u, v])
+            if n_god is not None:
+                bucket["nrm"].append(n_god)
         # Fan triangulate; flip winding for RH Godot after axis remap.
         for k in range(1, len(poly) - 1):
             bucket["idx"].extend([base_idx, base_idx + k + 1, base_idx + k])
@@ -278,6 +365,10 @@ def extract_brush(data: bytes) -> dict | None:
         "faces": n_faces,
         "skipped": skipped,
         "verts": nv,
+        "has_normals": bool(normals),
+        "n_from_plane": n_from_plane,
+        "n_from_winding": n_from_winding,
+        "n_fallback": n_fallback,
     }
 
 
@@ -304,6 +395,8 @@ def write_multi_glb(mesh: dict, dst: Path, name: str) -> None:
     materials: list[dict] = []
     primitives: list[dict] = []
 
+    want_normals = bool(mesh.get("has_normals"))
+
     # Stable order by texture index
     for tex_idx in sorted(mesh["buckets"].keys()):
         bucket = mesh["buckets"][tex_idx]
@@ -312,11 +405,23 @@ def write_multi_glb(mesh: dict, dst: Path, name: str) -> None:
         pos = np.asarray(bucket["pos"], dtype="<f4")
         uvs = np.asarray(bucket["uv"], dtype="<f4")
         indices = np.asarray(bucket["idx"], dtype="<u4")
+        nrm = None
+        if want_normals:
+            nrm = np.asarray(bucket["nrm"], dtype="<f4")
+            if len(nrm) != len(pos):
+                raise ValueError(
+                    f"normal count {len(nrm)} != position count {len(pos)} "
+                    f"for texture bucket {tex_idx}"
+                )
 
         pos_off = len(bin_blob)
         bin_blob += pos.tobytes()
         uv_off = len(bin_blob)
         bin_blob += uvs.tobytes()
+        nrm_off = None
+        if nrm is not None:
+            nrm_off = len(bin_blob)
+            bin_blob += nrm.tobytes()
         idx_off = len(bin_blob)
         bin_blob += indices.tobytes()
 
@@ -328,6 +433,17 @@ def write_multi_glb(mesh: dict, dst: Path, name: str) -> None:
         buffer_views.append(
             {"buffer": 0, "byteOffset": uv_off, "byteLength": uvs.nbytes, "target": 34962}
         )
+        bv_nrm = None
+        if nrm is not None:
+            bv_nrm = len(buffer_views)
+            buffer_views.append(
+                {
+                    "buffer": 0,
+                    "byteOffset": nrm_off,
+                    "byteLength": nrm.nbytes,
+                    "target": 34962,
+                }
+            )
         bv_idx = len(buffer_views)
         buffer_views.append(
             {
@@ -353,6 +469,17 @@ def write_multi_glb(mesh: dict, dst: Path, name: str) -> None:
         accessors.append(
             {"bufferView": bv_uv, "componentType": 5126, "count": len(uvs), "type": "VEC2"}
         )
+        acc_nrm = None
+        if nrm is not None:
+            acc_nrm = len(accessors)
+            accessors.append(
+                {
+                    "bufferView": bv_nrm,
+                    "componentType": 5126,
+                    "count": len(nrm),
+                    "type": "VEC3",
+                }
+            )
         acc_idx = len(accessors)
         accessors.append(
             {
@@ -386,9 +513,12 @@ def write_multi_glb(mesh: dict, dst: Path, name: str) -> None:
                 "doubleSided": True,
             }
         )
+        attrs = {"POSITION": acc_pos, "TEXCOORD_0": acc_uv}
+        if acc_nrm is not None:
+            attrs["NORMAL"] = acc_nrm
         primitives.append(
             {
-                "attributes": {"POSITION": acc_pos, "TEXCOORD_0": acc_uv},
+                "attributes": attrs,
                 "indices": acc_idx,
                 "material": mat_i,
             }
@@ -421,17 +551,24 @@ def write_multi_glb(mesh: dict, dst: Path, name: str) -> None:
     dst.write_bytes(out)
 
 
-def convert_one(src: Path, dst: Path) -> bool:
+def convert_one(src: Path, dst: Path, normals: bool = False) -> bool:
     data = src.read_bytes()
-    mesh = extract_brush(data)
+    mesh = extract_brush(data, normals=normals)
     if mesh is None:
         print(f"SKIP {src.name}: no brush mesh")
         return False
     write_multi_glb(mesh, dst, src.stem)
     ntri = sum(len(b["idx"]) // 3 for b in mesh["buckets"].values())
+    extra = ""
+    if normals:
+        extra = (
+            f" normals(plane={mesh['n_from_plane']} winding={mesh['n_from_winding']}"
+            f" fallback={mesh['n_fallback']})"
+        )
     print(
         f"OK {src.name}: verts={mesh['verts']} faces={mesh['faces']} "
-        f"skipped={mesh['skipped']} tris={ntri} mats={len(mesh['buckets'])} -> {dst.name}"
+        f"skipped={mesh['skipped']} tris={ntri} mats={len(mesh['buckets'])}{extra}"
+        f" -> {dst.name}"
     )
     return True
 
@@ -460,6 +597,15 @@ def main() -> int:
         help="Level/prop stems to convert (default: key set)",
     )
     ap.add_argument("--all", action="store_true", help="Convert every WMB in src")
+    ap.add_argument(
+        "--normals",
+        action="store_true",
+        help=(
+            "Emit a per-vertex NORMAL accessor from the WMB plane list "
+            "(face record bytes 20-23 + side flag). OFF by default; with the "
+            "flag off the output is byte-identical to the pre-normals tool."
+        ),
+    )
     args = ap.parse_args()
 
     files = sorted(args.src.glob("*.[Ww][Mm][Bb]"))
@@ -520,7 +666,7 @@ def main() -> int:
             dst = args.dst_levels / f"{stem}_brush.glb"
         else:
             dst = args.dst_wmb / f"{stem}.glb"
-        if convert_one(src, dst):
+        if convert_one(src, dst, normals=args.normals):
             ok += 1
     print(f"Done: {ok}/{len(files)}")
     return 0 if ok else 1
