@@ -20,6 +20,15 @@ run/main_scene="res://scenes/boot.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
 
+[audio]
+
+; QOL-6 / Phase 7: real Master -> {Music, SFX, Voice} buses, committed as a
+; resource so they exist (at the right volumes) from engine startup, before
+; any autoload runs. See default_bus_layout.tres. This is Godot's own default
+; path for this setting; it is written out explicitly so the dependency is
+; visible in the project file rather than implicit.
+buses/default_bus_layout="res://default_bus_layout.tres"
+
 [autoload]
 
 Piposh3DState="*res://autoload/piposh3d_state.gd"

@@ -41,19 +41,59 @@ const HANDLE_SLOT_SCALE := 1000000
 ## dedicated AudioServer bus (Voice/SFX/Music, all children of Master)
 ## instead of hand-adjusting each individual play() call's volume_db --
 ## the standard Godot mechanism, and the only way a single slider can
-## affect sounds already playing, not just future ones. Persisted to
-## user://audio_settings.cfg so a preference sticks across sessions.
+## affect sounds already playing, not just future ones.
+##
+## QOL-6 / PORTING_MANUAL Phase 7 completion (2026-08-10): the buses used
+## to be created here at runtime only, which meant that until this autoload's
+## own _ready() had run there were no buses and no per-category volume at
+## all. `res://default_bus_layout.tres` (referenced from project.godot's
+## `[audio] buses/default_bus_layout`) now declares Master -> {Music, SFX,
+## Voice} so the engine builds them during startup, before any script.
+## _ensure_buses() below is kept purely as a defensive fallback for the case
+## where that resource is missing or fails to load -- it is a no-op on a
+## healthy project.
 const VOICE_BUS := "Voice"
 const SFX_BUS := "SFX"
 const MUSIC_BUS := "Music"
-const SETTINGS_PATH := "user://audio_settings.cfg"
+
+## Phase 7 says "persist to user://settings.cfg via ConfigFile"; the
+## 2026-08-09 first pass used an audio-only user://audio_settings.cfg.
+## Renamed to the spec'd path, with a one-time migration read of the old
+## file so an existing player's saved volumes are not silently reset.
+const SETTINGS_PATH := "user://settings.cfg"
+const LEGACY_SETTINGS_PATH := "user://audio_settings.cfg"
+
+## QOL-6: "default voice ~30-40% louder than music and SFX". These are
+## linear 0..1 category levels; 0.95 / 0.70 = 1.357, i.e. voice sits ~36%
+## above both of the others -- the same ratio baked into
+## default_bus_layout.tres so frame 0 matches even before this file loads.
+## Note SFX dropping from its old 1.0 default is deliberate and is the same
+## complaint that started this (traffic honks stacking too loud); the
+## per-sound SFX_VOLUME_TRIM_DB table in the interpreter is unaffected --
+## that is a per-sound trim, this is the category fader.
+const DEFAULT_VOICE_VOLUME := 0.95
+const DEFAULT_SFX_VOLUME := 0.70
+const DEFAULT_MUSIC_VOLUME := 0.70
+
+## Emitted whenever a category volume changes, so an already-open settings
+## panel (or a second one, e.g. main menu + level) reflects a change made
+## anywhere else rather than showing a stale slider position.
+signal volume_changed(channel: String, value: float)
+
 ## Linear 0..1 slider positions, converted to dB via linear_to_db() --
 ## matches how every other volume slider in Godot (and most games) maps
 ## a 0..1 UI position to perceived loudness; a raw dB slider would have
 ## a huge, non-intuitive dead zone at its own quiet end.
-var _voice_volume := 1.0
-var _sfx_volume := 1.0
-var _music_volume := 0.6  # matches play_music()'s own pre-existing -6dB-ish default feel
+var _voice_volume := DEFAULT_VOICE_VOLUME
+var _sfx_volume := DEFAULT_SFX_VOLUME
+var _music_volume := DEFAULT_MUSIC_VOLUME
+
+## Non-audio settings (mouse-look default, debug overlay, ...) share the one
+## user://settings.cfg file Phase 7 asks for. They live in this autoload
+## rather than a dedicated GameSettings one only because this is the single
+## pre-first-scene autoload available for this change; splitting them out is
+## a mechanical follow-up (see the report for QOL-6).
+var _misc: Dictionary = {}
 
 var _voice: AudioStreamPlayer
 var _music: AudioStreamPlayer
@@ -76,7 +116,7 @@ var _voice_generation := 0
 
 func _ready() -> void:
 	_ensure_buses()
-	_load_volume_settings()
+	_load_settings()
 
 	_voice = AudioStreamPlayer.new()
 	_voice.name = "Voice"
@@ -101,11 +141,13 @@ func _ready() -> void:
 	_rebuild_index()
 
 
-## Creates the Voice/SFX/Music buses (children of Master) if this is the
-## first run, or finds them if a prior session already added them to the
-## default bus layout (Godot persists `res://default_bus_layout.tres`
-## across runs once buses are added at runtime in the editor, but a
-## fresh export/first launch never has -- either way this is idempotent).
+## Defensive fallback only. `res://default_bus_layout.tres` (declared in
+## project.godot's `[audio]` section) is what actually creates Voice/SFX/
+## Music now, during engine startup and before any script runs. This
+## re-creates any that are somehow missing -- a stripped export, a hand-
+## edited project.godot, or a headless tool run that loaded the project
+## without the resource -- so a missing layout degrades to the old runtime
+## behaviour instead of silently routing everything to Master.
 func _ensure_buses() -> void:
 	for bus_name in [VOICE_BUS, SFX_BUS, MUSIC_BUS]:
 		if AudioServer.get_bus_index(bus_name) == -1:
@@ -113,29 +155,77 @@ func _ensure_buses() -> void:
 			AudioServer.add_bus(idx)
 			AudioServer.set_bus_name(idx, bus_name)
 			AudioServer.set_bus_send(idx, "Master")
+		else:
+			# A layout that exists but routes somewhere unexpected would
+			# make the Master fader useless; pin the send here.
+			var have := AudioServer.get_bus_index(bus_name)
+			if have > 0 and AudioServer.get_bus_send(have) != &"Master":
+				AudioServer.set_bus_send(have, "Master")
 
 
-func _load_volume_settings() -> void:
+## Phase 7: "load in an autoload BEFORE the first scene so the first frame
+## is already correct." This runs from _ready() of an [autoload] entry,
+## which Godot instantiates before it loads `run/main_scene`.
+func _load_settings() -> void:
 	var cfg := ConfigFile.new()
-	if cfg.load(SETTINGS_PATH) != OK:
-		return
-	_voice_volume = clampf(cfg.get_value("audio", "voice", _voice_volume), 0.0, 1.0)
-	_sfx_volume = clampf(cfg.get_value("audio", "sfx", _sfx_volume), 0.0, 1.0)
-	_music_volume = clampf(cfg.get_value("audio", "music", _music_volume), 0.0, 1.0)
+	var err := cfg.load(SETTINGS_PATH)
+	var migrated := false
+	if err != OK:
+		# One-time migration from the 2026-08-09 audio-only file.
+		if cfg.load(LEGACY_SETTINGS_PATH) != OK:
+			return
+		migrated = true
+	_voice_volume = clampf(float(cfg.get_value("audio", "voice", _voice_volume)), 0.0, 1.0)
+	_sfx_volume = clampf(float(cfg.get_value("audio", "sfx", _sfx_volume)), 0.0, 1.0)
+	_music_volume = clampf(float(cfg.get_value("audio", "music", _music_volume)), 0.0, 1.0)
+	_misc.clear()
+	for section in cfg.get_sections():
+		var sec: String = str(section)
+		if sec == "audio":
+			continue
+		for key in cfg.get_section_keys(sec):
+			var k: String = str(key)
+			_misc["%s/%s" % [sec, k]] = cfg.get_value(sec, k)
+	if migrated:
+		_save_settings()
 
 
-func _save_volume_settings() -> void:
+func _save_settings() -> void:
 	var cfg := ConfigFile.new()
 	cfg.set_value("audio", "voice", _voice_volume)
 	cfg.set_value("audio", "sfx", _sfx_volume)
 	cfg.set_value("audio", "music", _music_volume)
+	for path in _misc.keys():
+		var parts: PackedStringArray = str(path).split("/", true, 1)
+		if parts.size() == 2:
+			cfg.set_value(parts[0], parts[1], _misc[path])
 	cfg.save(SETTINGS_PATH)
+
+
+## Generic non-audio settings (see _misc). Section/key pairs land in the
+## same user://settings.cfg.
+func get_setting(section: String, key: String, default_value: Variant) -> Variant:
+	return _misc.get("%s/%s" % [section, key], default_value)
+
+
+func set_setting(section: String, key: String, value: Variant) -> void:
+	_misc["%s/%s" % [section, key]] = value
+	_save_settings()
 
 
 func _apply_volume_settings() -> void:
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index(VOICE_BUS), _linear_to_db(_voice_volume))
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index(SFX_BUS), _linear_to_db(_sfx_volume))
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index(MUSIC_BUS), _linear_to_db(_music_volume))
+
+
+## QOL-6's "voice ~30-40% louder" baseline, reachable from the settings
+## panel so a player who has dragged the sliders somewhere unhelpful can
+## get back to the shipped mix without deleting user://settings.cfg.
+func reset_volumes_to_defaults() -> void:
+	set_voice_volume(DEFAULT_VOICE_VOLUME)
+	set_sfx_volume(DEFAULT_SFX_VOLUME)
+	set_music_volume(DEFAULT_MUSIC_VOLUME)
 
 
 ## linear_to_db(0.0) is -inf, correctly reads as "muted" (AudioServer
@@ -161,19 +251,22 @@ func get_music_volume() -> float:
 func set_voice_volume(v: float) -> void:
 	_voice_volume = clampf(v, 0.0, 1.0)
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index(VOICE_BUS), _linear_to_db(_voice_volume))
-	_save_volume_settings()
+	_save_settings()
+	volume_changed.emit("voice", _voice_volume)
 
 
 func set_sfx_volume(v: float) -> void:
 	_sfx_volume = clampf(v, 0.0, 1.0)
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index(SFX_BUS), _linear_to_db(_sfx_volume))
-	_save_volume_settings()
+	_save_settings()
+	volume_changed.emit("sfx", _sfx_volume)
 
 
 func set_music_volume(v: float) -> void:
 	_music_volume = clampf(v, 0.0, 1.0)
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index(MUSIC_BUS), _linear_to_db(_music_volume))
-	_save_volume_settings()
+	_save_settings()
+	volume_changed.emit("music", _music_volume)
 
 
 ## sPlay(Voice, snd) / vPlay -- dialogue lines. Only this channel feeds
@@ -236,6 +329,12 @@ func _on_voice_finished() -> void:
 ## bug as the real one found below, even though it wasn't the actual
 ## cause that time. Returns a handle for is_sfx_handle_playing()/
 ## snd_playing() -- -1.0 if the stream couldn't be loaded.
+##
+## `volume_db` is the interpreter's PER-SOUND trim (SFX_VOLUME_TRIM_DB --
+## the sHammer/Jet/Honk entries), deliberately still applied on the player:
+## it corrects individual mis-levelled source WAVs. The SFX *category* fader
+## is the SFX bus (set_sfx_volume()), so the two compose instead of fighting,
+## and a slider drag still affects sounds that are already playing.
 ##
 ## Reported live (2026-08-01, Shiks): "a weird noise that plays in the
 ## background non stop." Root cause was NOT this pool at all: a leftover
@@ -316,6 +415,10 @@ func stop_all_sfx() -> void:
 		p.stop()
 
 
+## `volume_db` here is a PER-TRACK trim (menu music is deliberately quieter
+## than in-level music), not the Music category fader -- that lives on the
+## Music bus and is driven by set_music_volume() / the settings slider, which
+## is why a slider drag also affects the track already playing.
 func play_music(name: String, volume_db: float = -6.0) -> void:
 	var stream := _load_stream(name)
 	if stream == null:

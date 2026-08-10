@@ -1,0 +1,46 @@
+[gd_resource type="AudioBusLayout" format=3]
+
+; QOL-6 / PORTING_MANUAL Phase 7. Before this file existed the project had
+; NO Godot audio buses at all -- autoload/audio_channels.gd created
+; Voice/SFX/Music at runtime in its own _ready(), which works but means the
+; buses (and their volumes) do not exist until that autoload has run. A
+; committed bus layout is loaded by the engine itself during startup, before
+; any script, so the very first frame is already at the correct per-category
+; volume instead of full scale.
+;
+; volume_db values below are the DEFAULT_*_VOLUME constants in
+; autoload/audio_channels.gd converted with linear_to_db():
+;   Voice 0.95 -> -0.4455 dB
+;   SFX   0.70 -> -3.0980 dB
+;   Music 0.70 -> -3.0980 dB
+; Voice therefore sits ~36% above Music and SFX in linear terms, which is
+; QOL-6's "default voice ~30-40% louder than music and SFX".
+;
+; AudioChannels overwrites these from user://settings.cfg on load, so this
+; file only decides the first-run / no-saved-settings state.
+
+[resource]
+bus/0/name = &"Master"
+bus/0/solo = false
+bus/0/mute = false
+bus/0/bypass_fx = false
+bus/0/volume_db = 0.0
+bus/0/send = &""
+bus/1/name = &"Music"
+bus/1/solo = false
+bus/1/mute = false
+bus/1/bypass_fx = false
+bus/1/volume_db = -3.098
+bus/1/send = &"Master"
+bus/2/name = &"SFX"
+bus/2/solo = false
+bus/2/mute = false
+bus/2/bypass_fx = false
+bus/2/volume_db = -3.098
+bus/2/send = &"Master"
+bus/3/name = &"Voice"
+bus/3/solo = false
+bus/3/mute = false
+bus/3/bypass_fx = false
+bus/3/volume_db = -0.4455
+bus/3/send = &"Master"
