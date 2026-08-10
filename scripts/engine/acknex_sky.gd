@@ -99,20 +99,46 @@ func _make_sky_panorama(sky_img: Image, cloud_tex: Texture2D) -> Image:
 	var cloud_img: Image = _tex_image(cloud_tex)
 	if cloud_img:
 		cloud_img.convert(Image.FORMAT_RGBA8)
+	# Reported live (2026-08-10): "the background has the same weird cloud
+	# pattern in all of the area... in all of the game's levels." Root
+	# cause confirmed via direct pixel inspection: sky.png (256x256) is
+	# 99.9% alpha=0 (a handful of white star-dot pixels are the only real
+	# content), and clds.png (320x320) is ~85% OPAQUE near-black pixels
+	# over ~15% alpha=0 gaps. The previous version wrote sky_img's own
+	# pixels straight into `out` and only used cloud alpha to lerp
+	# TOWARD clds' color, so `out`'s RGB stayed at (0,0,0) almost
+	# everywhere -- and PanoramaSkyMaterial reads a panorama's RGB
+	# directly with no notion of alpha at all (nothing "behind" a sky
+	# dome to blend against), so nearly the whole dome rendered as solid
+	# opaque BLACK, with the sparse star/cloud fragments poking through
+	# reading as "a weird cloud pattern" on a black sky. Fixed by
+	# establishing a real opaque blue-sky gradient as the base FIRST,
+	# then compositing the star and cloud layers onto it using each
+	# layer's OWN alpha as blend weight, so a transparent source pixel
+	# correctly shows the sky base instead of black. Applies uniformly to
+	# every level via the shared `defaults.sky_map`/`cloud_map`, matching
+	# the "same pattern in all of the game's levels" report.
 	for y in h:
 		var v := float(y) / float(h - 1)
 		var src_v := clampf(v * 1.6, 0.0, 0.999)
 		var sy := clampi(int(src_v * float(ch - 1)), 0, ch - 1)
+		var base: Color
+		if v < 0.55:
+			base = Color(0.55, 0.68, 0.88).lerp(Color(0.22, 0.4, 0.72), clampf(v / 0.55, 0.0, 1.0))
+		else:
+			base = Color(0.22, 0.4, 0.72).darkened(clampf((v - 0.55) / 0.45, 0.0, 0.85))
 		for x in w:
 			var sx := x * cw / w
-			var col := sky_img.get_pixel(sx % cw, sy)
+			var col := base
+			var star := sky_img.get_pixel(sx % cw, sy)
+			if star.a > 0.01:
+				col = col.lerp(Color(star.r, star.g, star.b), star.a)
 			if cloud_img and v < 0.45:
 				var cx := x * cloud_img.get_width() / w
 				var cy := int(v / 0.45 * float(cloud_img.get_height() - 1))
 				var cc := cloud_img.get_pixel(cx % cloud_img.get_width(), cy)
-				col = col.lerp(cc, 0.35 * cc.a)
-			if v > 0.55:
-				col = col.darkened(clampf((v - 0.55) / 0.45, 0.0, 0.85))
+				if cc.a > 0.01:
+					col = col.lerp(Color(cc.r, cc.g, cc.b), 0.55 * cc.a)
 			out.set_pixel(x, y, col)
 	return out
 

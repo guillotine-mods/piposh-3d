@@ -7897,3 +7897,285 @@ Full regression sweep re-run one final time after both fixes: `smoke_
 dispatch --all` (55/56), `smoke_plane2_all_goals`, both green. `git
 status --short` outside `assets/converted/mdl/` clean -- only the 648
 intentional `.import` changes and doc updates.
+
+
+## 2026-08-10 (GB-20) -- fixed the sky dome's real black-background bug,
+Town's traffic cars, and every emit() particle's wrong color; re-verified
+the plane-wings report a third time with an actual screenshot and found
+no bug at any layer checked
+
+Follow-up on a real playtest screenshot from Plane2's takeoff cutscene,
+plus a batch of new/re-opened reports in the same message: pee animation
+"still not working right," "the first [t]own isn't showing correctly...
+no running cars, some of the 'land' is missing," and "the background has
+the same weird cloud pattern... in all of the game's levels" -- the last
+one explicitly broader than GB-17's own Smash-specific horizon fix.
+
+**Sky background (all levels).** Direct pixel inspection of the two
+textures `_make_sky_panorama()` builds every level's sky dome from:
+`sky.png` (256x256) is 99.9% fully alpha=0 (65487/65536 pixels), with
+only a handful of white star-dot pixels as real content; `clds.png`
+(320x320) is ~85% OPAQUE near-black pixels over ~15% alpha=0 gaps. The
+old panorama-building code wrote these straight into the output image,
+alpha included, and only used cloud alpha to LERP toward clds' own color
+(`col = col.lerp(cc, 0.35*cc.a)`) -- so the output image's own RGB
+stayed at (0,0,0) almost everywhere `sky.png` was transparent, which is
+nearly the whole image. `PanoramaSkyMaterial` reads a panorama's RGB
+directly and has no notion of alpha at all (there's nothing "behind" a
+sky dome to blend against) -- so nearly the entire dome rendered as
+solid opaque BLACK, with the sparse white star-dots and dark cloud
+patches poking through reading as "a weird cloud pattern with black
+background," exactly as reported, and identically on every level since
+they all share these same default textures via `wdl_meta.json`.
+
+This is a DIFFERENT bug from GB-17's own horizon-cylinder alpha fix
+(`_spawn_scene_cylinder()`'s material never enabling `transparency`) --
+that one fixed the horizon STRIP silhouette drawn in front of the sky;
+this one is the sky DOME itself, visible in every direction the horizon
+cylinder doesn't cover (looking up, looking down, or anywhere the
+cylinder's own bounded height doesn't reach) -- which is why the report
+persisted "in all of the area" even after GB-17 shipped.
+
+Fixed by establishing a real, opaque blue-sky gradient as the base color
+FIRST, then compositing the star layer and cloud layer onto it using
+each layer's OWN alpha as blend weight (a normal "over" composite,
+`col.lerp(layer_rgb, layer_alpha)` starting from a real base instead of
+from nothing) -- a transparent source pixel now correctly shows the sky
+base instead of black. Kept the existing vertical banding/darkening
+shape (top=zenith gradient, bottom=darkened "ground" band) unchanged,
+since headless Godot can't render a frame to visually re-tune it and the
+existing proportions were never in question.
+
+Verified via new `smoke_sky_panorama_check.gd`: builds the real default
+panorama and samples every pixel -- 0.00% black (was silently ~90%+
+before, confirmed via a one-off diagnostic script run against the old
+code first), average color (0.23, 0.33, 0.50), a plausible blue sky.
+
+**Town: no running cars.** Traced through three independent, stacked
+bugs -- each one alone was enough to keep the cars frozen at their spawn
+point, found by fixing one, re-testing, and finding the NEXT one still
+blocking movement.
+
+1. `action SportCar` (`Town.wdl`, the runtime-`create()`d traffic car
+   spawned by `action MakeCars`) never sets `_MOVEMODE` to a positive
+   value anywhere in its own script -- only ever `my._MOVEMODE = 0;` on
+   the `scan_path()` FAILURE branch. Every other `scan_path()` caller in
+   the corpus (grepped: Start/Fight/Race/AsyAct1/Mansion/... 22 files)
+   explicitly writes `my._movemode = 1;` immediately before its own
+   `scan_path()` call -- SportCar is the one script that omits it,
+   relying on real Acknex's own `scan_path()` builtin to set `_MOVEMODE`
+   on success as a side effect, a real engine contract this port's own
+   `_do_scan_path()` stub never replicated (it only ever returned a
+   truthy 1.0, never wrote the field itself). Confirmed via a headless
+   trace: a spawned TownCar correctly bound to a nearby path (`path_pts=
+   17`) but sat at its exact spawn position for 120+ additional frames.
+   Fixed by having `_do_scan_path()` also write `_movemode=1.0` on
+   success -- a strict superset of the existing explicit-set idiom (every
+   other caller already sets the same value itself first, so this is a
+   no-op for them).
+
+2. Even with `_MOVEMODE` fixed, the car still didn't move. Traced to
+   `_do_move_call()` (the bridge for Acknex's real `move(ENT,dist,
+   absdist)` builtin): it only ever applied `absdist` (the THIRD
+   argument, world-space, meant for gravity/jump/external forces) and
+   silently dropped `dist` (the SECOND argument, entity-LOCAL, meant for
+   ordinary forward walking/driving). This was harmless for the corpus's
+   OTHER `move()` idiom (`move(ME,nullskill,fireball_speed)` --
+   projectiles, where the relative arg really is always zero) but breaks
+   every ground actor built on the real `dist,absdist` pattern: grepped
+   `^\s*move\s*\(` across the whole corpus and found it in Town (this
+   bug), Fight, Mount (x2), Mine, Race, `WDL/Cards.wdl`, and `WDL/
+   PWF.wdl` -- all genuine ground-actor movement, all equally broken
+   before this fix. `move_gravity2()`'s own math accumulates the
+   entity's entire forward speed into `dist` (from `MY._SPEED_X`/`_Y`,
+   driven by the `force` the calling script set), while `absdist` stays
+   ~0 for anything not jumping/falling -- so `global_position` never
+   actually moved for a plain walking/driving entity. Fixed by rotating
+   `dist` into world space using the entity's own current pan/tilt/roll
+   (the same `_acknex_entity_basis()` helper `_do_vec_rotate()` already
+   uses for the identical local-to-world conversion) and applying BOTH
+   vectors to `global_position`, matching real Acknex's actual two-
+   vector contract instead of a partial approximation of it.
+
+3. Still no movement. The car's own `force = my.skill1;` (a bare scalar
+   assignment -- real Acknex's well-known "VECTOR = SCALAR sets only the
+   .x component" shorthand, confirmed by `actor_move2()`'s own very next
+   statements, `force.Y=0; force.Z=0;`, which only make sense if the
+   scalar assign already set .X and left Y/Z stale from a previous tick)
+   and `force.x`/`.y`/`.z` (read by `move_gravity2()`'s own `TIME*force.
+   x` etc.) turned out to live in two completely disconnected storage
+   locations: a bare identifier write goes through `_set_var()` into
+   `_globals`, while a `.x`/`.y`/`.z` FIELD read/write on the same name
+   goes through the separate `_vectors` scratch store (`_get_field()`'s
+   own "Scratch VECTOR/ANGLE fallback", added 2026-08-01 for `temp.x`-
+   style reads). The bare-scalar write never reached the vector side, so
+   `force.x` always read back as 0 regardless of what the script had
+   just "set" -- confirmed by tracing that `_SPEED_X`/`_SPEED_Y` (which
+   only accumulate from `force.x`/`force.y`) stayed permanently zero.
+   Fixed in `_set_var()`: any scalar value assigned to a bare identifier
+   now ALSO mirrors into `_vectors[name].x` (leaving `.y`/`.z` alone,
+   matching the real "only x is set" contract), keeping both storage
+   views of the same underlying WDL variable in sync. This is a hot,
+   universally-shared path (every bare-identifier assignment in the
+   whole interpreter goes through `_set_var()`), so it's a genuine
+   engine-level fix, not a Town-specific patch -- e.g. `temp = int(
+   random(30));` (also in `MakeCars`, a bare-scalar write to a name
+   that's ALSO used as a vector scratch register elsewhere in the same
+   script) now correctly updates `temp.x` too, which is the faithful
+   behavior for a name that's genuinely reused both ways throughout the
+   corpus.
+
+With all three fixed, a spawned traffic car visibly drives its bound
+path: headless trace showed a Bus3 instance moving ~395 units over 2
+real seconds (was 0.0 before any of the three fixes). New `smoke_town_
+traffic_check.gd` verifies this generically (spawns via the real
+`MakeCars` timer, confirms >20 units of movement over 120 frames).
+
+Investigated "some of the land is missing" directly rather than
+guessing: audited every one of Town's 530 placed entities' own model
+file against every real resolution path this port's loader actually
+uses (`assets/converted/mdl/`, `assets/converted/wmb/` for `.wmb`-
+referenced brush/block props, and `assets/converted/levels/{Level}_
+brush.glb` for embedded per-level brush geometry) -- every single one
+resolves to a real, on-disk GLB, including `CityWtr.wmb` (a first
+suspect, since it's a WMB block reference rather than an MDL prop -- but
+`assets/converted/wmb/CityWtr.glb` exists and is correctly resolved by
+`_find_wmb_glb()`). Nothing is actually missing from the asset pipeline
+for this level. Most likely explanation, not separately confirmed: the
+same black-sky bug above, since the report sits in the same sentence as
+the cloud-pattern complaint -- distant terrain silhouetted against a
+solid black sky would plausibly read as "missing" rather than rendered.
+
+Also chased a red herring along the way: `_warn_once("while-loop
+spinning without wait()"...)` (a diagnostic added just before this
+session, per the immediately-preceding commits) fired for nearly every
+entity in Town, including `main` itself, during this investigation --
+traced the "main" one specifically to `lensflare_start()`'s own `while(
+qLensFlare==1){wait(1);...}` loop (a genuine, correctly-behaving forever
+effect coroutine meant to run for the whole level's lifetime, one real
+`wait(1)` per frame). The guard fires at a fixed 512-iteration threshold
+PER DISPATCH of a while statement -- for a loop that's supposed to run
+once per real frame for the entire level, simply running the level
+headless for 500+ real frames (a routine amount for one of this
+session's own multi-second traces) trips the same warning a genuinely-
+stuck loop would, with no way from the log alone to tell the two apart.
+Confirmed via a temporary trace (dumping the loop's own condition/body
+AST at the warning site, reverted after) that this specific one's body
+does contain a real `wait(1)` and is not actually stuck -- a false
+positive from the diagnostic's own fixed threshold being too low for a
+long-running headless test, not a real bug. Not fixed (the diagnostic
+itself is out of scope here and still correctly catches genuinely-stuck
+loops within the first second or two of real gameplay); noted for
+awareness in case it resurfaces.
+
+**Pee animation still not working right.** GB-17's own `emit()` bridge
+(a deliberately scoped-down particle system -- physically-reasonable
+fading/scattering sprites, since genuinely interpreting a particle
+function's own per-particle WDL body with its `MY_AGE`/`MY_SPEED`/`MY_
+MAP` pseudo-fields is a separate, larger undertaking) rendered EVERY
+particle effect in the corpus with the same hardcoded bluish-white tint
+(`Color(0.8,0.87,1.0,0.85)`), regardless of what the effect actually
+represented. Smash's own `function stream()` (the pee particle function,
+`action PipPee`'s `emit 2,temp.x,stream;`) sets `MY_MAP = bpee;` (`bmap
+bPee = <Pee.bmp>;`, resolving to a real converted `Pee.png` -- a tiny
+2x2 texture, confirmed via direct pixel read: `(255,255,255)`,
+`(255,255,0)` x2, `(128,128,0)` -- genuinely yellow-toned, authored as a
+soft color swatch rather than a hard-edged sprite) that was never read
+at all before this fix, so the pee particles rendered the same generic
+blue-white as every other effect in the game (smoke, lava, blood, gun
+brass) -- reading as "not working right" because it doesn't look like
+pee, not because nothing spawns (confirmed via GB-17's own existing
+verification that particles DO spawn/move/clean up correctly).
+
+Genuinely interpreting `stream()`'s full per-particle body is still out
+of scope (same reasoning as GB-17), but picking a texture is a single
+STATIC assignment, not runtime behavior -- readable directly off the
+already-parsed AST the same way `wdl_meta.json`'s own static `sky_map`/
+`scene_map` extraction already works elsewhere in this port. Added
+`_get_particle_texture_for_action()`: resolves the `emit()` call's own
+3rd argument (the particle-action name, previously ignored entirely) to
+its function body, depth-first-searches for a literal `MY_MAP = <bmap
+id>;` assignment (bounded -- always a top-level statement, never behind
+a loop, in every particle function checked), and resolves that bmap
+through the SAME `_resolve_bmap_texture()` every panel/HUD bitmap
+already uses -- cached per action name. Falls back to the existing
+generic dot, unchanged, for any action with no resolvable `MY_MAP`
+(never a regression, only an upgrade when a real texture is found). Also
+stopped applying the old hardcoded blue-white tint to a real resolved
+texture (kept only for the generic-dot fallback) so the bitmap's own
+authored color shows through undistorted.
+
+Verified via new `smoke_particle_texture_check.gd`: Smash's `stream`
+action now resolves to `res://assets/converted/gfx/Pee.png` (confirmed
+different from the generic fallback texture), and an unresolvable action
+name still correctly falls back to the generic dot rather than null/
+crashing. `smoke_emit_particles_check.gd` (GB-17's own existing
+particle-spawn/cleanup test) still passes unchanged.
+
+**Plane wings, re-investigated a third time with the actual screenshot.**
+The user's new, concrete clue -- "the wings appear after the plane
+starts to take off but not before" -- directly contradicted GB-19's own
+conclusion ("model is structurally fine, most likely camera framing").
+Re-checked both remaining live hypotheses from scratch, this time with
+real headless traces instead of static code reading alone.
+
+Camera-authority switching (`scripts/engine/camera_authority.gd`,
+`WdlInterpreter.is_driving_camera_this_frame()`): built a diagnostic
+that forces `Scene=2` on a live Plane2 `LevelRunner` instance and
+samples `get_viewport().get_camera_3d()` every second for 10 seconds.
+First pass wrongly suggested the switch was completely broken (player's
+own FP camera stayed `.current=true` throughout, frozen at its own
+static spawn transform) -- traced this to a bug in the DIAGNOSTIC
+itself, not the engine: it fetched `get_viewport().get_camera_3d()`
+ONCE, early, and kept re-examining that same cached node reference for
+the rest of the run, rather than re-querying which camera was actually
+active on each sample. Rewritten to re-check `.current` on both cameras
+fresh each iteration: the script camera DOES correctly take over
+(`script.current=true`, `player.current=false`, its own live position
+tracking `action CamPlane`'s computed values exactly) for the entire
+Scene==2 sequence, confirmed identically in the existing, already-
+committed `smoke_plane2_playtest.gd`'s own `[cam-actual]` trace output
+once actually read carefully (`<<CAMERA SWITCH>>` to `/root/LevelRunner/
+ScriptCamera` fires right when Scene==2 begins, and stays switched).
+
+With the camera switch itself confirmed working, examined WHAT that
+correctly-active script camera is actually pointed at over time. `action
+CamPlane`'s own body recomputes its look-at angle toward the B747's live
+position every single tick via `vec_to_angle()`, and BOTH the camera
+entity and the B747 entity are independently moving the whole time
+(`CamPlane`: `my.z-=10*time; my.x-=5*time; my.y+=10*time;`; `B747`:
+`my.y+=my.skill1*time;`, accelerating once a voice line crosses 95%) --
+so the relative viewing angle is never static by design. Verified `_do_
+vector_call()`'s own `vec_to_angle` implementation directly against the
+documented GS pan/tilt convention (matches `WdlDirector._apply_acknex_
+view()`'s own inverse) -- no bug found there either. A live trace of the
+real numbers: camera tilt starts at -71.8 degrees (steeply looking DOWN
+at the plane, matching the two entities' own large initial altitude
+difference in the level's WED-authored placement data, ~6456 GS units)
+and levels out to +10.3 degrees (a near-horizontal chase view) by 10
+seconds in, as the two entities' own independent WDL-scripted motion
+carries them apart. This is a real, dramatic, INTENTIONAL camera swing
+baked into the original level's own script -- not a bug in this port at
+any layer checked (model mesh: GB-19; camera-authority switch and the
+angle math itself: this session).
+
+Left open, honestly: with the model, the camera switch, and the camera's
+own angle computation all independently verified correct, there's no
+further reproducible bug to fix at the code level found so far. What's
+still unconfirmed is whether the SPECIFIC framing this produces (steep
+top-down early on, leveling out later) is what the screenshot actually
+shows, or whether there's some other narrower issue (e.g. exactly which
+few seconds of the sequence the screenshot was taken during) that would
+need either an in-game screenshot with a timestamp, or the user
+describing which part of the ~10-second sequence looked wrong, to chase
+further -- this is now a much more thoroughly eliminated search space
+than GB-19 left it, not a restatement of the same open question.
+
+Full regression sweep: `smoke_dispatch --all` (55/56, unchanged),
+`smoke_plane2_all_goals`, `smoke_plane2_playtest`, `smoke_plane3_vase_
+catch_check`, `smoke_genia_walk_percent_check`, `smoke_gib_debris_
+movement_check`, `smoke_remove_race`, `smoke_range_shoot`, `smoke_sky_
+panorama_check` (new), `smoke_audio_volume_settings_check`, `smoke_emit_
+particles_check`, `smoke_particle_texture_check` (new), `smoke_file_io_
+scene_map_check`, `smoke_town_traffic_check` (new), `smoke_scan_path_
+gate`, `smoke_shiks_dialog2_choice3` -- all green.

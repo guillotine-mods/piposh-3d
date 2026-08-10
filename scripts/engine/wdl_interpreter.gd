@@ -1746,6 +1746,32 @@ func _set_var(name: String, value: Variant, my) -> void:
 		_globals[name] = {"kind": "var", "init": null, "value": null}
 		_index_global(name)
 	_globals[name]["value"] = value
+	# Reported live (2026-08-10, Town): "there are no running cars." Real
+	# Acknex's VECTOR type is the same 3-float struct as a plain scalar
+	# variable, with no separate declared-type system -- `force = my.
+	# skill1;` (a bare scalar assign, SportCar's own idiom) is standard
+	# Acknex shorthand for "set only my .x component", and elsewhere the
+	# SAME name is read/written via `.x`/`.y`/`.z` (move_gravity2()'s own
+	# `TIME*force.x`, `force.Y=0;`) through the separate `_vectors`
+	# scratch store (see _vec_get()'s docstring). Those were two
+	# disconnected storage locations before this -- a bare-scalar write
+	# never reached the vector side, so `force.x` always read back as 0
+	# regardless of what the script just "set", and any ground actor
+	# built on this idiom (Town/Fight/Mount/Mine/Race/WDL/Cards.wdl/
+	# WDL/PWF.wdl's own move_gravity()-style functions) silently
+	# accumulated zero speed forever. Confirmed via headless trace: a
+	# spawned TownCar's own `force=my.skill1;` had no observable effect
+	# on its `_SPEED_X`/`_SPEED_Y` at all. Mirroring the scalar into the
+	# vector store's `.x` here (leaving `.y`/`.z` alone, matching the
+	# real "only x is set" contract -- SportCar's own callee immediately
+	# zeroes Y/Z itself right after, which only makes sense under this
+	# reading) keeps both views of the same underlying name in sync,
+	# harmless for any name that's never read as a vector.
+	if typeof(value) in [TYPE_FLOAT, TYPE_INT, TYPE_BOOL]:
+		var vname := name.to_lower()
+		var v: Vector3 = _vectors.get(vname, Vector3.ZERO)
+		v.x = float(value)
+		_vectors[vname] = v
 
 
 ## `_get_var`/`_set_var` are the single hottest path in the whole
@@ -2996,7 +3022,10 @@ func _call(name: String, arg_exprs: Array, my) -> Variant:
 		_do_vec_rotate(arg_exprs, my)
 		return 0.0
 	if low == "emit" and arg_exprs.size() >= 2:
-		_do_emit(_to_num(_eval(arg_exprs[0], my)), _vec_get(arg_exprs[1], my))
+		var particle_action := ""
+		if arg_exprs.size() > 2 and typeof(arg_exprs[2]) == TYPE_DICTIONARY and arg_exprs[2].get("t") == "id":
+			particle_action = str(arg_exprs[2].get("name", ""))
+		_do_emit(_to_num(_eval(arg_exprs[0], my)), _vec_get(arg_exprs[1], my), particle_action)
 		return 0.0
 	if not (low in BRIDGE_OVER_SHARED_FUNCTIONS):
 		# User-defined function call (not a builtin) -- run synchronously to
@@ -3846,9 +3875,13 @@ const PARTICLE_MAX_QUANTITY := 40  # guard against a runaway/misread quantity ar
 var _particles: Array[Dictionary] = []
 var _particle_texture: Texture2D
 var _particle_parent: Node3D
+## particle-action name (lowercased) -> resolved Texture2D, or `null` once
+## looked up and confirmed to have no real MY_MAP (falls back to the
+## generic dot) -- see _get_particle_texture_for_action()'s own docstring.
+var _particle_textures_by_action: Dictionary = {}
 
 
-func _do_emit(quantity: float, pos_gs: Vector3) -> void:
+func _do_emit(quantity: float, pos_gs: Vector3, particle_action: String = "") -> void:
 	if _loader == null:
 		return
 	if _particle_parent == null or not is_instance_valid(_particle_parent):
@@ -3857,13 +3890,20 @@ func _do_emit(quantity: float, pos_gs: Vector3) -> void:
 		_loader.add_child(_particle_parent)
 	var origin := _gs_to_godot(pos_gs)
 	var n := clampi(int(quantity), 1, PARTICLE_MAX_QUANTITY)
+	var tex := _get_particle_texture_for_action(particle_action)
+	var real_tex: bool = tex != _get_particle_texture()
 	for i in n:
 		var spr := Sprite3D.new()
-		spr.texture = _get_particle_texture()
+		spr.texture = tex
 		spr.pixel_size = 0.5
 		spr.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 		spr.shaded = false
-		spr.modulate = Color(0.8, 0.87, 1.0, 0.85)
+		# A real MY_MAP texture (e.g. Pee.png) already carries its own
+		# authored color -- tinting it blue-white (the generic dot's own
+		# look) made every emit() effect in the corpus read as the same
+		# bluish sparkle regardless of what it actually was. Only the
+		# fallback dot still gets the neutral tint it was designed for.
+		spr.modulate = Color(1, 1, 1, 0.95) if real_tex else Color(0.8, 0.87, 1.0, 0.85)
 		_particle_parent.add_child(spr)
 		spr.global_position = origin
 		var dir := Vector3(randf_range(-1.0, 1.0), randf_range(0.3, 1.0), randf_range(-1.0, 1.0)).normalized()
@@ -3873,6 +3913,71 @@ func _do_emit(quantity: float, pos_gs: Vector3) -> void:
 			"age": 0.0,
 			"lifetime": randf_range(PARTICLE_LIFETIME_MIN, PARTICLE_LIFETIME_MAX),
 		})
+
+
+## Reported live (2026-08-10): "the pee animation is still not working
+## right" -- the emit() bridge (see this section's own docstring) worked
+## functionally but rendered EVERY particle effect corpus-wide with the
+## same generic bluish soft-dot sprite, since genuinely interpreting the
+## named particle function's own per-particle body is still out of scope
+## (a real, separate execution model, not a bug fix -- see above). Most of
+## that function's own body genuinely needs that (MY_SPEED/MY_AGE-driven
+## physics), but its OTHER job -- picking a texture (`MY_MAP = bpee;`,
+## Smash's own `stream()`) -- is a single static assignment, not runtime
+## behavior, and can be read directly off the AST the same way
+## `wdl_meta.json`'s own static sky_map/scene_map extraction already does
+## elsewhere in this port. Scans the particle-action's own function body
+## (bounded -- MY_MAP is always a top-level statement in this corpus, not
+## behind a loop) for a literal `MY_MAP = <bmap id>;` assignment, resolves
+## it through the SAME `_resolve_bmap_texture()` every panel/HUD bitmap
+## already uses, and caches the result per action name. Falls back to the
+## generic dot (unchanged) for any particle action with no MY_MAP
+## assignment, or one this port can't resolve -- never a regression, only
+## an upgrade when a real texture is actually found.
+func _get_particle_texture_for_action(action_name: String) -> Texture2D:
+	if action_name == "":
+		return _get_particle_texture()
+	var key := action_name.to_lower()
+	if _particle_textures_by_action.has(key):
+		var cached = _particle_textures_by_action[key]
+		return cached if cached != null else _get_particle_texture()
+	var resolved_fn := _resolve_function(action_name)
+	var bmap_name := ""
+	if resolved_fn != "":
+		bmap_name = _find_my_map_assignment(_functions[resolved_fn].get("body", {}))
+	var tex: Texture2D = _resolve_bmap_texture(bmap_name) if bmap_name != "" else null
+	_particle_textures_by_action[key] = tex
+	return tex if tex != null else _get_particle_texture()
+
+
+## Depth-first search for the first `MY_MAP = <id>;` assignment in a
+## particle function's own body -- see _get_particle_texture_for_action().
+func _find_my_map_assignment(node: Variant) -> String:
+	if typeof(node) != TYPE_DICTIONARY:
+		return ""
+	var t := str(node.get("t", ""))
+	if t == "expr_stmt":
+		return _find_my_map_assignment(node.get("expr"))
+	if t == "assign" and str(node.get("op", "")) == "=":
+		var target = node.get("target")
+		if typeof(target) == TYPE_DICTIONARY and str(target.get("t", "")) == "id" \
+				and str(target.get("name", "")).to_lower() == "my_map":
+			var value = node.get("value")
+			if typeof(value) == TYPE_DICTIONARY and str(value.get("t", "")) == "id":
+				return str(value.get("name", ""))
+		return ""
+	if t == "block":
+		for stmt in node.get("body", []):
+			var found := _find_my_map_assignment(stmt)
+			if found != "":
+				return found
+		return ""
+	if t == "if":
+		var found := _find_my_map_assignment(node.get("then"))
+		if found != "":
+			return found
+		return _find_my_map_assignment(node.get("else"))
+	return ""
 
 
 func _update_particles(delta: float) -> void:
@@ -3995,14 +4100,45 @@ func _do_vec_rotate(arg_exprs: Array, my) -> void:
 	_vec_put(arg_exprs[0], _godot_to_gs(rotated), my)
 
 
+## Reported live (2026-08-10, Town): "there are no running cars." Traced
+## past the earlier `_MOVEMODE` fix (Town's `SportCar` now correctly
+## enters its own `while(my._MOVEMODE>0){...actor_move2();wait(1);}`
+## walk loop) to a second, independent bug here: real Acknex's `move(ENT,
+## dist, absdist)` takes TWO distinct vectors -- `dist` is relative to the
+## entity's OWN current facing (pan/tilt/roll), `absdist` is a world-space
+## delta (used for gravity/jump/external forces, already resolved to
+## world axes by the caller) -- and applies BOTH. This only ever applied
+## `absdist` (arg_exprs[2]), silently dropping `dist` (arg_exprs[1])
+## entirely. That happened to be harmless for the corpus's other `move()`
+## idiom (`move(ME,nullskill,fireball_speed)` -- projectiles, where the
+## relative arg really is always zero) but breaks every ground-actor
+## caller of the real `dist,absdist` pattern (Town's SportCar,
+## WDL/actors.wdl-style `move_gravity2()` in Fight/Mount/Mine/Race/
+## WDL/Cards.wdl/WDL/PWF.wdl): their entire forward speed is accumulated
+## into `dist` (from `MY._SPEED_X`/`_SPEED_Y`, themselves driven by the
+## `force` the script sets), while `absdist` stays ~0 for anything not
+## jumping/falling -- so the entity's `global_position` never actually
+## moved. Confirmed via a headless trace: a spawned TownCar sat frozen at
+## its exact spawn point for 120+ frames even after the _MOVEMODE fix.
+## Fixed by rotating `dist` into world space using the entity's own
+## current pan/tilt/roll (the same `_acknex_entity_basis()` helper
+## `_do_vec_rotate()` already uses for the identical local-to-world
+## conversion) and adding both vectors, matching real Acknex's own
+## contract instead of a partial approximation of it.
 func _do_move_call(arg_exprs: Array, my) -> float:
 	if arg_exprs.size() < 3:
 		return 0.0
 	var entity = _resolve_entity(arg_exprs[0], my)
 	if entity == null or not is_instance_valid(entity):
 		return 0.0
-	var dist := _vec_get(arg_exprs[2], my)
-	entity.global_position += _gs_to_godot(dist)
+	var dist_gs := _vec_get(arg_exprs[1], my)
+	var absdist_gs := _vec_get(arg_exprs[2], my)
+	var pan := float(entity.get_meta("pan", 0.0))
+	var tilt := float(entity.get_meta("tilt", 0.0))
+	var roll := float(entity.get_meta("roll", 0.0))
+	var basis := _acknex_entity_basis(pan, tilt, roll)
+	var rel := basis * _gs_to_godot(dist_gs)
+	entity.global_position += rel + _gs_to_godot(absdist_gs)
 	return 0.0
 
 
@@ -4057,6 +4193,27 @@ func _do_scan_path(my) -> float:
 	my.set_meta("wdl_path_points", best_pts)
 	my.set_meta("wdl_path_index", best_idx)
 	_set_target_from_path_point(my, best_pts[best_idx])
+	# Reported live (2026-08-10, Town): "there are no running cars" --
+	# traced to Town.wdl's own `action SportCar` (the runtime-`create()`d
+	# traffic car actor), whose `while (my._MOVEMODE > 0) { ...
+	# actor_move2(); }` walk loop never ran at all: `_MOVEMODE` was never
+	# written to a positive value anywhere in the script (only ever set
+	# to 0 on the `result==0` "no path found" failure branch). Confirmed
+	# via headless trace: cars spawn correctly via create(), but sit at
+	# their spawn point for 120+ frames with zero movement. Compared
+	# against the same `result=scan_path(...); if(result==0){my._MOVEMODE
+	# =0;}` idiom in the 21 other corpus files that call scan_path
+	# (Start/Fight/Race/AsyAct1/... ) -- every one of THOSE explicitly
+	# writes `my._movemode = 1;` immediately BEFORE its own scan_path
+	# call, which is what actually made them work; SportCar is the one
+	# script in the corpus that omits it, relying on real Acknex's own
+	# scan_path() to set _MOVEMODE on success as a side effect (a genuine
+	# engine behavior this port's own scan_path stub never replicated).
+	# Setting it here matches that real contract and is a strict superset
+	# of the existing explicit-set convention -- every other caller
+	# already sets the same value 1 itself first, so this is a no-op for
+	# them and the missing piece for SportCar specifically.
+	my.set_meta("wdl_custom__movemode", 1.0)
 	return 1.0
 
 
