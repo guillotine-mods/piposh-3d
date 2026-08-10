@@ -14,8 +14,22 @@ extends Node
 const GameHud = preload("res://scripts/ui/game_hud.gd")
 const MdlAnimator = preload("res://scripts/engine/mdl_animator.gd")
 const WmbLevelLoader = preload("res://scripts/engine/wmb_level_loader.gd")
+const WdlCache = preload("res://scripts/engine/wdl_cache.gd")
 
 const AST_DIR := "res://assets/converted/wdl_ast/"
+
+## OFF by default. When true, _load_ast() stops reading the committed
+## `assets/converted/wdl_ast/*.json` (built offline by tools/parse_wdl.py) and
+## instead asks scripts/engine/wdl_cache.gd for the AST, which parses the
+## ORIGINAL `original/piposh3d/**.wdl` with the runtime parser on first use and
+## caches the result under user://. That removes the offline Python step from
+## the pipeline, at the cost of one ~3.7 s corpus parse per install -- see
+## wdl_cache.gd's header for why the cache is the design and not a tuning knob.
+##
+## With this false the load path is byte-for-byte what it has always been:
+## nothing below reads WdlCache at all. tools/smoke_wdl_cache.gd is the proof
+## that the two sources produce identical ASTs before this is ever flipped.
+const USE_RUNTIME_WDL := false
 
 var _globals: Dictionary = {}
 var _globals_lower: Dictionary = {}  # lowercase name -> canonical name, kept in sync with _globals -- see _index_global()
@@ -319,6 +333,13 @@ func _load_ast(stem: String) -> Dictionary:
 	var key := stem.to_lower()
 	if _ast_cache.has(key):
 		return _ast_cache[key]
+	if USE_RUNTIME_WDL:
+		# WdlCache is disk-backed only; the `_ast_cache` write above/below is
+		# still what keeps a level transition from re-reading IO.wdl's whole
+		# include chain.
+		var runtime_ast := WdlCache.get_ast(stem)
+		_ast_cache[key] = runtime_ast
+		return runtime_ast
 	var path := AST_DIR + stem + ".json"
 	if not (ResourceLoader.exists(path) or FileAccess.file_exists(path)):
 		_ast_cache[key] = {}
