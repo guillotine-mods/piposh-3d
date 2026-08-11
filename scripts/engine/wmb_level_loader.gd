@@ -1102,9 +1102,30 @@ func _should_feet_snap(action: String, stem: String) -> bool:
 	# action ever moves them) and they were removed 2026-07-28.
 	if s in [
 		"glass",   # 6.7% of mesh below origin (Dutyfree-shaped) â€” already sits at its own floor.
-		"headphon",
 		"dutyfree",  # mesh spans [0.44, 224.93] local Y â€” origin already sits at the mesh's own bottom.
 	]:
+		return false
+	# Reported live (2026-08-11), Plane2: the one WORN headphone (action
+	# A1, coupled to Piposh via _couple_unsnapped_props_to_snapped_actors)
+	# still floats well above the head even after that coupling fix --
+	# and docs/CONTRACT.md's own 2026-07-28 measured audit already flagged
+	# this stem as unresolved: "headphon | 46.3% below-origin | doesn't
+	# move at runtime | kept excluded... unresolved whether the stem-list
+	# entry is still needed on its own, low priority." 46.3% is the SAME
+	# bug shape as Cockpit (68.3%) and tv/hanger/towerw (32-55%), all four
+	# of which turned out to need the normal floor-lift once actually
+	# measured, not the blanket exclusion they'd been given. Narrowed
+	# instead of removed outright: the six desk-resting placements
+	# (action HeadPhone) keep the exclusion, since a resting-on-furniture
+	# origin is a genuinely different reference point than a floor/feet
+	# one and re-lifting them was never verified safe -- but the worn one
+	# (action A1, or any other non-HeadPhone placement) now gets its own
+	# real feet-snap correction from its OWN measured geometry instead of
+	# borrowing Piposh's -- which also makes the coupling fix moot for
+	# this specific pair (both members of the A1 group are now snapped,
+	# so _couple_unsnapped_props_to_snapped_actors's own ambiguity guard
+	# correctly steps aside instead of double-correcting).
+	if s == "headphon" and a == "headphone":
 		return false
 	# "b747"/"biplane"/"biplane2" (and, before them, "tv"/"hanger"/"towerw"/
 	# "cockpit" -- see that removal two rules below) used to be excluded on
