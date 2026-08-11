@@ -21,6 +21,7 @@ extends Node
 const GameHud = preload("res://scripts/ui/game_hud.gd")
 const MdlAnimator = preload("res://scripts/engine/mdl_animator.gd")
 const WdlInterpreter = preload("res://scripts/engine/wdl_interpreter.gd")
+const WdlCache = preload("res://scripts/engine/wdl_cache.gd")
 const WmbLevelLoader = preload("res://scripts/engine/wmb_level_loader.gd")
 
 signal status(msg: String)
@@ -347,6 +348,20 @@ func _wdl_ast_stem() -> String:
 	## the interpreter) and setup()'s inert-branch guard (to tell "no script"
 	## apart from "script exists but nothing ran it").
 	var stems: Array[String] = [_level_script.get_basename(), str(_loader.level_name)]
+
+	# 0-py: when the interpreter sources ASTs at runtime, assets/converted/
+	# wdl_ast/ may not exist AT ALL, so probing it here would report "no script"
+	# for every level and drop the whole game into the inert free-camera branch
+	# with the geometry still rendering -- which looks like "the level loads but
+	# nothing plays". This gate must ask the same question the interpreter will:
+	# is there a SOURCE for this stem? Asking a different question than the
+	# consumer is what made this a silent failure rather than an error.
+	if WdlInterpreter.USE_RUNTIME_WDL:
+		for s in stems:
+			if WdlCache.source_path(s) != "":
+				return s
+		return ""
+
 	for s in stems:
 		var path := "res://assets/converted/wdl_ast/%s.json" % s
 		if ResourceLoader.exists(path) or FileAccess.file_exists(path):
