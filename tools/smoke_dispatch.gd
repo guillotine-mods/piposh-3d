@@ -19,6 +19,10 @@ extends SceneTree
 ## Run: godot --headless --path . -s res://tools/smoke_dispatch.gd
 ## Run: godot --headless --path . -s res://tools/smoke_dispatch.gd -- --all
 
+## Authoritative "does this level have a script at all" source, independent of
+## whether the offline AST happens to exist on disk.
+const WdlCache = preload("res://scripts/engine/wdl_cache.gd")
+
 const TARGET_ROSTER: Array[String] = [
 	"Start", "Studio", "Town", "Shiks", "Plane", "Plane2", "Range",
 	"AsyAct2", "AsyAct3", "Desert", "Final", "InShrine", "Inn", "Map",
@@ -51,6 +55,7 @@ func _run() -> void:
 	])
 
 	var inert_with_ast: Array[String] = []
+	var script_but_no_ast: Array[String] = []
 	var missing_json: Array[String] = []
 	var ok_count := 0
 
@@ -100,6 +105,21 @@ func _run() -> void:
 		if inert and has_ast:
 			inert_with_ast.append(level)
 
+		# A level whose .wdl exists but which reports has_ast=false is a
+		# SEPARATE and worse failure than "inert with an AST", and the check
+		# above cannot see it: with has_ast false everywhere, "zero levels with
+		# an AST reached the inert branch" is trivially true and this test goes
+		# green while the whole game runs as inert scenery.
+		#
+		# That is exactly what happened on 2026-08-10 with the runtime WDL flag
+		# on: wdl_director._wdl_ast_stem() probed assets/converted/wdl_ast/,
+		# which no longer existed, so every level reported "no script" and the
+		# suite still passed. Ask the authoritative question instead -- does a
+		# source exist for this level -- and fail loudly when one does but the
+		# director cannot see it.
+		if not has_ast and WdlCache.source_path(level) != "":
+			script_but_no_ast.append(level)
+
 		print("%-10s %-5s %-7s %-11s %-14s %s" % [
 			level, fp, has_ast, interpreted, scripted, outcome
 		])
@@ -120,14 +140,25 @@ func _run() -> void:
 	print("\n%d/%d levels dispatched." % [ok_count, roster.size()])
 	if not missing_json.is_empty():
 		print("SKIPPED (no level JSON): %s" % ", ".join(missing_json))
-	if not inert_with_ast.is_empty():
+	if not script_but_no_ast.is_empty():
+		print(
+			"\nFAIL: %d level(s) have a .wdl source but the director reports NO AST: %s"
+			% [script_but_no_ast.size(), ", ".join(script_but_no_ast)]
+		)
+		print(
+			"      These run as inert scenery -- geometry renders, no camera, no sound, no logic."
+			+ " The old 'zero levels with an AST reached the inert branch' check CANNOT see this,"
+			+ " because with has_ast false everywhere it is trivially satisfied."
+		)
+		quit(1)
+	elif not inert_with_ast.is_empty():
 		print(
 			"\nFAIL: %d level(s) have a parsed WDL AST but reached the inert free-camera branch: %s"
 			% [inert_with_ast.size(), ", ".join(inert_with_ast)]
 		)
 		quit(1)
 	else:
-		print("\nOK: zero levels with an AST reached the inert branch.")
+		print("\nOK: zero levels with an AST reached the inert branch, and every level with a .wdl source has one.")
 		quit(0)
 
 
