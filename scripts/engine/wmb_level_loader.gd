@@ -1142,7 +1142,39 @@ func _should_feet_snap(action: String, stem: String) -> bool:
 	# light rigs) â€” so it needs the opt-out default like everything else,
 	# not an exclusion. User screenshot confirmed the console rendering
 	# mostly below floor level in Plane/Plane2 (docs/SESSION_LOG.md).
-	if a in ["headphone", "land", "wind", "ent_rotate", "item_pickup"]:
+	#
+	# Reported live (2026-08-11), Intro4: "BiPlane2_mdl_005/015... are still
+	# not placed correctly and are under the floor" -- same audit that found
+	# GB-33's b747/biplane STEM exclusions, but this is a SEPARATE, ACTION-
+	# NAME-keyed exclusion that survived that fix untouched: any entity
+	# using action "Land" was excluded regardless of stem, on the same
+	# "a WDL action moves it at runtime" reasoning already shown wrong.
+	# Checked what each of these four actually does, corpus-wide, before
+	# removing:
+	#   "land" -- Plane3.wdl's own `action Land` (the ORIGINAL reason this
+	#     was added, for "island") is real, but "island" already has its
+	#     OWN separate stem exclusion two rules above for an unrelated
+	#     reason (terrain AABB), making this one redundant for island and
+	#     purely harmful for everyone else. Intro4.wdl ALSO defines
+	#     `action Land` -- and it never touches x/y/z at all (just cycles
+	#     an animation clip and increments a counter) -- so BiPlane2's own
+	#     Land-actioned placements had ZERO mechanism to ever move,
+	#     permanently sunk with nothing to blame but this exclusion.
+	#   "wind" -- Intro4.wdl's own `action Wind` only ever writes `my.pan`
+	#     (a gentle rotational sway), never touches position at all -- this
+	#     exclusion never had anything to protect against in the first
+	#     place.
+	#   "item_pickup"/"ent_rotate" -- grepped the entire corpus for both as
+	#     both action NAMES and as any reference at all: neither has a
+	#     matching `action` block anywhere. Entities WED-assigned
+	#     "item_pickup" (confirmed live, e.g. Plane2's BiPlane2_mdl_002)
+	#     run no coroutine at all -- same permanently-static shape as the
+	#     six actionless B747s from GB-33. "ent_rotate" doesn't appear
+	#     anywhere in the corpus at all, not even as a stray reference.
+	# All four removed; "headphone" kept (redundant with -- not
+	# contradicting -- the "headphon" stem exclusion above, so removing it
+	# would change nothing).
+	if a in ["headphone"]:
 		return false
 	return true
 
@@ -1213,6 +1245,25 @@ func _mount_wall_card(root: Node3D, stem: String) -> void:
 		# out of sync with whatever the brush geometry itself resolved to
 		# again, on this branch or the pre-runtime-reader one.
 		var real_tex := _find_first_albedo_texture(root)
+		# Reported live (2026-08-11, Studio -- via the dev scene inspector,
+		# same corpus-wide exclusion class as GB-33's B747 fix): "which is
+		# also lower than it should be." The OLD fix here (`position.y +=
+		# quad.size.y * 0.12`) was a guess, explicitly flagged as one
+		# ("Unconfirmed pending playtest -- adjust or revert if still
+		# off") from before this branch's own runtime-WMB-reader migration
+		# even landed -- it was never actually measured against real
+		# geometry. `_should_feet_snap` excludes "shiknote" because the
+		# extracted brush is a degenerate edge-on slab (an AABB-based feet
+		# snap on THAT geometry is meaningless), but that doesn't mean the
+		# quad's own vertical placement should be an unmeasured guess
+		# either -- the real brush IS still available here, one frame
+		# before `_hide_meshes()` removes it, so its own real AABB center
+		# (the same measurement approach `_snap_mesh_feet_to_origin` uses
+		# for every other entity, just centered instead of floor-snapped,
+		# since this quad is a flat card, not a floor actor) replaces the
+		# guess with a real one.
+		var brush_aabb := _mesh_aabb_local(root, Transform3D.IDENTITY, true)
+		var measured_center_y := brush_aabb.position.y + brush_aabb.size.y * 0.5
 		_hide_meshes(root)
 		var mi := MeshInstance3D.new()
 		mi.name = "ShikNotePoster"
@@ -1230,15 +1281,13 @@ func _mount_wall_card(root: Node3D, stem: String) -> void:
 		else:
 			mat.albedo_color = Color(0.85, 0.75, 0.45)
 		mi.material_override = mat
-		# The quad is centered on the entity's raw WED origin, which isn't
-		# guaranteed to be the poster's own intended visual center (this
-		# whole quad is a hand-placed replacement for a brush the original
-		# extraction couldn't render sensibly -- see above -- not a
-		# measured position). Reported live as sitting visibly low
-		# (2026-07-31); nudged up by a fixed fraction of the quad's own
-		# height rather than a raw unit guess. Unconfirmed pending
-		# playtest -- adjust or revert if still off.
-		mi.position.y += quad.size.y * 0.12
+		if brush_aabb.size.y > 0.001:
+			mi.position.y = measured_center_y
+		else:
+			# No usable brush AABB (degenerate/empty) -- fall back to the
+			# old guess rather than pin the quad at the raw origin with no
+			# correction at all.
+			mi.position.y += quad.size.y * 0.12
 		# Quad faces +Z; WED pan orients the card (flatten authored tilt/roll).
 		var pan := float(root.get_meta("pan", 180.0))
 		root.transform = Transform3D(_acknex_entity_basis(pan, 0.0, 0.0), root.position)
