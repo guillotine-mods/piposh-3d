@@ -221,8 +221,7 @@ func load_level(p_level_name: String) -> bool:
 				_spawn_light(obj)
 	if level_name == "Plane":
 		_snap_piposh_walk_to_pip()
-	if level_name == "Plane2":
-		_snap_a1_headphone_to_piposh()
+	_couple_unsnapped_props_to_snapped_actors()
 	print(
 		"WmbLevelLoader: %s spawned=%d skipped=%d brush=%s floor_y=%.1f spawn=%s"
 		% [level_name, spawned, skipped, has_brush, floor_y, spawn_position]
@@ -275,45 +274,72 @@ func _snap_piposh_walk_to_pip() -> void:
 	piposh.global_position = pos
 
 
-## Reported live (2026-08-11): "the headphones rendered bigger than it
-## should be, bigger than Piposh's head." Raw WMB data ruled out a scale
-## bug (`Headphon_mdl_007`'s own authored scale here, 0.533, is legitimate
-## -- verified byte-for-byte against the source file -- and this is the
-## only Headphon placement in the whole corpus using a non-"HeadPhone"
-## action). The real cause: this one headphone is WED-authored as a fixed
-## offset from Piposh's own RAW origin (assuming Piposh renders exactly
-## there), but Piposh itself gets feet-snapped in this scene (action A1)
-## while headphones are unconditionally excluded from feet-snap
-## (`_should_feet_snap`'s own "headphon" stem exclusion, needed so the six
-## OTHER headphones -- decorative props resting on furniture -- don't get
-## incorrectly re-lifted). Piposh's own correction moves it up by ~58
-## units here; nothing moved the headphone the same amount, so it now
-## sits low on Piposh's neck/face instead of on top of the head -- close
-## enough to overlap the head from most angles, reading as "too big"
-## rather than "too low." Mirrors _snap_piposh_walk_to_pip()'s own
-## established shape: a small, named, post-spawn correction for one
-## specific cross-entity relationship, not a new generic attachment
-## system (this is the only place in the corpus that needs one).
-func _snap_a1_headphone_to_piposh() -> void:
-	var piposh: Node3D = null
-	var headphone: Node3D = null
+## Reported live (2026-08-11), Plane2: "the headphones rendered bigger
+## than it should be, bigger than Piposh's head." Raw WMB data ruled out a
+## scale bug (`Headphon_mdl_007`'s own authored scale here, 0.533, is
+## legitimate -- verified byte-for-byte against the source file). The real
+## cause, and it's a real ENGINE-WIDE gap, not a Plane2 one: some WED-
+## placed props are unconditionally excluded from feet-snap (see
+## `_should_feet_snap`'s own stem list -- "headphon", "glass", "island",
+## "biplane", ...) because snapping them by their OWN mesh AABB would be
+## wrong for their usual placement (e.g. six OTHER headphones resting on
+## furniture in this same level). But when one specific placement of an
+## excluded prop is instead WED-authored as a fixed offset from a nearby
+## CHARACTER that DOES get snapped (worn on a head, held in a hand, ...),
+## the character moves and the prop doesn't, breaking the WED-authored
+## relative offset -- this is a general shape, not unique to headphones or
+## to Plane2, so a level-specific patch (an earlier draft of this fix
+## special-cased "Plane2" + "Headphon" + "Piposh" by name, and got called
+## out for it, correctly: it would have missed every other level with the
+## same shape). Generalized instead: any two entities in the SAME level
+## sharing the SAME `action` name are almost always the same WED-authored
+## "moment" (matches how every other action-keyed lookup in this codebase
+## already treats action name as the unit of correlation, e.g.
+## `_default_anim_clip`). If exactly one of them got a real feet-snap
+## correction and at least one other in that action group didn't, and the
+## unsnapped one sits within plausible "attached prop" range of the
+## snapped one, it gets the SAME correction applied -- preserving whatever
+## relative offset WED originally authored, for any model, any action
+## name, any level, not just this one.
+const PROP_COUPLE_RADIUS := 150.0
+
+
+func _couple_unsnapped_props_to_snapped_actors() -> void:
+	var by_action := {}
 	for node in _entities_root.get_children():
 		if not (node is Node3D):
 			continue
 		var action := str(node.get_meta("action", ""))
-		var stem := str(node.get_meta("file", "")).get_file().get_basename().to_lower()
-		if action != "A1":
+		if action == "":
 			continue
-		if stem == "piposh":
-			piposh = node
-		elif stem == "headphon":
-			headphone = node
-	if piposh == null or headphone == null:
-		return
-	var delta: float = float(piposh.get_meta("feet_snap_delta_y", 0.0))
-	if absf(delta) < 0.001:
-		return
-	headphone.position.y += delta
+		if not by_action.has(action):
+			by_action[action] = []
+		(by_action[action] as Array).append(node)
+
+	for action in by_action.keys():
+		var group: Array = by_action[action]
+		if group.size() < 2:
+			continue
+		var snapped: Array = []
+		var unsnapped: Array = []
+		for node in group:
+			if (node as Node3D).has_meta("feet_snap_delta_y"):
+				snapped.append(node)
+			else:
+				unsnapped.append(node)
+		# Ambiguous otherwise: with 2+ snapped members sharing the action,
+		# there's no principled way to pick which one an unsnapped prop is
+		# meant to follow, so leave the group alone rather than guess.
+		if snapped.size() != 1 or unsnapped.is_empty():
+			continue
+		var anchor := snapped[0] as Node3D
+		var delta: float = float(anchor.get_meta("feet_snap_delta_y", 0.0))
+		if absf(delta) < 0.001:
+			continue
+		for node in unsnapped:
+			var prop := node as Node3D
+			if prop.global_position.distance_to(anchor.global_position) <= PROP_COUPLE_RADIUS:
+				prop.position.y += delta
 
 
 func _resolve_level_json(p_level_name: String) -> String:
