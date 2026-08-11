@@ -6,8 +6,19 @@ extends Node
 ## each imported mesh vertex to the nearest bind-pose anim vertex so morphs
 ## keep correct UVs.
 
+## Runtime .MDL reader (0-py migration). Deliberately NO `class_name` anywhere
+## in this project (commit 5c0adfa), so it is reached by preload only.
+const MdlFile = preload("res://scripts/engine/mdl_file.gd")
+const MDL_SRC_DIR := "res://original/piposh3d/MDL/"
+
 @export var fps := 12.0
 @export var autoplay_clip := "Stand"
+
+## Mirror of WmbLevelLoader.use_runtime_mdl, set by its `_attach_animator()`.
+## DEFAULTS OFF. Only `morph_to()` reads it — `setup_from_mdl()` is chosen by
+## the caller instead — so a hand-built animator (wdl_director.gd,
+## wdl_interpreter.gd, tools/smoke_anim_remap.gd) keeps the sidecar path.
+var use_runtime_mdl := false
 
 var _mesh_instance: MeshInstance3D
 var _base_arrays: Array = []
@@ -57,6 +68,8 @@ func _debug_log_throttled(msg: String) -> void:
 		PiposhDebug.log_msg("mdl-anim", msg)
 
 
+## SOURCE A — the converted sidecars (`<Stem>.mdlanim`, `<Stem>.skins`) written
+## by tools/convert_mdl.py. This is what ships today.
 func setup_from_stem(stem: String, host: Node) -> bool:
 	_mesh_instance = _find_mesh(host)
 	if _mesh_instance == null:
@@ -64,6 +77,30 @@ func setup_from_stem(stem: String, host: Node) -> bool:
 	_load_skins(stem)
 	var path := _resolve_anim(stem)
 	var has_anim := path != "" and FileAccess.file_exists(path) and _load_anim(path)
+	return _setup_tail(stem, has_anim)
+
+
+## SOURCE B — the same two things straight out of an already-parsed original
+## .MDL (`MdlFile.read_mdl_bytes()`), no sidecar involved. `m` is that
+## dictionary; `WmbLevelLoader._attach_animator()` passes the one SEAM 3 already
+## read for the mesh.
+##
+## Both sources leave exactly the same fields set (`_positions`, `_frame_count`,
+## `_anim_verts`, `_clips`, `_skin_textures`) and then run the identical tail.
+func setup_from_mdl(stem: String, host: Node, m: Dictionary) -> bool:
+	_mesh_instance = _find_mesh(host)
+	if _mesh_instance == null:
+		return false
+	use_runtime_mdl = true
+	_load_skins_runtime(m)
+	var has_anim := _load_anim_runtime(m)
+	return _setup_tail(stem, has_anim)
+
+
+## Shared tail of setup_from_stem() / setup_from_mdl(): bind pose, vertex remap,
+## material style, idle clip. Reads only the fields the two sources above set,
+## never the file system, so it cannot behave differently between them.
+func _setup_tail(stem: String, has_anim: bool) -> bool:
 	if not (_mesh_instance.mesh is ArrayMesh):
 		return _skin_textures.size() > 0
 	var am := _mesh_instance.mesh as ArrayMesh
@@ -123,26 +160,42 @@ func setup_from_stem(stem: String, host: Node) -> bool:
 ## MDL's mesh/animation/skin set at runtime, in place (same node, same
 ## transform/collision), then resumable back via a second morph_to() call.
 ## Previously entirely unimplemented — see docs/SESSION_LOG.md 2026-07-28.
+## Follows `use_runtime_mdl` for exactly the same reason SEAM 3 does: a morph
+## must land on the same mesh the loader would have spawned for that stem, or
+## the flag would change what the entity turns INTO, not just where it came
+## from.
 func morph_to(stem: String) -> bool:
 	if _mesh_instance == null:
 		return false
-	var glb := _resolve_glb(stem)
-	if glb == "":
-		return false
-	var packed: Resource = load(glb)
-	if not (packed is PackedScene):
-		return false
-	var temp: Node = (packed as PackedScene).instantiate()
-	var src := _find_mesh(temp)
-	if src == null or not (src.mesh is ArrayMesh) or (src.mesh as ArrayMesh).get_surface_count() < 1:
+	var src_mat: Material = null
+	var runtime_mdl: Dictionary = {}
+	if use_runtime_mdl:
+		runtime_mdl = _read_runtime_mdl(stem)
+		if runtime_mdl.is_empty():
+			return false
+		var rm := MdlFile.build_mesh(runtime_mdl)
+		if rm.get_surface_count() < 1:
+			return false
+		_base_arrays = rm.surface_get_arrays(0)
+		src_mat = _runtime_mdl_material(runtime_mdl)
+	else:
+		var glb := _resolve_glb(stem)
+		if glb == "":
+			return false
+		var packed: Resource = load(glb)
+		if not (packed is PackedScene):
+			return false
+		var temp: Node = (packed as PackedScene).instantiate()
+		var src := _find_mesh(temp)
+		if src == null or not (src.mesh is ArrayMesh) or (src.mesh as ArrayMesh).get_surface_count() < 1:
+			temp.queue_free()
+			return false
+		var am := src.mesh as ArrayMesh
+		_base_arrays = am.surface_get_arrays(0)
+		src_mat = src.get_active_material(0)
+		if src_mat == null:
+			src_mat = am.surface_get_material(0)
 		temp.queue_free()
-		return false
-	var am := src.mesh as ArrayMesh
-	_base_arrays = am.surface_get_arrays(0)
-	var src_mat := src.get_active_material(0)
-	if src_mat == null:
-		src_mat = am.surface_get_material(0)
-	temp.queue_free()
 
 	_clips.clear()
 	_remap = PackedInt32Array()
@@ -158,17 +211,23 @@ func morph_to(stem: String) -> bool:
 
 	var vert_arr: Variant = _base_arrays[Mesh.ARRAY_VERTEX]
 	_mesh_verts = (vert_arr as PackedVector3Array).size() if vert_arr is PackedVector3Array else 0
-	_bind_stem(stem, src_mat, vert_arr)
+	_bind_stem(stem, src_mat, vert_arr, runtime_mdl)
 	return true
 
 
-## Shared tail of setup_from_stem() / morph_to(): load skins/.mdlanim for
-## `stem`, build the vertex remap against whatever mesh is currently in
-## `_base_arrays`, apply material style, and start an idle pose/clip.
-func _bind_stem(stem: String, src_mat: Material, vert_arr: Variant) -> void:
-	_load_skins(stem)
-	var path := _resolve_anim(stem)
-	var has_anim := path != "" and FileAccess.file_exists(path) and _load_anim(path)
+## Shared tail of morph_to(): load skins/frames for `stem` from whichever
+## source produced the mesh above (`m` non-empty = runtime .MDL), build the
+## vertex remap against whatever mesh is currently in `_base_arrays`, apply
+## material style, and start an idle pose/clip.
+func _bind_stem(stem: String, src_mat: Material, vert_arr: Variant, mdl: Dictionary = {}) -> void:
+	var has_anim := false
+	if not mdl.is_empty():
+		_load_skins_runtime(mdl)
+		has_anim = _load_anim_runtime(mdl)
+	else:
+		_load_skins(stem)
+		var path := _resolve_anim(stem)
+		has_anim = path != "" and FileAccess.file_exists(path) and _load_anim(path)
 	if has_anim and _mesh_verts > 0 and _anim_verts > 0:
 		_build_remap(vert_arr as PackedVector3Array)
 	elif has_anim and _mesh_verts != _anim_verts:
@@ -601,3 +660,173 @@ func _load_anim(path: String) -> bool:
 			idxs.append(int(f.get_32()))
 		_clips[cname] = idxs
 	return _frame_count > 0 and _anim_verts > 0
+
+
+# ---------------------------------------------------------------------------
+# Runtime .MDL source (0-py migration) — the sidecars, reconstructed in-engine
+# ---------------------------------------------------------------------------
+#
+# The two sidecars are NOT extra information the .MDL lacks; they are a
+# repackaging of `MeshData` fields convert_mdl.py already had:
+#
+#   .skins   <- write_skins(mesh)   : mesh.skin_pngs, in order, and ONLY when
+#                                     there is more than one skin.
+#   .mdlanim <- write_mdlanim(mesh) : mesh.frames (name + remapped positions),
+#                                     plus a clip table derived from nothing but
+#                                     the frame NAMES via _clip_name(), and ONLY
+#                                     when there is more than one frame.
+#
+# `MdlFile.read_mdl_bytes()` returns those same two arrays (`skins`, `frames`)
+# with the same contents in the same order, so both are reproduced exactly,
+# early-outs included. Where the sidecar path round-trips through PNG and
+# float32 bytes, these read the decoded Image / already-float32-rounded floats
+# directly; tools/smoke_mdl_integration.gd compares the resulting `_positions`
+# element by element.
+
+
+## Port of `convert_mdl.py::write_skins`.
+##
+## The `len(skins) <= 1: return` early-out is load-bearing, not an optimisation:
+## a single-skin model has NO .skins file, so `_skin_textures` stays empty and
+## `set_skin()` is a no-op. play_frame() calls `set_skin(1)` unconditionally, so
+## populating a one-entry list here would start switching a texture the GLB path
+## never touches.
+func _load_skins_runtime(m: Dictionary) -> void:
+	_skin_textures.clear()
+	var skins: Array = m.get("skins", [])
+	if skins.size() <= 1:
+		return
+	for s in skins:
+		var sd: Dictionary = s
+		var img: Image = sd.get("image")
+		if img == null:
+			continue
+		_skin_textures.append(ImageTexture.create_from_image(img))
+
+
+## Port of `convert_mdl.py::write_mdlanim` + `_load_anim`'s own read of it.
+##
+## Same `len(mesh.frames) <= 1: return` early-out: a one-frame model gets no
+## .mdlanim, so `has_anim` is false and the tail falls through to the static
+## bind pose exactly as it does today.
+func _load_anim_runtime(m: Dictionary) -> bool:
+	_clips.clear()
+	_anim_verts = 0
+	_frame_count = 0
+	_positions = PackedFloat32Array()
+	var frames: Array = m.get("frames", [])
+	if frames.size() <= 1:
+		return false
+	# write_mdlanim: `verts = int(mesh.frames[0][1].shape[0])`.
+	var first: Array = frames[0]
+	var first_pos: Array = first[1]
+	_anim_verts = first_pos.size()
+	if _anim_verts <= 0:
+		return false
+	_frame_count = frames.size()
+	_positions.resize(_frame_count * _anim_verts * 3)
+	for fi in _frame_count:
+		var fr: Array = frames[fi]
+		var pos: Array = fr[1]
+		var base := fi * _anim_verts * 3
+		# write_mdlanim zero-pads / truncates a frame whose vert count differs
+		# from frame 0's. MdlFile remaps every frame through the same
+		# `pos_idx_list`, so in practice they are always equal; the guard is
+		# kept so the two paths agree even if that ever stops holding.
+		var n := mini(_anim_verts, pos.size())
+		for v in n:
+			var p: Array = pos[v]
+			_positions[base + v * 3] = float(p[0])
+			_positions[base + v * 3 + 1] = float(p[1])
+			_positions[base + v * 3 + 2] = float(p[2])
+		var key := _clip_key(str(fr[0]))
+		var idxs: PackedInt32Array = _clips.get(key, PackedInt32Array())
+		idxs.append(fi)
+		_clips[key] = idxs
+	return _frame_count > 0 and _anim_verts > 0
+
+
+## Port of `convert_mdl.py::_clip_name` — "Walk3"/"Frame 10"/"$Duck" -> the clip
+## key ent_cycle uses. Plus write_mdlanim's own
+## `cname.encode("ascii", "replace")[:16]`, which is what actually lands in the
+## sidecar and therefore what `_load_anim()` reads back: non-ASCII becomes "?"
+## and the name is cut at 16 bytes. (MDL frame-name fields are 16 bytes, so the
+## cut is a no-op in this corpus; it is here so the two paths cannot diverge on
+## a model outside it.)
+static func _clip_key(frame_name: String) -> String:
+	var n := frame_name.strip_edges()
+	if n.begins_with("$"):
+		n = n.substr(1)
+	while n.length() > 0:
+		var c := n.unicode_at(n.length() - 1)
+		# Python: `n[-1].isdigit() or n[-1] in " _"`.
+		if (c >= 48 and c <= 57) or c == 32 or c == 95:
+			n = n.substr(0, n.length() - 1)
+		else:
+			break
+	if n == "":
+		n = frame_name
+	var out := ""
+	for i in n.length():
+		if out.length() >= 16:
+			break
+		var c2 := n.unicode_at(i)
+		out += n.substr(i, 1) if c2 < 128 else "?"
+	return out
+
+
+## `WmbLevelLoader._resolve_mdl_source()`'s counterpart, for morph_to() only.
+## Duplicated rather than shared because MdlAnimator already owns its own
+## `_resolve_glb()` / `_resolve_anim()` for exactly the same reason: it is used
+## by callers (wdl_interpreter, wdl_director) that have no loader to ask.
+func _read_runtime_mdl(stem: String) -> Dictionary:
+	if stem == "":
+		return {}
+	var src := ""
+	var dir := DirAccess.open(MDL_SRC_DIR)
+	if dir != null:
+		var want := stem.to_lower()
+		dir.list_dir_begin()
+		var fn := dir.get_next()
+		while fn != "":
+			if not dir.current_is_dir() and fn.get_extension().to_lower() == "mdl":
+				if fn.get_basename().to_lower() == want:
+					src = MDL_SRC_DIR + fn
+					break
+			fn = dir.get_next()
+		dir.list_dir_end()
+	if src == "":
+		for s in [stem, stem.to_lower()]:
+			for ext in [".MDL", ".mdl"]:
+				var p: String = MDL_SRC_DIR + str(s) + ext
+				if FileAccess.file_exists(p):
+					src = p
+					break
+			if src != "":
+				break
+	if src == "":
+		return {}
+	var f := FileAccess.open(src, FileAccess.READ)
+	if f == null:
+		return {}
+	var bytes := f.get_buffer(f.get_length())
+	f.close()
+	if bytes.is_empty():
+		return {}
+	var m: Dictionary = MdlFile.read_mdl_bytes(bytes, src.get_file().get_basename(), true)
+	return {} if m.has("error") else m
+
+
+## The material `convert_mdl.py::write_glb` writes into the glTF (name "skin",
+## base colour = skin 0). See WmbLevelLoader._runtime_mdl_material() for why the
+## NAME matters.
+func _runtime_mdl_material(m: Dictionary) -> StandardMaterial3D:
+	var mat := StandardMaterial3D.new()
+	mat.resource_name = "skin"
+	var skins: Array = m.get("skins", [])
+	if not skins.is_empty():
+		var s0: Dictionary = skins[0]
+		var img: Image = s0.get("image")
+		if img != null:
+			mat.albedo_texture = ImageTexture.create_from_image(img)
+	return mat

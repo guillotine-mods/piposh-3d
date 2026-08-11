@@ -7,6 +7,8 @@ const MdlAnimator = preload("res://scripts/engine/mdl_animator.gd")
 ## in this project (commit 5c0adfa: a global class inside a mounted .pck never
 ## resolves), so it is reached by preload only.
 const WmbFile = preload("res://scripts/engine/wmb_file.gd")
+## Runtime .MDL reader (0-py migration). Same no-`class_name` rule as WmbFile.
+const MdlFile = preload("res://scripts/engine/mdl_file.gd")
 
 signal entity_triggered(action: String, skills: Array, node: Node3D)
 signal level_loaded(level_name: String, ok: bool)
@@ -18,6 +20,9 @@ const LEVEL_DIR := "res://assets/converted/levels/"
 ## enabled. Same directory the byte-level oracles (tools/smoke_wmb_reader.gd,
 ## tools/smoke_wmb_mesh.gd) read.
 const WMB_SRC_DIR := "res://original/piposh3d/WMB/"
+## Original .MDL models, read byte-for-byte by `MdlFile` when the runtime MDL
+## path is enabled. Same directory tools/smoke_mdl_reader.gd reads.
+const MDL_SRC_DIR := "res://original/piposh3d/MDL/"
 
 ## FEATURE FLAG — DEFAULTS OFF.
 ##
@@ -37,6 +42,37 @@ const USE_RUNTIME_WMB := false
 ## process and compared (tools/smoke_wmb_integration.gd). Nothing in the game
 ## writes this; it defaults to the const, which is false.
 var use_runtime_wmb: bool = USE_RUNTIME_WMB
+
+## FEATURE FLAG — DEFAULTS OFF.
+##
+## false (default): entity models come from `assets/converted/mdl/<Stem>.glb`
+## plus the `<Stem>.mdlanim` / `<Stem>.skins` sidecars, i.e. the offline
+## `tools/convert_mdl.py` output. Behaviour is exactly what it has always been;
+## none of the runtime-MDL code below is reached.
+##
+## true: the same three things (mesh, vertex-frame animation, skin set) are
+## produced in-engine by `MdlFile` straight out of `original/piposh3d/MDL/
+## *.MDL`. `MdlFile` is already proven identical to `tools/convert_mdl.py` for
+## all 648 models, geometry AND skin pixels (tools/smoke_mdl_reader.gd); what
+## this flag adds is the *engine* question — does a scene fed by the reader
+## equal a scene fed by the GLB + sidecars — which
+## tools/smoke_mdl_integration.gd answers.
+##
+## ANIMATION IS INCLUDED, not stubbed. The `.mdlanim` sidecar is not extra
+## information: `convert_mdl.py::write_mdlanim` derives its clip table purely
+## from the frame NAMES it already has in `mesh.frames` (`_clip_name()` strips a
+## leading `$` and trailing digits/spaces/underscores, then groups frames by the
+## result in first-seen order), and `MdlFile.read_mdl_bytes()` returns that same
+## `frames` array — same names, same order, same remapped positions. So the
+## whole sidecar is reconstructible at runtime; see
+## `MdlAnimator._load_anim_runtime()` / `_clip_key()`, which port
+## `write_mdlanim` + `_clip_name` line for line, including its
+## `len(mesh.frames) <= 1 -> no sidecar at all` early-out.
+const USE_RUNTIME_MDL := false
+## Per-instance override of the const above, so both paths can be built in one
+## process and compared (tools/smoke_mdl_integration.gd). Nothing in the game
+## writes this; it defaults to the const, which is false.
+var use_runtime_mdl: bool = USE_RUNTIME_MDL
 ## Island.MDL uses scale 20; allow generous but reject skybox junk.
 ## Reported live (2026-08-08): Plane3 "loads but nothing ever
 ## progresses" -- its own `action Dome` (`BackDome.MDL`, scale 95.36)
@@ -71,6 +107,14 @@ var _wmb_index: Dictionary = {}
 ## lowercased stem -> "res://original/piposh3d/WMB/<file>", with the file's real
 ## on-disk casing. Built lazily, only on the runtime path.
 var _wmb_src_index: Dictionary = {}
+## lowercased stem -> "res://original/piposh3d/MDL/<file>", with the file's real
+## on-disk casing. Built lazily, only on the runtime path.
+var _mdl_src_index: Dictionary = {}
+## lowercased resolved .MDL path -> MdlFile.read_mdl_bytes() result (or {} when
+## the model is missing/unreadable). A level places the same model many times
+## (crowds, cards, props) and decoding every skin is the expensive half of the
+## read, so this is parsed once per model per loader.
+var _mdl_cache: Dictionary = {}
 
 
 func _ready() -> void:
@@ -92,6 +136,14 @@ func load_level(p_level_name: String) -> bool:
 	first_person_spawn = {}
 	_clear_children(_geometry_root)
 	_clear_children(_entities_root)
+	# Bound the runtime-MDL cache to ONE level's models. A parsed model holds a
+	# decoded Image per skin (a character can have a dozen), so keeping every
+	# model ever visited would grow without limit across a play session — the
+	# GLB path leans on Godot's own resource cache for this, which the runtime
+	# path has no equivalent of. Nothing spawned earlier still points at these:
+	# `build_mesh()` returns a fresh ArrayMesh and `ImageTexture.create_from_
+	# image()` copies, so the entities just freed above own their own copies.
+	_mdl_cache.clear()
 
 	# SEAM 1 — level object data. Both branches must yield the same dictionary
 	# shape; `WmbFile.read_level()` returns exactly what
@@ -392,6 +444,160 @@ func _build_wmb_src_index() -> void:
 	dir.list_dir_end()
 
 
+## Locate the original .MDL for an entity's model stem.
+##
+## Deliberately mirrors `_find_glb()`, INCLUDING its prefix fallback, because
+## the two must resolve to the same model or the flag changes which mesh an
+## entity gets rather than only where that mesh came from. Index-first for the
+## same reason as `_resolve_wmb_source()`: the corpus mixes `.MDL` and `.mdl`,
+## and a probe loop on a case-insensitive filesystem makes Godot log a "Case
+## mismatch opening requested file" line for every one.
+func _resolve_mdl_source(stem: String) -> String:
+	if stem == "":
+		return ""
+	if _mdl_src_index.is_empty():
+		_build_mdl_src_index()
+	var key := stem.to_lower()
+	var hit := str(_mdl_src_index.get(key, ""))
+	if hit != "":
+		return hit
+	var casings: Array[String] = [stem, stem.to_lower()]
+	casings.append(stem.substr(0, 1).to_upper() + stem.substr(1).to_lower())
+	for s in casings:
+		for ext in [".MDL", ".mdl"]:
+			var p: String = MDL_SRC_DIR + s + ext
+			if FileAccess.file_exists(p):
+				return p
+	# _find_glb()'s own last resort, reproduced: stems >= 6 chars may resolve to
+	# a longer/shorter sibling's asset.
+	if key.length() >= 6:
+		for k in _mdl_src_index.keys():
+			var ks := str(k)
+			if ks.begins_with(key) or key.begins_with(ks):
+				return str(_mdl_src_index[ks])
+	return ""
+
+
+func _build_mdl_src_index() -> void:
+	var dir := DirAccess.open(MDL_SRC_DIR)
+	if dir == null:
+		return
+	dir.list_dir_begin()
+	var fn := dir.get_next()
+	while fn != "":
+		if not dir.current_is_dir() and fn.get_extension().to_lower() == "mdl":
+			_mdl_src_index[fn.get_basename().to_lower()] = MDL_SRC_DIR + fn
+		fn = dir.get_next()
+	dir.list_dir_end()
+
+
+## Parse (and cache) one original .MDL. Returns {} wherever the GLB path would
+## have returned "" / failed to load, so `_add_marker()` is reached the same way.
+##
+## The stem handed to `read_mdl_bytes()` is the RESOLVED file's own basename,
+## not the WED-authored one, because that is what `convert_mdl.py` passes to
+## `_apply_yaw_allowlist` (`path.stem`) — with the prefix fallback above, the
+## two can differ.
+func _read_runtime_mdl(stem: String) -> Dictionary:
+	var src := _resolve_mdl_source(stem)
+	if src == "":
+		return {}
+	var key := src.to_lower()
+	if _mdl_cache.has(key):
+		return _mdl_cache[key]
+	var out: Dictionary = {}
+	var f := FileAccess.open(src, FileAccess.READ)
+	if f != null:
+		var bytes := f.get_buffer(f.get_length())
+		f.close()
+		if not bytes.is_empty():
+			var m: Dictionary = MdlFile.read_mdl_bytes(
+				bytes, src.get_file().get_basename(), true
+			)
+			if not m.has("error"):
+				out = m
+	_mdl_cache[key] = out
+	return out
+
+
+## Would `MdlAnimator.setup_from_stem()` actually have FOUND the sidecars for
+## this entity's authored stem?
+##
+## This exists because `_find_glb()` / `_resolve_mdl_source()` have a prefix
+## fallback but the sidecar lookup does NOT: `_attach_animator()` passes the
+## WED-authored stem straight through, and `<stem>.mdlanim` / `<stem>.skins` are
+## named after the SOURCE MODEL. When the fallback fires, the two disagree.
+##
+## Real case, found by tools/smoke_mdl_integration.gd across the corpus (Inn):
+## `PhotSign.pcx` names no model at all, so both paths prefix-resolve its mesh
+## to `Phot` — but the converted path then asks for `PhotSign.skins`, which does
+## not exist, and the entity ends up with ZERO skins even though `Phot.skins`
+## holds six. The runtime reader has no such split (mesh and skins come out of
+## the one file it opened), so without this guard it would hand that entity six
+## skins the shipping build never gives it — the flag would be changing
+## BEHAVIOUR, not just the source of the bytes.
+##
+## The rule is exact, not approximate: a sidecar `<X>.skins` exists only if
+## model `X` exists, and if model `X` existed the index lookup above would have
+## hit it exactly, so "resolved basename != requested stem" is precisely the
+## case where the converted path finds nothing.
+##
+## NOTE this deliberately PRESERVES the mismatch rather than fixing it. Whether
+## a `.pcx`-named entity should inherit an unrelated model's skins at all is a
+## real question about `_find_glb()`'s fallback, and it belongs in its own
+## change with its own evidence — not smuggled in behind a source-swap flag.
+func _runtime_sidecars_would_match(stem: String) -> bool:
+	var src := _resolve_mdl_source(stem)
+	return src != "" and src.get_file().get_basename().to_lower() == stem.to_lower()
+
+
+## Build the same node `assets/converted/mdl/<Stem>.glb` would instantiate to,
+## but straight from the original .MDL via `MdlFile`.
+##
+## Shape mirrors `convert_mdl.py::write_glb`'s glTF: ONE mesh node carrying one
+## POSITION/TEXCOORD_0/INDICES primitive with a single material, wrapped in a
+## scene root — which is what `PackedScene.instantiate()` yields.
+func _build_runtime_mdl_node(stem: String, m: Dictionary) -> Node3D:
+	if m.is_empty():
+		return null
+	var mesh := MdlFile.build_mesh(m)
+	if mesh.get_surface_count() == 0:
+		return null
+	mesh.surface_set_material(0, _runtime_mdl_material(m))
+	var mi := MeshInstance3D.new()
+	mi.name = stem
+	mi.mesh = mesh
+	var holder := Node3D.new()
+	holder.name = stem
+	holder.add_child(mi)
+	return holder
+
+
+## The glTF material `write_glb` writes: name "skin", base colour = skin 0,
+## metallic 0 / roughness 1, MASK alpha, double sided.
+##
+## The NAME is load-bearing, not cosmetic. `_force_unshaded_if_needed()` turns
+## any surface whose `mat.resource_name` is empty (or "#default") fully
+## transparent — that rule exists for anonymous WMB brush sky faces, but it
+## keys off nothing but the name, so leaving a runtime MDL material unnamed
+## would silently make every entity in the level invisible.
+func _runtime_mdl_material(m: Dictionary) -> StandardMaterial3D:
+	var mat := StandardMaterial3D.new()
+	mat.resource_name = "skin"
+	mat.metallic = 0.0
+	mat.roughness = 1.0
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+	mat.alpha_scissor_threshold = 0.5
+	var skins: Array = m.get("skins", [])
+	if not skins.is_empty():
+		var s0: Dictionary = skins[0]
+		var img: Image = s0.get("image")
+		if img != null:
+			mat.albedo_texture = ImageTexture.create_from_image(img)
+	return mat
+
+
 func _resolve_brush_glb(p_level_name: String) -> String:
 	var names: Array[String] = [p_level_name, p_level_name.to_lower()]
 	for name in names:
@@ -637,12 +843,21 @@ func _spawn_entity(obj: Dictionary) -> bool:
 
 	var stem := file.get_file().get_basename()
 	var is_wmb := file.to_lower().ends_with(".wmb")
-	# SEAM 3 — per-entity visual. Only .wmb-backed props change source; .mdl
-	# props keep going through _find_glb() either way (MDL is a separate reader
-	# and a separate migration step). Everything after `inst` is shared.
+	# SEAM 3 — per-entity visual. `.wmb`-backed props follow `use_runtime_wmb`,
+	# `.mdl`-backed ones follow `use_runtime_mdl`; the two readers are separate
+	# migration steps and each flag moves only its own family. Everything after
+	# `inst` is shared, so materials, feet-snap, collision and the wall-card
+	# special cases are applied identically whichever branch produced the node.
 	var inst: Node = null
+	## Non-empty only on the runtime MDL branch. Handed straight to
+	## `_attach_animator()` so SEAM 4 does not re-read (and re-decode the skins
+	## of) a file this call already parsed.
+	var mdl: Dictionary = {}
 	if use_runtime_wmb and is_wmb:
 		inst = _build_runtime_wmb_node(stem)
+	elif use_runtime_mdl and not is_wmb:
+		mdl = _read_runtime_mdl(stem)
+		inst = _build_runtime_mdl_node(stem, mdl)
 	else:
 		var glb_path := _find_wmb_glb(stem) if is_wmb else _find_glb(stem)
 		if glb_path != "":
@@ -654,7 +869,11 @@ func _spawn_entity(obj: Dictionary) -> bool:
 		_force_unshaded_if_needed(inst, is_wmb)
 		root.add_child(inst)
 		if not is_wmb:
-			_attach_animator(root, stem, action)
+			# SEAM 4's source, subject to the sidecar-availability rule below.
+			var anim_src: Dictionary = {}
+			if not mdl.is_empty() and _runtime_sidecars_would_match(stem):
+				anim_src = mdl
+			_attach_animator(root, stem, action, anim_src)
 		# Opt-in feet-snap for floor actors only (see CONTRACT).
 		if _should_feet_snap(action, stem):
 			_snap_mesh_feet_to_origin(root, scl.y)
@@ -881,14 +1100,29 @@ func _mount_wall_card(root: Node3D, stem: String) -> void:
 			root.scale *= 1.8
 
 
-func _attach_animator(root: Node3D, stem: String, action: String) -> void:
+## SEAM 4 — per-entity animation + skin set. Both branches leave the animator in
+## the same state (`_positions`, `_clips`, `_skin_textures`, `_remap`) and then
+## run MdlAnimator's own identical shared tail, which is what picks the idle
+## pose, builds the vertex remap and applies the material style.
+##
+## `mdl` is the already-parsed `MdlFile` dictionary from SEAM 3, or {} on the
+## converted-asset path.
+func _attach_animator(root: Node3D, stem: String, action: String, mdl: Dictionary = {}) -> void:
 	if root.get_node_or_null("MdlAnimator") != null:
 		return
 	var anim := MdlAnimator.new()
 	anim.name = "MdlAnimator"
 	anim.autoplay_clip = _default_anim_clip(action, stem)
+	# Propagated so a later Acknex morph(<File.mdl>, entity) stays on the same
+	# source of truth as the model it is replacing.
+	anim.use_runtime_mdl = use_runtime_mdl
 	root.add_child(anim)
-	if not anim.setup_from_stem(stem, root):
+	var ok := (
+		anim.setup_from_mdl(stem, root, mdl)
+		if (use_runtime_mdl and not mdl.is_empty())
+		else anim.setup_from_stem(stem, root)
+	)
+	if not ok:
 		anim.queue_free()
 
 
