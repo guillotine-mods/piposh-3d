@@ -2049,6 +2049,56 @@ func _set_field(obj_expr: Variant, field: String, value: Variant, my) -> void:
 			var anim := node.get_node_or_null("MdlAnimator") as MdlAnimator
 			if anim:
 				anim.set_skin(int(_to_num(value)))
+		"lightrange", "lightred", "lightgreen", "lightblue":
+			# Reported live (2026-08-11): "the screen behind yachdal is lit
+			# up, but its not like that in the orig game, and there was
+			# light froming from some light sources which is now not seen
+			# in the game... I think this issue is the same for all stages."
+			# Traced to a genuine, entirely unbridged real Acknex feature:
+			# any entity can act as its own dynamic point-light source via
+			# `MY.LIGHTRANGE`/`LIGHTRED`/`LIGHTGREEN`/`LIGHTBLUE` -- fully
+			# independent of the entity's own mesh visibility (Intro7/
+			# Intro12's own `ACTION FlickerLight`, the pattern that led here,
+			# explicitly sets `MY.INVISIBLE=ON` on itself first, then drives
+			# these four fields in a `wait`-looped flicker -- the entity is
+			# CORRECTLY invisible, it's meant to be felt as light, not seen
+			# as a model). A corpus-wide grep found 24 files use this same
+			# four-field pattern -- Intro10 (this report's own "the intro"),
+			# Town, Smash, Inn, Range, Ziggy, and more -- confirming this is
+			# systemic, not level-specific, exactly as suspected. Real
+			# values sampled across the corpus confirm a 0-255 colour scale
+			# (`lightgreen=255` etc, common) and GS-world-unit range values
+			# (100-1100) the same order of magnitude as native WMB light
+			# entities' own `range` field, so this reuses that field's own
+			# established `_spawn_light()` GS-to-Godot scale factor for
+			# consistency rather than inventing a new one.
+			#
+			# Several real corpus scripts also READ these back to animate a
+			# flicker incrementally (HitUFO: `my.lightrange = my.lightrange +
+			# (random(3)-1)*5;`, clamped each tick; InShrine similarly) --
+			# storing under the SAME `wdl_custom_<field>` key `_get_field()`'s
+			# own generic fallback already reads (line ~1979) means those
+			# reads keep working for free, no separate read-side case needed,
+			# and there is exactly one source of truth for the raw value
+			# instead of a second, easily-desynced copy.
+			#
+			# Lazily creates a real child OmniLight3D the first time any of
+			# the four fields is written, then updates just the changed
+			# channel afterward -- these four writes commonly happen as four
+			# separate consecutive statements (see the corpus samples), so
+			# the light has to accumulate state across calls, not be
+			# rebuilt whole each time.
+			node.set_meta("wdl_custom_" + low, _to_num(value))
+			var light := _get_or_create_entity_light(node)
+			if low == "lightrange":
+				light.omni_range = clampf(_to_num(value) * 0.05, 4.0, 120.0)
+				light.visible = _to_num(value) > 0.0
+			else:
+				light.light_color = Color(
+					clampf(float(node.get_meta("wdl_custom_lightred", 0.0)) / 255.0, 0.0, 1.0),
+					clampf(float(node.get_meta("wdl_custom_lightgreen", 0.0)) / 255.0, 0.0, 1.0),
+					clampf(float(node.get_meta("wdl_custom_lightblue", 0.0)) / 255.0, 0.0, 1.0),
+				)
 		"invisible":
 			# NB-7 (2026-08-02, Shiks): WmbLevelLoader's own spawn-time
 			# WED-flag handling (`_hide_meshes()`, bit0=INVISIBLE) hides
@@ -2182,6 +2232,22 @@ func _set_field(obj_expr: Variant, field: String, value: Variant, my) -> void:
 				# Generic custom-field fallback -- see the matching comment
 				# in _get_field().
 				node.set_meta("wdl_custom_" + low, value)
+
+
+## See the "lightrange"/"lightred"/"lightgreen"/"lightblue" case in
+## _set_field() above. One real OmniLight3D per entity, created the first
+## time any of the four fields is written and reused after that (never
+## rebuilt per-write, which would both be wasteful and reset state the
+## OTHER three fields already set this same tick).
+func _get_or_create_entity_light(node: Node3D) -> OmniLight3D:
+	var light := node.get_node_or_null("WdlEntityLight") as OmniLight3D
+	if light == null:
+		light = OmniLight3D.new()
+		light.name = "WdlEntityLight"
+		light.light_energy = 1.0
+		light.shadow_enabled = false
+		node.add_child(light)
+	return light
 
 
 ## See the "invisible" case in _set_field() above -- mirrors
@@ -4641,15 +4707,40 @@ func _do_create(a: Array, my) -> Node3D:
 	if a.size() < 1 or _loader == null:
 		return null
 	var stem := String(a[0]).get_basename()
-	var path := "res://assets/converted/mdl/%s.glb" % stem
 	var inst: Node3D = null
 	var is_sprite := false
-	if ResourceLoader.exists(path):
-		var packed := load(path)
-		if not (packed is PackedScene):
-			return null
-		inst = (packed as PackedScene).instantiate() as Node3D
-	else:
+	var mdl: Dictionary = {}
+	# Reported live (2026-08-11), Town: "there are no running cars" (again,
+	# on zero-py-no-assets this time). This used to hardcode
+	# `res://assets/converted/mdl/<Stem>.glb` -- a path that only ever
+	# existed under the OLD Python-pipeline output, which this branch
+	# deletes almost entirely (see WmbLevelLoader's own SEAM 3 doc comment
+	# and `use_runtime_mdl`). `action MakeCars`' own `create(<TownCar.mdl>,
+	# ...)` calls (and every other corpus `create()` call spawning a real
+	# model -- gibs, sparks, Fight/Race/Mount/Mine traffic, etc.) always
+	# missed this path, fell through to the bitmap-sprite branch below, and
+	# silently produced nothing whenever no matching GFX texture existed
+	# either -- exactly "no cars ever spawn". Fixed by mirroring
+	# WmbLevelLoader's own SEAM 3 branch here: read the ORIGINAL .MDL
+	# straight off disk via the same `_read_runtime_mdl()`/
+	# `_build_runtime_mdl_node()` the level loader already uses for every
+	# WED-placed entity, so a runtime-`create()`'d entity and a level-
+	# placed one resolve their model through the identical code path.
+	if bool(_loader.get("use_runtime_mdl")):
+		mdl = _loader.call("_read_runtime_mdl", stem)
+		var node: Node3D = _loader.call("_build_runtime_mdl_node", stem, mdl)
+		if node != null:
+			inst = node
+	if inst == null:
+		# Legacy/flag-off fallback, kept for parity with the level loader's
+		# own SEAM 3 `else` branch -- a no-op in practice on this branch
+		# since `assets/converted/mdl/` no longer exists.
+		var path := "res://assets/converted/mdl/%s.glb" % stem
+		if ResourceLoader.exists(path):
+			var packed := load(path)
+			if packed is PackedScene:
+				inst = (packed as PackedScene).instantiate() as Node3D
+	if inst == null:
 		var sprite_tex := _resolve_gfx_texture_by_stem(stem)
 		if sprite_tex == null:
 			return null
@@ -4680,14 +4771,19 @@ func _do_create(a: Array, my) -> Node3D:
 	# superset of the old behavior, not a narrowing).
 	var pos_source: Node3D = (a[1] if a.size() > 1 and a[1] is Node3D and is_instance_valid(a[1]) else my)
 	inst.global_transform = pos_source.global_transform if pos_source else Transform3D.IDENTITY
-	if not is_sprite:
-		var anim := MdlAnimator.new()
-		anim.name = "MdlAnimator"
-		inst.add_child(anim)
-		anim.setup_from_stem(stem, inst)
 	inst.set_meta("action", str(a[2]) if a.size() > 2 else "")
 	inst.set_meta("wdl_skills", [])
 	var action := str(inst.get_meta("action", ""))
+	if not is_sprite:
+		# Mirrors WmbLevelLoader's own SEAM 4 (`_attach_animator()`), so a
+		# runtime-`create()`'d entity gets the same runtime-MDL animation
+		# clips (and the same sidecar-mismatch guard) as a level-placed one,
+		# instead of the old blind `setup_from_stem()` call that depended on
+		# now-deleted `.mdlanim`/`.skins` converted sidecars.
+		var anim_src: Dictionary = {}
+		if not mdl.is_empty() and _loader.call("_runtime_sidecars_would_match", stem):
+			anim_src = mdl
+		_loader.call("_attach_animator", inst, stem, action, anim_src)
 	# Reported live (2026-08-10, this round): "the water, the driving
 	# cars etc that they are not in the same heights." Every WED-placed
 	# entity gets its own model's feet-to-origin offset corrected at

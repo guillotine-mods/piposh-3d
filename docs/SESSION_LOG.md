@@ -9557,3 +9557,155 @@ Full regression sweep, run after every fix and again before each push:
 (camera-authority regression, unchanged), `smoke_sky_brush_transparency_
 check`, `smoke_fog_check`, `smoke_particle_texture_check`, `smoke_gib_
 debris_movement_check` -- all green throughout.
+
+
+## 2026-08-11 (GB-28/GB-29/GB-30) -- zero-py-no-assets branch: three
+real, corpus-wide bugs specific to this branch's runtime-reader
+migration, all sharing one root-cause shape
+
+Context: after cherry-picking GB-25/26/27 from main onto
+zero-py-no-assets, the user asked to start fixing this branch
+specifically "so it will run exactly like the original game without
+bugs, both graphical and gameplay wise," then reported live: "also, the
+poster behind Ami in the Studio room now doesn't show an image, but just
+a blank paper instead" and, separately, "the screen behind yachdal is lit
+up, but its not like that in the orig game, and there was light froming
+from some light sources which is now not seen in the game, it just looks
+a bit dark, i think this issue is the same for all stages in the game."
+
+### GB-28: Studio poster shows a blank placeholder instead of an image
+
+_mount_wall_card()'s "shiknote" branch (WmbLevelLoader) hardcoded
+res://assets/converted/wmb/ShikNote_modaa1.png -- a path that only ever
+existed under the old Python-pipeline output, deleted on this branch
+along with the rest of assets/converted/**. ResourceLoader.exists()
+silently returned false and the code fell back to a flat tan placeholder
+colour -- exactly "blank paper."
+
+The fix does not need to resolve a new path at all: the same entity's
+existing (degenerate-geometry but correctly-textured) brush mesh, already
+built by the runtime WMB reader earlier in the same spawn call, already
+carries the right texture. Added _find_first_albedo_texture() (walks the
+node's own MeshInstance3D descendants, returns the first
+BaseMaterial3D.albedo_texture it finds) and calls it BEFORE
+_hide_meshes(root) runs, so the quad card's own material reuses that
+texture instead of re-deriving a dead converted-asset path. Verified live
+via a throwaway diagnostic: "poster found=... albedo_texture=<ImageTexture...>"
+now resolves to a real image.
+
+### GB-29: entity-as-dynamic-light-source Acknex feature was entirely
+unbridged
+
+Acknex lets any WDL entity act as its own point-light source via
+MY.LIGHTRANGE/LIGHTRED/LIGHTGREEN/LIGHTBLUE, completely independent of
+the entity's own mesh visibility -- confirmed via ACTION FlickerLight in
+Intro7.wdl/Intro12.wdl, which sets MY.INVISIBLE=ON on itself then drives
+exactly these four fields every tick to flicker. A corpus grep found this
+idiom used across 24 files. _set_field() had no case for any of the four
+-- every write was a silent no-op -- so every scene that depends on a
+scripted local light for real contrast (not just flat uniform ambient)
+rendered darker and flatter than the original. This directly matches the
+user's own "light sources... now not seen... same issue for all stages"
+report.
+
+Fixed by adding a "lightrange", "lightred", "lightgreen", "lightblue":
+case to _set_field()'s match low: block, backed by a new
+_get_or_create_entity_light(node) -> OmniLight3D helper that lazily
+creates a WdlEntityLight child the first time any of the four fields is
+written. Range maps GS world units to Godot's omni_range via the same
+order-of-magnitude scale native WMB light entities already use
+(clampf(value * 0.05, 4.0, 120.0)); color channels are 0-255 scaled to
+0-1.
+
+First draft stored the raw values under separate meta keys
+(wdl_light_red etc.) before self-catching that this was wrong: several
+real corpus scripts (HitUFO, InShrine) read MY.LIGHTRANGE back
+incrementally to animate flicker (my.lightrange = my.lightrange + 5
+style), and _get_field()'s own generic custom-field fallback only ever
+reads back node.get_meta("wdl_custom_" + low, 0.0) -- a separate key
+would have made every read-back silently return 0.0/stale. Corrected to
+store under "wdl_custom_" + low uniformly, then verified the full
+write-then-read-back round trip with a throwaway diagnostic before
+considering this done.
+
+### GB-30: _do_create() still pointed at a dead converted-assets path --
+found while re-investigating GB-27's Town car-height gap
+
+While re-opening GB-27's still-open "Town car... heights" item on this
+branch specifically, reproduced a much bigger symptom than a height
+offset: smoke_town_traffic_check.gd failed outright, "no traffic car
+spawned by frame 400" -- no car existed at all, on this branch, even
+though the same test is green on main.
+
+First theory (wrong, caught before it caused any code change): suspected
+the runtime WMB path/waypoint reader (WmbFile._read_path(),
+scripts/engine/wmb_file.gd) was silently returning zero paths for
+Town.wmb, since a throwaway diagnostic (WmbFile.read_level("res://
+original/piposh3d/Town.WMB")) reported "paths count=0" while main's own
+old converted Town.json has five real named paths. Read _read_path() and
+tools/extract_wmb_full.py's own Python equivalent line-by-line looking
+for a discrepancy and found none -- the GDScript is a faithful,
+structurally identical port, including the documented WMB5
+"fNumPoints==0 -> fall back to num_edges" quirk. The actual bug was in
+the diagnostic itself: it used original/piposh3d/Town.WMB, missing the
+real /WMB/ subdirectory (original/piposh3d/WMB/Town.WMB, exactly what
+WmbLevelLoader's own WMB_SRC_DIR constant already points at) --
+FileAccess.open() silently failed, read_level() returned an error dict
+with no paths key, and .get("paths", []) masked that as an innocent-
+looking empty array. Re-ran against the correct path: 5 real paths,
+matching structure to the Python oracle (path_001 8pts/8edges ...
+path_009 32pts/32edges). wmb_file.gd needed no fix at all.
+
+With that ruled out, re-read action MakeCars (Town.wdl) and its
+create() bridge (_do_create(), wdl_interpreter.gd) directly, and found
+the real bug: _do_create() still hardcoded
+res://assets/converted/mdl/%s.glb as its ONLY way to resolve a spawned
+entity's model -- a path family this branch deletes almost entirely (see
+WmbLevelLoader's own use_runtime_mdl/SEAM 3 migration, which every WED-
+PLACED entity already goes through). Every runtime create() call -- not
+just Town's traffic, but action MakeCars in Fight/Race/Mount/Mine, every
+gib/debris spawn (_gib(), WDL/war.wdl), Range/Shooter/InShrine's Spark
+hitscan marker, Smash's Wart billboard sprite -- silently found no GLB,
+fell through to a bitmap-sprite fallback, and returned null outright
+whenever no matching GFX texture existed either. action MakeCars' own
+300-tick spawn timer fired every ~5 seconds for the whole level's
+lifetime, spawning literally nothing, every time.
+
+Fixed by mirroring WmbLevelLoader's own SEAM 3/SEAM 4 branches inside
+_do_create() instead of re-deriving a dead path: when
+_loader.use_runtime_mdl is true, read the original .MDL via the loader's
+own _read_runtime_mdl(stem) / _build_runtime_mdl_node(stem, m) (both
+already instance methods on WmbLevelLoader, called the same "private-by-
+convention but externally .call()-able" way this file already calls
+_should_feet_snap/_snap_mesh_feet_to_origin), then attach animation via
+the loader's own _attach_animator() (which itself picks setup_from_mdl()
+vs. the old sidecar-based setup_from_stem() per the loader's existing
+_runtime_sidecars_would_match() guard) instead of the previous blind,
+unconditional MdlAnimator.setup_from_stem() call. A runtime-create()'d
+entity and a level-placed one now resolve their model through the
+identical code path; the old GLB-path branch is kept as a no-op-today
+fallback only for parity with the loader's own flag-off behavior, not
+because anything still needs it.
+
+Verified live: smoke_town_traffic_check.gd now reports "car=Bus3
+moved=126.1 over 120 frames" / "OK" (previously: no car ever spawned).
+Ran every other create()-touching smoke test to check for regressions
+from centralizing this: smoke_bitmap_create_check (sprite-fallback path
+still correct, OK), smoke_gib_debris_movement_check (OK),
+smoke_plane3_vase_catch_check (BadBird's own _gib()-via-create() chain,
+OK), smoke_range_hitscan_check (Spark hitscan, OK), and smoke_dispatch
+(19/19 levels still reach the interpreter). Also ran
+smoke_mdl_integration and smoke_click_survey, saw a pre-existing FAIL and
+some noisy warnings respectively in both -- confirmed via git stash + re-
+run that BOTH predate this session's changes on this branch
+(smoke_mdl_integration compares the now-deleted GLB+sidecar pipeline
+against the runtime reader by design, a stale test assumption from before
+the asset deletion, not a real regression; smoke_click_survey's warnings
+are unrelated shutdown-time camera-write noise, and the script's own pass
+criterion -- 16 levels, 307 clickables, zero script errors -- was met in
+both the baseline and post-fix runs).
+
+### Git
+
+All three (GB-28/29/30) committed together on zero-py-no-assets as one
+commit, plus this doc update, then pushed.

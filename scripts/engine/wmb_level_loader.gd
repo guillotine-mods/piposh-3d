@@ -1079,6 +1079,27 @@ func _mount_wall_card(root: Node3D, stem: String) -> void:
 	root.position.z -= 6.0
 	if stem == "shiknote":
 		# Extracted brush is an edge-on slab; poster uses WED pan (usually 180).
+		#
+		# Reported live (2026-08-11, Studio, zero-py-no-assets branch): "the
+		# poster behind Ami now doesn't show an image, but just a blank paper
+		# instead." Root cause: this replacement quad's own texture was a
+		# hardcoded path into the OLD Python-converted asset tree
+		# (`assets/converted/wmb/ShikNote_modaa1.png`) -- deleted on this
+		# branch (`f0618a47`, "run entirely from the originals"), so
+		# `ResourceLoader.exists()` always fails now and every ShikNote
+		# poster falls back to the flat tan placeholder colour, i.e. exactly
+		# "blank paper". Never updated when the runtime WMB reader
+		# (`_build_runtime_wmb_node()`) landed, even though that reader
+		# already parses this exact ShikNote.WMB and decodes its own real
+		# texture correctly -- `root` already has that (edge-on, correctly
+		# textured) brush mesh as a child at this point, added moments ago
+		# by the generic entity-spawn path above, before `_hide_meshes()`
+		# below gets to it. Grabbing that already-loaded texture directly
+		# (real pixels, real name, whichever reader produced it) instead of
+		# a second, separately-guessed load path means this can never drift
+		# out of sync with whatever the brush geometry itself resolved to
+		# again, on this branch or the pre-runtime-reader one.
+		var real_tex := _find_first_albedo_texture(root)
 		_hide_meshes(root)
 		var mi := MeshInstance3D.new()
 		mi.name = "ShikNotePoster"
@@ -1091,9 +1112,8 @@ func _mount_wall_card(root: Node3D, stem: String) -> void:
 		mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
 		mat.alpha_scissor_threshold = 0.05
-		var tex_path := "res://assets/converted/wmb/ShikNote_modaa1.png"
-		if ResourceLoader.exists(tex_path):
-			mat.albedo_texture = load(tex_path) as Texture2D
+		if real_tex != null:
+			mat.albedo_texture = real_tex
 		else:
 			mat.albedo_color = Color(0.85, 0.75, 0.45)
 		mi.material_override = mat
@@ -1114,6 +1134,26 @@ func _mount_wall_card(root: Node3D, stem: String) -> void:
 		# WED already authored rollâ‰ˆ89 / tiltâ‰ˆ6 â€” only fix tiny scale.
 		if root.scale.x < 0.9:
 			root.scale *= 1.8
+
+
+## Depth-first search for the first real (non-empty) albedo texture already
+## attached to a mesh under `node` -- see `_mount_wall_card()`'s own "shiknote"
+## branch, the one caller that needs this.
+func _find_first_albedo_texture(node: Node) -> Texture2D:
+	if node is MeshInstance3D:
+		var mi := node as MeshInstance3D
+		if mi.mesh:
+			for i in mi.mesh.get_surface_count():
+				var mat := mi.get_active_material(i)
+				if mat is BaseMaterial3D:
+					var tex := (mat as BaseMaterial3D).albedo_texture
+					if tex != null:
+						return tex
+	for c in node.get_children():
+		var found := _find_first_albedo_texture(c)
+		if found != null:
+			return found
+	return null
 
 
 ## SEAM 4 â€” per-entity animation + skin set. Both branches leave the animator in
