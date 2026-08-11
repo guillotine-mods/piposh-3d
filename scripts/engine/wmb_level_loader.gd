@@ -1128,12 +1128,22 @@ func _should_feet_snap(action: String, stem: String) -> bool:
 	# sitting wrong PERMANENTLY, with no animation to ever fix them --
 	# confirming this was never actually about runtime control.
 	if s in ["island"]:
-		# Kept excluded, unlike b747/biplane: a huge terrain/landmass prop
-		# (Plane3's descending island, Town's floating one), not a compact
-		# vehicle -- feet-snapping by mesh AABB is the wrong tool for
-		# terrain the same way it would be for level brush geometry
-		# itself, a different failure mode than "vehicle happens to hang
-		# below its origin like everything else."
+		# Re-audited alongside the GB-33/GB-34 sweep (same "does a WDL
+		# action moving it later justify skipping the spawn correction"
+		# question) and kept excluded, but for a genuinely different
+		# reason this time, not just carried-over caution: measured
+		# directly (Island.glb local Y -7.70..+33.33, this level's own
+		# scale 20x/origin -76) that a normal feet-snap correction here
+		# would only close ~154 of the ~387-unit gap already documented
+		# between Island and floor_y in both Plane3 and Town -- i.e. even
+		# the "correct" floor-snap answer wouldn't make this land on the
+		# ground, because a floating/descending island was never meant to
+		# rest on the floor the way a parked aircraft or a worn prop is.
+		# Two of Island's own placements exist (Plane3: `action Land`,
+		# descends into the scene; Town: no action, permanently static)
+		# and BOTH show the same large gap -- genuinely open, needs a
+		# live reference capture of the intended floating height, not a
+		# formulaic fix; left excluded rather than guessed at further.
 		return false
 	# "cockpit" was excluded here on the assumption it's fixed attachment
 	# scenery like a ceiling light, needing no feet/origin correction.
