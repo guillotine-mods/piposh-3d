@@ -221,6 +221,8 @@ func load_level(p_level_name: String) -> bool:
 				_spawn_light(obj)
 	if level_name == "Plane":
 		_snap_piposh_walk_to_pip()
+	if level_name == "Plane2":
+		_snap_a1_headphone_to_piposh()
 	print(
 		"WmbLevelLoader: %s spawned=%d skipped=%d brush=%s floor_y=%.1f spawn=%s"
 		% [level_name, spawned, skipped, has_brush, floor_y, spawn_position]
@@ -271,6 +273,47 @@ func _snap_piposh_walk_to_pip() -> void:
 	var pos := piposh.global_position
 	pos.y = pip.global_position.y
 	piposh.global_position = pos
+
+
+## Reported live (2026-08-11): "the headphones rendered bigger than it
+## should be, bigger than Piposh's head." Raw WMB data ruled out a scale
+## bug (`Headphon_mdl_007`'s own authored scale here, 0.533, is legitimate
+## -- verified byte-for-byte against the source file -- and this is the
+## only Headphon placement in the whole corpus using a non-"HeadPhone"
+## action). The real cause: this one headphone is WED-authored as a fixed
+## offset from Piposh's own RAW origin (assuming Piposh renders exactly
+## there), but Piposh itself gets feet-snapped in this scene (action A1)
+## while headphones are unconditionally excluded from feet-snap
+## (`_should_feet_snap`'s own "headphon" stem exclusion, needed so the six
+## OTHER headphones -- decorative props resting on furniture -- don't get
+## incorrectly re-lifted). Piposh's own correction moves it up by ~58
+## units here; nothing moved the headphone the same amount, so it now
+## sits low on Piposh's neck/face instead of on top of the head -- close
+## enough to overlap the head from most angles, reading as "too big"
+## rather than "too low." Mirrors _snap_piposh_walk_to_pip()'s own
+## established shape: a small, named, post-spawn correction for one
+## specific cross-entity relationship, not a new generic attachment
+## system (this is the only place in the corpus that needs one).
+func _snap_a1_headphone_to_piposh() -> void:
+	var piposh: Node3D = null
+	var headphone: Node3D = null
+	for node in _entities_root.get_children():
+		if not (node is Node3D):
+			continue
+		var action := str(node.get_meta("action", ""))
+		var stem := str(node.get_meta("file", "")).get_file().get_basename().to_lower()
+		if action != "A1":
+			continue
+		if stem == "piposh":
+			piposh = node
+		elif stem == "headphon":
+			headphone = node
+	if piposh == null or headphone == null:
+		return
+	var delta: float = float(piposh.get_meta("feet_snap_delta_y", 0.0))
+	if absf(delta) < 0.001:
+		return
+	headphone.position.y += delta
 
 
 func _resolve_level_json(p_level_name: String) -> String:
@@ -688,6 +731,24 @@ func _snap_mesh_feet_to_origin(root: Node3D, _scale_y: float = 1.0) -> void:
 	var y_before := root.position.y
 	# Lift root so lowest transformed point sits at origin Y.
 	root.position.y -= min_y
+	# Reported live (2026-08-11), Plane2: a WED-authored worn prop
+	# (Headphon_mdl_007, action A1) sits at a fixed absolute Y offset from
+	# Piposh's own RAW WED origin, assuming Piposh renders exactly there --
+	# but Piposh itself (unlike headphones, which are unconditionally
+	# excluded from feet-snap, see _should_feet_snap's own "headphon" stem
+	# exclusion) DOES get feet-snapped, shifting its rendered position by
+	# this same delta. Nothing recomputes the worn prop's position to
+	# match, so it visually drifts away from Piposh's actual (corrected)
+	# head -- looked like "the headphone is oversized" because it ends up
+	# sitting at the wrong depth on Piposh's face/neck instead of properly
+	# on top of the head, not an actual scale bug (confirmed: this is the
+	# ONLY Headphon placement in the entire corpus using a non-"HeadPhone"
+	# action, and its own authored scale is unrelated to this). Exposed
+	# generically here (not headphone-specific) so any future "this
+	# WED-placed prop must stay visually coupled to that feet-snapped
+	# entity" case can read the same value instead of re-deriving it --
+	# see _snap_a1_headphone_to_piposh() below for the one current user.
+	root.set_meta("feet_snap_delta_y", -min_y)
 	var anim := root.get_node_or_null("MdlAnimator")
 	var clip := str(anim.get("_current_clip")) if anim else "(no MdlAnimator)"
 	PiposhDebug.log_msg(
