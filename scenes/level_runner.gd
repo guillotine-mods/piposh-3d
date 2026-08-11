@@ -647,15 +647,45 @@ func _toggle_level_select() -> void:
 	list.select_mode = ItemList.SELECT_SINGLE
 	vbox.add_child(list)
 
+	# Source the roster from levels.json, NOT DirAccess. CONTRACT.md 6 and
+	# PORTING_MANUAL Phase 7 both forbid DirAccess on res:// here, and for a
+	# concrete reason: directory listing does not work inside an exported PCK,
+	# so the old implementation produced an EMPTY list in every exported build
+	# while looking fine when run from source. levels.json is the committed
+	# index and is PCK-safe.
+	#
+	# It is also the only source that still works once the 0-py runtime readers
+	# are enabled, since assets/converted/levels/ need not exist at all then.
 	var names: Array[String] = []
-	var dir := DirAccess.open("res://assets/converted/levels/")
-	if dir:
-		dir.list_dir_begin()
-		var fn := dir.get_next()
-		while fn != "":
-			if fn.ends_with(".json") and not fn.ends_with("_brush.json"):
-				names.append(fn.get_basename())
-			fn = dir.get_next()
+	var f := FileAccess.open("res://assets/converted/levels.json", FileAccess.READ)
+	if f != null:
+		var parsed = JSON.parse_string(f.get_as_text())
+		f.close()
+		if typeof(parsed) == TYPE_DICTIONARY:
+			# levels.json is keyed by level name; accept either a top-level map
+			# or a "levels" sub-map so a future reshape does not silently empty
+			# the list again.
+			var src: Dictionary = parsed.get("levels", parsed)
+			for k in src.keys():
+				names.append(str(k))
+		elif typeof(parsed) == TYPE_ARRAY:
+			for e in parsed:
+				if typeof(e) == TYPE_STRING:
+					names.append(str(e))
+				elif typeof(e) == TYPE_DICTIONARY and e.has("name"):
+					names.append(str(e["name"]))
+	if names.is_empty():
+		# Last resort only, and loudly: an empty picker is the exact failure
+		# this change exists to prevent.
+		push_warning("[level-select] levels.json gave no levels; falling back to DirAccess (will be empty in an exported build)")
+		var dir := DirAccess.open("res://assets/converted/levels/")
+		if dir:
+			dir.list_dir_begin()
+			var fn := dir.get_next()
+			while fn != "":
+				if fn.ends_with(".json") and not fn.ends_with("_brush.json"):
+					names.append(fn.get_basename())
+				fn = dir.get_next()
 	names.sort()
 	for n in names:
 		list.add_item(n)
