@@ -8981,3 +8981,47 @@ PIDs, and agent reports must be re-verified before they are believed.
 Second environment note: PowerShell 5.1 turns Godot's stderr warning flood into
 NativeCommandError records and aborts the pipeline, producing bogus "exit 255"
 results. Run Godot through cmd /c with explicit redirection instead.
+
+## 2026-08-10 — FULL 0-py proof: the whole game runs with all 6,452 converted files absent
+
+Checked: all four readers are now wired (WMB, WDL, GFX, MDL), each behind a flag
+defaulting off. The question this settles is not "does the reader match the
+Python" (the byte oracles answer that) nor "does the engine behave the same when
+fed by the reader" (the integration oracles answer that) but the real one: are
+the converted assets actually UNNECESSARY.
+
+Method: all four flags flipped true, and every converted directory the readers
+replace RENAMED out of the way -- levels (1,790), wdl_ast (85), mdl (2,977),
+gfx (1,070), wmb (530). 6,452 files total. Then the full roster.
+
+**Result: 55/56 levels dispatched, 55 with brush=true, ZERO levels inert,
+exit 0.** Every level's brush geometry, entity placement, spawn point, models,
+animations, skins, bitmaps and game script came from original/piposh3d/ at
+runtime. The 56th is IO, which is not a level. Everything restored and
+re-verified afterwards: 1790/85/2977/1070/530 files back, all flags false,
+working tree clean.
+
+That is the migration's central claim, demonstrated rather than argued.
+
+**smoke_test is NOT a valid oracle for this and its failure here is expected.**
+It reads assets/converted/levels/<Name>.json directly (line 14) and parses it
+itself, never going through WmbLevelLoader, so it is a converted-asset validator
+rather than an engine test. It reported 0/6 with the assets hidden while all
+three scenes still loaded fine. smoke_dispatch is the valid oracle because it
+actually drives the engine.
+
+**Performance is the real finding.** The runtime path took roughly 30 seconds
+per level uncached, because it decodes WMB geometry and textures, MDL meshes,
+skins and morph frames, GFX bitmaps, and parses WDL, all on every load. Against
+the measured throughputs (WMB objects 215 MB/s, but GFX 3.4 Mpx/s and WDL
+0.43 MB/s in GDScript) this is exactly where the numbers said the cost would
+land. The user:// cache is therefore not an optimisation for shipping -- it is
+required. WdlCache already exists and gives 7.1x; the GFX and MDL paths need the
+same treatment before the flags can be defaults.
+
+Procedural note worth keeping: the first attempt at this ran as a plain tool
+call, hit the 10-minute timeout, and was killed BETWEEN hiding the assets and
+restoring them -- leaving all 6,452 files renamed away. It was caught and
+restored, but the lesson is that any hide/run/restore must put the restore in a
+finally block inside a script the timeout cannot interrupt, not in the calling
+shell.

@@ -15,6 +15,7 @@ const GameHud = preload("res://scripts/ui/game_hud.gd")
 const MdlAnimator = preload("res://scripts/engine/mdl_animator.gd")
 const WmbLevelLoader = preload("res://scripts/engine/wmb_level_loader.gd")
 const WdlCache = preload("res://scripts/engine/wdl_cache.gd")
+const GfxBitmap = preload("res://scripts/engine/gfx_bitmap.gd")
 
 const AST_DIR := "res://assets/converted/wdl_ast/"
 
@@ -711,6 +712,22 @@ func _resolve_bmap_texture(bmap_var_name: String) -> Texture2D:
 ## `full_file`, when given, is tried as a last-resort literal path (some
 ## converted names don't lowercase-stem cleanly).
 func _resolve_gfx_texture_by_stem(stem: String, full_file: String = "") -> Texture2D:
+	# 0-py seam. GfxBitmap.get_texture() is the single bitmap resolver for the
+	# project; with USE_RUNTIME_GFX false it returns the same converted PNG the
+	# code below would have found, so this branch is a no-op by default.
+	#
+	# `full_file` is preferred deliberately: it is the literal filename from the
+	# WDL itself (e.g. create(<Wart.pcx>,...)), so it carries an EXPLICIT
+	# extension. That matters for the 17 stems existing as both .bmp and .pcx
+	# (NB-7) -- three are declared both ways with genuinely different images, so
+	# there is no correct per-stem answer, only a correct per-call-site one, and
+	# this call site knows which file the script actually asked for.
+	if GfxBitmap.use_runtime_gfx:
+		var runtime_name := full_file if full_file != "" else stem
+		var rt := GfxBitmap.get_texture(runtime_name)
+		if rt != null:
+			return rt
+
 	var candidates := [GFX_DIR + stem + ".png", GFX_DIR + stem.to_lower() + ".png"]
 	if full_file != "":
 		candidates.append(GFX_DIR + full_file)
