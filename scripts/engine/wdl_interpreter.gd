@@ -1,15 +1,15 @@
-extends Node
+﻿extends Node
 ## Generic WDL runtime: executes the AST tools/parse_wdl.py produces
 ## (assets/converted/wdl_ast/{Level}.json) directly, instead of a level
 ## getting its behavior from a hand-ported wdl_director.gd chapter. Built
-## 2026-07-28 to replace per-level hand-porting with one engine — see
+## 2026-07-28 to replace per-level hand-porting with one engine â€” see
 ## docs/CONTRACT.md and docs/SESSION_LOG.md for the reasoning and the
 ## parity-test rule this must pass before driving content nobody has
 ## verified yet.
 ##
 ## Only statement execution (exec_block/exec_stmt/exec_while/exec_if) is
 ## coroutine-aware (uses `await`), since only `wait()`/`waitt()` ever yield
-## in real WDL — expression evaluation is plain synchronous recursion.
+## in real WDL â€” expression evaluation is plain synchronous recursion.
 
 const GameHud = preload("res://scripts/ui/game_hud.gd")
 const MdlAnimator = preload("res://scripts/engine/mdl_animator.gd")
@@ -30,7 +30,7 @@ const AST_DIR := "res://assets/converted/wdl_ast/"
 ## With this false the load path is byte-for-byte what it has always been:
 ## nothing below reads WdlCache at all. tools/smoke_wdl_cache.gd is the proof
 ## that the two sources produce identical ASTs before this is ever flipped.
-const USE_RUNTIME_WDL := false
+const USE_RUNTIME_WDL := true
 
 var _globals: Dictionary = {}
 var _globals_lower: Dictionary = {}  # lowercase name -> canonical name, kept in sync with _globals -- see _index_global()
@@ -883,7 +883,7 @@ func has_main() -> bool:
 
 
 ## Spawns main() (if present) plus one coroutine per placed entity whose
-## WMB `action` matches a parsed `action NAME { ... }` block — the generic
+## WMB `action` matches a parsed `action NAME { ... }` block â€” the generic
 ## replacement for wdl_director.gd's per-level `_begin_X()` dispatch.
 func begin_level() -> void:
 	if _functions.has("main"):
@@ -939,7 +939,7 @@ func begin_level() -> void:
 ## also used by Shiks/Town's own patrol-camera entities under the same
 ## action name) branches its whole camera behavior on `my.flag1`, a
 ## WED-authored per-entity checkbox this port has no verified bit mapping
-## for (docs/CONTRACT.md §4.1 "known gaps" -- only bit0=INVISIBLE and
+## for (docs/CONTRACT.md Â§4.1 "known gaps" -- only bit0=INVISIBLE and
 ## bit10=PASSABLE are confirmed; FLAG1-8's actual bits are not). Rather than
 ## guess a bit position that would apply -- possibly wrongly -- to every
 ## other `my.flagN` read in the whole corpus, this seeds `flag1` only for
@@ -1019,7 +1019,7 @@ func _seed_pipi_flag1_stay_put(node: Node3D, action: String) -> void:
 ## (`Vector3(cos(pan),0,-sin(pan))`) points along +Godot X, not +Z --
 ## the model was never actually facing its own direction of travel, WED's
 ## authored angle notwithstanding. `pan=0 - 90` aims it at +Z instead,
-## matching the walk direction and the reported "off by 90°" correction.
+## matching the walk direction and the reported "off by 90Â°" correction.
 ## Scoped to this one action, matching `_seed_look_at_me_flag1()`'s own
 ## precedent, rather than a general re-interpretation of authored angles
 ## (which would risk every other static, non-turning placement in the
@@ -1768,7 +1768,7 @@ func _get_var(name: String, my) -> Variant:
 	# since that shared state is also what `GetPosition(Voice)` reads,
 	# a broken ambiance sound running concurrently with a real dialogue
 	# line falsely marked the dialogue "finished" as soon as the very next
-	# tick, cutting it off almost immediately. See docs/CONTRACT.md §5.
+	# tick, cutting it off almost immediately. See docs/CONTRACT.md Â§5.
 	var sound_canonical := _resolve_sound(name)
 	if sound_canonical != "":
 		return str(_sounds[sound_canonical])
@@ -2945,12 +2945,12 @@ func _assign(op: String, target: Dictionary, value_expr: Variant, my) -> Variant
 ## implementation is allowed to run instead of this interpreter's cruder
 ## approximation.
 ##
-## MUST NOT include `SetVoice`/`VoiceInit` — confirmed via corpus grep
+## MUST NOT include `SetVoice`/`VoiceInit` â€” confirmed via corpus grep
 ## (`^function SetVoice`) that 22 different level scripts (Start, Studio,
 ## Plane, Intro2/3/5/6/7/8/10/11/12/14/16, Inn, Mansion, Outro, Plane3,
 ## Smash, Temple, VilEnd, VilInt, Ziggy) each define their OWN `function
 ## SetVoice { ... }` as their real per-level dialogue/scene-boot sequencer
-## (sets Scene, calls the real sPlay with the right WAV, advances Talking) —
+## (sets Scene, calls the real sPlay with the right WAV, advances Talking) â€”
 ## it is NOT a shared Voice.wdl audio primitive like sPlay/vPlay, it just
 ## happens to share a name with the interpreter's harmless `"setvoice": ...
 ## -> 0.0` DLL-stub builtin. An earlier version of this list included it by

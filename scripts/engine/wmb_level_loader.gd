@@ -1,6 +1,6 @@
-extends Node3D
+﻿extends Node3D
 ## Instantiates entities from converted WMB JSON + MDL glb assets.
-## Transforms are pre-baked Acknex(Z-up) → Godot(Y-up) in the JSON.
+## Transforms are pre-baked Acknex(Z-up) â†’ Godot(Y-up) in the JSON.
 
 const MdlAnimator = preload("res://scripts/engine/mdl_animator.gd")
 ## Runtime .WMB reader (0-py migration). Deliberately NO `class_name` anywhere
@@ -24,7 +24,7 @@ const WMB_SRC_DIR := "res://original/piposh3d/WMB/"
 ## path is enabled. Same directory tools/smoke_mdl_reader.gd reads.
 const MDL_SRC_DIR := "res://original/piposh3d/MDL/"
 
-## FEATURE FLAG — DEFAULTS OFF.
+## FEATURE FLAG â€” DEFAULTS OFF.
 ##
 ## false (default): level object data comes from `assets/converted/levels/
 ## <Name>.json` and brush geometry from `<Name>_brush.glb` / `wmb/<Stem>.glb`,
@@ -32,18 +32,18 @@ const MDL_SRC_DIR := "res://original/piposh3d/MDL/"
 ## has always been; none of the runtime-WMB code below is reached.
 ##
 ## true: the same two things are produced in-engine by `WmbFile` straight out of
-## `original/piposh3d/WMB/*.WMB` — no converted JSON, no GLB. `WmbFile` is
+## `original/piposh3d/WMB/*.WMB` â€” no converted JSON, no GLB. `WmbFile` is
 ## already proven byte-identical to the Python converters
 ## (tools/smoke_wmb_reader.gd 134/134, tools/smoke_wmb_mesh.gd 134/134); what
-## this flag adds is the *engine* question — does a scene fed by the reader
-## equal a scene fed by the GLB — which tools/smoke_wmb_integration.gd answers.
-const USE_RUNTIME_WMB := false
+## this flag adds is the *engine* question â€” does a scene fed by the reader
+## equal a scene fed by the GLB â€” which tools/smoke_wmb_integration.gd answers.
+const USE_RUNTIME_WMB := true
 ## Per-instance override of the const above, so both paths can be built in one
 ## process and compared (tools/smoke_wmb_integration.gd). Nothing in the game
 ## writes this; it defaults to the const, which is false.
 var use_runtime_wmb: bool = USE_RUNTIME_WMB
 
-## FEATURE FLAG — DEFAULTS OFF.
+## FEATURE FLAG â€” DEFAULTS OFF.
 ##
 ## false (default): entity models come from `assets/converted/mdl/<Stem>.glb`
 ## plus the `<Stem>.mdlanim` / `<Stem>.skins` sidecars, i.e. the offline
@@ -54,8 +54,8 @@ var use_runtime_wmb: bool = USE_RUNTIME_WMB
 ## produced in-engine by `MdlFile` straight out of `original/piposh3d/MDL/
 ## *.MDL`. `MdlFile` is already proven identical to `tools/convert_mdl.py` for
 ## all 648 models, geometry AND skin pixels (tools/smoke_mdl_reader.gd); what
-## this flag adds is the *engine* question — does a scene fed by the reader
-## equal a scene fed by the GLB + sidecars — which
+## this flag adds is the *engine* question â€” does a scene fed by the reader
+## equal a scene fed by the GLB + sidecars â€” which
 ## tools/smoke_mdl_integration.gd answers.
 ##
 ## ANIMATION IS INCLUDED, not stubbed. The `.mdlanim` sidecar is not extra
@@ -63,12 +63,12 @@ var use_runtime_wmb: bool = USE_RUNTIME_WMB
 ## from the frame NAMES it already has in `mesh.frames` (`_clip_name()` strips a
 ## leading `$` and trailing digits/spaces/underscores, then groups frames by the
 ## result in first-seen order), and `MdlFile.read_mdl_bytes()` returns that same
-## `frames` array — same names, same order, same remapped positions. So the
+## `frames` array â€” same names, same order, same remapped positions. So the
 ## whole sidecar is reconstructible at runtime; see
 ## `MdlAnimator._load_anim_runtime()` / `_clip_key()`, which port
 ## `write_mdlanim` + `_clip_name` line for line, including its
 ## `len(mesh.frames) <= 1 -> no sidecar at all` early-out.
-const USE_RUNTIME_MDL := false
+const USE_RUNTIME_MDL := true
 ## Per-instance override of the const above, so both paths can be built in one
 ## process and compared (tools/smoke_mdl_integration.gd). Nothing in the game
 ## writes this; it defaults to the const, which is false.
@@ -97,7 +97,7 @@ var spawn_position := Vector3(0, 2, 8)
 var level_bounds := AABB(Vector3(-20, 0, -20), Vector3(40, 10, 40))
 var floor_y := 0.0
 var last_level_data: Dictionary = {}
-## Set when WMB has player_walk* / player_stand — first-person spawn (Plane2…).
+## Set when WMB has player_walk* / player_stand â€” first-person spawn (Plane2â€¦).
 var first_person_spawn: Dictionary = {}  # origin, pan, action, node_name
 
 var _entities_root: Node3D
@@ -138,14 +138,14 @@ func load_level(p_level_name: String) -> bool:
 	_clear_children(_entities_root)
 	# Bound the runtime-MDL cache to ONE level's models. A parsed model holds a
 	# decoded Image per skin (a character can have a dozen), so keeping every
-	# model ever visited would grow without limit across a play session — the
+	# model ever visited would grow without limit across a play session â€” the
 	# GLB path leans on Godot's own resource cache for this, which the runtime
 	# path has no equivalent of. Nothing spawned earlier still points at these:
 	# `build_mesh()` returns a fresh ArrayMesh and `ImageTexture.create_from_
 	# image()` copies, so the entities just freed above own their own copies.
 	_mdl_cache.clear()
 
-	# SEAM 1 — level object data. Both branches must yield the same dictionary
+	# SEAM 1 â€” level object data. Both branches must yield the same dictionary
 	# shape; `WmbFile.read_level()` returns exactly what
 	# `tools/extract_wmb_full.py` writes to <Name>.json (proven 134/134 by
 	# tools/smoke_wmb_reader.gd), so everything downstream is untouched.
@@ -159,7 +159,7 @@ func load_level(p_level_name: String) -> bool:
 			level_loaded.emit(level_name, false)
 			return false
 		data = WmbFile.read_level(wmb_path)
-		# read_level() reports its "no objects list" ValueError path as {"error": …},
+		# read_level() reports its "no objects list" ValueError path as {"error": â€¦},
 		# which is the runtime equivalent of an unreadable/!Dictionary JSON below.
 		if typeof(data) != TYPE_DICTIONARY or data.has("error"):
 			level_loaded.emit(level_name, false)
@@ -274,7 +274,7 @@ func _snap_piposh_walk_to_pip() -> void:
 
 
 func _resolve_level_json(p_level_name: String) -> String:
-	# Android PCK: prefer ResourceLoader / direct paths — DirAccess listing is unreliable.
+	# Android PCK: prefer ResourceLoader / direct paths â€” DirAccess listing is unreliable.
 	var json_names: Array[String] = [
 		p_level_name, p_level_name.to_lower(), p_level_name.capitalize()
 	]
@@ -305,7 +305,7 @@ func _clear_children(node: Node) -> void:
 		c.free()
 
 
-## SEAM 2 — level brush geometry. Everything after the `inst` is produced is
+## SEAM 2 â€” level brush geometry. Everything after the `inst` is produced is
 ## shared by both branches, so material treatment (sky transparency, filtering)
 ## and collision are applied identically either way.
 func _spawn_brush_geometry(p_level_name: String) -> bool:
@@ -336,7 +336,7 @@ func _spawn_brush_geometry(p_level_name: String) -> bool:
 ##
 ## Shape mirrors the offline pipeline's glTF: ONE MeshInstance3D whose ArrayMesh
 ## carries one surface per non-empty texture bucket, in sorted texture-index
-## order (`WmbFile.build_mesh()`), wrapped in a Node3D at identity — which is
+## order (`WmbFile.build_mesh()`), wrapped in a Node3D at identity â€” which is
 ## what the exporter writes and therefore what `PackedScene.instantiate()`
 ## yields. Returns null wherever the GLB path would have returned "" / failed to
 ## load, so the caller's ground-pad fallback is reached the same way.
@@ -372,7 +372,7 @@ func _build_runtime_wmb_node(stem: String) -> Node3D:
 ##
 ## The name matters as much as the pixels: `_force_unshaded_if_needed()` keys
 ## its sky/backdrop transparency rule off `mat.resource_name` (see its own
-## comment — the glTF exporter carries the original Acknex texture name through
+## comment â€” the glTF exporter carries the original Acknex texture name through
 ## as the glTF material name, which is the only place it survives). Setting
 ## `resource_name` here is what makes that rule fire identically on this path.
 func _apply_runtime_brush_materials(mesh: ArrayMesh, brush: Dictionary) -> void:
@@ -408,11 +408,11 @@ func _apply_runtime_brush_materials(mesh: ArrayMesh, brush: Dictionary) -> void:
 ## listing over direct-path probes, and deliberately so: the corpus mixes `.wmb`
 ## and `.WMB` (and `Menu.WMB` vs `Town.wmb` casing on the stem too), so a probe
 ## loop on a case-INsensitive filesystem happily opens `DRoad1.wmb` when asked
-## for `DRoad1.WMB` and Godot logs "Case mismatch opening requested file … will
+## for `DRoad1.WMB` and Godot logs "Case mismatch opening requested file â€¦ will
 ## not open when exported to other case-sensitive platforms" for every one. The
 ## listing gives the real on-disk name, so the path handed to FileAccess is
 ## always exact. The direct-probe fallback is kept for the PCK/Android case
-## where DirAccess listing of res:// is unreliable (CONTRACT §6).
+## where DirAccess listing of res:// is unreliable (CONTRACT Â§6).
 func _resolve_wmb_source(stem: String) -> String:
 	if stem == "":
 		return ""
@@ -496,7 +496,7 @@ func _build_mdl_src_index() -> void:
 ##
 ## The stem handed to `read_mdl_bytes()` is the RESOLVED file's own basename,
 ## not the WED-authored one, because that is what `convert_mdl.py` passes to
-## `_apply_yaw_allowlist` (`path.stem`) — with the prefix fallback above, the
+## `_apply_yaw_allowlist` (`path.stem`) â€” with the prefix fallback above, the
 ## two can differ.
 func _read_runtime_mdl(stem: String) -> Dictionary:
 	var src := _resolve_mdl_source(stem)
@@ -530,11 +530,11 @@ func _read_runtime_mdl(stem: String) -> Dictionary:
 ##
 ## Real case, found by tools/smoke_mdl_integration.gd across the corpus (Inn):
 ## `PhotSign.pcx` names no model at all, so both paths prefix-resolve its mesh
-## to `Phot` — but the converted path then asks for `PhotSign.skins`, which does
+## to `Phot` â€” but the converted path then asks for `PhotSign.skins`, which does
 ## not exist, and the entity ends up with ZERO skins even though `Phot.skins`
 ## holds six. The runtime reader has no such split (mesh and skins come out of
 ## the one file it opened), so without this guard it would hand that entity six
-## skins the shipping build never gives it — the flag would be changing
+## skins the shipping build never gives it â€” the flag would be changing
 ## BEHAVIOUR, not just the source of the bytes.
 ##
 ## The rule is exact, not approximate: a sidecar `<X>.skins` exists only if
@@ -545,7 +545,7 @@ func _read_runtime_mdl(stem: String) -> Dictionary:
 ## NOTE this deliberately PRESERVES the mismatch rather than fixing it. Whether
 ## a `.pcx`-named entity should inherit an unrelated model's skins at all is a
 ## real question about `_find_glb()`'s fallback, and it belongs in its own
-## change with its own evidence — not smuggled in behind a source-swap flag.
+## change with its own evidence â€” not smuggled in behind a source-swap flag.
 func _runtime_sidecars_would_match(stem: String) -> bool:
 	var src := _resolve_mdl_source(stem)
 	return src != "" and src.get_file().get_basename().to_lower() == stem.to_lower()
@@ -556,7 +556,7 @@ func _runtime_sidecars_would_match(stem: String) -> bool:
 ##
 ## Shape mirrors `convert_mdl.py::write_glb`'s glTF: ONE mesh node carrying one
 ## POSITION/TEXCOORD_0/INDICES primitive with a single material, wrapped in a
-## scene root — which is what `PackedScene.instantiate()` yields.
+## scene root â€” which is what `PackedScene.instantiate()` yields.
 func _build_runtime_mdl_node(stem: String, m: Dictionary) -> Node3D:
 	if m.is_empty():
 		return null
@@ -578,7 +578,7 @@ func _build_runtime_mdl_node(stem: String, m: Dictionary) -> Node3D:
 ##
 ## The NAME is load-bearing, not cosmetic. `_force_unshaded_if_needed()` turns
 ## any surface whose `mat.resource_name` is empty (or "#default") fully
-## transparent — that rule exists for anonymous WMB brush sky faces, but it
+## transparent â€” that rule exists for anonymous WMB brush sky faces, but it
 ## keys off nothing but the name, so leaving a runtime MDL material unnamed
 ## would silently make every entity in the level invisible.
 func _runtime_mdl_material(m: Dictionary) -> StandardMaterial3D:
@@ -664,7 +664,7 @@ func _spawn_ground(center: Vector3, size: Vector3) -> void:
 func _is_brush_duplicate_entity(obj: Dictionary) -> bool:
 	var stem := str(obj.get("file", "")).get_file().get_basename().to_lower()
 	# Town/desert shells duplicate brush floors. StudioL is set dressing
-	# (light frames) that the brush does NOT include — keep spawning it.
+	# (light frames) that the brush does NOT include â€” keep spawning it.
 	return stem in ["townl", "desertl", "mansionl", "innl"]
 
 
@@ -788,8 +788,8 @@ func _spawn_entity(obj: Dictionary) -> bool:
 	root.set_meta("file", file)
 	if obj.has("origin_gs"):
 		root.set_meta("origin_gs", obj.get("origin_gs"))
-	# Acknex pan/tilt/roll via Conitec ang_to_matrix → Godot basis.
-	# Euler (tilt,±pan,roll) is wrong when tilt/roll ≠ 0 (Glass, Cam2, …).
+	# Acknex pan/tilt/roll via Conitec ang_to_matrix â†’ Godot basis.
+	# Euler (tilt,Â±pan,roll) is wrong when tilt/roll â‰  0 (Glass, Cam2, â€¦).
 	var pan_a := 0.0
 	var tilt_a := 0.0
 	var roll_a := 0.0
@@ -843,7 +843,7 @@ func _spawn_entity(obj: Dictionary) -> bool:
 
 	var stem := file.get_file().get_basename()
 	var is_wmb := file.to_lower().ends_with(".wmb")
-	# SEAM 3 — per-entity visual. `.wmb`-backed props follow `use_runtime_wmb`,
+	# SEAM 3 â€” per-entity visual. `.wmb`-backed props follow `use_runtime_wmb`,
 	# `.mdl`-backed ones follow `use_runtime_mdl`; the two readers are separate
 	# migration steps and each flag moves only its own family. Everything after
 	# `inst` is shared, so materials, feet-snap, collision and the wall-card
@@ -949,7 +949,7 @@ func _spawn_entity(obj: Dictionary) -> bool:
 	# exactly how it looked the moment the level first began.
 	root.set_meta("wdl_spawn_position", root.global_position)
 
-	# First-person player proxy (Plane2 player_walk2, Inn, Mansion, …).
+	# First-person player proxy (Plane2 player_walk2, Inn, Mansion, â€¦).
 	# Record after feet-snap + enter tree so origin matches the standing pose.
 	if _is_first_person_action(action) and first_person_spawn.is_empty():
 		first_person_spawn = {
@@ -960,7 +960,7 @@ func _spawn_entity(obj: Dictionary) -> bool:
 			"node": root,
 		}
 		spawn_position = root.global_position
-		# move_view_1st GENIUS — don't draw the player body in FP.
+		# move_view_1st GENIUS â€” don't draw the player body in FP.
 		_hide_meshes(root)
 	return true
 
@@ -975,10 +975,10 @@ func _is_first_person_action(action: String) -> bool:
 
 func _should_feet_snap(action: String, stem: String) -> bool:
 	## Opt-OUT: snap by default. WED origin is the floor/attachment point and
-	## MDL geometry commonly hangs below it — without this, curtains, fans,
+	## MDL geometry commonly hangs below it â€” without this, curtains, fans,
 	## and light-rig props (StudioL) sink under the floor. A prior rewrite
 	## inverted this to opt-in (floor actors only), which silently stopped
-	## snapping every non-whitelisted prop — regression found via a user
+	## snapping every non-whitelisted prop â€” regression found via a user
 	## playtest report ("fans, lights and curtains a bit down under the
 	## floor" in Studio); see docs/SESSION_LOG.md. Only exclude entities
 	## whose origin is deliberately NOT a floor/feet reference.
@@ -992,25 +992,25 @@ func _should_feet_snap(action: String, stem: String) -> bool:
 		return false
 	# Every remaining stem exclusion below is a measured verdict (GLB local-Y
 	# AABB vs. WED origin + a grep of the entity's real WDL `action` body for
-	# runtime position control), not a carried-over guess — see
-	# docs/CONTRACT.md §3.5 for the full method and numbers. "tv", "hanger",
+	# runtime position control), not a carried-over guess â€” see
+	# docs/CONTRACT.md Â§3.5 for the full method and numbers. "tv", "hanger",
 	# and "towerw" used to be in this list too; measurement showed the same
 	# bug shape as Cockpit (mesh hangs mostly below its own origin, no WDL
 	# action ever moves them) and they were removed 2026-07-28.
 	if s in [
-		"glass",   # 6.7% of mesh below origin (Dutyfree-shaped) — already sits at its own floor.
-		"b747",    # `action B747` (Plane2.wdl) assigns my.z directly during takeoff — runtime vehicle, not a floor prop.
-		"island",  # `action Land` (Plane3.wdl) assigns my.y/my.z at runtime (descends, then slides) — a runtime-animated prop, not a floor prop; also sits ~387 units below floor_y in both Plane3 and Town.
+		"glass",   # 6.7% of mesh below origin (Dutyfree-shaped) â€” already sits at its own floor.
+		"b747",    # `action B747` (Plane2.wdl) assigns my.z directly during takeoff â€” runtime vehicle, not a floor prop.
+		"island",  # `action Land` (Plane3.wdl) assigns my.y/my.z at runtime (descends, then slides) â€” a runtime-animated prop, not a floor prop; also sits ~387 units below floor_y in both Plane3 and Town.
 		"headphon",
-		"biplane", "biplane2",  # `action Fly` (Intro4.wdl) does my.x += .. ; my.z += .. — a real runtime-moving vehicle, same class as b747.
-		"dutyfree",  # mesh spans [0.44, 224.93] local Y — origin already sits at the mesh's own bottom.
+		"biplane", "biplane2",  # `action Fly` (Intro4.wdl) does my.x += .. ; my.z += .. â€” a real runtime-moving vehicle, same class as b747.
+		"dutyfree",  # mesh spans [0.44, 224.93] local Y â€” origin already sits at the mesh's own bottom.
 	]:
 		return false
 	# "cockpit" was excluded here on the assumption it's fixed attachment
 	# scenery like a ceiling light, needing no feet/origin correction.
 	# Measured directly from Cockpit.glb: local Y spans -165.66..+76.83 (the
 	# mesh hangs mostly BELOW its own origin, same shape of bug as StudioL's
-	# light rigs) — so it needs the opt-out default like everything else,
+	# light rigs) â€” so it needs the opt-out default like everything else,
 	# not an exclusion. User screenshot confirmed the console rendering
 	# mostly below floor level in Plane/Plane2 (docs/SESSION_LOG.md).
 	if a in ["headphone", "land", "wind", "ent_rotate", "item_pickup"]:
@@ -1019,7 +1019,7 @@ func _should_feet_snap(action: String, stem: String) -> bool:
 
 
 func _acknex_entity_basis(pan_deg: float, tilt_deg: float, roll_deg: float) -> Basis:
-	## Conitec ang_to_matrix (DirectX) conjugated by S=diag(1,1,-1) → Godot RH.
+	## Conitec ang_to_matrix (DirectX) conjugated by S=diag(1,1,-1) â†’ Godot RH.
 	var tilt := tilt_deg
 	if tilt > 180.0:
 		tilt -= 360.0
@@ -1059,7 +1059,7 @@ func _legacy_pan_tilt_roll(obj: Dictionary) -> Vector3:
 
 func _mount_wall_card(root: Node3D, stem: String) -> void:
 	# Pull off the far wall so the card is not buried in brush z-fighting.
-	# Keep WED pan/tilt/roll (angle_gs) — do not invent facing overrides.
+	# Keep WED pan/tilt/roll (angle_gs) â€” do not invent facing overrides.
 	root.position.z -= 6.0
 	if stem == "shiknote":
 		# Extracted brush is an edge-on slab; poster uses WED pan (usually 180).
@@ -1095,12 +1095,12 @@ func _mount_wall_card(root: Node3D, stem: String) -> void:
 		root.transform = Transform3D(_acknex_entity_basis(pan, 0.0, 0.0), root.position)
 		root.add_child(mi)
 	elif stem == "afg":
-		# WED already authored roll≈89 / tilt≈6 — only fix tiny scale.
+		# WED already authored rollâ‰ˆ89 / tiltâ‰ˆ6 â€” only fix tiny scale.
 		if root.scale.x < 0.9:
 			root.scale *= 1.8
 
 
-## SEAM 4 — per-entity animation + skin set. Both branches leave the animator in
+## SEAM 4 â€” per-entity animation + skin set. Both branches leave the animator in
 ## the same state (`_positions`, `_clips`, `_skin_textures`, `_remap`) and then
 ## run MdlAnimator's own identical shared tail, which is what picks the idle
 ## pose, builds the vertex remap and applies the material style.
@@ -1155,11 +1155,11 @@ func _force_unshaded_if_needed(node: Node, repeat_textures: bool = false) -> voi
 	# entities were already being spawned as real OmniLight3D nodes
 	# (_spawn_light) but had nothing that could receive them. Switched to lit
 	# so those lights (plus the level's ambient) actually show up. Name kept
-	# for now despite no longer forcing unshaded — rename is a follow-up, not
+	# for now despite no longer forcing unshaded â€” rename is a follow-up, not
 	# urgent. (docs/SESSION_LOG.md 2026-07-27)
 	if node is MeshInstance3D:
 		var mi := node as MeshInstance3D
-		# Imported LODs destroy seam UVs on low-poly MDL skins — stay on LOD0.
+		# Imported LODs destroy seam UVs on low-poly MDL skins â€” stay on LOD0.
 		mi.lod_bias = 128.0
 		if mi.mesh:
 			for i in mi.mesh.get_surface_count():
@@ -1329,7 +1329,7 @@ func _index_glb_dir(dir_path: String, into: Dictionary) -> void:
 
 
 func _direct_glb(dir_path: String, stem: String) -> String:
-	## Packed Android builds often can't DirAccess-list res:// — probe known paths.
+	## Packed Android builds often can't DirAccess-list res:// â€” probe known paths.
 	var casings: Array[String] = [stem, stem.to_lower()]
 	if stem.length() > 0:
 		casings.append(stem.substr(0, 1).to_upper() + stem.substr(1).to_lower())

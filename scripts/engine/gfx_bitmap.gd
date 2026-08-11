@@ -1,16 +1,16 @@
-extends RefCounted
+﻿extends RefCounted
 ## Runtime reader for the original A5 GFX bitmaps (PCX / BMP).
 ##
 ## This is the GDScript counterpart of `tools/convert_gfx.py`, and the first
 ## step of moving conversion out of the offline Python pipeline and into the
 ## game itself (the "read the original files" model already used by the
 ## Director player). It reads `original/piposh3d/GFX/*.pcx|*.bmp` and returns a
-## Godot `Image` directly — no intermediate PNG, no `.import` sidecar.
+## Godot `Image` directly â€” no intermediate PNG, no `.import` sidecar.
 ##
 ## Deliberately NO `class_name`: a global class inside a mounted `.pck` never
 ## resolves (see commit 5c0adfa). Use it via `const GfxBitmap = preload(...)`.
 ##
-## Corpus measurement (2026-08-10) over the 456 PCX files actually shipped —
+## Corpus measurement (2026-08-10) over the 456 PCX files actually shipped â€”
 ## the reader handles exactly what is present, and refuses anything else rather
 ## than guessing:
 ##   * 438 files: version 5, RLE, 8 bits/plane, 3 planes  -> 24-bit truecolour
@@ -57,33 +57,33 @@ static var last_error: String = ""
 # The single texture seam (0-py migration)
 # ---------------------------------------------------------------------------
 
-## Offline pipeline output — `tools/convert_gfx.py` writes every source here as
+## Offline pipeline output â€” `tools/convert_gfx.py` writes every source here as
 ## `<stem>.png`.
 const CONVERTED_DIR := "res://assets/converted/gfx/"
 ## The original game data, read byte-for-byte by `load_gfx()` on the runtime
 ## path. Same directory the byte-level oracle (tools/smoke_gfx_reader.gd) reads.
 const SRC_DIR := "res://original/piposh3d/GFX/"
 
-## FEATURE FLAG — DEFAULTS OFF.
+## FEATURE FLAG â€” DEFAULTS OFF.
 ##
 ## false (default): `get_texture()` loads `assets/converted/gfx/<stem>.png`,
 ## i.e. the offline Python pipeline's committed output. Behaviour is exactly
 ## what it has always been; none of the runtime-decode code is reached.
 ##
 ## true: the same texture is produced in-engine by `load_gfx()` straight out of
-## `original/piposh3d/GFX/*.pcx|*.bmp` — no PNG, no `.import` sidecar.
+## `original/piposh3d/GFX/*.pcx|*.bmp` â€” no PNG, no `.import` sidecar.
 ## `load_gfx()` is already proven pixel-identical to `tools/convert_gfx.py`
 ## (tools/smoke_gfx_reader.gd: 507 pixel-exact, 0 mismatched); what this flag
-## adds is the *engine* question — does a call site fed by the reader get the
-## same texture as one fed by the PNG — which tools/smoke_gfx_integration.gd
+## adds is the *engine* question â€” does a call site fed by the reader get the
+## same texture as one fed by the PNG â€” which tools/smoke_gfx_integration.gd
 ## answers.
 ##
 ## Mirrors `wmb_level_loader.gd`'s own `USE_RUNTIME_WMB` seam: produce the
 ## resource two ways, then run the identical shared tail.
-const USE_RUNTIME_GFX := false
+const USE_RUNTIME_GFX := true
 ## Process-wide override of the const above, so both paths can be exercised in
 ## one process. Nothing in the game writes this; it defaults to the const, which
-## is false. `tools/smoke_gfx_integration.gd` does not write it either — it calls
+## is false. `tools/smoke_gfx_integration.gd` does not write it either â€” it calls
 ## `get_texture_from()` with an explicit flag instead.
 static var use_runtime_gfx: bool = USE_RUNTIME_GFX
 
@@ -95,34 +95,34 @@ static var use_runtime_gfx: bool = USE_RUNTIME_GFX
 ##
 ## It is a corpus measurement, not a guess. Every `.wdl` under
 ## `original/piposh3d` (top level + `WDL/`, excluding the stale `_backup_wdl/`
-## copies) was scanned for `bmap` declarations — the corpus uses four spellings,
+## copies) was scanned for `bmap` declarations â€” the corpus uses four spellings,
 ## `bmap N = <f.ext>;`, `BMAP N = (<f.ext>,x,y,w,h);`, `BMAP N, <f.ext>;` and
-## `BMAP N <f.ext>,...;` — and the declared filename ALWAYS carries an explicit
+## `BMAP N <f.ext>,...;` â€” and the declared filename ALWAYS carries an explicit
 ## extension (549 file-referencing declarations: 496 `.pcx`, 53 `.bmp`, 0
 ## anything else). For each colliding stem, the extension the original engine
 ## actually loaded is therefore directly readable out of the source:
 ##
-##   * 10 stems are declared ONLY as .pcx  — asybar1, asybar2, asypnl, caseoff,
+##   * 10 stems are declared ONLY as .pcx  â€” asybar1, asybar2, asypnl, caseoff,
 ##     caseon, large, pass, pnl1, pnl2, vs (AsyAct1/2/3.wdl, Range.wdl,
 ##     Fight.wdl).
-##   *  1 stem is declared ONLY as .bmp    — pokrpnl1 (Cardgame.wdl:3,
+##   *  1 stem is declared ONLY as .bmp    â€” pokrpnl1 (Cardgame.wdl:3,
 ##     `bmap bPoker1 = <PokrPNL1.bmp>;`). This is the ONE stem where the
 ##     original engine and today's converter genuinely disagree: the converter
 ##     kept `PokrPNL1.PCX` (350x250) and threw away `PokrPNL1.bmp` (57x250).
-##   *  3 stems are declared BOTH ways, with genuinely different images —
+##   *  3 stems are declared BOTH ways, with genuinely different images â€”
 ##     credits (Credits.wdl:8 `<Credits.bmp>` 320x480 vs VilEnd.wdl:25
 ##     `<credits.pcx>` 640x750), drop (Mount/Olympic/Temple `<drop.bmp>`, a
 ##     70-byte 2x2 "no visible raindrop" stub, vs Mansion.wdl / WDL/Weather.wdl
 ##     `<drop.pcx>` 40x40) and sky (IO.wdl:130 + WDL/IO.wdl:94 `<sky.bmp>`
 ##     320x320 vs WDL/Weather.wdl:57 `<sky.pcx>` 256x256). For these there is no
-##     correct per-STEM answer — only a correct per-CALL-SITE one, which is why
+##     correct per-STEM answer â€” only a correct per-CALL-SITE one, which is why
 ##     `_resolve_source_path()` honours an explicitly-named extension verbatim
 ##     before ever consulting this table. The value here is only the fallback
 ##     for a caller that supplies no extension (e.g. `AcknexSky` asks for
 ##     "sky.png", because `wdl_meta.json`'s static extraction already dropped
 ##     the extension); it keeps today's converted-PNG behaviour so a bare-stem
 ##     lookup changes nothing.
-##   *  3 stems are declared NEITHER way — clouds, panel, star. No WDL evidence
+##   *  3 stems are declared NEITHER way â€” clouds, panel, star. No WDL evidence
 ##     exists (they are level/WMB textures or leftover art), so these also keep
 ##     today's converted-PNG behaviour.
 ##
@@ -130,8 +130,8 @@ static var use_runtime_gfx: bool = USE_RUNTIME_GFX
 ## `<stem>.png` files were compared pixel-for-pixel against both of their
 ## sources, and the .PCX variant is what survived in every one of the 17 (on
 ## Windows, `pathlib` sorts case-insensitively, so `.bmp` always precedes `.pcx`
-## and the .pcx write always lands last). NB-7's own example — "CLOUDS.PCX loses
-## to Clouds.bmp" — is what pure ASCII ordering would do; it is not what the
+## and the .pcx write always lands last). NB-7's own example â€” "CLOUDS.PCX loses
+## to Clouds.bmp" â€” is what pure ASCII ordering would do; it is not what the
 ## committed files actually contain. Five of the 17 (asybar1, asybar2, asypnl,
 ## pass, star) are byte-identical between the two formats anyway.
 const COLLIDING_STEM_EXT := {
@@ -140,11 +140,11 @@ const COLLIDING_STEM_EXT := {
 	"caseoff": "pcx", "caseon": "pcx", "large": "pcx", "pass": "pcx",
 	"pnl1": "pcx", "pnl2": "pcx", "vs": "pcx",
 	# Declared only as .bmp by the WDL corpus. DIFFERS from today's converter,
-	# deliberately — Cardgame.wdl names PokrPNL1.bmp and nothing names the .PCX.
+	# deliberately â€” Cardgame.wdl names PokrPNL1.bmp and nothing names the .PCX.
 	"pokrpnl1": "bmp",
-	# Declared BOTH ways — fallback only; an explicit extension wins first.
+	# Declared BOTH ways â€” fallback only; an explicit extension wins first.
 	"credits": "pcx", "drop": "pcx", "sky": "pcx",
-	# Declared neither way — no evidence, keep the converter's choice.
+	# Declared neither way â€” no evidence, keep the converter's choice.
 	"clouds": "pcx", "panel": "pcx", "star": "pcx",
 }
 
@@ -170,7 +170,7 @@ static var _png_index_built := false
 ##
 ## `name` is whatever the call site has: a converted PNG name ("A5.png"), a bare
 ## stem, or a real WDL-declared filename with its original extension
-## ("Horizon1.pcx", "sky.bmp" — this is what `WdlInterpreter._bmaps` holds and
+## ("Horizon1.pcx", "sky.bmp" â€” this is what `WdlInterpreter._bmaps` holds and
 ## what `LevelRunner._live_bmap_file()` hands to `AcknexSky`). All three resolve
 ## on both sides of the flag.
 static func get_texture(name: String) -> Texture2D:
@@ -218,7 +218,7 @@ static func resolve_converted_path(name: String) -> String:
 		var p: String = CONVERTED_DIR + c
 		if ResourceLoader.exists(p):
 			return p
-	# Packed Android builds cannot reliably DirAccess-list res:// (CONTRACT §6),
+	# Packed Android builds cannot reliably DirAccess-list res:// (CONTRACT Â§6),
 	# hence the direct probes above first; this is the desktop fallback.
 	_ensure_png_index()
 	for c in cands:
@@ -230,7 +230,7 @@ static func resolve_converted_path(name: String) -> String:
 
 ## FLAG TRUE side: the original .pcx/.bmp under `original/piposh3d/GFX/`.
 ##
-## An extension the caller actually named wins outright — a WDL `bmap`
+## An extension the caller actually named wins outright â€” a WDL `bmap`
 ## declaration names the extension explicitly, so when that filename reaches us
 ## it IS the original engine's own answer and no table can improve on it. Only a
 ## caller with no extension (or a `.png` one, i.e. a converted name) falls
@@ -445,6 +445,6 @@ static func _color_key_black(img: Image) -> void:
 		if d[i] == 0 and d[i + 1] == 0 and d[i + 2] == 0:
 			d[i + 3] = 0
 		i += 4
-	# Rebuild rather than set_pixel per pixel — one C++ call instead of w*h.
+	# Rebuild rather than set_pixel per pixel â€” one C++ call instead of w*h.
 	var rebuilt := Image.create_from_data(w, h, false, Image.FORMAT_RGBA8, d)
 	img.copy_from(rebuilt)
