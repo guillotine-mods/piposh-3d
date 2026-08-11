@@ -1102,12 +1102,38 @@ func _should_feet_snap(action: String, stem: String) -> bool:
 	# action ever moves them) and they were removed 2026-07-28.
 	if s in [
 		"glass",   # 6.7% of mesh below origin (Dutyfree-shaped) â€” already sits at its own floor.
-		"b747",    # `action B747` (Plane2.wdl) assigns my.z directly during takeoff â€” runtime vehicle, not a floor prop.
-		"island",  # `action Land` (Plane3.wdl) assigns my.y/my.z at runtime (descends, then slides) â€” a runtime-animated prop, not a floor prop; also sits ~387 units below floor_y in both Plane3 and Town.
 		"headphon",
-		"biplane", "biplane2",  # `action Fly` (Intro4.wdl) does my.x += .. ; my.z += .. â€” a real runtime-moving vehicle, same class as b747.
 		"dutyfree",  # mesh spans [0.44, 224.93] local Y â€” origin already sits at the mesh's own bottom.
 	]:
+		return false
+	# "b747"/"biplane"/"biplane2" (and, before them, "tv"/"hanger"/"towerw"/
+	# "cockpit" -- see that removal two rules below) used to be excluded on
+	# the theory that "a WDL action moves it at runtime" meant its origin
+	# wasn't a real floor reference. Reported live (2026-08-11), Plane2: "a
+	# plane is under the floor base/brush... alongside other objects...
+	# system-wide issue." Measured directly (B747.glb): local Y spans
+	# -49.23..+43.32 -- the SAME "mesh hangs meaningfully below its own
+	# origin" shape Cockpit's own removal note already documents, not
+	# evidence of anything special about being runtime-controlled. The
+	# reasoning conflated two orthogonal things: whether a WDL action later
+	# moves an entity (`action B747`'s own `my.y = my.y + my.skill1 * time`,
+	# `action Fly`'s `my.x += ..; my.z += ..`) has nothing to do with
+	# whether its SPAWN position needs the same floor correction every
+	# other prop gets -- both are purely ADDITIVE from wherever `my.y`/
+	# `my.x`/`my.z` already is, so a corrected spawn height changes only
+	# the STARTING point of the animation, not its behavior. All SEVEN
+	# B747 placements in Plane2 (six static background aircraft with no
+	# action at all, plus the one scripted takeoff hero) shared this same
+	# uncorrected origin, so the six that never run any script were
+	# sitting wrong PERMANENTLY, with no animation to ever fix them --
+	# confirming this was never actually about runtime control.
+	if s in ["island"]:
+		# Kept excluded, unlike b747/biplane: a huge terrain/landmass prop
+		# (Plane3's descending island, Town's floating one), not a compact
+		# vehicle -- feet-snapping by mesh AABB is the wrong tool for
+		# terrain the same way it would be for level brush geometry
+		# itself, a different failure mode than "vehicle happens to hang
+		# below its origin like everything else."
 		return false
 	# "cockpit" was excluded here on the assumption it's fixed attachment
 	# scenery like a ceiling light, needing no feet/origin correction.
