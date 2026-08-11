@@ -2245,7 +2245,19 @@ func _get_or_create_entity_light(node: Node3D) -> OmniLight3D:
 		light = OmniLight3D.new()
 		light.name = "WdlEntityLight"
 		light.light_energy = 1.0
-		light.shadow_enabled = false
+		# Reported live (2026-08-11): "the background behind yachdel...
+		# emits light and is flashing where it shouldn't be." This was the
+		# one real inconsistency in GB-29's own fix -- WmbLevelLoader's
+		# `_spawn_light()` (native WMB point lights) already turned shadow
+		# casting ON for exactly this reason (see its own comment: corpus-
+		# wide light counts are small, real occlusion is cheap), but this
+		# entity-driven light was left at the Godot default of unoccluded,
+		# so any wall between a scripted light (e.g. `ACTION FlickerLight`)
+		# and whatever it's actually meant to illuminate got lit straight
+		# through, same as sunlight through a solid wall. Matches the
+		# established convention now: every light in this engine casts a
+		# real shadow.
+		light.shadow_enabled = true
 		node.add_child(light)
 	return light
 
