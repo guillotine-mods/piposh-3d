@@ -502,6 +502,34 @@ static func read_brush(data: PackedByteArray, decode_textures: bool = true) -> D
 	var n_faces: int = int(lists[7][1] / 24)
 	var buckets := {}
 	var skipped := 0
+	# Reported live (2026-08-12): a real WMB face-list can contain multiple
+	# near-duplicate copies of the SAME polygon (confirmed via Start.wmb's
+	# own "intro_kraza" poster wall -- three faces at Z=-450.0/-450.3/-450.7,
+	# same X/Y footprint, same texture -- and independently via Plane2's
+	# own cabin floor, where a player standing on it registers SIX
+	# simultaneous CharacterBody3D collisions all at the identical position
+	# and normal). This isn't a parsing bug -- the extra copies are real,
+	# distinct face RECORDS in the file, each producing its own real
+	# triangles -- but emitting all of them has two independent bad
+	# effects: render-time Z-fighting (the visual GB-33 report) and
+	# collision-time deadlock (`create_trimesh_shape()` bakes every
+	# duplicate straight into the StaticBody3D's own trimesh, and
+	# CharacterBody3D's `move_and_slide()` can get stuck fighting several
+	# simultaneous, redundant contact manifolds that are really all the
+	# same surface). Deduplicated per texture bucket by (rounded centroid,
+	# vertex count, near-parallel normal) -- tight enough (1-unit centroid
+	# tolerance) to only catch genuine stacked copies, not distinct,
+	# merely-nearby geometry like two walls sharing an edge.
+	# Spatial hash, not a linear scan: keyed by (tex_idx, quantized 1-unit
+	# grid cell of the centroid) -> Array of {centroid, normal, count}. A
+	# brush can have tens of thousands of faces (Plane2: 17,668), so an
+	# unbounded per-bucket scan is O(faces^2) and measurably slow; grid
+	# lookup bounds each face's own comparison set to its 27-cell
+	# neighborhood (needed, not just its own cell, since two near-duplicate
+	# centroids 0.9 units apart can straddle a cell boundary and land in
+	# different cells under simple rounding).
+	var _seen_faces := {}  # "tex_idx:gx:gy:gz" -> Array of {centroid, normal, count}
+	var deduped := 0
 
 	for fi in n_faces:
 		var b := f_off + fi * 24
@@ -529,6 +557,63 @@ static func read_brush(data: PackedByteArray, decode_textures: bool = true) -> D
 		var tex: Dictionary = textures[tex_idx]
 		var tw: int = tex["w"]
 		var th: int = tex["h"]
+
+		var centroid := Vector3.ZERO
+		var poly_pts: Array = []
+		for vi in poly:
+			var pv := _vec3(data, v_off + vi * 12)
+			var pv3 := Vector3(pv[0], pv[1], pv[2])
+			poly_pts.append(pv3)
+			centroid += pv3
+		centroid /= float(poly.size())
+		var normal := Vector3.UP
+		if poly_pts.size() >= 3:
+			var p0: Vector3 = poly_pts[0]
+			var p1: Vector3 = poly_pts[1]
+			var p2: Vector3 = poly_pts[2]
+			var n: Vector3 = (p1 - p0).cross(p2 - p0)
+			if n.length_squared() > 0.0001:
+				normal = n.normalized()
+		var gx := int(floor(centroid.x))
+		var gy := int(floor(centroid.y))
+		var gz := int(floor(centroid.z))
+		var is_dup := false
+		for dx in [-1, 0, 1]:
+			for dy in [-1, 0, 1]:
+				for dz in [-1, 0, 1]:
+					var key := "%d:%d:%d:%d" % [tex_idx, gx + dx, gy + dy, gz + dz]
+					if not _seen_faces.has(key):
+						continue
+					for seen in (_seen_faces[key] as Array):
+						if (
+							seen["count"] == poly.size()
+							and (seen["centroid"] as Vector3).distance_to(centroid) < 1.0
+							and absf((seen["normal"] as Vector3).dot(normal)) > 0.99
+						):
+							is_dup = true
+							break
+					if is_dup:
+						break
+				if is_dup:
+					break
+			if is_dup:
+				break
+		# Recorded regardless of is_dup (not just the first-seen face of a
+		# group): a chain of 3+ near-duplicate layers can span more than
+		# the 1-unit tolerance end-to-end even though each CONSECUTIVE pair
+		# is within it -- comparing only against the first-seen
+		# representative would leave later layers in the chain undetected.
+		# Confirmed live: Start.wmb's own "intro_kraza" (3 layers spanning
+		# Z -450.0..-450.7, 0.7 total) only dropped from 166 to 88 vertices
+		# with first-seen-only comparison, not further -- recording every
+		# face closes that gap.
+		var own_key := "%d:%d:%d:%d" % [tex_idx, gx, gy, gz]
+		if not _seen_faces.has(own_key):
+			_seen_faces[own_key] = []
+		(_seen_faces[own_key] as Array).append({"centroid": centroid, "normal": normal, "count": poly.size()})
+		if is_dup:
+			deduped += 1
+			continue
 
 		if not buckets.has(tex_idx):
 			buckets[tex_idx] = {"pos": [], "uv": [], "idx": [], "name": tex["name"]}
@@ -564,6 +649,7 @@ static func read_brush(data: PackedByteArray, decode_textures: bool = true) -> D
 		"textures": textures,
 		"faces": n_faces,
 		"skipped": skipped,
+		"deduped": deduped,
 		"verts": nv,
 	}
 
