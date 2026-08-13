@@ -395,7 +395,7 @@ func _spawn_brush_geometry(p_level_name: String) -> bool:
 	inst.name = "Brush"
 	_force_unshaded_if_needed(inst, true)
 	# Static collision from visual meshes (coarse but keeps player on floors).
-	_add_mesh_collision(inst)
+	_add_mesh_collision(inst, true)
 	_geometry_root.add_child(inst)
 	return true
 
@@ -696,18 +696,98 @@ func _resolve_brush_glb(p_level_name: String) -> String:
 	return ""
 
 
-func _add_mesh_collision(node: Node) -> void:
+func _add_mesh_collision(node: Node, dedup: bool = false) -> void:
 	if node is MeshInstance3D:
 		var mi := node as MeshInstance3D
 		if mi.mesh != null:
 			var body := StaticBody3D.new()
 			body.name = "Col"
 			var col := CollisionShape3D.new()
-			col.shape = mi.mesh.create_trimesh_shape()
+			# The extra dedup pass below is O(faces) with a real constant
+			# factor (spatial-hash grid lookup per face) -- fine for the
+			# level's own brush geometry (the only place the collision
+			# deadlock this exists for was ever measured), but confirmed
+			# live to hang `smoke_click_survey` on Intro2's own dense tree
+			# foliage meshes (many small, genuinely close-together leaf
+			# polygons cluster into the same few grid cells, degrading
+			# toward O(n^2) for THAT mesh specifically) when applied to
+			# every prop/entity model too. Gated to brush-only by the caller.
+			if dedup:
+				var shape := ConcavePolygonShape3D.new()
+				shape.set_faces(_dedup_collision_faces(mi.mesh.get_faces()))
+				col.shape = shape
+			else:
+				col.shape = mi.mesh.create_trimesh_shape()
 			body.add_child(col)
 			mi.add_child(body)
 	for c in node.get_children():
-		_add_mesh_collision(c)
+		_add_mesh_collision(c, dedup)
+
+
+# WmbFile.read_brush()'s own dedup (GB-36) only merges RENDER faces that
+# share the same texture, within a tight 1-unit/0.99-dot tolerance -- safe
+# for visuals, but confirmed live (2026-08-13, Plane2) to still leave
+# behind clusters of near-coincident triangles (different textures and/or
+# just outside that tight tolerance) that are functionally the SAME walkable
+# surface. A CharacterBody3D standing on one of these spots still hits
+# `move_and_slide()`'s own collision-record limit purely on redundant
+# same-point, same-normal (0,1,0) floor contacts -- confirmed via a per-frame
+# collision trace showing exactly this shape at Plane2's own spawn point
+# (6 identical floor collisions, velocity correctly nonzero, zero net
+# displacement) even after GB-36's render-mesh dedup. Collision doesn't care
+# about texture identity or fine visual precision the way rendering does, so
+# this second pass can safely be looser and texture-agnostic: any two
+# triangles with near-parallel normals and centroids within 3 world units
+# collapse to one collision face. Deliberately NOT re-tuning the render-mesh
+# dedup in wmb_file.gd for this -- that tolerance is calibrated against real
+# z-fighting evidence (intro_kraza) and loosening it risks merging genuinely
+# distinct, intentionally close render geometry corpus-wide.
+func _dedup_collision_faces(faces: PackedVector3Array) -> PackedVector3Array:
+	var out := PackedVector3Array()
+	var seen := {}  # "gx:gy:gz" -> Array of {centroid, normal}
+	var tri_count := faces.size() / 3
+	for ti in tri_count:
+		var p0: Vector3 = faces[ti * 3]
+		var p1: Vector3 = faces[ti * 3 + 1]
+		var p2: Vector3 = faces[ti * 3 + 2]
+		var centroid := (p0 + p1 + p2) / 3.0
+		var normal := (p1 - p0).cross(p2 - p0)
+		if normal.length_squared() < 0.0001:
+			continue
+		normal = normal.normalized()
+		var gx := int(floor(centroid.x / 3.0))
+		var gy := int(floor(centroid.y / 3.0))
+		var gz := int(floor(centroid.z / 3.0))
+		var is_dup := false
+		for dx in [-1, 0, 1]:
+			for dy in [-1, 0, 1]:
+				for dz in [-1, 0, 1]:
+					var key := "%d:%d:%d" % [gx + dx, gy + dy, gz + dz]
+					if not seen.has(key):
+						continue
+					for s in (seen[key] as Array):
+						if (
+							(s["centroid"] as Vector3).distance_to(centroid) < 3.0
+							and absf((s["normal"] as Vector3).dot(normal)) > 0.99
+						):
+							is_dup = true
+							break
+					if is_dup:
+						break
+				if is_dup:
+					break
+			if is_dup:
+				break
+		var own_key := "%d:%d:%d" % [gx, gy, gz]
+		if not seen.has(own_key):
+			seen[own_key] = []
+		(seen[own_key] as Array).append({"centroid": centroid, "normal": normal})
+		if is_dup:
+			continue
+		out.append(p0)
+		out.append(p1)
+		out.append(p2)
+	return out
 
 
 func _spawn_ground(center: Vector3, size: Vector3) -> void:
