@@ -1468,17 +1468,39 @@ func _force_unshaded_if_needed(node: Node, repeat_textures: bool = false) -> voi
 					# material "#default"). A corpus scan (multiple levels' own
 					# `_brush.glb` files) found this exact blank-name pattern is not
 					# Town-specific -- Desert and MOI have it too, always as a face
-					# sealing the level from above/outside -- and also turned up a
-					# SECOND sky-naming convention this corpus uses beyond "sky*"/
-					# "zSKYNEW": French "ciel" ("sky"/"ceiling") -- Mansion's
-					# mansion_ciel/mansion_ciel2/mansion_roomcie, MOI's CIEL, and
-					# Shiks's CIELIN/shiks_ciel are all real, named backdrop-type
-					# surfaces in the actual source data, not a guess. Both new
-					# signals are genuine properties of the original WMB/WED data
-					# (a designer-left-blank texture name, or a French synonym for
-					# "sky"), not heuristics invented from this port's own geometry.
+					# sealing the level from above/outside.
+					#
+					# A "ciel" (French "sky") substring rule used to live here too,
+					# added the SAME day on the theory that Mansion's mansion_ciel/
+					# mansion_ciel2/mansion_roomcie, MOI's CIEL, and Shiks's CIELIN/
+					# shiks_ciel were the same class of real backdrop surface --
+					# reached from the NAME alone, never actually looking at the
+					# texture. Reported live (2026-08-12), Plane2: "The ceiling for
+					# the plane is not shown in the game now" -- traced to `plane_ciel`
+					# (used in Plane/Plane2/Range) getting caught by this same rule.
+					# Extracted and looked at EVERY "ciel"-containing texture name in
+					# the corpus (16 distinct ones, ~20 levels) before deciding
+					# anything this time: 14 of them are real, bespoke, hand-painted
+					# interior ceiling art -- many with actual light fixtures drawn
+					# into the texture itself (Cieling2's recessed spotlights,
+					# MAINCIEL's grid of stadium lights, shiks_ciel's and
+					# into12_ciel/into12_ciel2's single bulb fixtures, Whitciel's
+					# recessed light, inn_corr_ciel's and DUTYFREECIEL's wood-panel
+					# ceilings, mansion_ciel/mansion_ciel2's decorative sun-motif
+					# tiles -- confirmed visually, not by name). Only two (`CIEL`,
+					# shared verbatim across HitUFO/InShrine/MOI/Mount/Temple, and
+					# `CIELIN`, Shiks) are plain enough (flat olive, grassy) to
+					# still plausibly be genuine shared backdrop textures, but nothing
+					# confirms that beyond the name either -- left as ordinary lit
+					# surfaces along with the rest rather than allowlisting them on
+					# the same kind of unverified guess that caused this bug. Net
+					# effect: some outdoor levels may show a flat-colored ceiling
+					# instead of AcknexSky through an opening that was never actually
+					# meant to be sealed -- a real but far smaller and safer gap than
+					# hiding 14 confirmed real ceilings, several with their own light
+					# fixtures, corpus-wide.
 					var mat_name := mat.resource_name.to_lower()
-					if mat_name.contains("sky") or mat_name.contains("ciel") or mat_name == "" or mat_name == "#default":
+					if mat_name.contains("sky") or mat_name == "" or mat_name == "#default":
 						var invis := StandardMaterial3D.new()
 						# ALPHA_SCISSOR (a genuine per-pixel discard), not plain
 						# ALPHA blending: this round also turned shadow casting
