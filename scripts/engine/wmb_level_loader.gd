@@ -1710,7 +1710,28 @@ func _spawn_light(obj: Dictionary) -> void:
 		clampf(float(color[2]), 0.0, 1.0)
 	)
 	var rng := float(obj.get("range", 300.0))
-	light.omni_range = clampf(rng * 0.05, 4.0, 120.0)
+	# Reported live (2026-08-13/14), Plane2: "the game seems dark...
+	# you don't project the light correctly from the light points to the
+	# surfaces." `range` here is a raw float straight out of the WMB LIGHT
+	# record (wmb_file.gd's own read_level(), typ==2, no scaling applied at
+	# parse time) -- the SAME quant units as `origin`, which _pos_to_godot()
+	# only ever axis-remaps, never rescales (confirmed: every other distance
+	# in this port -- room bounds, capsule heights, feet-snap deltas -- is
+	# already used 1:1 in native WMB units with no divisor). The old
+	# `* 0.05` here had no derivation on record and was simply wrong: it
+	# shrank every light's reach to 5% of its real value. Surveyed the
+	# whole corpus's own raw range field directly (358 lights, 41 levels)
+	# before picking a replacement instead of guessing a second magic
+	# number: median 500, most values 200-5000 (matching real room/hall
+	# scale -- e.g. these 3 cabin lights are each 500, and Plane2's cabin
+	# is ~360x1017 units), with a handful of legitimate very-large "whole
+	# level" fill lights up to 10000, and one clear outlier (Desert's own
+	# two lights, both exactly 500000 -- almost certainly the original
+	# static/lightmap renderer's idea of "affects the whole map", not a
+	# value meant for a real-time attenuated point light). Used directly,
+	# clamped only to keep the rare extreme end performance-sane; no longer
+	# divided down.
+	light.omni_range = clampf(rng, 20.0, 4000.0)
 	light.light_energy = 1.1
 	# See _force_unshaded_if_needed()'s own note on this round's shadow
 	# fix -- corpus-wide light counts are small (0-6 per level), so real

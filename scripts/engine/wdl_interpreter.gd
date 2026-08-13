@@ -2091,7 +2091,13 @@ func _set_field(obj_expr: Variant, field: String, value: Variant, my) -> void:
 			node.set_meta("wdl_custom_" + low, _to_num(value))
 			var light := _get_or_create_entity_light(node)
 			if low == "lightrange":
-				light.omni_range = clampf(_to_num(value) * 0.05, 4.0, 120.0)
+				# `_spawn_light()`'s own `* 0.05` this reused for consistency
+				# was itself wrong (2026-08-13/14 report, "you don't project
+				# the light correctly from the light points to the surfaces"
+				# -- corpus survey confirmed `range`/`LIGHTRANGE` needs no
+				# scaling at all, same as every other GS-quant distance in
+				# this port). Kept in sync with that fix's own clamp.
+				light.omni_range = clampf(_to_num(value), 20.0, 4000.0)
 				light.visible = _to_num(value) > 0.0
 			else:
 				light.light_color = Color(
