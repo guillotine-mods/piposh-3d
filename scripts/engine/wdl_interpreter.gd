@@ -2250,10 +2250,20 @@ func _get_or_create_entity_light(node: Node3D) -> OmniLight3D:
 	if light == null:
 		light = OmniLight3D.new()
 		light.name = "WdlEntityLight"
-		# Kept in sync with _spawn_light()'s own energy fix (2026-08-15/16) --
-		# same quant-vs-meter unit-scale mismatch applies to every OmniLight3D
-		# in this port, not just native WMB lights.
-		light.light_energy = 28.0
+		# This IS the legitimately "WDL animates it at runtime" case (see
+		# _spawn_light()'s own note, 2026-08-16, on why STATIC WMB LIGHT
+		# objects no longer spawn a real-time light at all) -- a genuine
+		# per-entity dynamic light, matching the disassembly's own
+		# LIGHTRANGE mechanism. That reference explicitly found no
+		# recoverable original intensity/falloff formula for it ("A full
+		# falloff formula... was not conclusively pinned down this pass --
+		# flag as open... don't guess a formula without evidence") and
+		# recommends plain OmniLight3D attenuation instead. No sourced
+		# value exists for `light_energy` specifically, so this stays at
+		# Godot's own default rather than an invented multiplier -- the
+		# 12.0/28.0 tried this session were exactly that kind of guess,
+		# tuned to a screenshot rather than derived from anything.
+		light.light_energy = 1.0
 		# Reported live (2026-08-11): "the background behind yachdel...
 		# emits light and is flashing where it shouldn't be." This was the
 		# one real inconsistency in GB-29's own fix -- WmbLevelLoader's
