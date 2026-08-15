@@ -1567,12 +1567,15 @@ func _force_unshaded_if_needed(node: Node, repeat_textures: bool = false) -> voi
 	# real original .exe screenshot (Start level, Yachdal/crowd scene):
 	# models are visibly shaded/lit, not flat-colored. This function runs on
 	# every brush wall/floor and every non-animated prop in every level, so
-	# it was the dominant reason the whole port looked flat -- WMB light
-	# entities were already being spawned as real OmniLight3D nodes
-	# (_spawn_light) but had nothing that could receive them. Switched to lit
-	# so those lights (plus the level's ambient) actually show up. Name kept
-	# for now despite no longer forcing unshaded â€” rename is a follow-up, not
-	# urgent. (docs/SESSION_LOG.md 2026-07-27)
+	# it was the dominant reason the whole port looked flat. Switched to lit
+	# so the level's own ambient + sun (and any genuinely WDL-animated
+	# entity light -- see wdl_interpreter.gd's `_get_or_create_entity_light()`)
+	# actually show up. (Originally justified by `_spawn_light()` spawning a
+	# real OmniLight3D per WMB LIGHT object too -- that was removed 2026-08-16,
+	# GB-41: those are static, level-compile-time data meant for a lightmap
+	# bake, not runtime lights. Being lit-not-unshaded is still correct on
+	# its own merits, independent of that.) Name kept for now despite no
+	# longer forcing unshaded -- rename is a follow-up, not urgent.
 	if node is MeshInstance3D:
 		var mi := node as MeshInstance3D
 		# Imported LODs destroy seam UVs on low-poly MDL skins â€” stay on LOD0.
@@ -1755,14 +1758,15 @@ func _force_unshaded_if_needed(node: Node, repeat_textures: bool = false) -> voi
 			# was previously left off deliberately (GB-22/GB-23, NB-3) as a
 			# "needs live visual verification, not a blind guess" deferral,
 			# but shadows off entirely is a structural, unconditional gap,
-			# not a tuning question -- every level's WMB point lights
-			# (0-6 per level, corpus-wide -- cheap) plus the one directional
-			# "sun" light (level_runner.gd) now cast, and every brush/prop
-			# surface both casts and receives, matching how the original
-			# engine's own real-time lighting looked (WMB OmniLight3D
-			# entities were already spawned as real lights -- see this
-			# function's own docstring above -- they just had nothing able
-			# to cast or receive a shadow from them).
+			# not a tuning question. Every brush/prop surface both casts and
+			# receives so the one directional "sun" light (level_runner.gd)
+			# and any genuinely WDL-animated entity light
+			# (wdl_interpreter.gd's `_get_or_create_entity_light()`, shadow_
+			# enabled=true there too) actually produce real shadows. (Static
+			# WMB LIGHT objects no longer spawn a runtime light at all as of
+			# 2026-08-16, GB-41 -- see `_spawn_light()`'s own note -- so they
+			# don't factor in here; this cast_shadow setting predates that
+			# and remains correct independent of it.)
 			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	for c in node.get_children():
 		_force_unshaded_if_needed(c, repeat_textures)

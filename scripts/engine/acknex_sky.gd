@@ -106,8 +106,14 @@ func apply(
 	if indoor or scene_file == "":
 		env.background_mode = Environment.BG_COLOR
 		env.background_color = Color(0.12, 0.12, 0.14) if key == "studio" else Color(0.2, 0.22, 0.28)
-		env.ambient_light_energy = 1.0 if key == "studio" else 0.85
-		env.ambient_light_color = Color(0.55, 0.5, 0.45) if key == "studio" else Color(0.55, 0.55, 0.6)
+		# See _apply_sky_maps()'s own note (2026-08-16): ambient_light_* used
+		# to be set here too (hardcoded per-level, Studio getting its own
+		# 1.0/(0.55,0.5,0.45)) -- removed, same reasoning. This silently beat
+		# every ambient value level_runner.gd's _ensure_environment() ever
+		# set, for exactly the 5 levels hardcoded here, which is precisely
+		# how a live "colored lights aren't visible on Studio's floor" report
+		# survived three separate rounds of ambient/energy tuning this
+		# session without changing anything the user could actually see.
 		return
 	_spawn_scene_cylinder(scene_file, bounds)
 
@@ -183,9 +189,18 @@ func _apply_sky_maps(env: Environment, sky_file: String, cloud_file: String) -> 
 	sky.process_mode = Sky.PROCESS_MODE_REALTIME
 	env.sky = sky
 	env.background_mode = Environment.BG_SKY
-	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color(0.62, 0.62, 0.66)
-	env.ambient_light_energy = 0.9
+	# Deliberately NOT touching ambient_light_* here (2026-08-16 finding):
+	# this ran for EVERY level, unconditionally, immediately after
+	# level_runner.gd's own _ensure_environment() set its own considered
+	# ambient value -- silently overwriting it every single time, for
+	# every level, with a completely separate, never-cross-checked 0.9/
+	# (0.62,0.62,0.66). That made every round of ambient tuning done in
+	# _ensure_environment() this session (GB-40/GB-41) a complete no-op in
+	# practice; confirmed live (a fresh Studio load's own WorldEnvironment
+	# reported ambient_light_energy=1.0, matching THIS function's own old
+	# indoor-branch override below, never the 0.85 _ensure_environment()
+	# actually set). Ambient now has exactly one owner:
+	# level_runner.gd's _ensure_environment().
 
 
 ## Reported live (2026-08-10), with real reference screenshots from the
