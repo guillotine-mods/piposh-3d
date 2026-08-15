@@ -486,7 +486,12 @@ func _ensure_environment() -> void:
 	# the base ambient instead of being swamped by it, while staying high
 	# enough that areas with no nearby point light (most of the corpus's
 	# own square footage) don't go pitch black.
-	env.ambient_light_energy = 0.4
+	# Follow-up (2026-08-16): "I reloaded the project and I don't see any
+	# change" -- the first cut (0.85 -> 0.4) was real (confirmed via a
+	# controlled screenshot: a shadow appeared under a character that
+	# wasn't there before) but too subtle to register during ordinary play
+	# next to a still-fairly-bright flat ambient. Cut further.
+	env.ambient_light_energy = 0.22
 	we.environment = env
 	add_child(we)
 

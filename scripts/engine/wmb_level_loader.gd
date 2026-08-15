@@ -1839,7 +1839,18 @@ func _spawn_light(obj: Dictionary) -> void:
 	# invisible at Studio's own real ~190-unit light-to-floor distance at
 	# the old energy. Boosted to compensate for this port's own much
 	# larger unit scale.
-	light.light_energy = 12.0
+	# Follow-up (2026-08-16): "I reloaded the project and I don't see any
+	# change" -- 12.0 was a real, measured improvement (confirmed via
+	# screenshot) but too subtle against the level's own still-fairly-bright
+	# ambient to register during ordinary play. Boosted further, alongside
+	# a further ambient cut (_ensure_environment(), level_runner.gd).
+	light.light_energy = 28.0
+	# Steeper falloff (default 1.0) so a light reads as a concentrated,
+	# saturated color pool near the fixture -- closer to how the original's
+	# BAKED lightmaps actually looked (see this function's own note above
+	# on the disassembly-confirmed lightmap architecture) -- rather than a
+	# soft, washed-out gradient across the whole room at this energy.
+	light.omni_attenuation = 2.2
 	# See _force_unshaded_if_needed()'s own note on this round's shadow
 	# fix -- corpus-wide light counts are small (0-6 per level), so real
 	# shadow casting from every WMB point light is cheap.
