@@ -2250,7 +2250,10 @@ func _get_or_create_entity_light(node: Node3D) -> OmniLight3D:
 	if light == null:
 		light = OmniLight3D.new()
 		light.name = "WdlEntityLight"
-		light.light_energy = 1.0
+		# Kept in sync with _spawn_light()'s own energy fix (2026-08-15) --
+		# same quant-vs-meter unit-scale mismatch applies to every OmniLight3D
+		# in this port, not just native WMB lights.
+		light.light_energy = 12.0
 		# Reported live (2026-08-11): "the background behind yachdel...
 		# emits light and is flashing where it shouldn't be." This was the
 		# one real inconsistency in GB-29's own fix -- WmbLevelLoader's

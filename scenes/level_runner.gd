@@ -476,7 +476,17 @@ func _ensure_environment() -> void:
 	env.background_color = Color(0.45, 0.55, 0.7)
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = Color(0.55, 0.55, 0.6)
-	env.ambient_light_energy = 0.85
+	# Reported live (2026-08-15): native WMB point lights' own color and
+	# shadows weren't visibly reaching the floor. Measured directly: at the
+	# old 0.85 energy, flat ambient alone was bright enough to wash out a
+	# nearby point light's own contribution almost completely, even after
+	# fixing that light's own energy for this port's quant-vs-meter unit
+	# scale (see WmbLevelLoader._spawn_light()'s own note). Cut roughly in
+	# half so local lights and shadows read as real local contrast against
+	# the base ambient instead of being swamped by it, while staying high
+	# enough that areas with no nearby point light (most of the corpus's
+	# own square footage) don't go pitch black.
+	env.ambient_light_energy = 0.4
 	we.environment = env
 	add_child(we)
 

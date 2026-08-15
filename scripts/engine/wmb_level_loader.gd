@@ -893,6 +893,63 @@ func _mesh_aabb_local(node: Node, parent_xf: Transform3D, skip_node_xf: bool) ->
 	return acc if has else AABB()
 
 
+## Bounding-range Y center of the level's own brush geometry within
+## `radius` (3D distance) of `world_pos`, excluding vertices at or near the
+## floor -- used by `_mount_wall_card()`'s "shiknote" branch to center a
+## wall card on the real wall/board structure actually behind it
+## (2026-08-15 report: "the poster is higher up - in the middle of the
+## board behind it and not on the bottom of it"), since the card's own
+## WED-authored brush is often a degenerate sliver that measures almost
+## nothing useful on its own. Uses (min+max)/2 of nearby vertices, NOT a
+## vertex-count-weighted mean -- a first attempt at the mean version
+## overshot live-tested as "too high": a real board is typically several
+## stacked pieces (frame, backing, decal) with denser triangulation toward
+## one edge, so a raw per-vertex mean skews toward whichever piece happens
+## to have more vertices, not the panel's true visual center. The
+## min/max midpoint of the whole nearby cluster tracks the panel's actual
+## geometric extent regardless of how densely each piece happens to be
+## triangulated. Returns INF if nothing at all is found nearby (caller
+## falls back to its own guess).
+func _measure_nearby_wall_panel_center_y(world_pos: Vector3, radius: float) -> float:
+	var brush: Node = _geometry_root.get_node_or_null("Brush")
+	if brush == null:
+		return INF
+	var acc := {"min_y": INF, "max_y": -INF}
+	_accumulate_nearby_verts(brush, world_pos, radius, acc)
+	if acc["min_y"] == INF:
+		return INF
+	return (float(acc["min_y"]) + float(acc["max_y"])) * 0.5
+
+
+func _accumulate_nearby_verts(node: Node, world_pos: Vector3, radius: float, acc: Dictionary) -> void:
+	if node is MeshInstance3D and (node as MeshInstance3D).mesh:
+		var mi := node as MeshInstance3D
+		var xf := mi.global_transform
+		var r2 := radius * radius
+		for si in mi.mesh.get_surface_count():
+			var arrays := mi.mesh.surface_get_arrays(si)
+			if arrays.is_empty():
+				continue
+			var verts: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+			for v in verts:
+				var gv: Vector3 = xf * v
+				if gv.y <= floor_y + 12.0:
+					continue
+				# Full 3D distance, not just XZ -- an XZ-only cylinder can
+				# reach clean through an unrelated floor/ceiling stacked
+				# directly above or below this exact spot (confirmed live:
+				# Studio has a walkway floor at Y~404 sharing this same
+				# X/Z footprint, which a Y-unbounded search pulled in and
+				# dragged the mean up to ~419, nowhere near this actual
+				# wall's own geometry).
+				var d := gv - world_pos
+				if d.length_squared() <= r2:
+					acc["min_y"] = minf(acc["min_y"], gv.y)
+					acc["max_y"] = maxf(acc["max_y"], gv.y)
+	for c in node.get_children():
+		_accumulate_nearby_verts(c, world_pos, radius, acc)
+
+
 func _spawn_entity(obj: Dictionary) -> bool:
 	var file: String = str(obj.get("file", ""))
 	var action: String = str(obj.get("action", ""))
@@ -1363,18 +1420,29 @@ func _mount_wall_card(root: Node3D, stem: String) -> void:
 		# ("Unconfirmed pending playtest -- adjust or revert if still
 		# off") from before this branch's own runtime-WMB-reader migration
 		# even landed -- it was never actually measured against real
-		# geometry. `_should_feet_snap` excludes "shiknote" because the
-		# extracted brush is a degenerate edge-on slab (an AABB-based feet
-		# snap on THAT geometry is meaningless), but that doesn't mean the
-		# quad's own vertical placement should be an unmeasured guess
-		# either -- the real brush IS still available here, one frame
-		# before `_hide_meshes()` removes it, so its own real AABB center
-		# (the same measurement approach `_snap_mesh_feet_to_origin` uses
-		# for every other entity, just centered instead of floor-snapped,
-		# since this quad is a flat card, not a floor actor) replaces the
-		# guess with a real one.
-		var brush_aabb := _mesh_aabb_local(root, Transform3D.IDENTITY, true)
-		var measured_center_y := brush_aabb.position.y + brush_aabb.size.y * 0.5
+		# geometry. Replaced (2026-08-11) with the entity's OWN embedded
+		# brush AABB center -- but reported live again (2026-08-15): "the
+		# poster is higher up - in the middle of the board behind it and
+		# not on the bottom of it." Measured directly (a headless probe
+		# dumping every nearby brush surface's own vertices) why: this
+		# entity's own extracted brush is a genuinely DEGENERATE sliver
+		# (near-zero height), so centering on ITS OWN aabb is centering on
+		# almost nothing -- confirmed live, this exact entity's own
+		# measured_center_y came out as an unhelpful no-op (0 correction).
+		# The real fix needs the LEVEL's own wall/board geometry actually
+		# behind the card, not the tiny WED-authored placeholder slab.
+		# `root` is not yet inside the SceneTree at this point (added by the
+		# caller after _spawn_entity() returns) -- `global_position` doesn't
+		# resolve correctly pre-tree-insertion in this Godot version and
+		# silently reads back (0,0,0) instead of falling back to the local
+		# transform, which is what actually caused the "too high" report
+		# (2026-08-15): the panel scan below was searching near world
+		# origin, not near this entity, and the one stray vertex it
+		# happened to find within 200 units of (0,0,0) produced a
+		# meaningless result. `root` has no parent, so its own local
+		# `position` (already the real WED world position, set above) IS
+		# the correct world position here -- use that directly instead.
+		var panel_center_y := _measure_nearby_wall_panel_center_y(root.position, 130.0)
 		_hide_meshes(root)
 		var mi := MeshInstance3D.new()
 		mi.name = "ShikNotePoster"
@@ -1382,22 +1450,41 @@ func _mount_wall_card(root: Node3D, stem: String) -> void:
 		quad.size = Vector2(58.0, 72.0)
 		mi.mesh = quad
 		var mat := StandardMaterial3D.new()
-		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		# Reported live (2026-08-15): "in the original game the shiknote
+		# isn't brighter than anything" -- confirmed against a real Godot
+		# screenshot under this level's own actual ambient+sun lighting:
+		# UNSHADED was never verified against the real game, it just always
+		# rendered at full raw texture brightness regardless of the scene's
+		# own lighting, standing out once the (separately, correctly) fixed
+		# environment stopped being uniformly bright everywhere. Matches
+		# every other lit brush/prop surface's own shading settings now.
 		mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 		mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
 		mat.alpha_scissor_threshold = 0.05
+		mat.diffuse_mode = BaseMaterial3D.DIFFUSE_LAMBERT
+		mat.specular_mode = BaseMaterial3D.SPECULAR_DISABLED
 		if real_tex != null:
 			mat.albedo_texture = real_tex
 		else:
 			mat.albedo_color = Color(0.85, 0.75, 0.45)
 		mi.material_override = mat
-		if brush_aabb.size.y > 0.001:
-			mi.position.y = measured_center_y
+		if is_finite(panel_center_y):
+			# `panel_center_y` came out of _measure_nearby_wall_panel_center_y()
+			# in WORLD space (it scans the level's own brush mesh via
+			# global_transform); `mi.position` is LOCAL to `root`. Reported
+			# live (2026-08-15) as "too high" a second time because of
+			# exactly this -- assigning the world value directly double-
+			# counted root's own world Y (95 + a ~118 world center landed
+			# the quad at local 118, i.e. world 213). Subtract root's own Y
+			# to get back to root-local (root's pan-only rotation is a pure
+			# Y-axis yaw, which never touches the Y coordinate itself, so
+			# this subtraction is exact regardless of pan).
+			mi.position.y = panel_center_y - root.position.y
 		else:
-			# No usable brush AABB (degenerate/empty) -- fall back to the
-			# old guess rather than pin the quad at the raw origin with no
-			# correction at all.
+			# No nearby brush geometry found at all (degenerate/empty) --
+			# fall back to the old guess rather than pin the quad at the
+			# raw origin with no correction at all.
 			mi.position.y += quad.size.y * 0.12
 		# Quad faces +Z; WED pan orients the card (flatten authored tilt/roll).
 		var pan := float(root.get_meta("pan", 180.0))
@@ -1732,7 +1819,27 @@ func _spawn_light(obj: Dictionary) -> void:
 	# clamped only to keep the rare extreme end performance-sane; no longer
 	# divided down.
 	light.omni_range = clampf(rng, 20.0, 4000.0)
-	light.light_energy = 1.1
+	# Reported live again (2026-08-15), Studio: "colored lights are emitted
+	# and reflected on the floor... which in the current implementation
+	# both server and godot doesn't exist." The range fix above was real
+	# but not the whole story: `E:\RE_general\PiposhTools\decompile_acknex`
+	# (a from-scratch disassembly of the original AsyAct1.exe renderer, not
+	# guessed) confirms the original engine's own surface lighting is
+	# mostly STATIC lightmaps baked at level-compile time, with per-entity
+	# LIGHTRANGE lights (what this function models) as a genuinely separate,
+	# secondary mechanism -- and its own Godot-reimplementation notes say
+	# OmniLight3D attenuation is the right modern equivalent, no need to
+	# reverse-engineer the original falloff curve. Measured directly why it
+	# still wasn't visible here: this port keeps WMB coordinates 1:1 as
+	# Godot units (quants, not meters -- room dimensions run into the
+	# hundreds of units), but `light_energy` near Godot's own default (~1)
+	# is calibrated for roughly meter-scale distances. An isolated test
+	# confirmed the light mechanism itself was never broken (clearly
+	# visible color + shadow on a floor 60 units away) but was effectively
+	# invisible at Studio's own real ~190-unit light-to-floor distance at
+	# the old energy. Boosted to compensate for this port's own much
+	# larger unit scale.
+	light.light_energy = 12.0
 	# See _force_unshaded_if_needed()'s own note on this round's shadow
 	# fix -- corpus-wide light counts are small (0-6 per level), so real
 	# shadow casting from every WMB point light is cheap.
