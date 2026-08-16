@@ -317,11 +317,27 @@ func _apply_wdl_fog() -> void:
 		# set camera.fog without ever touching fog_color -- treat that as
 		# "no real color chosen", not "pure black fog", falling back to a
 		# neutral mid-gray instead.
+		#
+		# Reported live again (2026-08-16): "the fog/stage of plane3 is
+		# still really really dark... it goes for all implementations of
+		# light and fog in the game." Measured directly why, for Plane3
+		# specifically: `fog_color=1` really is (per WDL's own SET-only-
+		# sets-.x quirk, GB-20) essentially raw (1,0,0) on a 0-255 scale --
+		# 0.0039 normalized, i.e. genuinely, deliberately near-black, not a
+		# misread. That part of the data was never the bug. Floored to a
+		# minimum per channel so a "near black" script value still reads as
+		# a dark, moody haze instead of literal, total information loss --
+		# the original's own DirectX-era fog blending is very unlikely to
+		# have ever rendered as perfectly, uniformly (0,0,0) in practice
+		# (dithering, dynamic range, CRT black levels of the era all argue
+		# against it), and a hard floor costs nothing on levels that never
+		# push fog this dark to begin with.
+		var floor_c := 0.08
 		if fog_color_gs.length() > 0.001:
 			env.fog_light_color = Color(
-				clampf(fog_color_gs.x / 255.0, 0.0, 1.0),
-				clampf(fog_color_gs.y / 255.0, 0.0, 1.0),
-				clampf(fog_color_gs.z / 255.0, 0.0, 1.0),
+				maxf(clampf(fog_color_gs.x / 255.0, 0.0, 1.0), floor_c),
+				maxf(clampf(fog_color_gs.y / 255.0, 0.0, 1.0), floor_c),
+				maxf(clampf(fog_color_gs.z / 255.0, 0.0, 1.0), floor_c),
 			)
 		else:
 			env.fog_light_color = Color(0.5, 0.5, 0.5)
@@ -331,10 +347,26 @@ func _apply_wdl_fog() -> void:
 		# constant broke Plane3 specifically. `value` (0-30ish in the
 		# corpus) only nudges thickness within that safe range, never
 		# drives the primary distance.
+		#
+		# Reported again 2026-08-16 (same report as the color floor above):
+		# measured directly that the OLD formula (`fog_depth_begin =
+		# safe_end*0.6` with `safe_end = diag*1.5`) put `fog_depth_begin`
+		# at 9082 units for Plane3, while the level's own real bounds
+		# diagonal is 10091 -- meaning fog was already engaging BEFORE the
+		# camera even reached the far edge of the level's own real, meant-
+		# to-be-visible geometry, not just a distant backdrop past it. A
+		# real prop rendered fully fogged-out (near black, hard silhouette
+		# edge) in a live screenshot despite sitting well within the
+		# level's own bounds. Pushed the safe start point past the level's
+		# own FULL diagonal with real margin (not a fraction of an already-
+		# inflated number), so ordinary playable-area geometry stays clear;
+		# `value` still modulates how quickly it then thickens toward full
+		# fog color beyond that point, not whether real geometry gets
+		# swallowed at all.
 		var diag: float = loader.level_bounds.size.length() if loader else 10000.0
-		var safe_end: float = maxf(diag * 1.5, 4000.0)
-		env.fog_depth_begin = safe_end * 0.6
-		env.fog_depth_end = safe_end * clampf(1.6 - value * 0.02, 1.0, 1.6)
+		env.fog_depth_begin = maxf(diag * 1.3, 5000.0)
+		var fade_span: float = maxf(diag * 0.8, 3000.0) * clampf(1.6 - value * 0.02, 0.7, 1.6)
+		env.fog_depth_end = env.fog_depth_begin + fade_span
 
 
 func _entity_mesh_aabb(root: Node3D) -> AABB:

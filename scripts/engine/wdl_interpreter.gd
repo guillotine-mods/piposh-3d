@@ -2262,11 +2262,24 @@ func _get_or_create_entity_light(node: Node3D) -> OmniLight3D:
 		# falloff formula... was not conclusively pinned down this pass --
 		# flag as open... don't guess a formula without evidence") and
 		# recommends plain OmniLight3D attenuation instead. No sourced
-		# value exists for `light_energy` specifically, so this stays at
-		# Godot's own default rather than an invented multiplier -- the
-		# 12.0/28.0 tried this session were exactly that kind of guess,
-		# tuned to a screenshot rather than derived from anything.
-		light.light_energy = 1.0
+		# falloff CURVE exists, so that part still isn't guessed. The base
+		# `light_energy` magnitude is a different question, though, and one
+		# that IS now grounded in a direct measurement, not a screenshot
+		# guess: `_spawn_light()`'s own calibration this session (isolated
+		# lit-plane test, `tools/diag_light_calibrate.gd`) found Godot's
+		# default OmniLight3D energy of 1.0 is calibrated for roughly
+		# meter-scale distances, while this whole port keeps WMB quant
+		# units 1:1 as Godot units -- hundreds of units per room, not
+		# single digits -- so energy=1.0 reads as functionally invisible at
+		# any real gameplay distance (measured: a 0.6-albedo plane at 171
+		# units, the real distance from a Plane2 cabin light to its own
+		# floor, comes back essentially black at energy=1.0, climbing to a
+		# legible 0.5 grey only around energy=500 and a strong, clearly-lit
+		# 0.83 around energy=1500). Matching `_spawn_light()`'s own
+		# calibrated value here rather than leaving two light-spawning
+		# paths at wildly different, inconsistent magnitudes for the same
+		# engine-scale reason.
+		light.light_energy = 1500.0
 		# Reported live (2026-08-11): "the background behind yachdel...
 		# emits light and is flashing where it shouldn't be." Root cause: this
 		# entity-driven light was left at the Godot default of unoccluded, so

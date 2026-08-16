@@ -1825,7 +1825,7 @@ func _spawn_light(obj: Dictionary) -> void:
 	)
 	var rng := float(obj.get("range", 300.0))
 	light.omni_range = clampf(rng, 20.0, 4000.0)
-	light.light_energy = 80.0
+	light.light_energy = 1500.0
 	light.shadow_enabled = true
 	_entities_root.add_child(light)
 
