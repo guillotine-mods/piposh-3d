@@ -1568,14 +1568,12 @@ func _force_unshaded_if_needed(node: Node, repeat_textures: bool = false) -> voi
 	# models are visibly shaded/lit, not flat-colored. This function runs on
 	# every brush wall/floor and every non-animated prop in every level, so
 	# it was the dominant reason the whole port looked flat. Switched to lit
-	# so the level's own ambient + sun (and any genuinely WDL-animated
-	# entity light -- see wdl_interpreter.gd's `_get_or_create_entity_light()`)
-	# actually show up. (Originally justified by `_spawn_light()` spawning a
-	# real OmniLight3D per WMB LIGHT object too -- that was removed 2026-08-16,
-	# GB-41: those are static, level-compile-time data meant for a lightmap
-	# bake, not runtime lights. Being lit-not-unshaded is still correct on
-	# its own merits, independent of that.) Name kept for now despite no
-	# longer forcing unshaded -- rename is a follow-up, not urgent.
+	# so the level's own ambient + sun, any genuinely WDL-animated entity
+	# light (`_get_or_create_entity_light()`), and native WMB `LIGHT`
+	# objects (`_spawn_light()` -- a deliberate stand-in for unextracted
+	# lightmap data as of GB-43, see its own note) all actually show up.
+	# Name kept for now despite no longer forcing unshaded -- rename is a
+	# follow-up, not urgent.
 	if node is MeshInstance3D:
 		var mi := node as MeshInstance3D
 		# Imported LODs destroy seam UVs on low-poly MDL skins â€” stay on LOD0.
@@ -1759,14 +1757,12 @@ func _force_unshaded_if_needed(node: Node, repeat_textures: bool = false) -> voi
 			# "needs live visual verification, not a blind guess" deferral,
 			# but shadows off entirely is a structural, unconditional gap,
 			# not a tuning question. Every brush/prop surface both casts and
-			# receives so the one directional "sun" light (level_runner.gd)
-			# and any genuinely WDL-animated entity light
-			# (wdl_interpreter.gd's `_get_or_create_entity_light()`, shadow_
-			# enabled=true there too) actually produce real shadows. (Static
-			# WMB LIGHT objects no longer spawn a runtime light at all as of
-			# 2026-08-16, GB-41 -- see `_spawn_light()`'s own note -- so they
-			# don't factor in here; this cast_shadow setting predates that
-			# and remains correct independent of it.)
+			# receives so the one directional "sun" light (level_runner.gd),
+			# any genuinely WDL-animated entity light (wdl_interpreter.gd's
+			# `_get_or_create_entity_light()`), and the native WMB `LIGHT`
+			# objects `_spawn_light()` spawns (a deliberate approximation as
+			# of GB-43, standing in for unextracted lightmap data -- see its
+			# own note) all actually produce real shadows.
 			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	for c in node.get_children():
 		_force_unshaded_if_needed(c, repeat_textures)
@@ -1789,35 +1785,49 @@ func _add_marker(root: Node3D, action: String, is_wmb: bool) -> void:
 
 
 func _spawn_light(obj: Dictionary) -> void:
-	# Reworked (2026-08-16): this used to spawn a real-time OmniLight3D for
-	# every WMB `LIGHT`-type object, then went through three rounds of
-	# tuning its range/energy/attenuation trying to make that look right
-	# (GB-39, GB-40). All three rounds were solving the wrong problem.
-	# `E:\RE_general\PiposhTools\decompile_acknex` (a from-scratch
-	# disassembly of the original AsyAct1.exe renderer) and this repo's own
-	# `rewrite_skill/PORTING_MANUAL.md` (independently, from the same kind
-	# of analysis) both establish that brush-surface lighting in the
-	# original engine is static lightmaps BAKED AT LEVEL-COMPILE TIME --
-	# these WMB `LIGHT` objects are exactly the inputs to that bake, not
-	# runtime lights. The manual is explicit: "Keep the runtime OmniLight3D
-	# spawns for lights the WDL animates at runtime. Static lights that are
-	# already baked into the lightmap must NOT also be spawned, or
-	# everything doubles up." A WMB `LIGHT` object, by construction, is
-	# never WDL-animated -- it's pure level-compile-time data. Spawning a
-	# dynamic light from it was the actual mistake, not a tuning problem;
-	# no amount of energy/attenuation retuning was ever going to converge
-	# on "looks like a baked lightmap" (confirmed the hard way this
-	# session). The real fix is extracting and applying the WMB's own
-	# lightmap data (PORTING_MANUAL.md §"A5's baked lightmaps are discarded
-	# entirely") -- not yet done; the exact per-face lightmap byte format
-	# wasn't successfully reverse-engineered this session (see docs/BUGS.md
-	# for what was tried and ruled out). Until that lands, brush geometry
-	# is lit by ambient + the sun only, same as any other unlit-lightmap
-	# area, rather than faked with an inflated dynamic light. Genuinely
-	# dynamic, WDL-animated lights (`MY.LIGHTRANGE` etc.) are unaffected --
-	# see wdl_interpreter.gd's own `_get_or_create_entity_light()`, which
-	# this note does not apply to.
-	pass
+	# GB-41 (2026-08-16) removed this entirely: `rewrite_skill/PORTING_
+	# MANUAL.md` and a from-scratch disassembly of the original renderer
+	# (`E:\RE_general\PiposhTools\decompile_acknex`) both establish that
+	# brush-surface lighting in the original engine is static lightmaps
+	# baked at level-compile time -- these WMB `LIGHT` objects are exactly
+	# the INPUTS to that bake, not runtime lights, and the manual is
+	# explicit that a light already baked into a lightmap must not ALSO be
+	# spawned dynamically, "or everything doubles up."
+	#
+	# GB-43 (2026-08-16, same day): brought back a real, deliberately-
+	# flagged approximation. That "no double-up" warning only applies if
+	# real lightmap data is actually being applied -- it isn't (extraction
+	# was attempted and the exact per-face byte format wasn't cracked, see
+	# GB-41's own bug entry). With no lightmap contribution at all, the
+	# "correct" architecture left every one of these lights -- including
+	# Studio's own blue/yellow/red ceiling fixtures -- completely dark,
+	# which is a worse, LESS faithful result than an approximated dynamic
+	# light, not a better one. Reinstated as a real OmniLight3D, same
+	# range convention as `MY.LIGHTRANGE` (GB-39's sourced fix: raw WMB
+	# quant units, no scaling), tuned against the NOW-CORRECT ambient
+	# baseline (GB-42 fixed acknex_sky.gd silently overriding
+	# _ensure_environment()'s ambient to 1.0/0.9 -- every energy value
+	# tried before that fix was calibrated against the WRONG active
+	# ambient and is not a reliable reference point). This is explicitly
+	# an approximation of the original, not a recovered formula -- replace
+	# with real per-face lightmap sampling if that extraction ever lands,
+	# removing this spawn at the same time to avoid doubling up for real.
+	var pos := _vec3(obj.get("origin", [0, 0, 0]), Vector3.ZERO)
+	if pos.length() > MAX_ORIGIN_DIST:
+		return
+	var color: Array = obj.get("color", [1, 1, 1])
+	var light := OmniLight3D.new()
+	light.position = pos
+	light.light_color = Color(
+		clampf(float(color[0]), 0.0, 1.0),
+		clampf(float(color[1]), 0.0, 1.0),
+		clampf(float(color[2]), 0.0, 1.0)
+	)
+	var rng := float(obj.get("range", 300.0))
+	light.omni_range = clampf(rng, 20.0, 4000.0)
+	light.light_energy = 80.0
+	light.shadow_enabled = true
+	_entities_root.add_child(light)
 
 
 func _build_glb_index() -> void:

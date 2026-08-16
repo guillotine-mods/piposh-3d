@@ -2251,10 +2251,13 @@ func _get_or_create_entity_light(node: Node3D) -> OmniLight3D:
 		light = OmniLight3D.new()
 		light.name = "WdlEntityLight"
 		# This IS the legitimately "WDL animates it at runtime" case (see
-		# _spawn_light()'s own note, 2026-08-16, on why STATIC WMB LIGHT
-		# objects no longer spawn a real-time light at all) -- a genuine
-		# per-entity dynamic light, matching the disassembly's own
-		# LIGHTRANGE mechanism. That reference explicitly found no
+		# _spawn_light()'s own note on the DIFFERENT case -- static WMB
+		# LIGHT objects, which as of GB-43 spawn a real light too, but only
+		# as a deliberately-flagged approximation standing in for
+		# unextracted lightmap data, not because they're WDL-animated) --
+		# this one is a genuine per-entity dynamic light, matching the
+		# disassembly's own LIGHTRANGE mechanism. That reference explicitly
+		# found no
 		# recoverable original intensity/falloff formula for it ("A full
 		# falloff formula... was not conclusively pinned down this pass --
 		# flag as open... don't guess a formula without evidence") and
@@ -2270,9 +2273,11 @@ func _get_or_create_entity_light(node: Node3D) -> OmniLight3D:
 		# any wall between a scripted light (e.g. `ACTION FlickerLight`) and
 		# whatever it's actually meant to illuminate got lit straight
 		# through, same as sunlight through a solid wall. This IS a genuinely
-		# real-time, WDL-animated light (unlike static WMB LIGHT objects,
-		# which no longer spawn a runtime light at all as of 2026-08-16,
-		# GB-41), so a real shadow is the correct behavior for it.
+		# real-time, WDL-animated light, so a real shadow is unambiguously
+		# correct behavior for it (unlike the native WMB LIGHT objects'
+		# own light in `_spawn_light()`, which also casts a shadow, but as
+		# part of a deliberate approximation rather than a WDL-animated
+		# effect -- see that function's own note).
 		light.shadow_enabled = true
 		node.add_child(light)
 	return light
