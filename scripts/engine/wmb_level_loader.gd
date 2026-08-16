@@ -1825,6 +1825,28 @@ func _spawn_light(obj: Dictionary) -> void:
 	)
 	var rng := float(obj.get("range", 300.0))
 	light.omni_range = clampf(rng, 20.0, 4000.0)
+	# Follow-up (2026-08-16), Studio: "the purple color is now on one of the
+	# lamps that is not there in the original graphics" -- measured directly:
+	# a neutral white lamp prop (StudioL_mdl_007, confirmed via its own
+	# unlit texture) sits 134 units from the blue ceiling light and 240
+	# units from the red one, both well inside their real, sourced 400-unit
+	# range (GB-39), so their colors add into magenta. Tried a steeper,
+	# physically-motivated falloff (`omni_attenuation=2.0`, inverse-square)
+	# with energy recalibrated (isolated lit-plane sweep) to match the
+	# default curve's brightness at Plane2's own reference distance (171
+	# units) -- looked fine in that ONE isolated single-light measurement,
+	# but a live re-check of the real multi-light scenes it was meant to
+	# preserve (Plane2's cabin, Studio's own wide shot) showed a real,
+	# visible regression: both scenes came back noticeably DIMMER than the
+	# already-shipped default curve, because a real room sums contributions
+	# from SEVERAL lights at several different distances at once, not the
+	# one calibration distance the isolated test checked -- and the purple
+	# lamp was barely changed anyway. Reverted; left at Godot's default
+	# attenuation. The color-bleed is a real, structural side effect of
+	# approximating a baked lightmap with additive real-time points (same
+	# open gap as the rest of this function's own note above), not
+	# something a global falloff-curve tweak can cleanly fix without
+	# undoing the brightness fix this same energy value exists for.
 	light.light_energy = 1500.0
 	light.shadow_enabled = true
 	_entities_root.add_child(light)

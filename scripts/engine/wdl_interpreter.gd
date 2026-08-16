@@ -2279,6 +2279,17 @@ func _get_or_create_entity_light(node: Node3D) -> OmniLight3D:
 		# calibrated value here rather than leaving two light-spawning
 		# paths at wildly different, inconsistent magnitudes for the same
 		# engine-scale reason.
+		#
+		# Follow-up same day: `_spawn_light()`'s own energy/attenuation were
+		# tried at 50000/2.0 (a steeper, physically-motivated curve) to
+		# fix a reported color-bleed bug (two differently-colored Studio
+		# ceiling lights both reaching the same neutral-white lamp prop and
+		# mixing into an unintended purple), then reverted after a live
+		# re-check showed real multi-light scenes came back visibly dimmer
+		# overall -- see that function's own note for the full story. Stays
+		# at the plain energy=1500 value here too, for the same reason as
+		# above: no grounds to leave the two light-spawning paths on
+		# different curves for the same engine-scale problem.
 		light.light_energy = 1500.0
 		# Reported live (2026-08-11): "the background behind yachdel...
 		# emits light and is flashing where it shouldn't be." Root cause: this
