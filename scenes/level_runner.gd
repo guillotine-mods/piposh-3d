@@ -291,6 +291,30 @@ func _apply_wdl_fog() -> void:
 		return
 	var env := we.environment
 	env.fog_enabled = value > 0.0
+	# Follow-up (2026-08-17): "in plane2 the lights are still not emitting
+	# light so the plane interior is dark" / "in plane3 the outside is dark
+	# where it shouldn't be dark at all." Spent a long round chasing this
+	# as an ACES-tonemap/exposure/light-energy regression -- none of those
+	# moved the needle (verified: doubling light energy, nearly quadrupling
+	# ambient, and sweeping tonemap_exposure up to 2.0 all left the exact
+	# same pixels just as dark). The real cause was never touched by any of
+	# that: `Environment.fog_density` -- a COMPLETELY SEPARATE exponential
+	# fog mechanism from the `fog_depth_begin`/`fog_depth_end` curve this
+	# function actually manages -- defaults to 0.01 in a fresh Environment
+	# and this function never explicitly zeroed it. At the ~200-350 unit
+	# distances filling most of an ordinary interior shot, Godot's
+	# exponential fog formula (`1 - exp(-density * distance)`) alone
+	# already blends ~85-97% of the pixel toward `fog_light_color`,
+	# completely independent of how carefully `fog_depth_begin`/`_end` are
+	# tuned -- confirmed directly: zeroing JUST this one property (no other
+	# change) took a wall pixel from (0.04, 0.06, 0.08) to (0.0, 0.16,
+	# 0.28) and a ceiling pixel's blue channel from 0.07 to 0.58, an 8x
+	# jump, on the exact same frame. This is corpus-wide, not Plane2/
+	# Plane3-specific: `fog_enabled = value > 0.0` above has been flipping
+	# this default density fog on for every level with any `camera.fog`
+	# script value the whole time this function has existed. Zeroed here
+	# so only the intentional depth-based curve below ever applies.
+	env.fog_density = 0.0
 	# Reported live (2026-08-10 continued): "the fog issue still occurs" /
 	# Plane3 "really dark" persisted even after anchoring fog_depth_end to
 	# the level's own real bounds (above). Godot's `Environment.fog_sky_
@@ -538,6 +562,22 @@ func _ensure_environment() -> void:
 	# rolloff instead of a hard clip) and is a broadly-applicable rendering
 	# default, not a value tuned to this one report.
 	env.tonemap_mode = Environment.TONE_MAPPER_ACES
+	# Follow-up (2026-08-17): "in plane2 the lights are still not emitting
+	# light so the plane interior is dark" / "in plane3 the outside is dark
+	# where it shouldn't be dark at all." First suspected ACES's own curve
+	# (ceiling-strip pixel measured ~20% darker under ACES than Linear at
+	# the default exposure) and tried compensating with `tonemap_exposure`
+	# -- swept 1.3 up to 2.0 and it barely moved these specific pixels at
+	# all, a sign this wasn't really an exposure problem. The REAL cause,
+	# found right after (see `_apply_wdl_fog()`'s own note in this same
+	# file): `Environment.fog_density` defaults to 0.01 and was never
+	# explicitly zeroed, silently applying a full exponential fog
+	# independent of the depth-based curve this game actually manages.
+	# With that fixed, plain ACES at its own default exposure (1.0, i.e.
+	# no override needed here) already reads clearly bright -- no exposure
+	# compensation left to do, and leaving one out keeps the Shik near-
+	# field fix (GB-47) at its own already-verified value instead of
+	# risking re-clipping it for no remaining benefit.
 	we.environment = env
 	add_child(we)
 

@@ -1854,7 +1854,29 @@ func _spawn_light(obj: Dictionary) -> void:
 	# (its cabin lights are grey/unsaturated, never enter the affected
 	# set) while cleanly separating Studio's red/blue bleed.
 	light.omni_range = minf(light.omni_range, float(obj.get("_light_range_cap", INF)))
-	light.light_energy = 1500.0
+	# Follow-up (2026-08-17): "in range now there's too much light" --
+	# measured directly: Range.wmb has 2 lights with a raw authored range
+	# of 5000 (10x a typical small-fixture light like Plane2/Studio's own
+	# 300-500-range fixtures), on top of the SAME 3 cabin-style lights
+	# Plane2 has. A corpus-wide scan found this is not a Range oddity --
+	# 73 of 358 total WMB LIGHT records (20%) have a raw range over 1000,
+	# clustered at suspiciously round preset values (2000/3000/5000/10000/
+	# 20000, plus Desert's own already-known 500000 outlier) sharply
+	# distinct from the organic small-fixture values (300, 400, 500, 691...)
+	# -- a real, corpus-wide semantic category, almost certainly the
+	# "affects the whole level" static-lightmap-bake markers GB-39 already
+	# flagged Desert's outlier as being, not real point-fixture placements.
+	# `energy=1500` was calibrated (GB-44/46) against small-fixture
+	# distances (150-400 units) specifically; applying it unscaled to a
+	# light meant to softly wash a huge area means dozens of surfaces all
+	# read strongly lit at once, not just one. Scaled inversely to how far
+	# a light's raw range exceeds that same small-fixture baseline (500,
+	# GB-39's own corpus median): light_energy_scale = min(1.0, 500/rng).
+	# Leaves every light at or under 500 units -- i.e. every already-
+	# verified scene this session (Plane2, Studio, Shiks) -- completely
+	# unchanged (scale=1.0); only engages for the wide-fill category.
+	var energy_scale := minf(1.0, 500.0 / maxf(rng, 1.0))
+	light.light_energy = 1500.0 * energy_scale
 	# Follow-up (2026-08-17), Plane2: "i can clearly see the lights
 	# projected from above are not seen inside the plane's surface" --
 	# measured directly why: the cabin ceiling mesh (`plane_ciel`) spans
