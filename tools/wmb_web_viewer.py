@@ -466,6 +466,13 @@ camera.position.set(400, 500, 800);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(wrap.clientWidth, wrap.clientHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+// three@0.160 defaults to physically-correct lighting (PointLight
+// intensity in candela, real inverse-square decay) with NO tonemap --
+// anything past 1.0 just clips flat to white. ACES gives the same
+// graceful highlight rolloff this session already added to the real
+// Godot game's WorldEnvironment for the same reason (see level_runner.gd
+// _ensure_environment()).
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
 wrap.appendChild(renderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -561,12 +568,36 @@ async function buildScene(level) {
   }
 
   // Lights: real OmniLight-equivalents + a small visible marker sphere.
+  //
+  // Reported live (2026-08-17): "The lights are too dim, they should
+  // project a lot more light and light up the plane." Root cause:
+  // intensity=1.2 with THREE.PointLight's default real inverse-square
+  // decay (physically-correct lighting is three@0.160's own default) is
+  // candela, not an arbitrary multiplier -- at this scene's actual scale
+  // (WMB quant units kept 1:1, hundreds of units per room, same as the
+  // real Godot game) that's the same order-of-magnitude mismatch GB-44
+  // found and fixed for the real game's own OmniLight3D energy: a light
+  // calibrated for meter-scale real-world photometry reads as
+  // functionally invisible at hundred-unit distances. Scaled up using
+  // the same reasoning (target a few units of irradiance at a typical
+  // ~150-300 unit light-to-surface distance, i.e. intensity on the order
+  // of distance^2): 200000 puts irradiance around 5 at 200 units, still
+  // over 1 out to the light's own full range, and only clips (gracefully,
+  // under the ACES tonemap above) very close to the fixture itself.
+  //
+  // Also fixed `l.range * 0.6` for the falloff cutoff -- same shape of
+  // mistake as the real Godot game's own now-removed `range * 0.05`
+  // (GB-39): an unsourced scaling factor on top of a value (`range`)
+  // that's already real, authored WMB data on its own scale. Uses the
+  // raw range directly now, clamped to the same [20, 4000] bounds GB-39
+  // established for the real game, instead of re-scaling it again here.
   const lightMarkerGeo = new THREE.SphereGeometry(6, 8, 8);
   const lightGroup = new THREE.Group();
   scene.add(lightGroup);
   for (const l of level.lights) {
     const color = new THREE.Color(l.color[0], l.color[1], l.color[2]);
-    const point = new THREE.PointLight(color, 1.2, Math.max(l.range * 0.6, 80));
+    const dist = Math.max(20, Math.min(l.range, 4000));
+    const point = new THREE.PointLight(color, 200000, dist);
     point.position.set(...l.pos);
     lightGroup.add(point);
     const marker = new THREE.Mesh(lightMarkerGeo, new THREE.MeshBasicMaterial({ color }));
