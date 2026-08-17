@@ -160,7 +160,7 @@ func _ready() -> void:
 
 	_game_hud.set_debug_text(
 		level,
-		"script=%s | mode=%s | F1=Menu F3=Next F4=Levels F6=Plane3 F7=Map F9=Settings Space=Recenter F10=debug"
+		"script=%s | mode=%s | F1=Menu F3=Next F4=Levels F6=Plane3 F7=Plane2 F8=Smash F9=Settings Space=Recenter F10=debug"
 		% [
 			str(loader.last_level_data.get("script", "?")),
 			"FP" if use_fp else ("scripted" if use_scripted else "free"),
@@ -519,9 +519,40 @@ func _ensure_environment() -> void:
 	# not something to darken further to manufacture contrast with lights
 	# that shouldn't have been dynamic in the first place.
 	env.ambient_light_energy = 0.85
+	# Follow-up (2026-08-17), Shiks: "the indoor has the Shik character
+	# model 'glowing' light." Root cause wasn't a material bug (checked --
+	# `shading_mode`/emission on the Shik meshes are ordinary, same as
+	# every other lit character) -- it's a real, measured near-field
+	# overexposure: `Shik_mdl_046` sits 137.8 units from one of Shiks' own
+	# WMB lights, well inside the range where GB-44/46's `energy=1500`
+	# calibration reads as fully clipped white (matches the earlier Studio
+	# purple-lamp calibration: ~0.99 at a comparable ~134-unit distance).
+	# Godot's own tonemap default is `TONE_MAPPER_LINEAR` -- no rolloff at
+	# all, so anything pushed past 1.0 just flatlines to solid white,
+	# reading as "glowing" rather than "a bright highlight." This isn't
+	# specific to Shiks or to `_spawn_light()`'s energy value -- ANY
+	# character standing close to any of this port's lights will clip the
+	# same way under Linear, corpus-wide, so the general, non-guessed fix
+	# is the tonemap curve itself, not another per-scene energy tweak.
+	# ACES is the standard choice for exactly this (graceful highlight
+	# rolloff instead of a hard clip) and is a broadly-applicable rendering
+	# default, not a value tuned to this one report.
+	env.tonemap_mode = Environment.TONE_MAPPER_ACES
 	we.environment = env
 	add_child(we)
 
+	# Follow-up (2026-08-17): "the fog and the level is still just DARK"
+	# (Plane3). Traced to a real, corpus-wide dead-code bug, same shape as
+	# GB-42's ambient one: `level_runner.tscn` itself had a "Sun" node
+	# baked directly into the scene file (added at some earlier point,
+	# outside this function's own history) with NEITHER `light_color` NOR
+	# `light_energy` set -- i.e. Godot's own bare defaults, white/1.0 --
+	# at a fixed, never-revisited rotation. `if not has_node("Sun")` below
+	# always found that node already present and never once ran this
+	# function's own tuned setup, for ANY level, ever. Removed the baked
+	# node from the .tscn so this code is the sun's one real owner, same
+	# fix shape as GB-42's `acknex_sky.gd`/`_ensure_environment()` ambient
+	# conflict.
 	if not has_node("Sun"):
 		var sun := DirectionalLight3D.new()
 		sun.name = "Sun"
@@ -654,12 +685,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif event.keycode == KEY_F6:
 			LevelRouter.goto_level("Plane3")
 		elif event.keycode == KEY_F7:
-			# Smash's own SetVoice() (Scene==15) calls the shared
-			# ReturnToMap() -> Run("Map.exe") -- the overworld hub the
-			# player returns to after finishing a mission, not a linear
-			# "next chapter". Matches F6's own precedent (jump straight to
-			# the level currently being worked on).
-			LevelRouter.goto_level("Map")
+			# Matches F6's own precedent (jump straight to the level
+			# currently being worked on) -- reassigned from "Map" (still
+			# reachable via F3's DEBUG_LEVELS cycle) to Plane2 (2026-08-17).
+			LevelRouter.goto_level("Plane2")
+		elif event.keycode == KEY_F8:
+			LevelRouter.goto_level("Smash")
 		elif event.keycode == KEY_F9:
 			_settings.toggle_visible()
 		elif event.keycode == KEY_ESCAPE and _level_select:

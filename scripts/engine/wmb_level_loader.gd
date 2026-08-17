@@ -1855,7 +1855,29 @@ func _spawn_light(obj: Dictionary) -> void:
 	# set) while cleanly separating Studio's red/blue bleed.
 	light.omni_range = minf(light.omni_range, float(obj.get("_light_range_cap", INF)))
 	light.light_energy = 1500.0
-	light.shadow_enabled = true
+	# Follow-up (2026-08-17), Plane2: "i can clearly see the lights
+	# projected from above are not seen inside the plane's surface" --
+	# measured directly why: the cabin ceiling mesh (`plane_ciel`) spans
+	# world Y 131.5-306, and these 3 lights sit at Y=231, i.e. genuinely
+	# INSIDE that mesh's own volume, not floating just below a thin
+	# ceiling plane the way a real fixture would. `shadow_enabled=true`
+	# (GB-40's fix, for genuinely real per-object shadows) meant the
+	# ceiling geometry the light is embedded in was shadowing its OWN
+	# downward light before it ever reached the floor/seats below --
+	# confirmed with a direct on/off comparison, same room: shadows off
+	# reads as visibly, uniformly brighter on the floor and seats, shadows
+	# on is measurably dimmer purely from this self-occlusion, not from
+	# genuine object shadows (nothing large enough to cast a real shadow
+	# sits between these lights and the floor). These lights are already
+	# a deliberate approximation standing in for unextracted lightmap
+	# data (see this function's own note above) with real, WMB-authored
+	# positions that were never meant to be precise real-time fixture
+	# placements -- turning shadows off for JUST these is a smaller
+	# accuracy trade than leaving them on and letting the level's own
+	# ceiling geometry silently eat most of the light they're supposed to
+	# provide. The level's directional "sun" (`level_runner.gd`) still
+	# casts real shadows for genuine large-object occlusion.
+	light.shadow_enabled = false
 	_entities_root.add_child(light)
 
 
