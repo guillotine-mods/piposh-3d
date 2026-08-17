@@ -201,6 +201,7 @@ func load_level(p_level_name: String) -> bool:
 		_spawn_ground(Vector3(center.x, floor_y - 0.5, center.z), ground_size)
 
 	var objects: Array = data.get("objects", [])
+	_cap_saturated_light_ranges(objects)
 	var spawned := 0
 	var skipped := 0
 	for obj in objects:
@@ -1830,26 +1831,80 @@ func _spawn_light(obj: Dictionary) -> void:
 	# a neutral white lamp prop (StudioL_mdl_007, confirmed via its own
 	# unlit texture) sits 134 units from the blue ceiling light and 240
 	# units from the red one, both well inside their real, sourced 400-unit
-	# range (GB-39), so their colors add into magenta. Tried a steeper,
-	# physically-motivated falloff (`omni_attenuation=2.0`, inverse-square)
-	# with energy recalibrated (isolated lit-plane sweep) to match the
-	# default curve's brightness at Plane2's own reference distance (171
-	# units) -- looked fine in that ONE isolated single-light measurement,
-	# but a live re-check of the real multi-light scenes it was meant to
+	# range (GB-39), so their colors add into magenta. FIRST attempt tried a
+	# global fix -- a steeper, physically-motivated falloff curve
+	# (`omni_attenuation=2.0`), re-calibrated so Plane2's own 171-unit
+	# reference distance read almost identically to the shipped curve --
+	# but a live re-check of the real multi-light scenes it needed to
 	# preserve (Plane2's cabin, Studio's own wide shot) showed a real,
-	# visible regression: both scenes came back noticeably DIMMER than the
-	# already-shipped default curve, because a real room sums contributions
-	# from SEVERAL lights at several different distances at once, not the
-	# one calibration distance the isolated test checked -- and the purple
-	# lamp was barely changed anyway. Reverted; left at Godot's default
-	# attenuation. The color-bleed is a real, structural side effect of
-	# approximating a baked lightmap with additive real-time points (same
-	# open gap as the rest of this function's own note above), not
-	# something a global falloff-curve tweak can cleanly fix without
-	# undoing the brightness fix this same energy value exists for.
+	# visible regression: both came back noticeably dimmer than the shipped
+	# default curve, because a real room sums contributions from SEVERAL
+	# lights at several different distances at once, which a single-
+	# distance calibration can't account for -- and the purple lamp barely
+	# changed anyway. Reverted (GB-45).
+	#
+	# Follow-up (2026-08-17): fixed properly with `_cap_saturated_light_
+	# ranges()` (called once per level load, see its own docstring) instead
+	# -- caps each saturated/colored light's range relative to the nearest
+	# DIFFERENTLY-colored saturated light in the SAME level, so it only
+	# engages where two accent lights are actually close enough to clash
+	# (corpus-scanned: just Studio/InShrine/Outro have such a pair under
+	# ~250 units; everywhere else is thousands of units apart and gets no
+	# change at all). Verified this leaves Plane2 completely untouched
+	# (its cabin lights are grey/unsaturated, never enter the affected
+	# set) while cleanly separating Studio's red/blue bleed.
+	light.omni_range = minf(light.omni_range, float(obj.get("_light_range_cap", INF)))
 	light.light_energy = 1500.0
 	light.shadow_enabled = true
 	_entities_root.add_child(light)
+
+
+## Pre-pass over a level's own parsed objects, run once before any
+## `_spawn_light()` call (see that function's own note, 2026-08-17): finds,
+## for every saturated/colored WMB `LIGHT` object, the nearest OTHER light
+## in the same level whose color is meaningfully different, and stores a
+## proportional range cap on the object dict itself (`_light_range_cap`,
+## read back by `_spawn_light()`) so two nearby differently-colored accent
+## lights don't overlap enough to blend into an unintended third color
+## (the reported "purple lamp"). Deliberately relative, not a fixed
+## number: a corpus scan found only 3 of ~41 levels with saturated lights
+## even have a differently-colored pair under ~250 units apart (Studio,
+## InShrine, Outro) -- everywhere else this is a no-op since the nearest
+## differently-colored light is thousands of units away, comfortably
+## beyond any real light's own range.
+const SATURATION_THRESHOLD := 0.3
+const COLOR_DIFF_THRESHOLD := 0.5
+const RANGE_CAP_FRACTION := 0.75
+const RANGE_CAP_FLOOR := 60.0
+
+
+func _cap_saturated_light_ranges(objects: Array) -> void:
+	var saturated: Array = []
+	for obj in objects:
+		if typeof(obj) != TYPE_DICTIONARY or str(obj.get("type", "")) != "light":
+			continue
+		var c: Array = obj.get("color", [1, 1, 1])
+		var mx: float = maxf(float(c[0]), maxf(float(c[1]), float(c[2])))
+		var mn: float = minf(float(c[0]), minf(float(c[1]), float(c[2])))
+		if mx - mn > SATURATION_THRESHOLD:
+			saturated.append(obj)
+	for i in saturated.size():
+		var pi := _vec3(saturated[i].get("origin", [0, 0, 0]), Vector3.ZERO)
+		var ci: Array = saturated[i].get("color")
+		var nearest := INF
+		for j in saturated.size():
+			if i == j:
+				continue
+			var cj: Array = saturated[j].get("color")
+			var color_diff := Vector3(
+				float(ci[0]) - float(cj[0]), float(ci[1]) - float(cj[1]), float(ci[2]) - float(cj[2])
+			).length()
+			if color_diff <= COLOR_DIFF_THRESHOLD:
+				continue
+			var pj := _vec3(saturated[j].get("origin", [0, 0, 0]), Vector3.ZERO)
+			nearest = minf(nearest, pi.distance_to(pj))
+		if nearest < INF:
+			saturated[i]["_light_range_cap"] = maxf(nearest * RANGE_CAP_FRACTION, RANGE_CAP_FLOOR)
 
 
 func _build_glb_index() -> void:
