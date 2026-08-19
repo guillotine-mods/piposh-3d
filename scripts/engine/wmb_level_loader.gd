@@ -1876,7 +1876,17 @@ func _spawn_light(obj: Dictionary) -> void:
 	# verified scene this session (Plane2, Studio, Shiks) -- completely
 	# unchanged (scale=1.0); only engages for the wide-fill category.
 	var energy_scale := minf(1.0, 500.0 / maxf(rng, 1.0))
-	light.light_energy = 1500.0 * energy_scale
+	# Follow-up (2026-08-18): "now plane2 is a bit bit too bright." The
+	# fog_density fix (GB-48) unmasked point lights' real contribution for
+	# the first time -- every earlier round tuning `1500` (GB-44 on) was
+	# calibrated against a scene that was still silently fogged, so it was
+	# never really tuned against what players actually see post-fix.
+	# Trimmed modestly (1500 -> 1000, about -33%) to match a mild "a bit"
+	# report rather than overcorrecting. Kept in sync with `wdl_interpreter.
+	# gd`'s `_get_or_create_entity_light()`, same reasoning as always for
+	# why the two light-spawning paths shouldn't drift to different
+	# magnitudes for the same engine-scale reason.
+	light.light_energy = 1000.0 * energy_scale
 	# Follow-up (2026-08-17), Plane2: "i can clearly see the lights
 	# projected from above are not seen inside the plane's surface" --
 	# measured directly why: the cabin ceiling mesh (`plane_ciel`) spans
@@ -1918,7 +1928,7 @@ func _spawn_light(obj: Dictionary) -> void:
 ## beyond any real light's own range.
 const SATURATION_THRESHOLD := 0.3
 const COLOR_DIFF_THRESHOLD := 0.5
-const RANGE_CAP_FRACTION := 0.75
+const RANGE_CAP_FRACTION := 1.2
 const RANGE_CAP_FLOOR := 60.0
 
 

@@ -2287,10 +2287,15 @@ func _get_or_create_entity_light(node: Node3D) -> OmniLight3D:
 		# mixing into an unintended purple), then reverted after a live
 		# re-check showed real multi-light scenes came back visibly dimmer
 		# overall -- see that function's own note for the full story. Stays
-		# at the plain energy=1500 value here too, for the same reason as
-		# above: no grounds to leave the two light-spawning paths on
-		# different curves for the same engine-scale problem.
-		light.light_energy = 1500.0
+		# at the plain energy value here too, for the same reason as above:
+		# no grounds to leave the two light-spawning paths on different
+		# curves for the same engine-scale problem.
+		#
+		# Follow-up (2026-08-18): `_spawn_light()`'s own energy trimmed
+		# 1500 -> 1000 (see its own note) after the fog_density fix (GB-48)
+		# unmasked point lights' real contribution for the first time and
+		# Plane2 read "a bit too bright." Mirrored here.
+		light.light_energy = 1000.0
 		# Reported live (2026-08-11): "the background behind yachdel...
 		# emits light and is flashing where it shouldn't be." Root cause: this
 		# entity-driven light was left at the Godot default of unoccluded, so

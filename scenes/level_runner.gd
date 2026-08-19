@@ -597,7 +597,28 @@ func _ensure_environment() -> void:
 		var sun := DirectionalLight3D.new()
 		sun.name = "Sun"
 		sun.light_color = Color(1.0, 0.96, 0.88)
-		sun.light_energy = 0.75
+		# Follow-up (2026-08-18), Plane3: "when we look at piposh outside the
+		# plane it's like theres no 'sun light' so its a bit dark when he's
+		# physically outside the plane." Measured directly why 0.75 (this
+		# value's own baseline, set the same day the dead-Sun bug was found
+		# and fixed, GB-47) still reads dim outdoors specifically: the fixed
+		# rotation below doesn't square-on light every pose/orientation a
+		# character can be in during the fall sequence, so boosting energy
+		# alone has real but limited effect on the shadowed side. Verified
+		# live at several values on Piposh's own hanging-outside-the-plane
+		# pose -- 2.5 gives a clearly, measurably brighter outdoor scene
+		# (trees/rock/houses all read more saturated) without an obviously
+		# blown-out look. This can't be compensated for with `ambient_light_
+		# energy` instead, despite ambient not caring about facing direction
+		# and giving an even bigger boost when tested -- ambient is the SAME
+		# global value every sealed interior uses too, and Plane2's own
+		# separate "a bit too bright" report this round means that shared
+		# knob needs to go the other direction, not up. The sun, by
+		# contrast, barely reaches fully enclosed interiors at all (real
+		# shadow-casting brush geometry blocks it, `sun.shadow_enabled`
+		# below), so raising it here is safe for indoor scenes specifically
+		# BECAUSE it's mostly a no-op there.
+		sun.light_energy = 2.5
 		# Reported live again (2026-08-10, this round): "the lighting
 		# effects from the original game are missing" -- previously left
 		# off pending live visual verification (see this function's own
