@@ -1280,10 +1280,27 @@ func _should_feet_snap(action: String, stem: String) -> bool:
 	## MDL geometry commonly hangs below it â€” without this, curtains, fans,
 	## and light-rig props (StudioL) sink under the floor. A prior rewrite
 	## inverted this to opt-in (floor actors only), which silently stopped
-	## snapping every non-whitelisted prop â€” regression found via a user
+	## snapping every non-whitelisted prop -- regression found via a user
 	## playtest report ("fans, lights and curtains a bit down under the
 	## floor" in Studio); see docs/SESSION_LOG.md. Only exclude entities
 	## whose origin is deliberately NOT a floor/feet reference.
+	##
+	## Confirmed via decompilation (2026-08-20, real acknex.exe disassembly,
+	## E:\RE_general\PiposhTools\decompile_acknex\docs\06_wmb_level_loading.md
+	## SS4): the original engine's own entity-spawn code applies WED-authored
+	## origin completely unadjusted -- no floor-snap, no pivot correction,
+	## nothing gated on any entity flag bit anywhere in that path. This
+	## heuristic is therefore NOT compensating for a missed engine mechanic
+	## (there isn't one to miss); the most likely real explanation is that
+	## original level designers hand-compensated per-placement in WED, which
+	## this port has no record of. A Godot-side MDL-\>glTF pivot bug was also
+	## checked and ruled out (convert_mdl.py's vertex reconstruction uses the
+	## .MDL header's own scale/offset fields faithfully). Conclusion: this
+	## empirically-tuned, per-stem exclusion list is the right kind of fix
+	## for what's actually a lost-authorial-intent problem, not a bug to
+	## chase further on the engine side -- keep tuning it against real
+	## screenshots as reports come in, don't expect a single root-cause fix
+	## to replace it.
 	if _is_camera_action(action) or _is_camera_stem(stem):
 		return false
 	var a := action.to_lower()

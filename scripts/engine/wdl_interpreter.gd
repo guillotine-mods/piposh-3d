@@ -3219,6 +3219,9 @@ func _call(name: String, arg_exprs: Array, my) -> Variant:
 	if low == "vec_rotate":
 		_do_vec_rotate(arg_exprs, my)
 		return 0.0
+	if low == "str_cpy" or low == "str_cat":
+		_last_result = _do_string_call(low, arg_exprs, my)
+		return _last_result
 	if low == "emit" and arg_exprs.size() >= 2:
 		var particle_action := ""
 		if arg_exprs.size() > 2 and typeof(arg_exprs[2]) == TYPE_DICTIONARY and arg_exprs[2].get("t") == "id":
@@ -3508,14 +3511,13 @@ func _register_builtins() -> void:
 		"abs": func(a, _my): return absf(_to_num(a[0])) if a.size() > 0 else 0.0,
 		"min": func(a, _my): return minf(_to_num(a[0]), _to_num(a[1])) if a.size() > 1 else 0.0,
 		"max": func(a, _my): return maxf(_to_num(a[0]), _to_num(a[1])) if a.size() > 1 else 0.0,
-		"str_cpy": func(a, _my): return str(a[1]) if a.size() > 1 else "",
-		"str_cat": func(a, _my): return str(a[0]) + str(a[1]) if a.size() > 1 else "",
 		"str_cmpi": func(a, _my): return 1.0 if a.size() > 1 and str(a[0]).to_lower() == str(a[1]).to_lower() else 0.0,
-		# vec_set/vec_sub/vec_to_angle are NOT registered here -- they need
-		# by-reference access to their first argument's raw AST node (which
-		# named vector/field to write into), not an evaluated value like
-		# every other builtin. Intercepted directly in _call() before the
-		# generic args-evaluation loop; see _do_vector_call().
+		# vec_set/vec_sub/vec_to_angle, str_cpy/str_cat are NOT registered
+		# here -- they need by-reference access to their first argument's
+		# raw AST node (which named variable/field to write into), not an
+		# evaluated value like every other builtin. Intercepted directly in
+		# _call() before the generic args-evaluation loop; see
+		# _do_vector_call() and _do_string_call().
 		"sqrt": func(a, _my): return sqrt(_to_num(a[0])) if a.size() > 0 else 0.0,
 		# Acknex `ang(x)` -- normalizes an angle to (-180, 180]. Real,
 		# genuinely portable builtin (no engine-internal dependency), unlike
@@ -4351,6 +4353,62 @@ func _do_vector_call(low: String, arg_exprs: Array, my) -> float:
 			_vec_put(arg_exprs[0], Vector3(pan, tilt, 0.0), my)
 			return dist
 	return 0.0
+
+
+## Reported live (2026-08-20), Town: "mapping of locations and how the game
+## is played is vastly different." Traced to a real, corpus-wide gap:
+## `str_cpy(dest, src)`/`str_cat(dest, src)` are BY-REFERENCE, writing into
+## their own first argument (`str_cpy(StageToSave,"Game.tmp");` is a bare
+## statement, not an assignment) -- the same shape of bug `vec_set`/
+## `vec_sub`/`vec_to_angle` above are already special-cased for, but these
+## two were left registered as ordinary value-returning builtins, so the
+## computed string was silently discarded every time. `IO.wdl`'s own
+## `RefreshState()`/`WriteGameData()` (the corpus-wide save/load system --
+## regional progress arrays, AFG[] inventory, HasID, TalkedOnce -- called
+## from 30+ level scripts) build their target filename with exactly this
+## idiom (`str_cpy(StageToSave,"Game.tmp");`); with `StageToSave` never
+## actually getting set, `file_open_read(StageToSave)` opened an empty
+## path, silently failed, and every save/load read back as all-zero
+## defaults -- confirmed empirically by planting a real save file with
+## marker values (`Village[0]=7`, `HasID=1`) under `user://Game.tmp` and
+## observing Town's own globals still read 0.0 after level load, even
+## though the array-indexing and sequential file_asc_read/write machinery
+## both check out correctly in isolation. This made every level transition
+## behave like a fresh game -- region unlock progress, inventory, and
+## one-time dialogue flags all silently reset every time, which is exactly
+## "how the game is played is vastly different" corpus-wide, not a
+## Town-specific placement issue.
+func _do_string_call(low: String, arg_exprs: Array, my) -> String:
+	if arg_exprs.size() < 2:
+		return ""
+	var dest_expr: Dictionary = arg_exprs[0]
+	var src := str(_eval(arg_exprs[1], my))
+	var new_val := src
+	if low == "str_cat":
+		new_val = _string_dest_get(dest_expr, my) + src
+	_string_dest_set(dest_expr, new_val, my)
+	return new_val
+
+
+## Reads the current value of a str_cpy/str_cat destination -- only needed
+## for str_cat's own "append" semantics. Same two shapes as _vec_get(): a
+## bare identifier (a plain WDL string global/local) or `entity.field`
+## (e.g. a panel's own `.string` text, WDL/phone.wdl's dial-digit idiom).
+func _string_dest_get(dest_expr: Dictionary, my) -> String:
+	var t := str(dest_expr.get("t", ""))
+	if t == "field":
+		return str(_get_field(dest_expr.get("obj"), str(dest_expr.get("name", "")), my))
+	if t == "id":
+		return str(_get_var(str(dest_expr.get("name", "")), my))
+	return ""
+
+
+func _string_dest_set(dest_expr: Dictionary, value: String, my) -> void:
+	var t := str(dest_expr.get("t", ""))
+	if t == "field":
+		_set_field(dest_expr.get("obj"), str(dest_expr.get("name", "")), value, my)
+	elif t == "id":
+		_set_var(str(dest_expr.get("name", "")), value, my)
 
 
 ## `move(entity, angle_delta, dist_delta)` -- a real Acknex engine builtin
