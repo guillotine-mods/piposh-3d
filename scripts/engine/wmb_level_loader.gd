@@ -1292,6 +1292,24 @@ func _should_feet_snap(action: String, stem: String) -> bool:
 		return false
 	if a == "window":
 		return false
+	# Reported live (2026-08-20), Town: "the ground itself is too low, for
+	# example beneath the water." Measured directly: Town's own water plane
+	# (`CityWtr.MDL`, `action Water` -- corpus grep confirms this exact
+	# action name is unique to Town, not reused elsewhere) is a flat,
+	# perfectly SYMMETRIC slab (local Y spans -8..+8, WED origin dead
+	# center) sized 15966x16x9520 -- essentially the whole town's footprint
+	# in one giant plane, the standard "sea level" technique (ground pokes
+	# above it where it should be dry, water shows where it doesn't). A
+	# symmetric-on-origin flat plane is the opposite signal from every
+	# other feet-snap case in this file (a character/prop whose mesh hangs
+	# mostly BELOW its own origin and needs lifting) -- same shape as
+	# `window`'s own exclusion just above. Feet-snapping it lifted the
+	# whole water plane by +8 units (its raw WED Y of 102 becoming 110),
+	# which can only make MORE ground read as submerged, never less --
+	# exactly backwards for this report. Excluded so the water sits at its
+	# real authored height.
+	if a == "water":
+		return false
 	# Every remaining stem exclusion below is a measured verdict (GLB local-Y
 	# AABB vs. WED origin + a grep of the entity's real WDL `action` body for
 	# runtime position control), not a carried-over guess â€” see
