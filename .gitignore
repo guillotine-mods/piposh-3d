@@ -22,6 +22,12 @@ __pycache__/
 *.pyc
 .venv/
 
+# tools/wmb_web_viewer.py's own on-demand brush/model .glb cache -- dev-tool
+# scratch output only, regenerable from original/ via extract_wmb_mesh.py /
+# convert_mdl.py, deliberately NOT part of the "zero-py-no-assets" shipped
+# game (which parses WMB/MDL directly at runtime instead).
+tools/.web_cache/
+
 # Editor / OS
 .cursor/
 *.swp
