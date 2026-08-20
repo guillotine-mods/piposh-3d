@@ -321,10 +321,13 @@ _CAMERA_ACTIONS = {
     "cam", "thecam", "thecam2", "farcam", "scam", "cammy", "lookatme",
     "mycamera", "pipicam", "cam2", "cam3", "cam4", "camplane", "cameraengine",
 }
-_FEET_SNAP_EXCLUDE_STEMS = {
-    "glass", "b747", "tv", "island", "headphon", "biplane",
-    "biplane2", "hanger", "towerw", "dutyfree",
-}
+# Kept in exact sync with wmb_level_loader.gd's own _should_feet_snap() --
+# re-check that function directly before editing this one; drift here is
+# silent (nothing fails, the web tool just quietly shows the wrong verdict).
+# Last synced 2026-08-20 (GB-53's "water" exclusion + the 2026-07-28 removal
+# of b747/tv/hanger/towerw/biplane/biplane2/cockpit/land/wind/item_pickup/
+# ent_rotate, none of which are excluded in the real function any more).
+_FEET_SNAP_EXCLUDE_STEMS = {"glass", "dutyfree"}
 
 
 def should_feet_snap(action: str, stem: str) -> bool:
@@ -336,9 +339,15 @@ def should_feet_snap(action: str, stem: str) -> bool:
         return False
     if a == "window":
         return False
+    if a == "water":
+        return False
     if s in _FEET_SNAP_EXCLUDE_STEMS:
         return False
-    if a in {"headphone", "land", "wind", "ent_rotate", "item_pickup"}:
+    if s == "headphon" and a == "headphone":
+        return False
+    if s == "island":
+        return False
+    if a == "headphone":
         return False
     return True
 
