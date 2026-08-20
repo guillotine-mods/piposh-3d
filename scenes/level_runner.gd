@@ -579,6 +579,59 @@ func _ensure_environment() -> void:
 	# field fix (GB-47) at its own already-verified value instead of
 	# risking re-clipping it for no remaining benefit.
 	we.environment = env
+	# Follow-up (2026-08-20): "shicks level... the outdoor light isn't lit
+	# well enough, and it should match with all other levels as well...
+	# plane3 now piposh closeup face is too lit." Both symptoms trace to
+	# the SAME root cause: this whole session's lighting fixes (GB-44
+	# through GB-49) have been a series of flat, static energy multipliers
+	# (ambient, sun, point-light) each tuned against ONE specific reported
+	# view. A single fixed-direction sun physically cannot correctly light
+	# every surface orientation at once -- a surface facing away from it
+	# (Shiks' own rock formation, reading as a near-featureless black
+	# silhouette) reads dark no matter how high the flat energy goes,
+	# while a surface facing squarely INTO it (Piposh's face in a Plane3
+	# close-up) blows out at that same energy. Raising the energy fixes
+	# one and breaks the other -- there is no single static number that
+	# is simultaneously right for both, which is exactly the loop this
+	# session kept re-entering. The actual general, deterministic fix
+	# is auto-exposure: let the renderer measure each view's own real
+	# average luminance and normalize toward a consistent target, the way
+	# a real camera (and by extension every modern game/film pipeline)
+	# does, instead of a human re-guessing a flat multiplier per report.
+	# `CameraAttributesPractical` is Godot's built-in implementation of
+	# exactly this. Assigned via `WorldEnvironment.camera_attributes` so
+	# it applies project-wide to every level without needing to touch each
+	# individual Camera3D (ScriptCamera, the FP player camera, and any
+	# scripted-cutscene camera all share this one WorldEnvironment).
+	var cam_attrs := CameraAttributesPractical.new()
+	cam_attrs.auto_exposure_enabled = true
+	# Speed left at Godot's own default (0.5) -- adapts within roughly a
+	# second of real time, fast enough that a scripted camera cut doesn't
+	# sit visibly mis-exposed for long, slow enough not to visibly "pump"
+	# during ordinary camera movement.
+	#
+	# `auto_exposure_min/max_sensitivity` (Godot's own defaults: 100/800,
+	# an ISO-equivalent range meant for `CameraAttributesPhysical`-style
+	# real photometric light units) needed real recalibration, not just
+	# turning auto-exposure on -- this whole port's light energies (ambient
+	# ~0.85, sun 2.5, point lights ~1000+) are large, non-physical
+	# multipliers, not real-world radiometric values, so Godot's default
+	# sensitivity range was reading our own scenes as WAY overexposed and
+	# compensating by slamming exposure down to near-nothing far more
+	# aggressively than intended -- confirmed live: Shiks' own outdoor
+	# establishing shot came back almost completely blown-out white at the
+	# default range, not fixed by waiting longer (tested up to 300 frames,
+	# same result -- a genuine mismatch, not a convergence delay). Swept
+	# wider ranges against that same shot and landed on 800-8000 (10x
+	# Godot's own default band, matching how much larger this project's
+	# light energies are than typical physical values) -- verified this
+	# same range also correctly protects Plane3's own close-up face shot
+	# (the other reported symptom) from blowing out, so one shared range
+	# genuinely serves both ends of the brightness spectrum this session
+	# kept fighting with static numbers alone.
+	cam_attrs.auto_exposure_min_sensitivity = 800.0
+	cam_attrs.auto_exposure_max_sensitivity = 8000.0
+	we.camera_attributes = cam_attrs
 	add_child(we)
 
 	# Follow-up (2026-08-17): "the fog and the level is still just DARK"
