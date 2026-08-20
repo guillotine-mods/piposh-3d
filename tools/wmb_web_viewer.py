@@ -864,6 +864,17 @@ function addArrow(forwardArr, pos, length, color) {
   entityGroup.add(arrow);
 }
 
+// Shared by the initial entity-only fit and the brush-aware re-fit once the
+// (async-loaded) brush geometry arrives -- see buildScene()'s brush-load
+// callback for why a single fit at entity-load time isn't enough on its own.
+function fitCameraTo(box) {
+  const center = box.getCenter(new THREE.Vector3());
+  const size = box.getSize(new THREE.Vector3()).length();
+  controls.target.copy(center);
+  camera.position.copy(center).add(new THREE.Vector3(size * 0.35, size * 0.35, size * 0.5));
+  controls.update();
+}
+
 async function buildScene(level) {
   clearLevelState();
   document.getElementById("panel").querySelector("h1").textContent =
@@ -875,6 +886,23 @@ async function buildScene(level) {
 
   // Brush (walls/floor) for spatial context -- reused as-is from the
   // existing, already-verified extract_wmb_mesh.py output.
+  //
+  // Reported live (2026-08-20), Town: the initial camera framed nothing but
+  // an extreme close-up of tiled wall/floor texture -- confirmed via a real
+  // headless-browser screenshot (Playwright), not guessed from reading the
+  // JS. Root cause: the entity-bbox camera fit below (`entityBbox.expandByPoint`)
+  // only ever accumulates ENTITY positions, never the brush mesh's own
+  // extent -- fine for a level whose entities spread across roughly the
+  // same footprint as its geometry, but Town's ~529 entities cluster near
+  // the spawn point while its brush (one continuous slab covering the
+  // whole ~15000-unit town) extends far beyond that cluster. The camera
+  // fit "correctly" framed the entity cluster and, with no brush-aware
+  // sizing, ended up sitting inside/against the much larger brush surface
+  // nearby. Brush geometry loads asynchronously (this callback), so it
+  // can't be folded into the SAME synchronous fit the entities get below;
+  // instead this callback computes its own bounding box and re-fits once
+  // the brush is actually in the scene, unioned with whatever entity bbox
+  // already existed so neither source dominates incorrectly.
   if (level.brush_url) {
     gltfLoader.load(level.brush_url, (gltf) => {
       gltf.scene.traverse((o) => {
@@ -889,6 +917,10 @@ async function buildScene(level) {
       document.getElementById("chk-brush").onchange = (e) => {
         gltf.scene.visible = e.target.checked;
       };
+      const brushBox = new THREE.Box3().setFromObject(gltf.scene);
+      if (isFinite(brushBox.min.x)) {
+        fitCameraTo(entityBbox.isEmpty() ? brushBox : entityBbox.clone().union(brushBox));
+      }
     });
   }
 
@@ -973,7 +1005,7 @@ async function buildScene(level) {
 
   // Entities.
   const listEl = document.getElementById("entity-list");
-  const bbox = new THREE.Box3();
+  const entityBbox = new THREE.Box3();
   let anyPoint = false;
   const rawAabbCache = new Map(); // model_url -> Box3 in raw mesh-local space
 
@@ -1046,7 +1078,7 @@ async function buildScene(level) {
       pickable.push({ mesh: cone, data: ent, li });
     }
 
-    bbox.expandByPoint(new THREE.Vector3(...pos));
+    entityBbox.expandByPoint(new THREE.Vector3(...pos));
     anyPoint = true;
 
     addArrow(ent.forward, pos, 45, 0xff3333);
@@ -1070,11 +1102,7 @@ async function buildScene(level) {
   };
 
   if (anyPoint) {
-    const center = bbox.getCenter(new THREE.Vector3());
-    const size = bbox.getSize(new THREE.Vector3()).length();
-    controls.target.copy(center);
-    camera.position.copy(center).add(new THREE.Vector3(size * 0.35, size * 0.35, size * 0.5));
-    controls.update();
+    fitCameraTo(entityBbox);
   }
 
   statusEl.textContent = `${level.entities.length} entities placed (models loaded where a matching .glb exists; cyan cones otherwise).`;
