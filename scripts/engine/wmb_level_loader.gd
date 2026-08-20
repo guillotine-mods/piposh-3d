@@ -461,15 +461,76 @@ func _apply_runtime_brush_materials(mesh: ArrayMesh, brush: Dictionary) -> void:
 		mat.resource_name = str(b["name"])
 		var ti := int(tex_idx)
 		if ti >= 0 and ti < textures.size():
-			var img: Image = textures[ti].get("image")
-			if img != null:
-				# LINEAR_WITH_MIPMAPS is what brush surfaces get below; without
-				# mips that filter silently degrades to plain linear.
-				if not img.has_mipmaps():
-					img.generate_mipmaps()
-				mat.albedo_texture = ImageTexture.create_from_image(img)
+			mat.albedo_texture = _build_texture_or_animation(textures, ti)
 		mesh.surface_set_material(si, mat)
 		si += 1
+
+
+## Acknex/Quake-family animated brush textures: consecutive frames named
+## "+0<base>", "+1<base>", ... (WED's own authoring convention). Reported
+## live (2026-08-20), Smash: "A sign shown in the level should have a
+## 'video' running but it has only one image showing the whole time" --
+## confirmed directly (raw WMB texture-lump dump) that Smash's own sign
+## has all 8 real frames, "+0YACH" through "+7YACH", sitting right there
+## in the level's own texture list -- our brush-material builder just
+## never read past whichever single frame a face's own texture INDEX
+## pointed at (always frame 0, since that's what WED itself references
+## for the face), silently dropping the other 7. Fixed generally, not
+## scoped to Smash's own sign: whenever a surface's texture name matches
+## this "+N<base>" pattern, collect every sibling frame with the same
+## base name from the level's own texture list, sort by frame index, and
+## build a real Godot `AnimatedTexture` cycling through all of them
+## instead of one static `ImageTexture`. Corpus-wide, not new-risk for the
+## OTHER "+0"-prefixed names already found this session (Plane2's own
+## "+0floor"/"+0cockpit", GB-39-era) -- those have no real sibling frames
+## in their own level's texture list, so this only ever activates once 2+
+## real frames are actually found; a lone "+0<name>" with nothing to
+## animate against falls straight back to the plain static texture,
+## unchanged from before.
+var _anim_tex_name_re := RegEx.create_from_string("^\\+(\\d+)(.+)$")
+
+
+func _build_texture_or_animation(textures: Array, ti: int) -> Texture2D:
+	var img: Image = textures[ti].get("image")
+	if img == null:
+		return null
+	# LINEAR_WITH_MIPMAPS is what brush surfaces get below; without mips
+	# that filter silently degrades to plain linear.
+	if not img.has_mipmaps():
+		img.generate_mipmaps()
+	var base_tex := ImageTexture.create_from_image(img)
+
+	var name := str(textures[ti].get("name", ""))
+	var m := _anim_tex_name_re.search(name)
+	if m == null:
+		return base_tex
+	var base_name := m.get_string(2)
+	var frames: Dictionary = {}  # frame index (int) -> Texture2D
+	for i in textures.size():
+		var other_m := _anim_tex_name_re.search(str(textures[i].get("name", "")))
+		if other_m == null or other_m.get_string(2) != base_name:
+			continue
+		var oimg: Image = textures[i].get("image")
+		if oimg == null:
+			continue
+		if not oimg.has_mipmaps():
+			oimg.generate_mipmaps()
+		frames[int(other_m.get_string(1))] = ImageTexture.create_from_image(oimg)
+	if frames.size() < 2:
+		return base_tex
+
+	var indices: Array = frames.keys()
+	indices.sort()
+	var anim := AnimatedTexture.new()
+	anim.frames = mini(indices.size(), AnimatedTexture.MAX_FRAMES)
+	for i in anim.frames:
+		anim.set_frame_texture(i, frames[indices[i]])
+		# No authored per-frame timing anywhere in the WMB format (Quake-
+		# family animated textures are always fixed-rate) -- 8 fps is a
+		# reasonable, unsourced "looks like a video, not a slideshow"
+		# default; see this function's own docstring.
+		anim.set_frame_duration(i, 1.0 / 8.0)
+	return anim
 
 
 ## Locate the original .WMB for a level or prop stem.
